@@ -1,5 +1,12 @@
 import type { PostprocessOptions} from '../../types.js';
 
+function uniqueId(doc: Document, base: string): string {
+  let id = base;
+  let i = 2;
+  while (doc.getElementById(id)) id = `${base}-${i++}`;
+  return id;
+}
+
 function norm(term: string): string {
   return term.toLowerCase().replace(/\s+/g, ' ').trim();
 }
@@ -18,7 +25,6 @@ type LocalTarget = { href: string; text: string; source: 'dfn' | 'heading' };
 function buildLocalMap(root: Element): Map<string, LocalTarget> {
   const map = new Map<string, LocalTarget>();
   const doc = root.ownerDocument!;
-  void doc;
 
   // 1) <dfn> terms (support data-lt="foo|bar,baz")
   const dfns = root.querySelectorAll<HTMLElement>('dfn');
@@ -50,15 +56,32 @@ function buildLocalMap(root: Element): Map<string, LocalTarget> {
   // 2) Headings (h2..h6) as fallback
   const headings = root.querySelectorAll<HTMLElement>('h2, h3, h4, h5, h6');
   headings.forEach(h => {
-    const label = (h.textContent || '').trim();
-    if (!label) return;
-    if (!h.id) {
-      h.id = slugify(label);
-    }
-    const key = norm(label);
-    if (!map.has(key)) {
-      map.set(key, { href: `#${h.id}`, text: label, source: 'heading' });
-    }
+  const label = (h.textContent || '').trim();
+  if (!label) return;
+
+  // Prefer parent section id to avoid duplicate ids on heading + section
+  const parentSection = h.closest('section[id]') as HTMLElement | null;
+
+  let targetId: string | null = null;
+
+  if (parentSection) {
+    targetId = parentSection.id;
+  } else if (h.id) {
+    targetId = h.id;
+  } else {
+    const slug = slugify(label);
+    // generate a unique id that doesn't collide with anything
+    const uid = uniqueId(doc, slug);
+    h.id = uid;
+    targetId = uid;
+  }
+
+  if (!targetId) return;
+
+  const key = norm(label);
+  if (!map.has(key)) {
+    map.set(key, { href: `#${targetId}`, text: label, source: 'heading' });
+  }
   });
 
   return map;
