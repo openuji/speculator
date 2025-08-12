@@ -3,6 +3,8 @@ import { runXrefPass } from './passes/xref';
 import { runReferencesPass } from './passes/references';
 import { runTocPass } from './passes/toc';
 import { runIdlPass } from './passes/idl';
+import { runDiagnosticsPass } from './passes/diagnostics';
+import { runBoilerplatePass } from './passes/boilerplate';
 
 export interface PipelineResult {
   warnings: string[];
@@ -21,8 +23,16 @@ export async function postprocess(container: Element, options: PostprocessOption
   // 3) Build references section skeleton from [[...]] anchors
   warnings.push(...runReferencesPass(container, options));
 
-  // 4) Optional ToC generation (no-op unless a mount exists)
+  // 4) Boilerplate (insert after cites/refs so it can mount before/after them)
+  runBoilerplatePass(container, options);
+
+  // 5) ToC
   runTocPass(container, options);
+
+  // 6) Diagnostics sweep (duplicates + missing hrefs, etc.)
+  warnings.push(...runDiagnosticsPass(container, options.diagnostics));
+
+
 
   return { warnings };
 }

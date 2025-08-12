@@ -13,11 +13,14 @@ export function runTocPass(root: Element, options: PostprocessOptions): void {
 
   const doc = root.ownerDocument!;
   const ol = doc.createElement('ol');
+  ol.setAttribute('role', 'list');
 
   for (const h of headings) {
     if (!h.id) continue;
     const li = doc.createElement('li');
-    if (h.tagName.toLowerCase() === 'h3') li.style.marginLeft = '1rem';
+    const depth = h.tagName.toLowerCase() === 'h3' ? 2 : 1;
+    li.setAttribute('data-depth', String(depth));
+
     li.innerHTML = `<a href="#${h.id}">${h.textContent || ''}</a>`;
     ol.appendChild(li);
   }

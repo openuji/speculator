@@ -133,3 +133,25 @@ export interface PostprocessOptions {
   diagnostics?: DiagnosticsOptions;
 }
 
+
+export interface BoilerplateOptions {
+  conformance?: boolean | { title?: string; id?: string; content?: string };
+  security?: boolean | { title?: string; id?: string; content?: string };
+  privacy?: boolean | { title?: string; id?: string; content?: string };
+  mount?: 'end' | 'before-references' | 'after-toc';
+}
+
+export interface DiagnosticsOptions {
+  suppressClass?: string; // default: 'no-link-warnings'
+  /** Enable duplicate-id and missing-href checks (default true). */
+  idsAndLinks?: boolean;
+}
+
+export interface PostprocessOptions {
+  xref?: XrefOptions;
+  biblio?: BiblioOptions;
+  idl?: IdlOptions;
+  toc?: TocOptions;
+  diagnostics?: DiagnosticsOptions;
+  boilerplate?: BoilerplateOptions;          // <— NEW
+}
