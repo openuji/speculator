@@ -1,0 +1,68 @@
+{
+  "name": "@openuij/speculator",
+  "version": "1.0.0",
+  "description": "A TypeScript library for processing ReSpec-like markup with markdown support",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "prepublishOnly": "npm run build && npm test",
+    "dev": "concurrently \"npm run build:watch\" \"npm run test:watch\""
+  },
+  "keywords": [
+    "speculator",
+    "respec",
+    "markdown",
+    "documentation",
+    "html",
+    "typescript",
+    "web-standards",
+    "w3c"
+  ],
+  "author": "Seva Dolgopolov https://linked.in/in/seva_dolgopolov",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openuji/speculator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openuji/speculator/issues"
+  },
+  "homepage": "https://github.com/openuji/speculator#readme",
+  "devDependencies": {
+    "@jest/globals": "^30.0.5",
+    "@types/jest": "^29.5.14",
+    "@types/markdown-it": "^14.1.2",
+    "@types/marked": "^6.0.0",
+    "@types/node": "^20.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.53.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.5",
+    "jsdom": "^22.1.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0"
+  }
+}

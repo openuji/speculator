@@ -1,0 +1,124 @@
+/**
+ * Configuration options for Speculator
+ */
+export interface SpeculatorOptions {
+  /** Base URL for resolving relative file paths */
+  baseUrl?: string;
+  /** Custom file loader function */
+  fileLoader?: FileLoader;
+  /** Markdown parsing options */
+  markdownOptions?: MarkdownOptions;
+  postprocess?: PostprocessOptions;
+
+}
+
+/**
+ * File loader function type
+ */
+export type FileLoader = (path: string) => Promise<string>;
+
+/**
+ * Markdown parsing options
+ */
+export interface MarkdownOptions {
+  /** Enable GitHub Flavored Markdown */
+  gfm?: boolean;
+  /** Enable line breaks */
+  breaks?: boolean;
+  /** Enable smart typography */
+  smartypants?: boolean;
+  /** Generate header IDs */
+  headerIds?: boolean;
+  /** Custom renderer extensions */
+  extensions?: unknown[];
+}
+
+/**
+ * Processing result for a single element
+ */
+export interface ProcessingResult {
+  /** The processed HTML element */
+  element: Element;
+  /** Any warnings encountered during processing */
+  warnings: string[];
+  /** Processing statistics */
+  stats: ProcessingStats;
+}
+
+/**
+ * Processing statistics
+ */
+export interface ProcessingStats {
+  /** Number of elements processed */
+  elementsProcessed: number;
+  /** Number of files included */
+  filesIncluded: number;
+  /** Number of markdown blocks converted */
+  markdownBlocks: number;
+  /** Processing time in milliseconds */
+  processingTime: number;
+}
+
+/**
+ * Supported data formats
+ */
+export type DataFormat = 'markdown' | 'text' | 'html';
+
+/**
+ * Error thrown during rendering
+ */
+export class SpeculatorError extends Error {
+  constructor(
+    message: string,
+    public readonly element?: Element,
+    public readonly path?: string
+  ) {
+    super(message);
+    this.name = 'SpeculatorError';
+  }
+}
+
+// …existing types…
+
+export interface XrefOptions {
+  /** Scope external lookups later; unused for now */
+  specs?: string[];
+}
+
+export interface BiblioEntry {
+  id: string;
+  title?: string;
+  href?: string;
+  publisher?: string;
+  date?: string;
+  status?: string;
+}
+
+export interface BiblioOptions {
+  /** Optional local entries (used in later steps). */
+  entries?: Record<string, BiblioEntry>;
+}
+
+export interface IdlOptions {
+  enable?: boolean; // reserved for Step 5
+}
+
+export interface TocOptions {
+  /** CSS selector for the ToC mount point (default: '#toc'). */
+  selector?: string;
+  enabled?: boolean;
+}
+
+export interface DiagnosticsOptions {
+  /** Suppress link warnings within elements having this class. */
+  suppressClass?: string; // default: 'no-link-warnings'
+}
+
+export interface PostprocessOptions {
+  xref?: XrefOptions;
+  biblio?: BiblioOptions;
+  idl?: IdlOptions;
+  toc?: TocOptions;
+  diagnostics?: DiagnosticsOptions;
+}
+
