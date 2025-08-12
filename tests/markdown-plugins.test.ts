@@ -1,4 +1,4 @@
-import { parseMarkdown } from '../src/index.js';
+import { parseMarkdown } from '../src/index';
 import { describe, it, expect } from '@jest/globals';
 
 describe('ReSpec shorthand plugins', () => {

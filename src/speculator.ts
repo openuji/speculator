@@ -10,7 +10,7 @@ import type {
 } from './types';
 import { SpeculatorError } from './types';
 import { postprocess } from './pipeline/postprocess';
-
+import  {stripIndent}  from './utils/strip-ident';
 
 /**
  * Main Speculator renderer class
@@ -121,7 +121,7 @@ export class Speculator {
 
     if (format === 'markdown' && element.innerHTML.trim()) {
       try {
-        const markdownContent = element.innerHTML.trim();
+        const markdownContent = stripIndent(element.innerHTML).trim();
         element.innerHTML = this.processContent(markdownContent, format);
         stats.markdownBlocks++;
       } catch (error) {

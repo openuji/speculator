@@ -22,11 +22,27 @@ function ensureSubsection(parent: HTMLElement, id: string, title: string): HTMLE
   return sec;
 }
 
-/**
- * Build a basic References skeleton from in-text citation anchors.
- * For now, renders placeholders and emits warnings when unknown.
- * Later we’ll hydrate from a biblio provider.
- */
+function formatEntry(id: string, e: BiblioEntry): string {
+  const parts: string[] = [];
+  // Label
+  parts.push(`<span class="ref-id">[${id}]</span>`);
+  // Title
+  if (e.href) parts.push(`<a href="${e.href}">${e.title || id}</a>`);
+  else parts.push(`<span class="ref-title">${e.title || id}</span>`);
+  // Metadata
+  const meta: string[] = [];
+  if (e.publisher) meta.push(e.publisher);
+  if (e.status) meta.push(e.status);
+  if (e.date) meta.push(e.date);
+  if (meta.length) parts.push(`<span class="ref-meta"> — ${meta.join(', ')}</span>`);
+  return parts.join(' ');
+}
+
+function idForRef(id: string): string {
+  // stable, predictable
+  return `bib-${id.toLowerCase()}`;
+}
+
 export function runReferencesPass(root: Element, options: PostprocessOptions): string[] {
   const warnings: string[] = [];
   const biblio = options.biblio?.entries ?? {};
@@ -34,43 +50,52 @@ export function runReferencesPass(root: Element, options: PostprocessOptions): s
   const cites = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[data-spec]'));
   if (!cites.length) return warnings;
 
-  // Dedup by id + normative flag
+  // Classify cites
   const normative = new Set<string>();
   const informative = new Set<string>();
-
   for (const a of cites) {
-    const id = a.getAttribute('data-spec') || '';
+    const id = (a.getAttribute('data-spec') || '').trim();
     const norm = (a.getAttribute('data-normative') || 'false') === 'true';
     (norm ? normative : informative).add(id);
   }
 
+  // Prefer Normative: if an id is normative, drop it from informative
+  for (const id of normative) informative.delete(id);
+
+  // Build/refresh section skeleton
   const refs = ensureSection(root, 'references', 'References');
   const normSec = ensureSubsection(refs, 'normative-references', 'Normative references');
   const infoSec = ensureSubsection(refs, 'informative-references', 'Informative references');
 
-  const render = (sec: HTMLElement, ids: Set<string>) => {
+  const renderList = (sec: HTMLElement, ids: Set<string>) => {
     const ul = sec.querySelector('ul')!;
-    ul.innerHTML = ''; // rebuild
-    ids.forEach(id => {
+    ul.innerHTML = '';
+    Array.from(ids).sort((a, b) => a.localeCompare(b)).forEach(id => {
       const li = root.ownerDocument!.createElement('li');
-      const entry: BiblioEntry | undefined = biblio[id];
+      li.id = idForRef(id);
 
-      if (entry?.href || entry?.title) {
-        // Basic rendering w/o full formatting (will improve later)
-        const title = entry.title || id;
-        const href = entry.href || '#';
-        li.innerHTML = `<span>[${id}]</span> <a href="${href}">${title}</a>`;
+      const entry = biblio[id];
+      if (entry) {
+        li.innerHTML = formatEntry(id, entry);
       } else {
         li.setAttribute('data-spec', id);
-        li.textContent = `[${id}] — unresolved reference`;
+        li.innerHTML = `<span class="ref-id">[${id}]</span> <span class="ref-missing">— unresolved reference</span>`;
         warnings.push(`Unresolved reference: "${id}"`);
       }
       ul.appendChild(li);
     });
   };
 
-  render(normSec, normative);
-  render(infoSec, informative);
+  renderList(normSec, normative);
+  renderList(infoSec, informative);
+
+  // Link in-text cites to their reference list item
+  for (const a of cites) {
+    const id = (a.getAttribute('data-spec') || '').trim();
+    const targetId = idForRef(id);
+    a.setAttribute('href', `#${targetId}`);
+    a.setAttribute('data-cite-ref', targetId); // useful for debugging
+  }
 
   return warnings;
 }

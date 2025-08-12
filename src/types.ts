@@ -80,10 +80,21 @@ export class SpeculatorError extends Error {
 
 // …existing types…
 
-export interface XrefOptions {
-  /** Scope external lookups later; unused for now */
-  specs?: string[];
+export type XrefQuery = { term: string; context?: string };
+export type XrefResult = { href: string; text?: string; cite?: string };
+
+export interface XrefResolver {
+  resolveBatch(
+    queries: XrefQuery[],
+    specs?: string[]
+  ): Promise<Map<string, XrefResult>>;
 }
+
+export interface XrefOptions {
+  specs?: string[];
+  resolver?: XrefResolver; // <— plug external resolver here
+}
+
 
 export interface BiblioEntry {
   id: string;

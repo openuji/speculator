@@ -46,6 +46,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/marked": "^6.0.0",
     "@types/node": "^20.9.0",
+    "@types/webidl2": "^24.4.3",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "concurrently": "^8.2.2",
@@ -63,6 +64,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "markdown-it": "^14.1.0"
+    "markdown-it": "^14.1.0",
+    "webidl2": "^24.5.0"
   }
 }
