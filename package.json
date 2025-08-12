@@ -1,5 +1,5 @@
 {
-  "name": "@openuij/speculator",
+  "name": "@openuji/speculator",
   "version": "0.1.0",
   "description": "A TypeScript library for processing ReSpec-like markup with markdown support",
   "main": "dist/index.js",
