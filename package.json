@@ -1,6 +1,6 @@
 {
   "name": "@openuij/speculator",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A TypeScript library for processing ReSpec-like markup with markdown support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -44,7 +44,6 @@
     "@jest/globals": "^30.0.5",
     "@types/jest": "^29.5.14",
     "@types/markdown-it": "^14.1.2",
-    "@types/marked": "^6.0.0",
     "@types/node": "^20.9.0",
     "@types/webidl2": "^24.4.3",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
