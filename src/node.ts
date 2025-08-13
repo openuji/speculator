@@ -1,4 +1,13 @@
-// Main exports
-export * from "./index"; 
+import { Speculator as BaseSpeculator } from './speculator';
+import type { SpeculatorOptions } from './types';
+import { LinkedomHtmlRenderer } from './linkedom-html-renderer';
 
-console.log("Speculator node module loaded");
+export * from './index';
+
+export class Speculator extends BaseSpeculator {
+  constructor(options: SpeculatorOptions = {}) {
+    super({ ...options, htmlRenderer: options.htmlRenderer || new LinkedomHtmlRenderer() });
+  }
+}
+
+export { LinkedomHtmlRenderer } from './linkedom-html-renderer';
