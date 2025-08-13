@@ -10,7 +10,14 @@ import type {
 } from './types';
 import { SpeculatorError } from './types';
 import { postprocess } from './pipeline/postprocess';
-import  {stripIndent}  from './utils/strip-ident';
+import { idlPass } from './pipeline/passes/idl';
+import { xrefPass } from './pipeline/passes/xref';
+import { referencesPass } from './pipeline/passes/references';
+import { boilerplatePass } from './pipeline/passes/boilerplate';
+import { tocPass } from './pipeline/passes/toc';
+import { diagnosticsPass } from './pipeline/passes/diagnostics';
+import { stripIndent } from './utils/strip-ident';
+import type { PipelinePass } from './pipeline/types';
 
 /**
  * Main Speculator renderer class
@@ -198,12 +205,21 @@ export class Speculator {
       }
     });
 
-      try {
-        const { warnings } = await postprocess(container, this.postprocessOptions || {});
-        allWarnings.push(...warnings);
-      } catch (e) {
-        allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
-      }
+    const passes: PipelinePass[] = [
+      idlPass,
+      xrefPass,
+      referencesPass,
+      boilerplatePass,
+      tocPass,
+      diagnosticsPass,
+    ];
+
+    try {
+      const { warnings } = await postprocess(container, passes, this.postprocessOptions || {});
+      allWarnings.push(...warnings);
+    } catch (e) {
+      allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    }
 
     allStats.processingTime = performance.now() - startTime;
 
