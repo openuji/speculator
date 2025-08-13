@@ -1,3 +1,5 @@
+import type MarkdownIt from 'markdown-it';
+
 /**
  * Configuration options for Speculator
  */
@@ -30,7 +32,9 @@ export interface MarkdownOptions {
   /** Generate header IDs */
   headerIds?: boolean;
   /** Custom renderer extensions */
-  extensions?: unknown[];
+  extensions?: Array<
+    MarkdownIt.PluginSimple | [MarkdownIt.PluginWithOptions<any>, any]
+  >;
 }
 
 /**
