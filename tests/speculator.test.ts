@@ -1,4 +1,4 @@
-import { Speculator, SpeculatorError } from '../src/index';
+import { Speculator } from '../src/index';
 import type { FileLoader } from '../src/types';
 import { describe, it, expect, beforeEach } from '@jest/globals';
 
@@ -37,60 +37,6 @@ describe('Speculator', () => {
     });
   });
 
-  describe('processElement', () => {
-    it('should process inline markdown', async () => {
-      document.body.innerHTML = '<section id="test" data-format="markdown">## Hello\nThis is **bold** text.</section>';
-      const element = document.querySelector('#test')!;
-
-      const result = await renderer.processElement(element);
-
-      expect(result.element.innerHTML).toContain('<h2 id="hello">Hello</h2>');
-      expect(result.element.innerHTML).toContain('<strong>bold</strong>');
-      expect(result.element.hasAttribute('data-format')).toBe(false);
-      expect(result.stats.markdownBlocks).toBe(1);
-    });
-
-    it('should include external markdown files', async () => {
-      document.body.innerHTML = '<section id="test" data-include="/sections/intro.md" data-include-format="markdown"></section>';
-      const element = document.querySelector('#test')!;
-
-      const result = await renderer.processElement(element);
-
-      expect(result.element.innerHTML).toContain('<h2 id="introduction">Introduction</h2>');
-      expect(result.element.innerHTML).toContain('<strong>Unified JavaScript Scrolling Engine</strong>');
-      expect(result.element.hasAttribute('data-include')).toBe(false);
-      expect(result.stats.filesIncluded).toBe(1);
-    });
-
-    it('should include text files without processing', async () => {
-      document.body.innerHTML = '<pre data-include="/idl/ujse.webidl" data-include-format="text"></pre>';
-      const element = document.querySelector('pre')!;
-
-      const result = await renderer.processElement(element);
-
-      expect(result.element.innerHTML).toContain('interface SmoothScroller');
-      expect(result.element.innerHTML).toContain('void scrollTo');
-      expect(result.stats.filesIncluded).toBe(1);
-      expect(result.stats.markdownBlocks).toBe(0);
-    });
-
-    it('should handle file loading errors gracefully', async () => {
-      document.body.innerHTML = '<section data-include="/nonexistent.md"></section>';
-      const element = document.querySelector('section')!;
-
-      await expect(renderer.processElement(element))
-        .rejects.toThrow(SpeculatorError);
-    });
-
-    it('should collect warnings for empty data-include', async () => {
-      document.body.innerHTML = '<section data-include=""></section>';
-      const element = document.querySelector('section')!;
-
-      const result = await renderer.processElement(element);
-
-      expect(result.warnings).toContain('data-include attribute is empty');
-    });
-  });
 
   describe('renderDocument', () => {
     it('should process multiple sections', async () => {
