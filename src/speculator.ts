@@ -23,7 +23,7 @@ export class Speculator {
   private readonly postprocessOptions: SpeculatorOptions['postprocess'];
 
   constructor(options: SpeculatorOptions = {}) {
-    const baseUrl = options.baseUrl || '';
+    const baseUrl = options.baseUrl;
     const fileLoader = options.fileLoader || getDefaultFileLoader();
     const markdownOptions = options.markdownOptions || {};
 

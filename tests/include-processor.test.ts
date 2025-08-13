@@ -5,8 +5,8 @@ import { describe, it, expect } from '@jest/globals';
 
 // Mock file system
 const mockFiles = {
-  '/sections/intro.md': '# Intro',
-  '/idl/sample.idl': 'interface Test {};',
+  'file:///sections/intro.md': '# Intro',
+  'file:///idl/sample.idl': 'interface Test {};',
 };
 
 const mockFileLoader: FileLoader = async (path: string) => {
@@ -26,7 +26,7 @@ describe('IncludeProcessor', () => {
 
   it('includes external markdown', async () => {
     const format = new FormatProcessor();
-    const processor = new IncludeProcessor('/', mockFileLoader, format);
+    const processor = new IncludeProcessor(undefined, mockFileLoader, format);
     const element = document.createElement('section');
     element.setAttribute('data-include', '/sections/intro.md');
     element.setAttribute('data-include-format', 'markdown');
@@ -44,7 +44,7 @@ describe('IncludeProcessor', () => {
 
   it('includes text without processing', async () => {
     const format = new FormatProcessor();
-    const processor = new IncludeProcessor('/', mockFileLoader, format);
+    const processor = new IncludeProcessor(undefined, mockFileLoader, format);
     const element = document.createElement('pre');
     element.setAttribute('data-include', '/idl/sample.idl');
     element.setAttribute('data-include-format', 'text');
@@ -73,7 +73,7 @@ describe('IncludeProcessor', () => {
 
   it('warns on empty include attribute', async () => {
     const format = new FormatProcessor();
-    const processor = new IncludeProcessor('/', mockFileLoader, format);
+    const processor = new IncludeProcessor(undefined, mockFileLoader, format);
     const element = document.createElement('section');
     element.setAttribute('data-include', '');
 

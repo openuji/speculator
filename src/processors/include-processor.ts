@@ -7,7 +7,7 @@ import { FormatProcessor } from './format-processor';
  */
 export class IncludeProcessor {
   constructor(
-    private readonly baseUrl: string,
+    private readonly baseUrl: string | undefined,
     private readonly fileLoader: FileLoader,
     private readonly formatProcessor: FormatProcessor
   ) {}
@@ -23,12 +23,8 @@ export class IncludeProcessor {
 
     try {
       const fullPath = this.resolveFilePath(includePath);
-      const content = await this.fileLoader(fullPath)
-      // .catch((error) => {
-      // //   const errorMsg = `Failed to load: ${includePath}`;
-      //   console.error(errorMsg, error);
-      //   return '';
-      // });
+      const content = await this.fileLoader(fullPath);
+        
       
       const processedContent = this.formatProcessor.processContent(content, includeFormat);
       element.innerHTML = processedContent;
@@ -49,7 +45,9 @@ export class IncludeProcessor {
 
   private resolveFilePath(path: string): string {
 
-    return new URL(path, this.baseUrl || "file:///").toString();
+    const filePath = new URL(path, this.baseUrl || "file:///").toString();
+    console.log(`Resolved file path: ${filePath}`);
+    return filePath;
 
   }
 }
