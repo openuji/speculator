@@ -1,4 +1,5 @@
-import type { PostprocessOptions} from '../../types.js';
+import type { PostprocessOptions} from '../../types';
+import type { PipelinePass } from '../types';
 
 function uniqueId(doc: Document, base: string): string {
   let id = base;
@@ -87,58 +88,60 @@ function buildLocalMap(root: Element): Map<string, LocalTarget> {
   return map;
 }
 
-export function runXrefPass(root: Element, options: PostprocessOptions): string[] {
-  const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
-  const warnings: string[] = [];
-  const localMap = buildLocalMap(root);
+export const xrefPass: PipelinePass = {
+  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+    const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
+    const warnings: string[] = [];
+    const localMap = buildLocalMap(root);
 
-  // Make this an **array** to avoid TS/iterability issues
-  const xrefAnchors = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[data-xref]'));
+    // Make this an **array** to avoid TS/iterability issues
+    const xrefAnchors = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[data-xref]'));
 
-  // 1) Resolve concept links locally
-  const unresolved = new Map<string, HTMLAnchorElement[]>();
-  for (const a of xrefAnchors) {
-    if (isSuppressed(a, suppressClass)) continue;
-    const term = a.getAttribute('data-xref') || '';
-    const key = norm(term);
-    const hit = localMap.get(key);
-    if (hit) {
-      a.setAttribute('href', hit.href);
-      // (optional) a.textContent = hit.text;
-    } else {
-      const bucket = unresolved.get(key) || [];
-      bucket.push(a);
-      unresolved.set(key, bucket);
+    // 1) Resolve concept links locally
+    const unresolved = new Map<string, HTMLAnchorElement[]>();
+    for (const a of xrefAnchors) {
+      if (isSuppressed(a, suppressClass)) continue;
+      const term = a.getAttribute('data-xref') || '';
+      const key = norm(term);
+      const hit = localMap.get(key);
+      if (hit) {
+        a.setAttribute('href', hit.href);
+        // (optional) a.textContent = hit.text;
+      } else {
+        const bucket = unresolved.get(key) || [];
+        bucket.push(a);
+        unresolved.set(key, bucket);
+      }
     }
-  }
 
-  // 2) Try external resolver if provided (optional; non-blocking)
-  const resolver = options.xref?.resolver;
-  if (resolver && unresolved.size) {
-    const queries = Array.from(unresolved.keys()).map(term => ({ term }));
-    resolver.resolveBatch(queries, options.xref?.specs)
-      .then(results => {
-        for (const [key, anchors] of unresolved.entries()) {
-          const res = results.get(key);
-          if (!res) continue;
-          for (const a of anchors) {
-            a.setAttribute('href', res.href);
-            if (res.cite) a.setAttribute('data-cite', res.cite);
+    // 2) Try external resolver if provided (optional; non-blocking)
+    const resolver = options.xref?.resolver;
+    if (resolver && unresolved.size) {
+      const queries = Array.from(unresolved.keys()).map(term => ({ term }));
+      resolver.resolveBatch(queries, options.xref?.specs)
+        .then(results => {
+          for (const [key, anchors] of unresolved.entries()) {
+            const res = results.get(key);
+            if (!res) continue;
+            for (const a of anchors) {
+              a.setAttribute('href', res.href);
+              if (res.cite) a.setAttribute('data-cite', res.cite);
+            }
+            unresolved.delete(key);
           }
-          unresolved.delete(key);
-        }
-      })
-      .catch(err => {
-        warnings.push(`Xref resolver failed: ${err instanceof Error ? err.message : String(err)}`);
-      });
-  }
+        })
+        .catch(err => {
+          warnings.push(`Xref resolver failed: ${err instanceof Error ? err.message : String(err)}`);
+        });
+    }
 
-  // 3) Anything still unresolved at this point: warn
-  for (const [key, anchors] of unresolved.entries()) {
-    const original = anchors[0].getAttribute('data-xref') || key;
-    warnings.push(`Unresolved xref: "${original}"`);
-  }
+    // 3) Anything still unresolved at this point: warn
+    for (const [key, anchors] of unresolved.entries()) {
+      const original = anchors[0].getAttribute('data-xref') || key;
+      warnings.push(`Unresolved xref: "${original}"`);
+    }
 
-  return warnings;
-}
+    return warnings;
+  },
+};
 
