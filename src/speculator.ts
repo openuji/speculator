@@ -128,21 +128,6 @@ export class Speculator {
     } catch (e) {
       allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
-    const passes: PipelinePass[] = [
-      idlPass,
-      xrefPass,
-      referencesPass,
-      boilerplatePass,
-      tocPass,
-      diagnosticsPass,
-    ];
-
-    try {
-      const { warnings } = await postprocess(container, passes, this.postprocessOptions || {});
-      allWarnings.push(...warnings);
-    } catch (e) {
-      allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
-    }
 
     allStats.processingTime = performance.now() - startTime;
 
