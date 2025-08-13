@@ -45,6 +45,15 @@
     md.use(respecIdlPlugin);
     md.use(respecCitePlugin);
 
+    for (const extension of options.extensions ?? []) {
+      if (Array.isArray(extension)) {
+        const [plugin, pluginOptions] = extension;
+        md.use(plugin as any, pluginOptions);
+      } else {
+        md.use(extension as any);
+      }
+    }
+
     return md;
  }
 

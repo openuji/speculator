@@ -1,3 +1,4 @@
+import type MarkdownIt from 'markdown-it';
 import type { IncludeProcessor } from "./processors/include-processor";
 import type { FormatProcessor } from "./processors/format-processor";
 import type { HtmlRenderer } from "./html-renderer";
@@ -37,7 +38,9 @@ export interface MarkdownOptions {
   /** Generate header IDs */
   headerIds?: boolean;
   /** Custom renderer extensions */
-  extensions?: unknown[];
+  extensions?: Array<
+    MarkdownIt.PluginSimple | [MarkdownIt.PluginWithOptions<any>, any]
+  >;
 }
 
 /**
@@ -160,5 +163,5 @@ export interface PostprocessOptions {
   idl?: IdlOptions;
   toc?: TocOptions;
   diagnostics?: DiagnosticsOptions;
-  boilerplate?: BoilerplateOptions;          // <— NEW
+  boilerplate?: BoilerplateOptions;          
 }

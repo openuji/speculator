@@ -35,4 +35,19 @@ speculator/
 └── README.md
 ```
 
+## Markdown extensions
+
+Additional [MarkdownIt](https://github.com/markdown-it/markdown-it) plugins can be
+applied by passing them in `markdownOptions.extensions`:
+
+```ts
+import { parseMarkdown } from '@openui/speculator';
+import anchor from 'markdown-it-anchor';
+
+parseMarkdown('# Title', { markdownOptions: { extensions: [anchor] } });
+```
+
+Each entry can be a plugin function or a `[plugin, options]` tuple and will be
+installed after the built-in ReSpec shorthand plugins.
+
 
