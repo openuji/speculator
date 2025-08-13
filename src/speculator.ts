@@ -1,5 +1,5 @@
 import { getDefaultFileLoader } from './utils/file-loader';
-import type { SpeculatorOptions, ProcessingResult, ProcessingStats } from './types';
+import type { SpeculatorOptions, ProcessingResult, ProcessingStats, PipelinePass } from './types';
 import { SpeculatorError } from './types';
 import { postprocess } from './pipeline/postprocess';
 import { IncludeProcessor } from './processors/include-processor';
@@ -12,7 +12,6 @@ import { referencesPass } from './pipeline/passes/references';
 import { boilerplatePass } from './pipeline/passes/boilerplate';
 import { tocPass } from './pipeline/passes/toc';
 import { diagnosticsPass } from './pipeline/passes/diagnostics';
-import type { PipelinePass } from './pipeline/types';
 
 /**
  * Main Speculator renderer class

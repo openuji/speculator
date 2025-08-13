@@ -1,5 +1,4 @@
-import type { PostprocessOptions, BiblioEntry } from '@/types';
-import type { PipelinePass } from '../types';
+import type { PostprocessOptions,PipelinePass, BiblioEntry } from '@/types';
 
 function ensureSection(root: Element, id: string, title: string): HTMLElement {
   let section = root.querySelector<HTMLElement>(`#${id}`);

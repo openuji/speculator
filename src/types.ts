@@ -165,3 +165,8 @@ export interface PostprocessOptions {
   diagnostics?: DiagnosticsOptions;
   boilerplate?: BoilerplateOptions;          
 }
+
+
+export interface PipelinePass {
+  run(root: Element, options: PostprocessOptions): Promise<string[]>;
+}

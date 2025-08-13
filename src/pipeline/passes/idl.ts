@@ -1,6 +1,5 @@
 import * as WebIDL2 from 'webidl2';
-import type { PostprocessOptions } from '@/types';
-import type { PipelinePass } from '../types';
+import type { PostprocessOptions,PipelinePass } from '@/types';
 
 type IdlTarget = { id: string; key: string; text: string };
 

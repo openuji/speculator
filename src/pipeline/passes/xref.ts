@@ -1,5 +1,4 @@
-import type { PostprocessOptions} from '../../types';
-import type { PipelinePass } from '../types';
+import type { PostprocessOptions, PipelinePass} from '../../types';
 
 function uniqueId(doc: Document, base: string): string {
   let id = base;
