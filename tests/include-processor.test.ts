@@ -1,4 +1,4 @@
-import { IncludeProcessor, FormatProcessor } from '../src/index';
+import { IncludeProcessor, FormatProcessor } from '../src/browser';
 import type { FileLoader, ProcessingStats } from '../src/types';
 import { SpeculatorError } from '../src/types';
 import { describe, it, expect } from '@jest/globals';

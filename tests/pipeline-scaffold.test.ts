@@ -1,4 +1,4 @@
-import { Speculator } from '../src/index';
+import { Speculator } from '../src/browser';
 import { describe, it, expect,beforeEach } from '@jest/globals';
 
 describe('Postprocess pipeline (scaffold)', () => {

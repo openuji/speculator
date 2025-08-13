@@ -1,4 +1,4 @@
-import { Speculator } from '../src/index';
+import { Speculator } from '../src/browser';
 import type { FileLoader } from '../src/types';
 import { describe, it, expect, beforeEach } from '@jest/globals';
 
