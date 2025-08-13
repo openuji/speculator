@@ -1,4 +1,4 @@
-import { Speculator } from '../src';
+import { Speculator } from '../src/browser';
 import { describe, it, expect } from '@jest/globals';
 
 describe('Xref local resolution', () => {

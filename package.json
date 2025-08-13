@@ -1,17 +1,38 @@
 {
   "name": "@openuji/speculator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A TypeScript library for processing ReSpec-like markup with markdown support",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/browser.d.ts",
+      "browser": "./dist/browser.js",
+      "node": "./dist/node.js",
+      "import": "./dist/browser.js",
+      "require": "./dist/browser.cjs",
+      "default": "./dist/browser.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/browser.d.ts",
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "peerDependencies": {
+    "linkedom": ">=0.18.0",
+    "typescript": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "linkedom": {
+      "optional": true
+    }
+  },
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsup src/browser.ts src/node.ts --format cjs,esm --dts --external linkedom --clean --out-dir dist",
+    "build:watch": "tsup src/browser.ts src/node.ts --format cjs,esm --dts --external linkedom --watch --out-dir dist",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -53,11 +74,10 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^22.1.0",
+    "linkedom": "^0.18.11",
     "ts-jest": "^29.1.1",
+    "tsup": "^8.5.0",
     "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "typescript": ">=5.0.0"
   },
   "engines": {
     "node": ">=20.0.0"

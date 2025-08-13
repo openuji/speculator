@@ -1,4 +1,4 @@
-import { FormatProcessor } from '../src/index';
+import { FormatProcessor } from '../src/browser';
 import type { ProcessingStats } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
