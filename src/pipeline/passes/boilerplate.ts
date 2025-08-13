@@ -1,4 +1,5 @@
 import type { PostprocessOptions } from '@/types';
+import type { PipelinePass } from '../types';
 
 interface BPConfig {
   title?: string;
@@ -20,47 +21,51 @@ function createSection(doc: Document, id: string, title: string, content?: strin
   return sec;
 }
 
-export function runBoilerplatePass(root: Element, options: PostprocessOptions): void {
-  const bp = options.boilerplate;
-  if (!bp) return;
+export const boilerplatePass: PipelinePass = {
+  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+    const bp = options.boilerplate;
+    if (!bp) return [];
 
-  const doc = root.ownerDocument!;
-  const mountMode = bp.mount || 'end';
+    const doc = root.ownerDocument!;
+    const mountMode = bp.mount || 'end';
 
-  // Determine insertion reference node based on mount option
-  let ref: Node | null = null;
-  if (mountMode === 'before-references') {
-    ref = root.querySelector('#references');
-  } else if (mountMode === 'after-toc') {
-    const toc = root.querySelector('#toc');
-    ref = toc ? toc.nextSibling : null;
-  }
-
-  const insert = (section: HTMLElement) => {
-    if (ref) {
-      root.insertBefore(section, ref);
-    } else {
-      root.appendChild(section);
+    // Determine insertion reference node based on mount option
+    let ref: Node | null = null;
+    if (mountMode === 'before-references') {
+      ref = root.querySelector('#references');
+    } else if (mountMode === 'after-toc') {
+      const toc = root.querySelector('#toc');
+      ref = toc ? toc.nextSibling : null;
     }
-  };
 
-  const defs: Array<{ key: 'conformance' | 'security' | 'privacy'; title: string }> = [
-    { key: 'conformance', title: 'Conformance' },
-    { key: 'security', title: 'Security' },
-    { key: 'privacy', title: 'Privacy' },
-  ];
+    const insert = (section: HTMLElement) => {
+      if (ref) {
+        root.insertBefore(section, ref);
+      } else {
+        root.appendChild(section);
+      }
+    };
 
-  for (const { key, title: defaultTitle } of defs) {
-    const opt = (bp as any)[key];
-    if (!opt) continue; // not enabled
+    const defs: Array<{ key: 'conformance' | 'security' | 'privacy'; title: string }> = [
+      { key: 'conformance', title: 'Conformance' },
+      { key: 'security', title: 'Security' },
+      { key: 'privacy', title: 'Privacy' },
+    ];
 
-    const cfg: BPConfig = typeof opt === 'object' ? opt : {};
-    const id = cfg.id || key;
-    if (root.querySelector(`#${id}`)) continue; // avoid overwriting existing sections
+    for (const { key, title: defaultTitle } of defs) {
+      const opt = (bp as any)[key];
+      if (!opt) continue; // not enabled
 
-    const title = cfg.title || defaultTitle;
-    const content = cfg.content;
-    const sec = createSection(doc, id, title, content);
-    insert(sec);
-  }
-}
+      const cfg: BPConfig = typeof opt === 'object' ? opt : {};
+      const id = cfg.id || key;
+      if (root.querySelector(`#${id}`)) continue; // avoid overwriting existing sections
+
+      const title = cfg.title || defaultTitle;
+      const content = cfg.content;
+      const sec = createSection(doc, id, title, content);
+      insert(sec);
+    }
+
+    return [];
+  },
+};

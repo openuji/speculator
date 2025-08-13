@@ -1,4 +1,7 @@
 import type MarkdownIt from 'markdown-it';
+import type { IncludeProcessor } from "./processors/include-processor";
+import type { FormatProcessor } from "./processors/format-processor";
+import type { HtmlRenderer } from "./html-renderer";
 
 /**
  * Configuration options for Speculator
@@ -11,6 +14,9 @@ export interface SpeculatorOptions {
   /** Markdown parsing options */
   markdownOptions?: MarkdownOptions;
   postprocess?: PostprocessOptions;
+  includeProcessor?: IncludeProcessor;
+  formatProcessor?: FormatProcessor;
+  htmlRenderer?: HtmlRenderer;
 
 }
 
@@ -157,5 +163,5 @@ export interface PostprocessOptions {
   idl?: IdlOptions;
   toc?: TocOptions;
   diagnostics?: DiagnosticsOptions;
-  boilerplate?: BoilerplateOptions;          // <— NEW
+  boilerplate?: BoilerplateOptions;          
 }
