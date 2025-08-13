@@ -45,7 +45,6 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     });
 
     await renderer.renderDocument(container);
-    console.log('container.innerHTML', container.innerHTML);
     expect(container.querySelectorAll('#conformance').length).toBe(1);
     expect(container.querySelector('#conformance')!.textContent).toContain('Custom.');
   });
