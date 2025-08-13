@@ -6,6 +6,14 @@ import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
 import type { HtmlRenderer } from './html-renderer';
 import { DOMHtmlRenderer } from './html-renderer';
+import { idlPass } from './pipeline/passes/idl';
+import { xrefPass } from './pipeline/passes/xref';
+import { referencesPass } from './pipeline/passes/references';
+import { boilerplatePass } from './pipeline/passes/boilerplate';
+import { tocPass } from './pipeline/passes/toc';
+import { diagnosticsPass } from './pipeline/passes/diagnostics';
+import { stripIndent } from './utils/strip-ident';
+import type { PipelinePass } from './pipeline/types';
 
 /**
  * Main Speculator renderer class
@@ -106,8 +114,17 @@ export class Speculator {
       }
     });
 
+    const passes: PipelinePass[] = [
+      idlPass,
+      xrefPass,
+      referencesPass,
+      boilerplatePass,
+      tocPass,
+      diagnosticsPass,
+    ];
+
     try {
-      const { warnings } = await postprocess(container, this.postprocessOptions || {});
+      const { warnings } = await postprocess(container, passes, this.postprocessOptions || {});
       allWarnings.push(...warnings);
     } catch (e) {
       allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
