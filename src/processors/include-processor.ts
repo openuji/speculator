@@ -23,7 +23,13 @@ export class IncludeProcessor {
 
     try {
       const fullPath = this.resolveFilePath(includePath);
-      const content = await this.fileLoader(fullPath);
+      const content = await this.fileLoader(fullPath)
+      // .catch((error) => {
+      // //   const errorMsg = `Failed to load: ${includePath}`;
+      //   console.error(errorMsg, error);
+      //   return '';
+      // });
+      
       const processedContent = this.formatProcessor.processContent(content, includeFormat);
       element.innerHTML = processedContent;
       stats.filesIncluded++;
@@ -42,9 +48,8 @@ export class IncludeProcessor {
   }
 
   private resolveFilePath(path: string): string {
-    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
-      return path;
-    }
-    return this.baseUrl ? `${this.baseUrl.replace(/\/$/, '')}/${path}` : path;
+
+    return new URL(path, this.baseUrl || "file:///").toString();
+
   }
 }
