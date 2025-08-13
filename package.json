@@ -1,6 +1,6 @@
 {
   "name": "@openuji/speculator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A TypeScript library for processing ReSpec-like markup with markdown support",
   "type": "module",
   "sideEffects": false,
@@ -12,7 +12,6 @@
       "import": "./dist/browser.js",
       "require": "./dist/browser.cjs",
       "default": "./dist/browser.js"
-
     },
     "./package.json": "./package.json"
   },
@@ -23,12 +22,13 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "linkedom": "0.1.34",
+    "linkedom": ">=0.18.0",
     "typescript": ">=5.0.0"
-
   },
   "peerDependenciesMeta": {
-    "linkedom": { "optional": true }
+    "linkedom": {
+      "optional": true
+    }
   },
   "scripts": {
     "build": "tsup src/browser.ts src/node.ts --format cjs,esm --dts --external linkedom --clean --out-dir dist",
@@ -74,11 +74,11 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^22.1.0",
+    "linkedom": "^0.18.11",
     "ts-jest": "^29.1.1",
     "tsup": "^8.5.0",
     "typescript": "^5.2.2"
   },
-
   "engines": {
     "node": ">=20.0.0"
   },

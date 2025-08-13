@@ -3,7 +3,7 @@ import type { FileLoader } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
 const mockFiles = {
-  '/idl/ujse.webidl': `interface SmoothScroller {
+  'file:///idl/ujse.webidl': `interface SmoothScroller {
   void scrollTo(double x, double y);
   readonly attribute boolean isScrolling;
 };`

@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach } from '@jest/globals';
 
 // Mock file system for testing
 const mockFiles = {
-  '/sections/intro.md': `# Introduction
+  'file:///sections/intro.md': `# Introduction
 
 This specification defines the **Unified JavaScript Scrolling Engine** (UJSE).
 
@@ -14,7 +14,7 @@ This specification defines the **Unified JavaScript Scrolling Engine** (UJSE).
 - Custom easing  
 - Cross-browser support`,
 
-  '/idl/ujse.webidl': `interface SmoothScroller {
+  'file:///idl/ujse.webidl': `interface SmoothScroller {
   void scrollTo(double x, double y);
   readonly attribute boolean isScrolling;
 };`
@@ -29,10 +29,10 @@ const mockFileLoader: FileLoader = async (path: string) => {
 
 describe('Speculator', () => {
   let renderer: Speculator;
+  
 
   beforeEach(() => {
     renderer = new Speculator({
-      baseUrl: '/',
       fileLoader: mockFileLoader
     });
   });
@@ -86,12 +86,14 @@ describe('Speculator', () => {
   describe('configuration options', () => {
     it('should use custom baseUrl', async () => {
       const customRenderer = new Speculator({
-        baseUrl: '/custom',
+        baseUrl: 'https://custom.com',
         fileLoader: async (path: string) => {
-          expect(path).toBe('/custom/test.md');
+          expect(path).toBe('https://custom.com/test.md');
           return '# Custom Test';
         }
       });
+
+      console.log('renderer', renderer);
 
       document.body.innerHTML = '<section data-include="test.md" data-include-format="markdown"></section>';
       const element = document.querySelector('section')!;

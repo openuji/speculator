@@ -7,7 +7,7 @@ import { FormatProcessor } from './format-processor';
  */
 export class IncludeProcessor {
   constructor(
-    private readonly baseUrl: string,
+    private readonly baseUrl: string | undefined,
     private readonly fileLoader: FileLoader,
     private readonly formatProcessor: FormatProcessor
   ) {}
@@ -24,6 +24,8 @@ export class IncludeProcessor {
     try {
       const fullPath = this.resolveFilePath(includePath);
       const content = await this.fileLoader(fullPath);
+        
+      
       const processedContent = this.formatProcessor.processContent(content, includeFormat);
       element.innerHTML = processedContent;
       stats.filesIncluded++;
@@ -42,9 +44,10 @@ export class IncludeProcessor {
   }
 
   private resolveFilePath(path: string): string {
-    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
-      return path;
-    }
-    return this.baseUrl ? `${this.baseUrl.replace(/\/$/, '')}/${path}` : path;
+
+    const filePath = new URL(path, this.baseUrl || "file:///").toString();
+    console.log(`Resolved file path: ${filePath}`);
+    return filePath;
+
   }
 }
