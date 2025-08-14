@@ -1,7 +1,19 @@
 import { Speculator } from '../src/browser';
 import { describe, it, expect } from '@jest/globals';
+import type { OutputArea } from '../src/types';
 
 describe('Boilerplate, ToC polish, Diagnostics', () => {
+  const outputs: OutputArea[] = [
+    'idl',
+    'xref',
+    'references',
+    'boilerplate',
+    'toc',
+    'diagnostics',
+    'metadata',
+    'pubrules',
+    'legal',
+  ];
   it('inserts Conformance/Security/Privacy when enabled and missing', async () => {
     document.body.innerHTML = `
       <div id="c">
@@ -20,7 +32,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
       }
     });
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
 
@@ -46,7 +58,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
       postprocess: { boilerplate: { conformance: true } }
     });
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
     expect(wrapper.querySelectorAll('#conformance').length).toBe(1);
@@ -68,7 +80,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     const renderer = new Speculator();
 
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     expect(res.warnings.some(w => /Duplicate id: "dup"/.test(w))).toBe(true);
     // unresolved placeholders: xref + idl + reference
     expect(res.warnings.some(w => /Unresolved link placeholder: "missing"/.test(w))).toBe(true);
@@ -91,7 +103,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
       postprocess: { diagnostics: { suppressClass: 'no-link-warnings' } }
     });
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     expect(res.warnings.some(w => /Duplicate id/.test(w))).toBe(false);
     expect(res.warnings.some(w => /Unresolved link placeholder/.test(w))).toBe(false);
   });
@@ -109,7 +121,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator({ postprocess: { toc: { enabled: true } } });
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
     const items = wrapper.querySelectorAll('#toc li');

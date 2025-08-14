@@ -1,7 +1,19 @@
 import { Speculator } from '../src/browser';
 import { describe, it, expect } from '@jest/globals';
+import type { OutputArea } from '../src/types';
 
 describe('References rendering', () => {
+  const outputs: OutputArea[] = [
+    'idl',
+    'xref',
+    'references',
+    'boilerplate',
+    'toc',
+    'diagnostics',
+    'metadata',
+    'pubrules',
+    'legal',
+  ];
   it('hydrates cites from provided biblio and links back', async () => {
     const biblio = {
       HTML: {
@@ -32,7 +44,7 @@ describe('References rendering', () => {
       postprocess: { biblio: { entries: biblio } }
     });
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
 
@@ -70,7 +82,7 @@ describe('References rendering', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
     const refs = wrapper.querySelector('#references')!;

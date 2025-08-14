@@ -1,5 +1,5 @@
 import { Speculator } from '../src/browser';
-import type { FileLoader } from '../src/types';
+import type { FileLoader, OutputArea } from '../src/types';
 import { describe, it, expect, beforeEach } from '@jest/globals';
 
 // Mock file system for testing
@@ -26,6 +26,18 @@ const mockFileLoader: FileLoader = async (path: string) => {
   }
   throw new Error(`File not found: ${path}`);
 };
+
+const outputs: OutputArea[] = [
+  'idl',
+  'xref',
+  'references',
+  'boilerplate',
+  'toc',
+  'diagnostics',
+  'metadata',
+  'pubrules',
+  'legal',
+];
 
 describe('Speculator', () => {
   let renderer: Speculator;
@@ -54,7 +66,7 @@ describe('Speculator', () => {
           'section[data-include], section[data-format], *[data-include], *[data-format]'
         )
       ) as Element[];
-      const result = await renderer.renderDocument({ sections });
+      const result = await renderer.renderDocument({ sections }, outputs);
 
       expect(result.stats.elementsProcessed).toBe(3);
       expect(result.stats.filesIncluded).toBe(2);
@@ -76,7 +88,7 @@ describe('Speculator', () => {
           'section[data-include], section[data-format], *[data-include], *[data-format]'
         )
       ) as Element[];
-      const result = await renderer.renderDocument({ sections });
+      const result = await renderer.renderDocument({ sections }, outputs);
 
       expect(result.warnings.length).toBeGreaterThan(0);
     });
@@ -86,7 +98,7 @@ describe('Speculator', () => {
     it('should process HTML string', async () => {
       const html = '<section data-format="markdown">## Test\nHello **world**!</section>';
 
-      const result = await renderer.renderHTML(html);
+      const result = await renderer.renderHTML(html, outputs);
 
       expect(result.html).toContain('<h2 id="test">Test</h2>');
       expect(result.html).toContain('<strong>world</strong>');
@@ -95,7 +107,7 @@ describe('Speculator', () => {
     it('should handle HTML without special attributes', async () => {
       const html = '<section><p>Hello</p></section>';
 
-      const result = await renderer.renderHTML(html);
+      const result = await renderer.renderHTML(html, outputs);
 
       expect(result.html).toContain('<p>Hello</p>');
     });

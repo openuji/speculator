@@ -218,7 +218,10 @@ export type OutputArea =
   | 'references'
   | 'boilerplate'
   | 'toc'
-  | 'diagnostics';
+  | 'diagnostics'
+  | 'metadata'
+  | 'pubrules'
+  | 'legal';
 
 // Result returned by a pipeline pass. The `data` field is specific to the
 // `OutputArea` the pass modifies and is optional as many passes only produce

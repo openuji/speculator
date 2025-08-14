@@ -171,13 +171,19 @@ export class Speculator {
   /**
    * Process an entire document described by a RespecLikeConfig
    */
-  async renderDocument(config: RespecLikeConfig): Promise<RenderResult> {
+  async renderDocument(
+    config: RespecLikeConfig,
+    requestedOutputs?: OutputArea[],
+  ): Promise<RenderResult> {
     const startTime = performance.now();
     const { container, header, sotd, stats, warnings: sectionWarnings } =
       await this.buildContainer(config);
     const allWarnings = [...sectionWarnings];
 
-    const areas = getChangedOutputAreas(this.prevConfig, config);
+    const changed = getChangedOutputAreas(this.prevConfig, config);
+    const areas = requestedOutputs
+      ? changed.filter(a => requestedOutputs.includes(a))
+      : changed;
     try {
       if (areas.length) {
         const { outputs, warnings } = await this.runPasses(container, areas);
@@ -231,20 +237,25 @@ export class Speculator {
     };
     if (header) result.header = header;
     if (sotd) result.sotd = sotd;
-    if (config.metadata) result.metadata = config.metadata;
-    if (config.pubrules) result.pubrules = config.pubrules;
-    if (config.legal) result.legal = config.legal;
+    const isRequested = (area: OutputArea) =>
+      !requestedOutputs || requestedOutputs.includes(area);
+    if (config.metadata && isRequested('metadata')) result.metadata = config.metadata;
+    if (config.pubrules && isRequested('pubrules')) result.pubrules = config.pubrules;
+    if (config.legal && isRequested('legal')) result.legal = config.legal;
     this.prevConfig = config;
     return result;
   }
   /**
    * Process HTML string and return processed HTML
    */
-  async renderHTML(inputHtml: string): Promise<HtmlProcessingResult> {
+  async renderHTML(
+    inputHtml: string,
+    requestedOutputs?: OutputArea[],
+  ): Promise<HtmlProcessingResult> {
     const container = this.htmlRenderer.parse(inputHtml);
-  
-    const sections =  (Array.from(container.children) as Element[]);
-    const result = await this.renderDocument({ sections });
+
+    const sections = (Array.from(container.children) as Element[]);
+    const result = await this.renderDocument({ sections }, requestedOutputs);
     const doc = container.ownerDocument!;
     const root = doc.createElement('div');
     if (result.header) root.appendChild(result.header);
