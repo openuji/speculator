@@ -14,6 +14,7 @@ export {
   getDefaultFileLoader
 } from './utils/file-loader';
 export { RespecXrefResolver } from './utils/respec-xref-resolver';
+export { getChangedOutputAreas } from './utils/output-areas';
 
 // Type exports
 export type {
@@ -26,6 +27,7 @@ export type {
   RespecLikeConfig,
   RenderResult
 } from './types';
+export type { FieldMapping } from './utils/output-areas';
 
 export { SpeculatorError } from './types';
 export type { HtmlRenderer } from './html-renderer';
