@@ -1,4 +1,9 @@
-import type { PostprocessOptions, PipelinePass, XrefQuery, XrefResult } from '../../types';
+import type {
+  PostprocessOptions,
+  PipelinePass,
+  XrefQuery,
+  XrefResult,
+} from '../../types';
 
 function uniqueId(doc: Document, base: string): string {
   let id = base;
@@ -103,7 +108,12 @@ function buildLocalMap(root: Element): Map<string, LocalTarget> {
 }
 
 export const xrefPass: PipelinePass = {
-  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+  area: 'xref',
+  async run(
+    root: Element,
+    _data: unknown,
+    options: PostprocessOptions
+  ) {
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
     const warnings: string[] = [];
     const localMap = buildLocalMap(root);
@@ -238,7 +248,7 @@ export const xrefPass: PipelinePass = {
       }
     }
 
-    return warnings;
+    return { warnings };
   },
 };
 

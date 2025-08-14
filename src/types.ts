@@ -171,7 +171,35 @@ export interface PostprocessOptions {
   boilerplate?: BoilerplateOptions;
 }
 
+// Areas of output that individual pipeline passes may contribute to. Each pass
+// declares the area it operates on so callers can select which passes to run
+// based on their output needs.
+export type OutputArea =
+  | 'idl'
+  | 'xref'
+  | 'references'
+  | 'boilerplate'
+  | 'toc'
+  | 'diagnostics';
 
-export interface PipelinePass {
-  run(root: Element, options: PostprocessOptions): Promise<string[]>;
+// Result returned by a pipeline pass. The `data` field is specific to the
+// `OutputArea` the pass modifies and is optional as many passes only produce
+// side-effects on the DOM. Each pass may also return warnings.
+export interface PipelinePassResult<T = unknown> {
+  data?: T;
+  warnings?: string[];
+}
+
+// A pipeline pass receives the current output for its `OutputArea` (if any) and
+// may return updated data along with warnings. The generic type `T` represents
+// the shape of the data associated with the pass's `OutputArea`.
+export interface PipelinePass<T = unknown> {
+  /** Which output area this pass is responsible for. */
+  area: OutputArea;
+  /** Execute the pass for the provided root element. */
+  run(
+    root: Element,
+    data: T | undefined,
+    options: PostprocessOptions
+  ): Promise<PipelinePassResult<T>>;
 }
