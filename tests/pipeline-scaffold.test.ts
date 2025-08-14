@@ -26,7 +26,7 @@ describe('Postprocess pipeline (scaffold)', () => {
     const container = document.querySelector('#c')!;
 
     const res = await renderer.renderDocument(container);
-    expect(res.warnings.some(w => /Unresolved xref: "task queue"/.test(w))).toBe(true);
+    expect(res.warnings.some(w => /No matching xref: "task queue"/.test(w))).toBe(true);
     expect(res.warnings.some(w => /Unresolved IDL link: "SmoothScroller"/.test(w))).toBe(true);
   });
 

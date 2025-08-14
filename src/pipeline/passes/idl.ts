@@ -1,5 +1,5 @@
 import * as WebIDL2 from 'webidl2';
-import type { PostprocessOptions,PipelinePass } from '@/types';
+import type { PostprocessOptions, PipelinePass } from '@/types';
 
 type IdlTarget = { id: string; key: string; text: string };
 
@@ -151,11 +151,12 @@ function resolveIdlLinks(root: Element, index: Map<string, string>, warnings: st
 
 /** Public pass */
 export const idlPass: PipelinePass = {
-  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+  area: 'idl',
+  async run(root: Element, _data: unknown, options: PostprocessOptions) {
     const warnings: string[] = [];
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
     const index = buildIdlIndex(root, warnings);
     resolveIdlLinks(root, index, warnings, suppressClass);
-    return warnings;
+    return { warnings };
   },
 };

@@ -54,7 +54,14 @@ export interface ProcessingResult {
   /** Processing statistics */
   stats: ProcessingStats;
 }
-
+export interface HtmlProcessingResult {
+  /** The processed HTML element */
+  html: string;
+  /** Any warnings encountered during processing */
+  warnings: string[];
+  /** Processing statistics */
+  stats: ProcessingStats;
+}
 /**
  * Processing statistics
  */
@@ -90,19 +97,30 @@ export class SpeculatorError extends Error {
 
 // …existing types…
 
-export type XrefQuery = { term: string; context?: string };
+export type XrefQuery = {
+  /** Unique identifier returned with results (internal use). */
+  id?: string;
+  /** The term to resolve. */
+  term: string;
+  /** Optional list of spec shortnames to constrain the search. */
+  specs?: string[];
+  /** Additional context for the lookup (unused for now). */
+  context?: string;
+};
+
 export type XrefResult = { href: string; text?: string; cite?: string };
 
 export interface XrefResolver {
-  resolveBatch(
-    queries: XrefQuery[],
-    specs?: string[]
-  ): Promise<Map<string, XrefResult>>;
+  /**
+   * Resolve a batch of xref queries. The returned map is keyed by the query's
+   * `id` if provided, otherwise by the query term.
+   */
+  resolveBatch(queries: XrefQuery[]): Promise<Map<string, XrefResult[]>>;
 }
 
 export interface XrefOptions {
   specs?: string[];
-  resolver?: XrefResolver; // <— plug external resolver here
+  resolver: XrefResolver; // <— plug external resolver here
 }
 
 
@@ -133,16 +151,9 @@ export interface TocOptions {
 export interface DiagnosticsOptions {
   /** Suppress link warnings within elements having this class. */
   suppressClass?: string; // default: 'no-link-warnings'
+  /** Enable duplicate-id and missing-href checks (default true). */
+  idsAndLinks?: boolean;
 }
-
-export interface PostprocessOptions {
-  xref?: XrefOptions;
-  biblio?: BiblioOptions;
-  idl?: IdlOptions;
-  toc?: TocOptions;
-  diagnostics?: DiagnosticsOptions;
-}
-
 
 export interface BoilerplateOptions {
   conformance?: boolean | { title?: string; id?: string; content?: string };
@@ -151,22 +162,44 @@ export interface BoilerplateOptions {
   mount?: 'end' | 'before-references' | 'after-toc';
 }
 
-export interface DiagnosticsOptions {
-  suppressClass?: string; // default: 'no-link-warnings'
-  /** Enable duplicate-id and missing-href checks (default true). */
-  idsAndLinks?: boolean;
-}
-
 export interface PostprocessOptions {
-  xref?: XrefOptions;
+  xref?: XrefOptions | XrefOptions[];
   biblio?: BiblioOptions;
   idl?: IdlOptions;
   toc?: TocOptions;
   diagnostics?: DiagnosticsOptions;
-  boilerplate?: BoilerplateOptions;          
+  boilerplate?: BoilerplateOptions;
 }
 
+// Areas of output that individual pipeline passes may contribute to. Each pass
+// declares the area it operates on so callers can select which passes to run
+// based on their output needs.
+export type OutputArea =
+  | 'idl'
+  | 'xref'
+  | 'references'
+  | 'boilerplate'
+  | 'toc'
+  | 'diagnostics';
 
-export interface PipelinePass {
-  run(root: Element, options: PostprocessOptions): Promise<string[]>;
+// Result returned by a pipeline pass. The `data` field is specific to the
+// `OutputArea` the pass modifies and is optional as many passes only produce
+// side-effects on the DOM. Each pass may also return warnings.
+export interface PipelinePassResult<T = unknown> {
+  data?: T;
+  warnings?: string[];
+}
+
+// A pipeline pass receives the current output for its `OutputArea` (if any) and
+// may return updated data along with warnings. The generic type `T` represents
+// the shape of the data associated with the pass's `OutputArea`.
+export interface PipelinePass<T = unknown> {
+  /** Which output area this pass is responsible for. */
+  area: OutputArea;
+  /** Execute the pass for the provided root element. */
+  run(
+    root: Element,
+    data: T | undefined,
+    options: PostprocessOptions
+  ): Promise<PipelinePassResult<T>>;
 }

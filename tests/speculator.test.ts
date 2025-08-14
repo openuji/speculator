@@ -78,8 +78,8 @@ describe('Speculator', () => {
 
       const result = await renderer.renderHTML(html);
 
-      expect(result).toContain('<h2 id="test">Test</h2>');
-      expect(result).toContain('<strong>world</strong>');
+      expect(result.html).toContain('<h2 id="test">Test</h2>');
+      expect(result.html).toContain('<strong>world</strong>');
     });
   });
 

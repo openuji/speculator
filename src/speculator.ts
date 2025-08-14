@@ -1,7 +1,13 @@
 import { getDefaultFileLoader } from './utils/file-loader';
-import type { SpeculatorOptions, ProcessingResult, ProcessingStats, PipelinePass } from './types';
+import type {
+  SpeculatorOptions,
+  ProcessingResult,
+  ProcessingStats,
+  HtmlProcessingResult,
+  OutputArea,
+} from './types';
 import { SpeculatorError } from './types';
-import { postprocess } from './pipeline/postprocess';
+import { Postprocessor } from './pipeline/postprocess';
 import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
 import type { HtmlRenderer } from './html-renderer';
@@ -21,6 +27,7 @@ export class Speculator {
   private readonly formatProcessor: FormatProcessor;
   private readonly htmlRenderer: HtmlRenderer;
   private readonly postprocessOptions: SpeculatorOptions['postprocess'];
+  private readonly postprocessor: Postprocessor;
 
   constructor(options: SpeculatorOptions = {}) {
     const baseUrl = options.baseUrl;
@@ -32,6 +39,14 @@ export class Speculator {
     this.includeProcessor =
       options.includeProcessor || new IncludeProcessor(baseUrl, fileLoader, this.formatProcessor);
     this.htmlRenderer = options.htmlRenderer || new DOMHtmlRenderer();
+    this.postprocessor = new Postprocessor([
+      idlPass,
+      xrefPass,
+      referencesPass,
+      boilerplatePass,
+      tocPass,
+      diagnosticsPass,
+    ]);
   }
 
   /**
@@ -112,17 +127,20 @@ export class Speculator {
       }
     });
 
-    const passes: PipelinePass[] = [
-      idlPass,
-      xrefPass,
-      referencesPass,
-      boilerplatePass,
-      tocPass,
-      diagnosticsPass,
-    ];
-
     try {
-      const { warnings } = await postprocess(container, passes, this.postprocessOptions || {});
+      const areas: OutputArea[] = [
+        'idl',
+        'xref',
+        'references',
+        'boilerplate',
+        'toc',
+        'diagnostics',
+      ];
+      const { warnings } = await this.postprocessor.run(
+        container,
+        areas,
+        this.postprocessOptions || {}
+      );
       allWarnings.push(...warnings);
     } catch (e) {
       allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
@@ -136,9 +154,12 @@ export class Speculator {
   /**
    * Process HTML string and return processed HTML
    */
-  async renderHTML(html: string): Promise<string> {
-    const container = this.htmlRenderer.parse(html);
-    await this.renderDocument(container);
-    return this.htmlRenderer.serialize(container);
+  async renderHTML(inputHtml: string): Promise<HtmlProcessingResult> {
+    const container = this.htmlRenderer.parse(inputHtml);
+    const result = await this.renderDocument(container);
+    const html = this.htmlRenderer.serialize(result.element);
+    return { html, warnings: result.warnings, stats: result.stats };
   }
+
+  
 }
