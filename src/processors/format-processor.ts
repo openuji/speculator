@@ -1,6 +1,7 @@
 import { parseMarkdown } from '../markdown';
 import { stripIndent } from '../utils/strip-ident';
-import type { MarkdownOptions, DataFormat, ProcessingStats } from '../types';
+import type { MarkdownOptions, DataFormat } from '../types';
+import { StatsTracker } from '../utils/stats-tracker';
 
 /**
  * Strategy interface for converting content based on its format.
@@ -77,7 +78,7 @@ export class FormatProcessor {
    * Process an element with a data-format attribute and return the resulting
    * content or an error message. This method no longer mutates `innerHTML`.
    */
-  process(element: Element, stats: ProcessingStats): FormatResult {
+  process(element: Element, tracker: StatsTracker): FormatResult {
     const format = element.getAttribute('data-format') as DataFormat;
     let result: FormatResult = {};
 
@@ -85,7 +86,7 @@ export class FormatProcessor {
       try {
         const markdownContent = stripIndent(element.innerHTML).trim();
         result.content = this.processContent(markdownContent, format);
-        stats.markdownBlocks++;
+        tracker.incrementMarkdownBlocks();
       } catch (error) {
         result.error = `Failed to process markdown: ${
           error instanceof Error ? error.message : 'Unknown error'

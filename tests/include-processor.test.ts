@@ -1,5 +1,5 @@
-import { IncludeProcessor, FormatProcessor } from '../src/browser';
-import type { FileLoader, ProcessingStats } from '../src/types';
+import { IncludeProcessor, FormatProcessor, StatsTracker } from '../src/browser';
+import type { FileLoader } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
 // Mock file system
@@ -16,13 +16,6 @@ const mockFileLoader: FileLoader = async (path: string) => {
 };
 
 describe('IncludeProcessor', () => {
-  const createStats = (): ProcessingStats => ({
-    elementsProcessed: 0,
-    filesIncluded: 0,
-    markdownBlocks: 0,
-    processingTime: 0,
-  });
-
   it('includes external markdown', async () => {
     const format = new FormatProcessor();
     const processor = new IncludeProcessor(undefined, mockFileLoader, format);
@@ -30,13 +23,14 @@ describe('IncludeProcessor', () => {
     element.setAttribute('data-include', '/sections/intro.md');
     element.setAttribute('data-include-format', 'markdown');
 
-    const stats = createStats();
+    const tracker = new StatsTracker();
     const warnings: string[] = [];
 
-    const { content, error } = await processor.process(element, stats, warnings);
+    const { content, error } = await processor.process(element, tracker, warnings);
 
     expect(content).toContain('<h2 id="intro">Intro</h2>');
     expect(error).toBeUndefined();
+    const stats = tracker.toJSON();
     expect(stats.filesIncluded).toBe(1);
     expect(stats.markdownBlocks).toBe(1);
     expect(warnings).toHaveLength(0);
@@ -49,13 +43,14 @@ describe('IncludeProcessor', () => {
     element.setAttribute('data-include', '/idl/sample.idl');
     element.setAttribute('data-include-format', 'text');
 
-    const stats = createStats();
+    const tracker = new StatsTracker();
     const warnings: string[] = [];
 
-    const { content, error } = await processor.process(element, stats, warnings);
+    const { content, error } = await processor.process(element, tracker, warnings);
 
     expect(content).toContain('interface Test');
     expect(error).toBeUndefined();
+    const stats = tracker.toJSON();
     expect(stats.filesIncluded).toBe(1);
     expect(stats.markdownBlocks).toBe(0);
   });
@@ -66,10 +61,10 @@ describe('IncludeProcessor', () => {
     const element = document.createElement('section');
     element.setAttribute('data-include', '/missing.md');
 
-    const stats = createStats();
+    const tracker = new StatsTracker();
     const warnings: string[] = [];
 
-    const result = await processor.process(element, stats, warnings);
+    const result = await processor.process(element, tracker, warnings);
     expect(result.error).toContain('Failed to load');
   });
 
@@ -79,10 +74,10 @@ describe('IncludeProcessor', () => {
     const element = document.createElement('section');
     element.setAttribute('data-include', '');
 
-    const stats = createStats();
+    const tracker = new StatsTracker();
     const warnings: string[] = [];
 
-    const { content, error } = await processor.process(element, stats, warnings);
+    const { content, error } = await processor.process(element, tracker, warnings);
 
     expect(content).toBeNull();
     expect(error).toBeUndefined();
