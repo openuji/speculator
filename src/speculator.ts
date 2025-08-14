@@ -4,7 +4,6 @@ import type {
   ProcessingResult,
   ProcessingStats,
   HtmlProcessingResult,
-  OutputArea,
   RespecLikeConfig,
   RenderResult,
 } from './types';
@@ -23,6 +22,7 @@ import { ReferencesPass, ReferencesOutput } from './pipeline/passes/references';
 import { BoilerplatePass, BoilerplateOutput } from './pipeline/passes/boilerplate';
 import { TocPass } from './pipeline/passes/toc';
 import { DiagnosticsPass } from './pipeline/passes/diagnostics';
+import { getChangedOutputAreas } from './utils/output-areas';
 
 /**
  * Main Speculator renderer class
@@ -32,6 +32,7 @@ export class Speculator {
   private readonly formatProcessor: FormatProcessor;
   private readonly htmlRenderer: HtmlRenderer;
   private readonly postprocessOptions: SpeculatorOptions['postprocess'];
+  private prevConfig: RespecLikeConfig | undefined;
 
   constructor(options: SpeculatorOptions = {}) {
     const baseUrl = options.baseUrl;
@@ -105,54 +106,49 @@ export class Speculator {
       container.appendChild(section);
     }
 
+    const areas = getChangedOutputAreas(this.prevConfig, config);
     try {
-      const areas: OutputArea[] = [
-        'idl',
-        'xref',
-        'references',
-        'boilerplate',
-        'toc',
-        'diagnostics'
-      ];
-      const tocMount = container.querySelector('#toc') as HTMLElement | null;
-      const refsMount = container.querySelector('#references') as HTMLElement | null;
-      const passes = [
-        new IdlPass(container),
-        new XrefPass(container),
-        new ReferencesPass(container, refsMount),
-        new BoilerplatePass(container),
-        new TocPass(container, tocMount),
-        new DiagnosticsPass(container),
-      ];
-      const processor = new Postprocessor(passes);
-      const { outputs, warnings } = await processor.run(
-        areas,
-        this.postprocessOptions || {}
-      );
-      allWarnings.push(...warnings);
+      if (areas.length) {
+        const tocMount = container.querySelector('#toc') as HTMLElement | null;
+        const refsMount = container.querySelector('#references') as HTMLElement | null;
+        const passes = [
+          new IdlPass(container),
+          new XrefPass(container),
+          new ReferencesPass(container, refsMount),
+          new BoilerplatePass(container),
+          new TocPass(container, tocMount),
+          new DiagnosticsPass(container),
+        ];
+        const processor = new Postprocessor(passes);
+        const { outputs, warnings } = await processor.run(
+          areas,
+          this.postprocessOptions || {}
+        );
+        allWarnings.push(...warnings);
 
-      const tocHtml = outputs.toc as string | undefined;
-      if (tocHtml && tocMount) {
-        tocMount.innerHTML = tocHtml;
-      }
-
-      const bpOut = outputs.boilerplate as BoilerplateOutput | undefined;
-      if (bpOut) {
-        const { sections, ref } = bpOut;
-        sections.forEach(sec => {
-          if (ref) container.insertBefore(sec, ref);
-          else container.appendChild(sec);
-        });
-      }
-
-      const refOut = outputs.references as ReferencesOutput | undefined;
-      if (refOut && refOut.html) {
-        if (refsMount) {
-          refsMount.outerHTML = refOut.html;
-        } else {
-          container.insertAdjacentHTML('beforeend', refOut.html);
+        const tocHtml = outputs.toc as string | undefined;
+        if (tocHtml && tocMount) {
+          tocMount.innerHTML = tocHtml;
         }
-        refOut.citeUpdates.forEach(({ element, href }) => element.setAttribute('href', href));
+
+        const bpOut = outputs.boilerplate as BoilerplateOutput | undefined;
+        if (bpOut) {
+          const { sections, ref } = bpOut;
+          sections.forEach(sec => {
+            if (ref) container.insertBefore(sec, ref);
+            else container.appendChild(sec);
+          });
+        }
+
+        const refOut = outputs.references as ReferencesOutput | undefined;
+        if (refOut && refOut.html) {
+          if (refsMount) {
+            refsMount.outerHTML = refOut.html;
+          } else {
+            container.insertAdjacentHTML('beforeend', refOut.html);
+          }
+          refOut.citeUpdates.forEach(({ element, href }) => element.setAttribute('href', href));
+        }
       }
     } catch (e) {
       allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
@@ -173,6 +169,7 @@ export class Speculator {
     if (config.metadata) result.metadata = config.metadata;
     if (config.pubrules) result.pubrules = config.pubrules;
     if (config.legal) result.legal = config.legal;
+    this.prevConfig = config;
     return result;
   }
 
