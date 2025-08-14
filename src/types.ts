@@ -17,6 +17,7 @@ export interface SpeculatorOptions {
   includeProcessor?: IncludeProcessor;
   formatProcessor?: FormatProcessor;
   htmlRenderer?: HtmlRenderer;
+  passes?: PipelinePass[] | ((container: Element) => PipelinePass[]);
 
 }
 
