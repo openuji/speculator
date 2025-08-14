@@ -1,8 +1,9 @@
-import type { PostprocessOptions,PipelinePass } from '@/types';
+import type { PostprocessOptions, PipelinePass } from '@/types';
 
 
 export const diagnosticsPass: PipelinePass = {
-  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+  area: 'diagnostics',
+  async run(root: Element, _data: unknown, options: PostprocessOptions) {
     const warnings: string[] = [];
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
     const idsAndLinks = options.diagnostics?.idsAndLinks ?? true;
@@ -41,6 +42,6 @@ export const diagnosticsPass: PipelinePass = {
       });
     }
 
-    return warnings;
+    return { warnings };
   },
 };

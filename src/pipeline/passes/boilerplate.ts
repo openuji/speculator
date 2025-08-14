@@ -1,4 +1,4 @@
-import type { PostprocessOptions,PipelinePass } from '@/types';
+import type { PostprocessOptions, PipelinePass } from '@/types';
 
 interface BPConfig {
   title?: string;
@@ -21,9 +21,10 @@ function createSection(doc: Document, id: string, title: string, content?: strin
 }
 
 export const boilerplatePass: PipelinePass = {
-  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+  area: 'boilerplate',
+  async run(root: Element, _data: unknown, options: PostprocessOptions) {
     const bp = options.boilerplate;
-    if (!bp) return [];
+    if (!bp) return { warnings: [] };
 
     const doc = root.ownerDocument!;
     const mountMode = bp.mount || 'end';
@@ -65,6 +66,6 @@ export const boilerplatePass: PipelinePass = {
       insert(sec);
     }
 
-    return [];
+    return { warnings: [] };
   },
 };

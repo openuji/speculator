@@ -1,16 +1,17 @@
 import type { PostprocessOptions, PipelinePass } from '@/types';
 
 export const tocPass: PipelinePass = {
-  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+  area: 'toc',
+  async run(root: Element, _data: unknown, options: PostprocessOptions) {
     const { toc } = options;
-    if (toc?.enabled === false) return [];
+    if (toc?.enabled === false) return { warnings: [] };
 
     const selector = toc?.selector ?? '#toc';
     const mount = root.querySelector<HTMLElement>(selector);
-    if (!mount) return [];
+    if (!mount) return { warnings: [] };
 
     const headings = Array.from(root.querySelectorAll<HTMLElement>('h2, h3'));
-    if (!headings.length) return [];
+    if (!headings.length) return { warnings: [] };
 
     const doc = root.ownerDocument!;
     const ol = doc.createElement('ol');
@@ -28,6 +29,6 @@ export const tocPass: PipelinePass = {
 
     mount.innerHTML = '';
     mount.appendChild(ol);
-    return [];
+    return { warnings: [] };
   },
 };

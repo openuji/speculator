@@ -1,4 +1,4 @@
-import type { PostprocessOptions,PipelinePass, BiblioEntry } from '@/types';
+import type { PostprocessOptions, PipelinePass, BiblioEntry } from '@/types';
 
 function ensureSection(root: Element, id: string, title: string): HTMLElement {
   let section = root.querySelector<HTMLElement>(`#${id}`);
@@ -44,12 +44,17 @@ function idForRef(id: string): string {
 }
 
 export const referencesPass: PipelinePass = {
-  async run(root: Element, options: PostprocessOptions): Promise<string[]> {
+  area: 'references',
+  async run(
+    root: Element,
+    _data: unknown,
+    options: PostprocessOptions
+  ) {
     const warnings: string[] = [];
     const biblio = options.biblio?.entries ?? {};
 
     const cites = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[data-spec]'));
-    if (!cites.length) return warnings;
+    if (!cites.length) return { warnings };
 
     // Classify cites
     const normative = new Set<string>();
@@ -98,6 +103,6 @@ export const referencesPass: PipelinePass = {
       a.setAttribute('data-cite-ref', targetId); // useful for debugging
     }
 
-    return warnings;
+    return { warnings };
   },
 };
