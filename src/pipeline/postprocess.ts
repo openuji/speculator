@@ -14,17 +14,14 @@ export class Postprocessor {
   constructor(private readonly passes: PipelinePass[]) {}
 
   /**
-   * Run the configured passes on the given root element.
-   *
-   * @param root The document root to process.
+   * Run the configured passes.
    * @param areas Optional list of output areas to run. If omitted, all passes
    *              are executed.
    * @param options Configuration options for the passes.
    */
   async run(
-    root: Element,
     areas?: OutputArea[],
-    options: PostprocessOptions = {}
+    options: PostprocessOptions = {},
   ): Promise<PipelineResult> {
     const warnings: string[] = [];
     const outputs: Partial<Record<OutputArea, unknown>> = {};
@@ -35,7 +32,7 @@ export class Postprocessor {
 
     for (const pass of active) {
       const current = outputs[pass.area];
-      const result = await pass.run(root, current, options);
+      const result = await pass.run(current, options);
       if (result.data !== undefined) {
         outputs[pass.area] = result.data;
       }
@@ -53,11 +50,10 @@ export class Postprocessor {
  * can be performed without manually instantiating the {@link Postprocessor}.
  */
 export async function postprocess(
-  root: Element,
   passes: PipelinePass[],
   areas?: OutputArea[],
-  options: PostprocessOptions = {}
+  options: PostprocessOptions = {},
 ): Promise<PipelineResult> {
   const processor = new Postprocessor(passes);
-  return processor.run(root, areas, options);
+  return processor.run(areas, options);
 }

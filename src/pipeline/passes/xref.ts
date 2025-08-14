@@ -107,19 +107,17 @@ function buildLocalMap(root: Element): Map<string, LocalTarget> {
   return map;
 }
 
-export const xrefPass: PipelinePass = {
-  area: 'xref',
-  async run(
-    root: Element,
-    _data: unknown,
-    options: PostprocessOptions
-  ) {
+export class XrefPass implements PipelinePass {
+  area = 'xref' as const;
+  constructor(private readonly root: Element) {}
+
+  async run(_data: unknown, options: PostprocessOptions) {
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
     const warnings: string[] = [];
-    const localMap = buildLocalMap(root);
+    const localMap = buildLocalMap(this.root);
 
     // Make this an **array** to avoid TS/iterability issues
-    const xrefAnchors = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[data-xref]'));
+    const xrefAnchors = Array.from(this.root.querySelectorAll<HTMLAnchorElement>('a[data-xref]'));
 
     // 1) Resolve concept links locally and collect unresolved
     const resolverConfigs = Array.isArray(options.xref)
@@ -244,6 +242,6 @@ export const xrefPass: PipelinePass = {
     }
 
     return { warnings };
-  },
-};
+  }
+}
 

@@ -1,27 +1,5 @@
 import type { PostprocessOptions, PipelinePass, BiblioEntry } from '@/types';
 
-function ensureSection(root: Element, id: string, title: string): HTMLElement {
-  let section = root.querySelector<HTMLElement>(`#${id}`);
-  if (!section) {
-    section = root.ownerDocument!.createElement('section');
-    section.id = id;
-    section.innerHTML = `<h2>${title}</h2>`;
-    root.appendChild(section);
-  }
-  return section;
-}
-
-function ensureSubsection(parent: HTMLElement, id: string, title: string): HTMLElement {
-  let sec = parent.querySelector<HTMLElement>(`#${id}`);
-  if (!sec) {
-    sec = parent.ownerDocument!.createElement('section');
-    sec.id = id;
-    sec.innerHTML = `<h3>${title}</h3><ul></ul>`;
-    parent.appendChild(sec);
-  }
-  return sec;
-}
-
 function formatEntry(id: string, e: BiblioEntry): string {
   const parts: string[] = [];
   // Label
@@ -39,24 +17,25 @@ function formatEntry(id: string, e: BiblioEntry): string {
 }
 
 function idForRef(id: string): string {
-  // stable, predictable
   return `bib-${id.toLowerCase()}`;
 }
 
-export const referencesPass: PipelinePass = {
-  area: 'references',
-  async run(
-    root: Element,
-    _data: unknown,
-    options: PostprocessOptions
-  ) {
+export interface ReferencesOutput {
+  html: string;
+  citeUpdates: Array<{ element: HTMLAnchorElement; href: string }>;
+}
+
+export class ReferencesPass implements PipelinePass<ReferencesOutput> {
+  area = 'references' as const;
+  constructor(private readonly root: Element, private readonly mount: HTMLElement | null) {}
+
+  async run(_data: ReferencesOutput | undefined, options: PostprocessOptions) {
     const warnings: string[] = [];
     const biblio = options.biblio?.entries ?? {};
 
-    const cites = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[data-spec]'));
-    if (!cites.length) return { warnings };
+    const cites = Array.from(this.root.querySelectorAll<HTMLAnchorElement>('a[data-spec]'));
+    if (!cites.length) return { data: { html: '', citeUpdates: [] }, warnings };
 
-    // Classify cites
     const normative = new Set<string>();
     const informative = new Set<string>();
     for (const a of cites) {
@@ -64,22 +43,27 @@ export const referencesPass: PipelinePass = {
       const norm = (a.getAttribute('data-normative') || 'false') === 'true';
       (norm ? normative : informative).add(id);
     }
-
-    // Prefer Normative: if an id is normative, drop it from informative
     for (const id of normative) informative.delete(id);
 
-    // Build/refresh section skeleton
-    const refs = ensureSection(root, 'references', 'References');
-    const normSec = ensureSubsection(refs, 'normative-references', 'Normative references');
-    const infoSec = ensureSubsection(refs, 'informative-references', 'Informative references');
+    const doc = this.root.ownerDocument!;
+    const section = this.mount ?? doc.createElement('section');
+    section.id = 'references';
+    const normSec = doc.createElement('section');
+    normSec.id = 'normative-references';
+    normSec.innerHTML = '<h3>Normative references</h3><ul></ul>';
+    const infoSec = doc.createElement('section');
+    infoSec.id = 'informative-references';
+    infoSec.innerHTML = '<h3>Informative references</h3><ul></ul>';
+    section.innerHTML = '<h2>References</h2>';
+    section.appendChild(normSec);
+    section.appendChild(infoSec);
 
     const renderList = (sec: HTMLElement, ids: Set<string>) => {
       const ul = sec.querySelector('ul')!;
       ul.innerHTML = '';
       Array.from(ids).sort((a, b) => a.localeCompare(b)).forEach(id => {
-        const li = root.ownerDocument!.createElement('li');
+        const li = doc.createElement('li');
         li.id = idForRef(id);
-
         const entry = biblio[id];
         if (entry) {
           li.innerHTML = formatEntry(id, entry);
@@ -95,14 +79,13 @@ export const referencesPass: PipelinePass = {
     renderList(normSec, normative);
     renderList(infoSec, informative);
 
-    // Link in-text cites to their reference list item
+    const citeUpdates: Array<{ element: HTMLAnchorElement; href: string }> = [];
     for (const a of cites) {
       const id = (a.getAttribute('data-spec') || '').trim();
       const targetId = idForRef(id);
-      a.setAttribute('href', `#${targetId}`);
-      a.setAttribute('data-cite-ref', targetId); // useful for debugging
+      citeUpdates.push({ element: a, href: `#${targetId}` });
     }
 
-    return { warnings };
-  },
-};
+    return { data: { html: section.outerHTML, citeUpdates }, warnings };
+  }
+}

@@ -1,9 +1,10 @@
 import type { PostprocessOptions, PipelinePass } from '@/types';
 
+export class DiagnosticsPass implements PipelinePass {
+  area = 'diagnostics' as const;
+  constructor(private readonly root: Element) {}
 
-export const diagnosticsPass: PipelinePass = {
-  area: 'diagnostics',
-  async run(root: Element, _data: unknown, options: PostprocessOptions) {
+  async run(_data: unknown, options: PostprocessOptions) {
     const warnings: string[] = [];
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
     const idsAndLinks = options.diagnostics?.idsAndLinks ?? true;
@@ -11,7 +12,7 @@ export const diagnosticsPass: PipelinePass = {
     if (idsAndLinks) {
       // Duplicate IDs
       const seen = new Map<string, Element>();
-      root.querySelectorAll<HTMLElement>('[id]').forEach(el => {
+      this.root.querySelectorAll<HTMLElement>('[id]').forEach(el => {
         const id = el.id;
         if (!id) return;
         if (seen.has(id)) {
@@ -24,7 +25,7 @@ export const diagnosticsPass: PipelinePass = {
       });
 
       // Anchors missing href
-      const anchors = root.querySelectorAll<HTMLAnchorElement>('a');
+      const anchors = this.root.querySelectorAll<HTMLAnchorElement>('a');
       anchors.forEach(a => {
         if (a.closest(`.${suppressClass}`)) return;
         const hasHref = a.hasAttribute('href') && a.getAttribute('href') !== '';
@@ -43,5 +44,5 @@ export const diagnosticsPass: PipelinePass = {
     }
 
     return { warnings };
-  },
-};
+  }
+}
