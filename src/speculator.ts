@@ -67,7 +67,15 @@ export class Speculator {
       }
 
       if (clonedElement.hasAttribute('data-format')) {
-        this.formatProcessor.process(clonedElement, stats, warnings);
+        const { content, error } = this.formatProcessor.process(clonedElement, stats);
+        if (error) {
+          warnings.push(error);
+          const rendered = this.htmlRenderer.parse(`<p class="error">${error}</p>`);
+          clonedElement.innerHTML = this.htmlRenderer.serialize(rendered);
+        } else if (content !== undefined) {
+          const rendered = this.htmlRenderer.parse(content);
+          clonedElement.innerHTML = this.htmlRenderer.serialize(rendered);
+        }
       }
 
       stats.elementsProcessed = 1;
