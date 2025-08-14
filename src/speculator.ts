@@ -17,12 +17,12 @@ import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
 import type { HtmlRenderer } from './html-renderer';
 import { DOMHtmlRenderer } from './html-renderer';
-import { idlPass } from './pipeline/passes/idl';
-import { xrefPass } from './pipeline/passes/xref';
-import { referencesPass } from './pipeline/passes/references';
-import { boilerplatePass } from './pipeline/passes/boilerplate';
-import { tocPass } from './pipeline/passes/toc';
-import { diagnosticsPass } from './pipeline/passes/diagnostics';
+import { IdlPass } from './pipeline/passes/idl';
+import { XrefPass } from './pipeline/passes/xref';
+import { ReferencesPass, ReferencesOutput } from './pipeline/passes/references';
+import { BoilerplatePass, BoilerplateOutput } from './pipeline/passes/boilerplate';
+import { TocPass } from './pipeline/passes/toc';
+import { DiagnosticsPass } from './pipeline/passes/diagnostics';
 
 /**
  * Main Speculator renderer class
@@ -32,7 +32,6 @@ export class Speculator {
   private readonly formatProcessor: FormatProcessor;
   private readonly htmlRenderer: HtmlRenderer;
   private readonly postprocessOptions: SpeculatorOptions['postprocess'];
-  private readonly postprocessor: Postprocessor;
 
   constructor(options: SpeculatorOptions = {}) {
     const baseUrl = options.baseUrl;
@@ -44,14 +43,6 @@ export class Speculator {
     this.includeProcessor =
       options.includeProcessor || new IncludeProcessor(baseUrl, fileLoader, this.formatProcessor);
     this.htmlRenderer = options.htmlRenderer || new DOMHtmlRenderer();
-    this.postprocessor = new Postprocessor([
-      idlPass,
-      xrefPass,
-      referencesPass,
-      boilerplatePass,
-      tocPass,
-      diagnosticsPass,
-    ]);
   }
 
   /**
@@ -123,12 +114,46 @@ export class Speculator {
         'toc',
         'diagnostics'
       ];
-      const { warnings } = await this.postprocessor.run(
-        container,
+      const tocMount = container.querySelector('#toc') as HTMLElement | null;
+      const refsMount = container.querySelector('#references') as HTMLElement | null;
+      const passes = [
+        new IdlPass(container),
+        new XrefPass(container),
+        new ReferencesPass(container, refsMount),
+        new BoilerplatePass(container),
+        new TocPass(container, tocMount),
+        new DiagnosticsPass(container),
+      ];
+      const processor = new Postprocessor(passes);
+      const { outputs, warnings } = await processor.run(
         areas,
         this.postprocessOptions || {}
       );
       allWarnings.push(...warnings);
+
+      const tocHtml = outputs.toc as string | undefined;
+      if (tocHtml && tocMount) {
+        tocMount.innerHTML = tocHtml;
+      }
+
+      const bpOut = outputs.boilerplate as BoilerplateOutput | undefined;
+      if (bpOut) {
+        const { sections, ref } = bpOut;
+        sections.forEach(sec => {
+          if (ref) container.insertBefore(sec, ref);
+          else container.appendChild(sec);
+        });
+      }
+
+      const refOut = outputs.references as ReferencesOutput | undefined;
+      if (refOut && refOut.html) {
+        if (refsMount) {
+          refsMount.outerHTML = refOut.html;
+        } else {
+          container.insertAdjacentHTML('beforeend', refOut.html);
+        }
+        refOut.citeUpdates.forEach(({ element, href }) => element.setAttribute('href', href));
+      }
     } catch (e) {
       allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }

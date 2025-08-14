@@ -150,13 +150,15 @@ function resolveIdlLinks(root: Element, index: Map<string, string>, warnings: st
 }
 
 /** Public pass */
-export const idlPass: PipelinePass = {
-  area: 'idl',
-  async run(root: Element, _data: unknown, options: PostprocessOptions) {
+export class IdlPass implements PipelinePass {
+  area = 'idl' as const;
+  constructor(private readonly root: Element) {}
+
+  async run(_data: unknown, options: PostprocessOptions) {
     const warnings: string[] = [];
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
-    const index = buildIdlIndex(root, warnings);
-    resolveIdlLinks(root, index, warnings, suppressClass);
+    const index = buildIdlIndex(this.root, warnings);
+    resolveIdlLinks(this.root, index, warnings, suppressClass);
     return { warnings };
-  },
-};
+  }
+}

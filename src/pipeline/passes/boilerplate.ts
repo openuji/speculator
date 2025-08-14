@@ -20,31 +20,32 @@ function createSection(doc: Document, id: string, title: string, content?: strin
   return sec;
 }
 
-export const boilerplatePass: PipelinePass = {
-  area: 'boilerplate',
-  async run(root: Element, _data: unknown, options: PostprocessOptions) {
-    const bp = options.boilerplate;
-    if (!bp) return { warnings: [] };
+export interface BoilerplateOutput {
+  sections: HTMLElement[];
+  ref: Node | null;
+}
 
-    const doc = root.ownerDocument!;
+export class BoilerplatePass implements PipelinePass<BoilerplateOutput> {
+  area = 'boilerplate' as const;
+  constructor(private readonly root: Element) {}
+
+  async run(_data: BoilerplateOutput | undefined, options: PostprocessOptions) {
+    const bp = options.boilerplate;
+    if (!bp) return { data: { sections: [], ref: null }, warnings: [] };
+
+    const doc = this.root.ownerDocument!;
     const mountMode = bp.mount || 'end';
 
     // Determine insertion reference node based on mount option
     let ref: Node | null = null;
     if (mountMode === 'before-references') {
-      ref = root.querySelector('#references');
+      ref = this.root.querySelector('#references');
     } else if (mountMode === 'after-toc') {
-      const toc = root.querySelector('#toc');
+      const toc = this.root.querySelector('#toc');
       ref = toc ? toc.nextSibling : null;
     }
 
-    const insert = (section: HTMLElement) => {
-      if (ref) {
-        root.insertBefore(section, ref);
-      } else {
-        root.appendChild(section);
-      }
-    };
+    const sections: HTMLElement[] = [];
 
     const defs: Array<{ key: 'conformance' | 'security' | 'privacy'; title: string }> = [
       { key: 'conformance', title: 'Conformance' },
@@ -58,14 +59,14 @@ export const boilerplatePass: PipelinePass = {
 
       const cfg: BPConfig = typeof opt === 'object' ? opt : {};
       const id = cfg.id || key;
-      if (root.querySelector(`#${id}`)) continue; // avoid overwriting existing sections
+      if (this.root.querySelector(`#${id}`)) continue; // avoid overwriting existing sections
 
       const title = cfg.title || defaultTitle;
       const content = cfg.content;
       const sec = createSection(doc, id, title, content);
-      insert(sec);
+      sections.push(sec);
     }
 
-    return { warnings: [] };
-  },
-};
+    return { data: { sections, ref }, warnings: [] };
+  }
+}

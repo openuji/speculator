@@ -228,10 +228,6 @@ export interface PipelinePassResult<T = unknown> {
 export interface PipelinePass<T = unknown> {
   /** Which output area this pass is responsible for. */
   area: OutputArea;
-  /** Execute the pass for the provided root element. */
-  run(
-    root: Element,
-    data: T | undefined,
-    options: PostprocessOptions
-  ): Promise<PipelinePassResult<T>>;
+  /** Execute the pass. */
+  run(data: T | undefined, options: PostprocessOptions): Promise<PipelinePassResult<T>>;
 }

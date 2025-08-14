@@ -1,19 +1,17 @@
 import type { PostprocessOptions, PipelinePass } from '@/types';
 
-export const tocPass: PipelinePass = {
-  area: 'toc',
-  async run(root: Element, _data: unknown, options: PostprocessOptions) {
+export class TocPass implements PipelinePass<string> {
+  area = 'toc' as const;
+  constructor(private readonly root: Element, private readonly mount: HTMLElement | null) {}
+
+  async run(_data: string | undefined, options: PostprocessOptions) {
     const { toc } = options;
-    if (toc?.enabled === false) return { warnings: [] };
+    if (toc?.enabled === false || !this.mount) return { data: '', warnings: [] };
 
-    const selector = toc?.selector ?? '#toc';
-    const mount = root.querySelector<HTMLElement>(selector);
-    if (!mount) return { warnings: [] };
+    const headings = Array.from(this.root.querySelectorAll<HTMLElement>('h2, h3'));
+    if (!headings.length) return { data: '', warnings: [] };
 
-    const headings = Array.from(root.querySelectorAll<HTMLElement>('h2, h3'));
-    if (!headings.length) return { warnings: [] };
-
-    const doc = root.ownerDocument!;
+    const doc = this.root.ownerDocument!;
     const ol = doc.createElement('ol');
     ol.setAttribute('role', 'list');
 
@@ -22,13 +20,10 @@ export const tocPass: PipelinePass = {
       const li = doc.createElement('li');
       const depth = h.tagName.toLowerCase() === 'h3' ? 2 : 1;
       li.setAttribute('data-depth', String(depth));
-
       li.innerHTML = `<a href="#${h.id}">${h.textContent || ''}</a>`;
       ol.appendChild(li);
     }
 
-    mount.innerHTML = '';
-    mount.appendChild(ol);
-    return { warnings: [] };
-  },
-};
+    return { data: ol.outerHTML, warnings: [] };
+  }
+}
