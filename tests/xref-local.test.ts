@@ -1,7 +1,19 @@
 import { Speculator } from '../src/browser';
 import { describe, it, expect } from '@jest/globals';
+import type { OutputArea } from '../src/types';
 
 describe('Xref local resolution', () => {
+  const outputs: OutputArea[] = [
+    'idl',
+    'xref',
+    'references',
+    'boilerplate',
+    'toc',
+    'diagnostics',
+    'metadata',
+    'pubrules',
+    'legal',
+  ];
   it('resolves [= term =] to a local <dfn> id', async () => {
     document.body.innerHTML = `
       <div id="c">
@@ -14,7 +26,7 @@ describe('Xref local resolution', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
     const a = wrapper.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
@@ -36,7 +48,7 @@ describe('Xref local resolution', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
     const h2 = wrapper.querySelector('h2#task-queue')!;
@@ -58,7 +70,7 @@ describe('Xref local resolution', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     expect(res.warnings.some(w => /Unresolved IDL link: "SmoothScroller"/.test(w))).toBe(true);
     expect(res.warnings.some(w => /No matching xref: "missing"/.test(w))).toBe(true);
   });

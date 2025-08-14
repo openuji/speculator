@@ -1,5 +1,5 @@
 import { Speculator } from '../src/browser';
-import type { FileLoader } from '../src/types';
+import type { FileLoader, OutputArea } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
 const mockFiles = {
@@ -15,6 +15,18 @@ const mockFileLoader: FileLoader = async (path: string) => {
   throw new Error(`File not found: ${path}`);
 };
 
+const outputs: OutputArea[] = [
+  'idl',
+  'xref',
+  'references',
+  'boilerplate',
+  'toc',
+  'diagnostics',
+  'metadata',
+  'pubrules',
+  'legal',
+];
+
 describe('IDL linking', () => {
   it('exports top-level IDL names and resolves {{ Interface }}', async () => {
     document.body.innerHTML = `
@@ -28,7 +40,7 @@ describe('IDL linking', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator({ fileLoader: mockFileLoader });
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
     const a = wrapper.querySelector('a[data-idl="SmoothScroller"]') as HTMLAnchorElement;
@@ -50,7 +62,7 @@ describe('IDL linking', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator({ fileLoader: mockFileLoader });
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
 
@@ -70,7 +82,7 @@ describe('IDL linking', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     expect(res.warnings.some(w => /IDL parse error/.test(w))).toBe(true);
   });
 });

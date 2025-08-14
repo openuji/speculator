@@ -6,6 +6,7 @@ import { BoilerplatePass } from '../src/pipeline/passes/boilerplate';
 import { TocPass } from '../src/pipeline/passes/toc';
 import { DiagnosticsPass } from '../src/pipeline/passes/diagnostics';
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import type { OutputArea } from '../src/types';
 
 function createSection() {
   const section = document.createElement('section');
@@ -16,6 +17,17 @@ function createSection() {
 describe('incremental rendering', () => {
   let renderer: Speculator;
   let spies: Array<jest.SpyInstance> = [];
+  const outputs: OutputArea[] = [
+    'idl',
+    'xref',
+    'references',
+    'boilerplate',
+    'toc',
+    'diagnostics',
+    'metadata',
+    'pubrules',
+    'legal',
+  ];
 
   beforeEach(() => {
     renderer = new Speculator();
@@ -35,8 +47,8 @@ describe('incremental rendering', () => {
 
   it('skips passes when config is unchanged', async () => {
     const sections = [createSection()];
-    await renderer.renderDocument({ sections });
-    await renderer.renderDocument({ sections });
+    await renderer.renderDocument({ sections }, outputs);
+    await renderer.renderDocument({ sections }, outputs);
 
     for (const spy of spies) {
       expect(spy).toHaveBeenCalledTimes(1);
@@ -46,10 +58,10 @@ describe('incremental rendering', () => {
   it('only reruns boilerplate when header changes', async () => {
     const sections = [createSection()];
     const header1 = document.createElement('header');
-    await renderer.renderDocument({ sections, header: header1 });
+    await renderer.renderDocument({ sections, header: header1 }, outputs);
 
     const header2 = document.createElement('header');
-    await renderer.renderDocument({ sections, header: header2 });
+    await renderer.renderDocument({ sections, header: header2 }, outputs);
 
     const [idl, xref, refs, boiler, toc, diag] = spies;
     expect(idl).toHaveBeenCalledTimes(1);
@@ -62,9 +74,9 @@ describe('incremental rendering', () => {
 
   it('reruns all passes when sections change', async () => {
     const sections1 = [createSection()];
-    await renderer.renderDocument({ sections: sections1 });
+    await renderer.renderDocument({ sections: sections1 }, outputs);
     const sections2 = [createSection()];
-    await renderer.renderDocument({ sections: sections2 });
+    await renderer.renderDocument({ sections: sections2 }, outputs);
     for (const spy of spies) {
       expect(spy).toHaveBeenCalledTimes(2);
     }

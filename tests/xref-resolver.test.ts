@@ -1,5 +1,5 @@
 import { Speculator } from '../src';
-import type { XrefResolver, XrefQuery, XrefResult } from '../src/types';
+import type { XrefResolver, XrefQuery, XrefResult, OutputArea } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
 class StubResolver implements XrefResolver {
@@ -17,6 +17,17 @@ class StubResolver implements XrefResolver {
 }
 
 describe('xref resolver integration', () => {
+  const outputs: OutputArea[] = [
+    'idl',
+    'xref',
+    'references',
+    'boilerplate',
+    'toc',
+    'diagnostics',
+    'metadata',
+    'pubrules',
+    'legal',
+  ];
   it('uses closest data-cite scope and links when exactly one match exists', async () => {
     const resolver = new StubResolver({
       'task queue': [{ href: 'https://example.com/task-queue', cite: 'dom' }],
@@ -34,7 +45,7 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const link = container.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
@@ -63,7 +74,7 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const link = container.querySelector('a[data-xref="event loop"]') as HTMLAnchorElement;
@@ -92,7 +103,7 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const ambiguous = container.querySelector('a[data-xref="ambiguous"]') as HTMLAnchorElement;
@@ -127,7 +138,7 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections });
+    const res = await renderer.renderDocument({ sections }, outputs);
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const loop = container.querySelector('a[data-xref="event loop"]') as HTMLAnchorElement;
