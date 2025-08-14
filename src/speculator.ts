@@ -21,6 +21,7 @@ import { IdlPass } from './pipeline/passes/idl';
 import { XrefPass } from './pipeline/passes/xref';
 import { ReferencesPass, ReferencesOutput } from './pipeline/passes/references';
 import { BoilerplatePass, BoilerplateOutput } from './pipeline/passes/boilerplate';
+import { BoilerplateRenderer } from './renderers/boilerplate-renderer';
 import { TocPass } from './pipeline/passes/toc';
 import { DiagnosticsPass } from './pipeline/passes/diagnostics';
 import { getChangedOutputAreas } from './utils/output-areas';
@@ -151,10 +152,11 @@ export class Speculator {
         }
 
         const bpOut = outputs.boilerplate as BoilerplateOutput | undefined;
-        if (bpOut) {
-          const { sections, ref } = bpOut;
-          sections.forEach(sec => {
-            if (ref) container.insertBefore(sec, ref);
+        if (bpOut && bpOut.sections.length) {
+          const renderer = new BoilerplateRenderer(container.ownerDocument!);
+          const rendered = renderer.render(bpOut.sections);
+          rendered.forEach(sec => {
+            if (bpOut.ref) container.insertBefore(sec, bpOut.ref);
             else container.appendChild(sec);
           });
         }

@@ -6,22 +6,14 @@ interface BPConfig {
   content?: string;
 }
 
-function createSection(doc: Document, id: string, title: string, content?: string): HTMLElement {
-  const sec = doc.createElement('section');
-  sec.id = id;
-  const h2 = doc.createElement('h2');
-  h2.textContent = title;
-  sec.appendChild(h2);
-  if (content) {
-    const p = doc.createElement('p');
-    p.textContent = content;
-    sec.appendChild(p);
-  }
-  return sec;
+export interface BoilerplateSectionDescriptor {
+  id: string;
+  title: string;
+  content?: string;
 }
 
 export interface BoilerplateOutput {
-  sections: HTMLElement[];
+  sections: BoilerplateSectionDescriptor[];
   ref: Node | null;
 }
 
@@ -33,7 +25,6 @@ export class BoilerplatePass implements PipelinePass<BoilerplateOutput> {
     const bp = options.boilerplate;
     if (!bp) return { data: { sections: [], ref: null }, warnings: [] };
 
-    const doc = this.root.ownerDocument!;
     const mountMode = bp.mount || 'end';
 
     // Determine insertion reference node based on mount option
@@ -45,7 +36,7 @@ export class BoilerplatePass implements PipelinePass<BoilerplateOutput> {
       ref = toc ? toc.nextSibling : null;
     }
 
-    const sections: HTMLElement[] = [];
+    const sections: BoilerplateSectionDescriptor[] = [];
 
     const defs: Array<{ key: 'conformance' | 'security' | 'privacy'; title: string }> = [
       { key: 'conformance', title: 'Conformance' },
@@ -63,8 +54,9 @@ export class BoilerplatePass implements PipelinePass<BoilerplateOutput> {
 
       const title = cfg.title || defaultTitle;
       const content = cfg.content;
-      const sec = createSection(doc, id, title, content);
-      sections.push(sec);
+      const descriptor: BoilerplateSectionDescriptor = { id, title };
+      if (content !== undefined) descriptor.content = content;
+      sections.push(descriptor);
     }
 
     return { data: { sections, ref }, warnings: [] };
