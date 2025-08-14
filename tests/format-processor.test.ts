@@ -12,7 +12,8 @@ describe('FormatProcessor', () => {
 
     const tracker = new StatsTracker();
 
-    const { content, error } = processor.process(element, tracker);
+    const warnings: string[] = [];
+    const { content, error } = processor.process(element, tracker, warnings);
 
     expect(error).toBeUndefined();
     expect(content).toContain('<h2 id="hello">Hello</h2>');
@@ -29,7 +30,8 @@ describe('FormatProcessor', () => {
 
     const tracker = new StatsTracker();
 
-    const { content } = processor.process(element, tracker);
+    const warnings: string[] = [];
+    const { content } = processor.process(element, tracker, warnings);
 
     expect(content).not.toContain('<br>');
   });
@@ -52,7 +54,8 @@ describe('FormatProcessor', () => {
     element.textContent = 'hello';
 
     const tracker = new StatsTracker();
-    const { content, error } = processor.process(element, tracker);
+    const warnings: string[] = [];
+    const { content, error } = processor.process(element, tracker, warnings);
 
     expect(error).toBeUndefined();
     expect(content).toBe('HELLO');

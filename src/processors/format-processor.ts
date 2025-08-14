@@ -2,6 +2,7 @@ import { parseMarkdown } from '../markdown';
 import { stripIndent } from '../utils/strip-ident';
 import type { MarkdownOptions, DataFormat } from '../types';
 import { StatsTracker } from '../utils/stats-tracker';
+import type { ElementProcessor, ProcessorResult } from './element-processor';
 
 /**
  * Strategy interface for converting content based on its format.
@@ -34,15 +35,14 @@ class PassthroughStrategy implements FormatStrategy {
  * Result returned from {@link FormatProcessor.process}.
  * When `error` is present, `content` will be undefined.
  */
-export interface FormatResult {
+export interface FormatResult extends ProcessorResult {
   content?: string;
-  error?: string;
 }
 
 /**
  * Service responsible for processing data-format attributes and markdown content.
  */
-export class FormatProcessor {
+export class FormatProcessor implements ElementProcessor {
   private readonly strategies: Map<DataFormat, FormatStrategy>;
 
   constructor(
@@ -78,7 +78,15 @@ export class FormatProcessor {
    * Process an element with a data-format attribute and return the resulting
    * content or an error message. This method no longer mutates `innerHTML`.
    */
-  process(element: Element, tracker: StatsTracker): FormatResult {
+  matches(element: Element): boolean {
+    return element.hasAttribute('data-format');
+  }
+
+  process(
+    element: Element,
+    tracker: StatsTracker,
+    _warnings: string[],
+  ): FormatResult {
     const format = element.getAttribute('data-format') as DataFormat;
     let result: FormatResult = {};
 

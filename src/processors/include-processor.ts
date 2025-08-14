@@ -2,22 +2,27 @@ import type { FileLoader, DataFormat } from '../types';
 import { FormatProcessor } from './format-processor';
 import { logger } from '../utils/logger';
 import { StatsTracker } from '../utils/stats-tracker';
+import type { ElementProcessor, ProcessorResult } from './element-processor';
 
 /**
  * Service responsible for handling data-include attributes.
  */
-export class IncludeProcessor {
+export class IncludeProcessor implements ElementProcessor {
   constructor(
     private readonly baseUrl: string | undefined,
     private readonly fileLoader: FileLoader,
     private readonly formatProcessor: FormatProcessor
   ) {}
 
+  matches(element: Element): boolean {
+    return element.hasAttribute('data-include');
+  }
+
   async process(
     element: Element,
     tracker: StatsTracker,
     warnings: string[],
-  ): Promise<{ content: string | null; error?: string }> {
+  ): Promise<ProcessorResult> {
     const includePath = element.getAttribute('data-include');
     const includeFormat = (element.getAttribute('data-include-format') || 'text') as DataFormat;
 
@@ -42,7 +47,6 @@ export class IncludeProcessor {
       return { content: processedContent };
     } catch (error) {
       const errorMsg = `Failed to load: ${includePath}`;
-      warnings.push(errorMsg);
       element.removeAttribute('data-include');
       element.removeAttribute('data-include-format');
       return { content: null, error: errorMsg };

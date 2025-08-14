@@ -16,6 +16,7 @@ import { SotdRenderer } from './renderers/sotd-renderer';
 import { Postprocessor, type PipelineResult } from './pipeline/postprocess';
 import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
+import type { ElementProcessor } from './processors/element-processor';
 import type { HtmlRenderer } from './html-renderer';
 import { DOMHtmlRenderer } from './html-renderer';
 import { insertContent, renderError } from './utils/render';
@@ -35,6 +36,7 @@ import { StatsTracker } from './utils/stats-tracker';
 export class Speculator {
   private readonly includeProcessor: IncludeProcessor;
   private readonly formatProcessor: FormatProcessor;
+  private readonly processors: ElementProcessor[];
   private readonly htmlRenderer: HtmlRenderer;
   private readonly postprocessOptions: SpeculatorOptions['postprocess'];
   private readonly passFactory: (container: Element) => PipelinePass[];
@@ -50,6 +52,8 @@ export class Speculator {
     this.includeProcessor =
       options.includeProcessor || new IncludeProcessor(baseUrl, fileLoader, this.formatProcessor);
     this.htmlRenderer = options.htmlRenderer || new DOMHtmlRenderer();
+
+    this.processors = [this.includeProcessor, this.formatProcessor];
 
     const passes = options.passes;
     if (Array.isArray(passes)) {
@@ -131,28 +135,27 @@ export class Speculator {
     const clonedElement = element.cloneNode(true) as Element;
 
     try {
-      if (clonedElement.hasAttribute('data-include')) {
-        const { content, error } = await this.includeProcessor.process(
+      for (const processor of this.processors) {
+        if (!processor.matches(clonedElement)) {
+          continue;
+        }
+        const { content, error } = await processor.process(
           clonedElement,
           tracker,
           warnings,
         );
-        if (content !== null) {
-          insertContent(clonedElement, content);
-        }
-        if (error) {
-          insertContent(clonedElement, renderError(error));
-        }
-      }
-
-      if (clonedElement.hasAttribute('data-format')) {
-        const { content, error } = this.formatProcessor.process(clonedElement, tracker);
         if (error) {
           warnings.push(error);
           insertContent(clonedElement, renderError(error));
-        } else if (content !== undefined) {
-          const rendered = this.htmlRenderer.parse(content);
-          insertContent(clonedElement, this.htmlRenderer.serialize(rendered));
+          continue;
+        }
+        if (content !== undefined && content !== null) {
+          let renderedContent = content;
+          if (processor instanceof FormatProcessor) {
+            const rendered = this.htmlRenderer.parse(content);
+            renderedContent = this.htmlRenderer.serialize(rendered);
+          }
+          insertContent(clonedElement, renderedContent);
         }
       }
 
