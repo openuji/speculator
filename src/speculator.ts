@@ -106,8 +106,8 @@ export class Speculator {
 
     const allWarnings = [...sectionWarnings];
 
-    const doc = (header || sotd || processedSections[0])?.ownerDocument || document;
-    const container = doc.createElement('div');
+    const baseDoc = (header || sotd || processedSections[0])?.ownerDocument;
+    const container = baseDoc ? baseDoc.createElement('div') : this.htmlRenderer.parse('');
     if (header) container.appendChild(header);
     if (sotd) container.appendChild(sotd);
     for (const section of processedSections) {
@@ -156,13 +156,16 @@ export class Speculator {
    */
   async renderHTML(inputHtml: string): Promise<HtmlProcessingResult> {
     const container = this.htmlRenderer.parse(inputHtml);
-    const sections = Array.from(
+    const queried = Array.from(
       container.querySelectorAll(
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
+    const sections = queried.length
+      ? queried
+      : (Array.from(container.children) as Element[]);
     const result = await this.renderDocument({ sections });
-    const doc = container.ownerDocument || document;
+    const doc = container.ownerDocument!;
     const root = doc.createElement('div');
     if (result.header) root.appendChild(result.header);
     if (result.sotd) root.appendChild(result.sotd);

@@ -91,6 +91,14 @@ describe('Speculator', () => {
       expect(result.html).toContain('<h2 id="test">Test</h2>');
       expect(result.html).toContain('<strong>world</strong>');
     });
+
+    it('should handle HTML without special attributes', async () => {
+      const html = '<section><p>Hello</p></section>';
+
+      const result = await renderer.renderHTML(html);
+
+      expect(result.html).toContain('<p>Hello</p>');
+    });
   });
 
   describe('configuration options', () => {
