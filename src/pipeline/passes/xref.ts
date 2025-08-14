@@ -3,6 +3,7 @@ import type {
   PipelinePass,
   XrefQuery,
   XrefResult,
+  XrefOptions,
 } from '../../types';
 
 function uniqueId(doc: Document, base: string): string {
@@ -40,6 +41,13 @@ function getCiteSpecs(node: Element): string[] | undefined {
 }
 
 type LocalTarget = { href: string; text: string; source: 'dfn' | 'heading' };
+
+interface UnresolvedEntry {
+  term: string;
+  anchors: HTMLAnchorElement[];
+  specsOverride?: string[];
+  results: XrefResult[];
+}
 
 /** Build a local map of terms -> anchors from <dfn> and headings. */
 function buildLocalMap(root: Element): Map<string, LocalTarget> {
@@ -113,135 +121,157 @@ export class XrefPass implements PipelinePass {
 
   async run(_data: unknown, options: PostprocessOptions) {
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
-    const warnings: string[] = [];
     const localMap = buildLocalMap(this.root);
 
     // Make this an **array** to avoid TS/iterability issues
     const xrefAnchors = Array.from(this.root.querySelectorAll<HTMLAnchorElement>('a[data-xref]'));
 
-    // 1) Resolve concept links locally and collect unresolved
     const resolverConfigs = Array.isArray(options.xref)
       ? options.xref
       : options.xref
       ? [options.xref]
       : [];
 
-    interface UnresolvedEntry {
-      term: string;
-      anchors: HTMLAnchorElement[];
-      specsOverride?: string[];
-      results: XrefResult[];
-    }
-    const unresolved = new Map<string, UnresolvedEntry>();
-    for (const a of xrefAnchors) {
-      if (isSuppressed(a, suppressClass)) continue;
-      const term = a.getAttribute('data-xref') || '';
-      const key = norm(term);
-      const hit = localMap.get(key);
-      if (hit) {
-        a.setAttribute('href', hit.href);
-        continue;
-      }
-      const specsOverride = getCiteSpecs(a);
-      const mapKey = `${key}|${(specsOverride || []).join(',')}`;
-      let entry = unresolved.get(mapKey);
-      if (!entry) {
-        entry = { term, anchors: [], results: [] };
-        if (specsOverride) entry.specsOverride = specsOverride;
-        unresolved.set(mapKey, entry);
-      }
-      entry.anchors.push(a);
-    }
+    const unresolved = collectUnresolvedAnchors(xrefAnchors, localMap, suppressClass);
 
-    for (const cfg of resolverConfigs) {
-      const queries: XrefQuery[] = [];
-      const idMap = new Map<string, UnresolvedEntry>();
-      for (const [key, entry] of unresolved.entries()) {
-        let specs: string[] | undefined;
-        if (entry.specsOverride) {
-          const allowed = cfg.specs
-            ? entry.specsOverride.filter(s => cfg.specs!.includes(s))
-            : entry.specsOverride;
-          specs = allowed;
-        } else {
-          specs = cfg.specs;
-        }
-        if (specs && specs.length === 0) continue;
-        const id = `${key}|${queries.length}`;
-        const q: XrefQuery = { id, term: entry.term };
-        if (specs && specs.length) q.specs = specs;
-        queries.push(q);
-        idMap.set(id, entry);
-      }
-      if (!queries.length) continue;
-      try {
-        const resMap = await cfg.resolver.resolveBatch(queries);
-        for (const [id, hits] of resMap.entries()) {
-          const entry = idMap.get(id);
-          if (entry) entry.results.push(...hits);
-        }
-      } catch (err) {
-        warnings.push(
-          `Xref resolver failed: ${err instanceof Error ? err.message : String(err)}`
-        );
-      }
-    }
+    const { unresolved: resolvedEntries, warnings: resolveWarnings } = await resolveQueries(
+      resolverConfigs,
+      unresolved
+    );
 
     const defaultPriority = resolverConfigs.flatMap(cfg => cfg.specs || []);
 
-    for (const entry of unresolved.values()) {
-      const hits = entry.results;
+    const applyWarnings = applyXrefResults(resolvedEntries, defaultPriority);
 
-      let chosen: XrefResult | undefined;
-      let ambiguous = false;
+    return { warnings: [...resolveWarnings, ...applyWarnings] };
+  }
+}
 
-      const preferred = entry.specsOverride && entry.specsOverride.length
-        ? entry.specsOverride
-        : defaultPriority;
+function collectUnresolvedAnchors(
+  anchors: HTMLAnchorElement[],
+  localMap: Map<string, LocalTarget>,
+  suppressClass: string
+): Map<string, UnresolvedEntry> {
+  const unresolved = new Map<string, UnresolvedEntry>();
+  for (const a of anchors) {
+    if (isSuppressed(a, suppressClass)) continue;
+    const term = a.getAttribute('data-xref') || '';
+    const key = norm(term);
+    const hit = localMap.get(key);
+    if (hit) {
+      a.setAttribute('href', hit.href);
+      continue;
+    }
+    const specsOverride = getCiteSpecs(a);
+    const mapKey = `${key}|${(specsOverride || []).join(',')}`;
+    let entry = unresolved.get(mapKey);
+    if (!entry) {
+      entry = { term, anchors: [], results: [] };
+      if (specsOverride) entry.specsOverride = specsOverride;
+      unresolved.set(mapKey, entry);
+    }
+    entry.anchors.push(a);
+  }
+  return unresolved;
+}
 
-      if (hits.length > 0) {
-        if (preferred && preferred.length) {
-          const remaining = new Set(hits);
-          for (const spec of preferred) {
-            const matches = hits.filter(h => h.cite === spec);
-            matches.forEach(m => remaining.delete(m));
-            if (matches.length === 1) {
-              chosen = matches[0];
-              break;
-            }
-            if (matches.length > 1) {
-              ambiguous = true;
-              break;
-            }
-          }
-          if (!chosen && !ambiguous) {
-            const leftovers = Array.from(remaining);
-            if (leftovers.length === 1) {
-              chosen = leftovers[0];
-            } else if (leftovers.length > 1) {
-              ambiguous = true;
-            }
-          }
-        } else if (hits.length === 1) {
-          chosen = hits[0];
-        } else {
-          ambiguous = true;
-        }
-      }
-
-      if (chosen) {
-        for (const a of entry.anchors) {
-          a.setAttribute('href', chosen.href);
-          if (chosen.cite) a.setAttribute('data-cite', chosen.cite);
-        }
-      } else if (ambiguous) {
-        warnings.push(`Ambiguous xref: "${entry.term}"`);
+async function resolveQueries(
+  resolverConfigs: XrefOptions[],
+  unresolved: Map<string, UnresolvedEntry>
+): Promise<{ unresolved: Map<string, UnresolvedEntry>; warnings: string[] }> {
+  const warnings: string[] = [];
+  for (const cfg of resolverConfigs) {
+    const queries: XrefQuery[] = [];
+    const idMap = new Map<string, UnresolvedEntry>();
+    for (const [key, entry] of unresolved.entries()) {
+      let specs: string[] | undefined;
+      if (entry.specsOverride) {
+        const allowed = cfg.specs
+          ? entry.specsOverride.filter(s => cfg.specs!.includes(s))
+          : entry.specsOverride;
+        specs = allowed;
       } else {
-        warnings.push(`No matching xref: "${entry.term}"`);
+        specs = cfg.specs;
+      }
+      if (specs && specs.length === 0) continue;
+      const id = `${key}|${queries.length}`;
+      const q: XrefQuery = { id, term: entry.term };
+      if (specs && specs.length) q.specs = specs;
+      queries.push(q);
+      idMap.set(id, entry);
+    }
+    if (!queries.length) continue;
+    try {
+      const resMap = await cfg.resolver.resolveBatch(queries);
+      for (const [id, hits] of resMap.entries()) {
+        const entry = idMap.get(id);
+        if (entry) entry.results.push(...hits);
+      }
+    } catch (err) {
+      warnings.push(
+        `Xref resolver failed: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+  return { unresolved, warnings };
+}
+
+function applyXrefResults(
+  unresolved: Map<string, UnresolvedEntry>,
+  defaultPriority: string[]
+): string[] {
+  const warnings: string[] = [];
+  for (const entry of unresolved.values()) {
+    const hits = entry.results;
+
+    let chosen: XrefResult | undefined;
+    let ambiguous = false;
+
+    const preferred = entry.specsOverride && entry.specsOverride.length
+      ? entry.specsOverride
+      : defaultPriority;
+
+    if (hits.length > 0) {
+      if (preferred && preferred.length) {
+        const remaining = new Set(hits);
+        for (const spec of preferred) {
+          const matches = hits.filter(h => h.cite === spec);
+          matches.forEach(m => remaining.delete(m));
+          if (matches.length === 1) {
+            chosen = matches[0];
+            break;
+          }
+          if (matches.length > 1) {
+            ambiguous = true;
+            break;
+          }
+        }
+        if (!chosen && !ambiguous) {
+          const leftovers = Array.from(remaining);
+          if (leftovers.length === 1) {
+            chosen = leftovers[0];
+          } else if (leftovers.length > 1) {
+            ambiguous = true;
+          }
+        }
+      } else if (hits.length === 1) {
+        chosen = hits[0];
+      } else {
+        ambiguous = true;
       }
     }
 
-    return { warnings };
+    if (chosen) {
+      for (const a of entry.anchors) {
+        a.setAttribute('href', chosen.href);
+        if (chosen.cite) a.setAttribute('data-cite', chosen.cite);
+      }
+    } else if (ambiguous) {
+      warnings.push(`Ambiguous xref: "${entry.term}"`);
+    } else {
+      warnings.push(`No matching xref: "${entry.term}"`);
+    }
   }
+  return warnings;
 }
 
