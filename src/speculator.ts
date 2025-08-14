@@ -69,24 +69,23 @@ export class Speculator {
           stats,
           warnings,
         );
-        if (content !== null) {
-          insertContent(clonedElement, content);
-        }
-        if (error) {
-          renderError(clonedElement, error);
-        }
+          if (content !== null) {
+            insertContent(clonedElement, content);
+          }
+          if (error) {
+            insertContent(clonedElement, renderError(error));
+          }
       }
 
       if (clonedElement.hasAttribute('data-format')) {
         const { content, error } = this.formatProcessor.process(clonedElement, stats);
-        if (error) {
-          warnings.push(error);
-          const rendered = this.htmlRenderer.parse(`<p class="error">${error}</p>`);
-          clonedElement.innerHTML = this.htmlRenderer.serialize(rendered);
-        } else if (content !== undefined) {
-          const rendered = this.htmlRenderer.parse(content);
-          clonedElement.innerHTML = this.htmlRenderer.serialize(rendered);
-        }
+          if (error) {
+            warnings.push(error);
+            insertContent(clonedElement, renderError(error));
+          } else if (content !== undefined) {
+            const rendered = this.htmlRenderer.parse(content);
+            insertContent(clonedElement, this.htmlRenderer.serialize(rendered));
+          }
       }
 
       stats.elementsProcessed = 1;
