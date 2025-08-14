@@ -12,7 +12,7 @@ export {
   browserFileLoader,
   createFallbackFileLoader,
   getDefaultFileLoader
-} from './utils/file-loader';
+} from './utils/file-loader/index.js';
 export { RespecXrefResolver } from './utils/respec-xref-resolver';
 export { getChangedOutputAreas } from './utils/output-areas';
 
