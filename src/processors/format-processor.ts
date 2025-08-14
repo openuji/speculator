@@ -3,6 +3,15 @@ import { stripIndent } from '../utils/strip-ident';
 import type { MarkdownOptions, DataFormat, ProcessingStats } from '../types';
 
 /**
+ * Result returned from {@link FormatProcessor.process}.
+ * When `error` is present, `content` will be undefined.
+ */
+export interface FormatResult {
+  content?: string;
+  error?: string;
+}
+
+/**
  * Service responsible for processing data-format attributes and markdown content.
  */
 export class FormatProcessor {
@@ -23,23 +32,28 @@ export class FormatProcessor {
   }
 
   /**
-   * Process an element with a data-format attribute.
+   * Process an element with a data-format attribute and return the resulting
+   * content or an error message. This method no longer mutates `innerHTML`.
    */
-  process(element: Element, stats: ProcessingStats, warnings: string[]): void {
+  process(element: Element, stats: ProcessingStats): FormatResult {
     const format = element.getAttribute('data-format') as DataFormat;
+    let result: FormatResult = {};
 
     if (format === 'markdown' && element.innerHTML.trim()) {
       try {
         const markdownContent = stripIndent(element.innerHTML).trim();
-        element.innerHTML = this.processContent(markdownContent, format);
+        result.content = this.processContent(markdownContent, format);
         stats.markdownBlocks++;
       } catch (error) {
-        const errorMsg = `Failed to process markdown: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        warnings.push(errorMsg);
-        element.innerHTML = `<p class="error">${errorMsg}</p>`;
+        result.error = `Failed to process markdown: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`;
       }
+    } else {
+      result.content = this.processContent(element.innerHTML, format);
     }
 
     element.removeAttribute('data-format');
+    return result;
   }
 }
