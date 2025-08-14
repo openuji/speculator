@@ -1,6 +1,6 @@
 {
   "name": "@openuji/speculator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A TypeScript library for processing ReSpec-like markup with markdown support",
   "type": "module",
   "sideEffects": false,

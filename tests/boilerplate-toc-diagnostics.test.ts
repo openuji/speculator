@@ -51,6 +51,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     res.sections.forEach(s => wrapper.appendChild(s));
     expect(wrapper.querySelectorAll('#conformance').length).toBe(1);
     expect(wrapper.querySelector('#conformance')!.textContent).toContain('Custom.');
+
   });
 
   it('diagnostics: duplicate ids and unresolved link placeholders', async () => {
