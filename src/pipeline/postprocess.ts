@@ -1,4 +1,9 @@
-import type { OutputArea, PipelinePass, PostprocessOptions } from '@/types';
+import type {
+  OutputArea,
+  PipelinePass,
+  PostprocessOptions,
+  PipelineContext,
+} from '@/types';
 
 export interface PipelineResult {
   /** Map of data produced by passes, keyed by their output area. */
@@ -23,25 +28,16 @@ export class Postprocessor {
     areas?: OutputArea[],
     options: PostprocessOptions = {},
   ): Promise<PipelineResult> {
-    const warnings: string[] = [];
-    const outputs: Partial<Record<OutputArea, unknown>> = {};
+    const ctx: PipelineContext = { outputs: {}, warnings: [], options };
 
     const active = areas
       ? this.passes.filter(p => areas.includes(p.area))
       : this.passes;
 
-    for (const pass of active) {
-      const current = outputs[pass.area];
-      const result = await pass.run(current, options);
-      if (result.data !== undefined) {
-        outputs[pass.area] = result.data;
-      }
-      if (result.warnings && result.warnings.length) {
-        warnings.push(...result.warnings);
-      }
-    }
+    const composed = compose(active);
+    await composed(ctx);
 
-    return { outputs, warnings };
+    return { outputs: ctx.outputs, warnings: ctx.warnings };
   }
 }
 
@@ -56,4 +52,18 @@ export async function postprocess(
 ): Promise<PipelineResult> {
   const processor = new Postprocessor(passes);
   return processor.run(areas, options);
+}
+
+function compose(passes: PipelinePass[]): (ctx: PipelineContext) => Promise<void> {
+  return function run(ctx: PipelineContext): Promise<void> {
+    let index = -1;
+    async function dispatch(i: number): Promise<void> {
+      if (i <= index) return;
+      index = i;
+      const pass = passes[i];
+      if (!pass) return;
+      await pass.run(ctx, () => dispatch(i + 1));
+    }
+    return dispatch(0);
+  };
 }

@@ -1,4 +1,9 @@
-import type { PostprocessOptions, PipelinePass } from '@/types';
+import type {
+  PostprocessOptions,
+  PipelinePass,
+  PipelineContext,
+  PipelineNext,
+} from '@/types';
 
 interface BPConfig {
   title?: string;
@@ -17,11 +22,14 @@ export interface BoilerplateOutput {
   ref: Node | null;
 }
 
-export class BoilerplatePass implements PipelinePass<BoilerplateOutput> {
+export class BoilerplatePass implements PipelinePass {
   area = 'boilerplate' as const;
   constructor(private readonly root: Element) {}
 
-  async run(_data: BoilerplateOutput | undefined, options: PostprocessOptions) {
+  private async execute(
+    _data: BoilerplateOutput | undefined,
+    options: PostprocessOptions,
+  ): Promise<{ data: BoilerplateOutput; warnings: string[] }> {
     const bp = options.boilerplate;
     if (!bp) return { data: { sections: [], ref: null }, warnings: [] };
 
@@ -60,5 +68,13 @@ export class BoilerplatePass implements PipelinePass<BoilerplateOutput> {
     }
 
     return { data: { sections, ref }, warnings: [] };
+  }
+
+  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
+    const current = ctx.outputs[this.area] as BoilerplateOutput | undefined;
+    const { data, warnings } = await this.execute(current, ctx.options);
+    if (data !== undefined) ctx.outputs[this.area] = data;
+    if (warnings && warnings.length) ctx.warnings.push(...warnings);
+    await next();
   }
 }

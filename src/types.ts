@@ -223,20 +223,22 @@ export type OutputArea =
   | 'pubrules'
   | 'legal';
 
-// Result returned by a pipeline pass. The `data` field is specific to the
-// `OutputArea` the pass modifies and is optional as many passes only produce
-// side-effects on the DOM. Each pass may also return warnings.
-export interface PipelinePassResult<T = unknown> {
-  data?: T;
-  warnings?: string[];
+export interface PipelineContext {
+  /** Accumulated outputs from earlier passes. */
+  outputs: Partial<Record<OutputArea, unknown>>;
+  /** Accumulated warnings from executed passes. */
+  warnings: string[];
+  /** Shared postprocess options. */
+  options: PostprocessOptions;
 }
 
-// A pipeline pass receives the current output for its `OutputArea` (if any) and
-// may return updated data along with warnings. The generic type `T` represents
-// the shape of the data associated with the pass's `OutputArea`.
-export interface PipelinePass<T = unknown> {
+export type PipelineNext = () => Promise<void>;
+
+// A pipeline pass operates on the {@link PipelineContext} and decides whether to
+// continue execution by invoking the provided `next()` callback.
+export interface PipelinePass {
   /** Which output area this pass is responsible for. */
   area: OutputArea;
   /** Execute the pass. */
-  run(data: T | undefined, options: PostprocessOptions): Promise<PipelinePassResult<T>>;
+  run(context: PipelineContext, next: PipelineNext): Promise<void>;
 }

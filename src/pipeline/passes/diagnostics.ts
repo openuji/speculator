@@ -1,10 +1,18 @@
-import type { PostprocessOptions, PipelinePass } from '@/types';
+import type {
+  PostprocessOptions,
+  PipelinePass,
+  PipelineContext,
+  PipelineNext,
+} from '@/types';
 
 export class DiagnosticsPass implements PipelinePass {
   area = 'diagnostics' as const;
   constructor(private readonly root: Element) {}
 
-  async run(_data: unknown, options: PostprocessOptions) {
+  private async execute(
+    _data: unknown,
+    options: PostprocessOptions,
+  ): Promise<{ warnings: string[] }> {
     const warnings: string[] = [];
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
     const idsAndLinks = options.diagnostics?.idsAndLinks ?? true;
@@ -44,5 +52,12 @@ export class DiagnosticsPass implements PipelinePass {
     }
 
     return { warnings };
+  }
+
+  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
+    const current = ctx.outputs[this.area];
+    const { warnings } = await this.execute(current, ctx.options);
+    if (warnings && warnings.length) ctx.warnings.push(...warnings);
+    await next();
   }
 }
