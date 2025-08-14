@@ -1,34 +1,8 @@
-import type { FileLoader } from '../types';
+import type { FileLoader } from '../../types';
+import { nodeFileLoader } from './node.js';
+import { browserFileLoader } from './browser.js';
 
-/**
- * Default file loader for Node.js environments
- */
-export const nodeFileLoader: FileLoader = async (path: string): Promise<string> => {
-  const fs = await import('fs/promises');
-  const  { fileURLToPath } = await import("node:url");
-  const urlPath = fileURLToPath(path);
-  
-  try {
-    return await fs.readFile(urlPath, 'utf-8');
-  } catch (error) {
-    throw new Error(`Failed to load file: ${path}. ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-};
-
-/**
- * Default file loader for browser environments
- */
-export const browserFileLoader: FileLoader = async (path: string): Promise<string> => {
-  try {
-    const response = await fetch(path);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return await response.text();
-  } catch (error) {
-    throw new Error(`Failed to fetch file: ${path}. ${error instanceof Error ? error.message : 'Network error'}`);
-  }
-};
+export { nodeFileLoader, browserFileLoader };
 
 /**
  * Creates a file loader that tries multiple loaders in sequence

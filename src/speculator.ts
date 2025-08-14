@@ -1,4 +1,4 @@
-import { getDefaultFileLoader } from './utils/file-loader';
+import { getDefaultFileLoader } from './utils/file-loader/index.js';
 import type {
   SpeculatorOptions,
   ProcessingResult,
