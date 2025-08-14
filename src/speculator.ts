@@ -156,14 +156,8 @@ export class Speculator {
    */
   async renderHTML(inputHtml: string): Promise<HtmlProcessingResult> {
     const container = this.htmlRenderer.parse(inputHtml);
-    const queried = Array.from(
-      container.querySelectorAll(
-        'section[data-include], section[data-format], *[data-include], *[data-format]'
-      )
-    ) as Element[];
-    const sections = queried.length
-      ? queried
-      : (Array.from(container.children) as Element[]);
+  
+    const sections =  (Array.from(container.children) as Element[]);
     const result = await this.renderDocument({ sections });
     const doc = container.ownerDocument!;
     const root = doc.createElement('div');
