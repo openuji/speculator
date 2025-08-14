@@ -16,6 +16,7 @@ import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
 import type { HtmlRenderer } from './html-renderer';
 import { DOMHtmlRenderer } from './html-renderer';
+import { insertContent, renderError } from './utils/render';
 import { IdlPass } from './pipeline/passes/idl';
 import { XrefPass } from './pipeline/passes/xref';
 import { ReferencesPass, ReferencesOutput } from './pipeline/passes/references';
@@ -63,7 +64,17 @@ export class Speculator {
 
     try {
       if (clonedElement.hasAttribute('data-include')) {
-        await this.includeProcessor.process(clonedElement, stats, warnings);
+        const { content, error } = await this.includeProcessor.process(
+          clonedElement,
+          stats,
+          warnings,
+        );
+        if (content !== null) {
+          insertContent(clonedElement, content);
+        }
+        if (error) {
+          renderError(clonedElement, error);
+        }
       }
 
       if (clonedElement.hasAttribute('data-format')) {

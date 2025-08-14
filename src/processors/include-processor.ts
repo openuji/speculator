@@ -1,6 +1,6 @@
 import type { FileLoader, DataFormat, ProcessingStats } from '../types';
-import { SpeculatorError } from '../types';
 import { FormatProcessor } from './format-processor';
+import { logger } from '../utils/logger';
 
 /**
  * Service responsible for handling data-include attributes.
@@ -12,42 +12,45 @@ export class IncludeProcessor {
     private readonly formatProcessor: FormatProcessor
   ) {}
 
-  async process(element: Element, stats: ProcessingStats, warnings: string[]): Promise<void> {
+  async process(
+    element: Element,
+    stats: ProcessingStats,
+    warnings: string[],
+  ): Promise<{ content: string | null; error?: string }> {
     const includePath = element.getAttribute('data-include');
     const includeFormat = (element.getAttribute('data-include-format') || 'text') as DataFormat;
 
     if (!includePath) {
       warnings.push('data-include attribute is empty');
-      return;
+      element.removeAttribute('data-include');
+      element.removeAttribute('data-include-format');
+      return { content: null };
     }
 
     try {
       const fullPath = this.resolveFilePath(includePath);
       const content = await this.fileLoader(fullPath);
-        
-      
+
       const processedContent = this.formatProcessor.processContent(content, includeFormat);
-      element.innerHTML = processedContent;
       stats.filesIncluded++;
       if (includeFormat === 'markdown') {
         stats.markdownBlocks++;
       }
+      element.removeAttribute('data-include');
+      element.removeAttribute('data-include-format');
+      return { content: processedContent };
     } catch (error) {
       const errorMsg = `Failed to load: ${includePath}`;
       warnings.push(errorMsg);
-      element.innerHTML = `<p class="error">${errorMsg}</p>`;
-      throw new SpeculatorError(errorMsg, element, includePath);
+      element.removeAttribute('data-include');
+      element.removeAttribute('data-include-format');
+      return { content: null, error: errorMsg };
     }
-
-    element.removeAttribute('data-include');
-    element.removeAttribute('data-include-format');
   }
 
   private resolveFilePath(path: string): string {
-
-    const filePath = new URL(path, this.baseUrl || "file:///").toString();
-    console.log(`Resolved file path: ${filePath}`);
+    const filePath = new URL(path, this.baseUrl || 'file:///').toString();
+    logger.debug(`Resolved file path: ${filePath}`);
     return filePath;
-
   }
 }

@@ -1,6 +1,5 @@
 import { IncludeProcessor, FormatProcessor } from '../src/browser';
 import type { FileLoader, ProcessingStats } from '../src/types';
-import { SpeculatorError } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
 // Mock file system
@@ -34,9 +33,10 @@ describe('IncludeProcessor', () => {
     const stats = createStats();
     const warnings: string[] = [];
 
-    await processor.process(element, stats, warnings);
+    const { content, error } = await processor.process(element, stats, warnings);
 
-    expect(element.innerHTML).toContain('<h2 id="intro">Intro</h2>');
+    expect(content).toContain('<h2 id="intro">Intro</h2>');
+    expect(error).toBeUndefined();
     expect(stats.filesIncluded).toBe(1);
     expect(stats.markdownBlocks).toBe(1);
     expect(warnings).toHaveLength(0);
@@ -52,9 +52,10 @@ describe('IncludeProcessor', () => {
     const stats = createStats();
     const warnings: string[] = [];
 
-    await processor.process(element, stats, warnings);
+    const { content, error } = await processor.process(element, stats, warnings);
 
-    expect(element.innerHTML).toContain('interface Test');
+    expect(content).toContain('interface Test');
+    expect(error).toBeUndefined();
     expect(stats.filesIncluded).toBe(1);
     expect(stats.markdownBlocks).toBe(0);
   });
@@ -68,7 +69,8 @@ describe('IncludeProcessor', () => {
     const stats = createStats();
     const warnings: string[] = [];
 
-    await expect(processor.process(element, stats, warnings)).rejects.toThrow(SpeculatorError);
+    const result = await processor.process(element, stats, warnings);
+    expect(result.error).toContain('Failed to load');
   });
 
   it('warns on empty include attribute', async () => {
@@ -80,8 +82,10 @@ describe('IncludeProcessor', () => {
     const stats = createStats();
     const warnings: string[] = [];
 
-    await processor.process(element, stats, warnings);
+    const { content, error } = await processor.process(element, stats, warnings);
 
+    expect(content).toBeNull();
+    expect(error).toBeUndefined();
     expect(warnings).toContain('data-include attribute is empty');
   });
 });
