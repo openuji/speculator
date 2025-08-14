@@ -13,6 +13,7 @@ export {
   createFallbackFileLoader,
   getDefaultFileLoader
 } from './utils/file-loader';
+export { RespecXrefResolver } from './utils/respec-xref-resolver';
 
 // Type exports
 export type {

@@ -6,7 +6,7 @@ A TypeScript library for processing ReSpec-like markup and open for intgration i
 ## Installation
 
 ```bash
-pnpm install @openui/speculator
+pnpm install -D @openui/speculator linkdom
 ```
 
 
