@@ -16,6 +16,7 @@ export {
 } from './utils/file-loader/index.js';
 export { RespecXrefResolver } from './utils/respec-xref-resolver';
 export { getChangedOutputAreas } from './utils/output-areas';
+export { StatsTracker } from './utils/stats-tracker';
 
 // Type exports
 export type {

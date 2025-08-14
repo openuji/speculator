@@ -1,20 +1,18 @@
 import type { ProcessingStats } from '../types';
 import type { Speculator } from '../speculator';
+import { StatsTracker } from '../utils/stats-tracker';
 
 export class SectionsRenderer {
   constructor(private readonly speculator: Speculator) {}
 
-  async render(sections: Element[] = []): Promise<{
+  async render(
+    sections: Element[] = [],
+    tracker: StatsTracker = new StatsTracker(),
+  ): Promise<{
     sections: Element[];
     warnings: string[];
     stats: ProcessingStats;
   }> {
-    const stats: ProcessingStats = {
-      elementsProcessed: 0,
-      filesIncluded: 0,
-      markdownBlocks: 0,
-      processingTime: 0,
-    };
     const warnings: string[] = [];
     const processed: Element[] = [];
 
@@ -24,11 +22,8 @@ export class SectionsRenderer {
           section.hasAttribute('data-include') ||
           section.hasAttribute('data-format')
         ) {
-          const res = await this.speculator.processElement(section);
+          const res = await this.speculator.processElement(section, tracker);
           processed.push(res.element);
-          stats.elementsProcessed += res.stats.elementsProcessed;
-          stats.filesIncluded += res.stats.filesIncluded;
-          stats.markdownBlocks += res.stats.markdownBlocks;
           warnings.push(...res.warnings);
         } else {
           processed.push(section);
@@ -41,6 +36,6 @@ export class SectionsRenderer {
       }
     }
 
-    return { sections: processed, warnings, stats };
+    return { sections: processed, warnings, stats: tracker.toJSON() };
   }
 }

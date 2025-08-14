@@ -1,6 +1,7 @@
-import type { FileLoader, DataFormat, ProcessingStats } from '../types';
+import type { FileLoader, DataFormat } from '../types';
 import { FormatProcessor } from './format-processor';
 import { logger } from '../utils/logger';
+import { StatsTracker } from '../utils/stats-tracker';
 
 /**
  * Service responsible for handling data-include attributes.
@@ -14,7 +15,7 @@ export class IncludeProcessor {
 
   async process(
     element: Element,
-    stats: ProcessingStats,
+    tracker: StatsTracker,
     warnings: string[],
   ): Promise<{ content: string | null; error?: string }> {
     const includePath = element.getAttribute('data-include');
@@ -32,9 +33,9 @@ export class IncludeProcessor {
       const content = await this.fileLoader(fullPath);
 
       const processedContent = this.formatProcessor.processContent(content, includeFormat);
-      stats.filesIncluded++;
+      tracker.incrementFiles();
       if (includeFormat === 'markdown') {
-        stats.markdownBlocks++;
+        tracker.incrementMarkdownBlocks();
       }
       element.removeAttribute('data-include');
       element.removeAttribute('data-include-format');

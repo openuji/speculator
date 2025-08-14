@@ -27,6 +27,7 @@ import { BoilerplateRenderer } from './renderers/boilerplate-renderer';
 import { TocPass } from './pipeline/passes/toc';
 import { DiagnosticsPass } from './pipeline/passes/diagnostics';
 import { getChangedOutputAreas } from './utils/output-areas';
+import { StatsTracker } from './utils/stats-tracker';
 
 /**
  * Main Speculator renderer class
@@ -82,8 +83,9 @@ export class Speculator {
     const headerRenderer = new HeaderRenderer();
     const sotdRenderer = new SotdRenderer();
 
+    const tracker = new StatsTracker();
     const { sections: processedSections, warnings, stats } =
-      await sectionsRenderer.render(config.sections || []);
+      await sectionsRenderer.render(config.sections || [], tracker);
     const { header } = headerRenderer.render(config.header);
     const { sotd } = sotdRenderer.render(config.sotd);
 
@@ -119,14 +121,11 @@ export class Speculator {
   /**
    * Process a single DOM element
    */
-  async processElement(element: Element): Promise<ProcessingResult> {
-    const startTime = performance.now();
-    const stats: ProcessingStats = {
-      elementsProcessed: 0,
-      filesIncluded: 0,
-      markdownBlocks: 0,
-      processingTime: 0,
-    };
+  async processElement(
+    element: Element,
+    tracker: StatsTracker = new StatsTracker(),
+  ): Promise<ProcessingResult> {
+    tracker.start();
     const warnings: string[] = [];
 
     const clonedElement = element.cloneNode(true) as Element;
@@ -135,32 +134,32 @@ export class Speculator {
       if (clonedElement.hasAttribute('data-include')) {
         const { content, error } = await this.includeProcessor.process(
           clonedElement,
-          stats,
+          tracker,
           warnings,
         );
-          if (content !== null) {
-            insertContent(clonedElement, content);
-          }
-          if (error) {
-            insertContent(clonedElement, renderError(error));
-          }
+        if (content !== null) {
+          insertContent(clonedElement, content);
+        }
+        if (error) {
+          insertContent(clonedElement, renderError(error));
+        }
       }
 
       if (clonedElement.hasAttribute('data-format')) {
-        const { content, error } = this.formatProcessor.process(clonedElement, stats);
-          if (error) {
-            warnings.push(error);
-            insertContent(clonedElement, renderError(error));
-          } else if (content !== undefined) {
-            const rendered = this.htmlRenderer.parse(content);
-            insertContent(clonedElement, this.htmlRenderer.serialize(rendered));
-          }
+        const { content, error } = this.formatProcessor.process(clonedElement, tracker);
+        if (error) {
+          warnings.push(error);
+          insertContent(clonedElement, renderError(error));
+        } else if (content !== undefined) {
+          const rendered = this.htmlRenderer.parse(content);
+          insertContent(clonedElement, this.htmlRenderer.serialize(rendered));
+        }
       }
 
-      stats.elementsProcessed = 1;
-      stats.processingTime = performance.now() - startTime;
+      tracker.incrementElements();
+      tracker.stop();
 
-      return { element: clonedElement, warnings, stats };
+      return { element: clonedElement, warnings, stats: tracker.toJSON() };
     } catch (error) {
       throw new SpeculatorError(
         `Failed to process element: ${error instanceof Error ? error.message : 'Unknown error'}`,
