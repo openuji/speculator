@@ -54,7 +54,14 @@ export interface ProcessingResult {
   /** Processing statistics */
   stats: ProcessingStats;
 }
-
+export interface HtmlProcessingResult {
+  /** The processed HTML element */
+  html: string;
+  /** Any warnings encountered during processing */
+  warnings: string[];
+  /** Processing statistics */
+  stats: ProcessingStats;
+}
 /**
  * Processing statistics
  */

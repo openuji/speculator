@@ -1,4 +1,4 @@
-import { Speculator } from '../src/browser';
+import { Speculator } from '../src';
 import type { XrefResolver, XrefQuery, XrefResult } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 

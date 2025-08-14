@@ -1,5 +1,5 @@
 import { getDefaultFileLoader } from './utils/file-loader';
-import type { SpeculatorOptions, ProcessingResult, ProcessingStats, PipelinePass } from './types';
+import type { SpeculatorOptions, ProcessingResult, ProcessingStats, PipelinePass, HtmlProcessingResult } from './types';
 import { SpeculatorError } from './types';
 import { postprocess } from './pipeline/postprocess';
 import { IncludeProcessor } from './processors/include-processor';
@@ -136,9 +136,12 @@ export class Speculator {
   /**
    * Process HTML string and return processed HTML
    */
-  async renderHTML(html: string): Promise<string> {
-    const container = this.htmlRenderer.parse(html);
-    await this.renderDocument(container);
-    return this.htmlRenderer.serialize(container);
+  async renderHTML(inputHtml: string): Promise<HtmlProcessingResult> {
+    const container = this.htmlRenderer.parse(inputHtml);
+    const result = await this.renderDocument(container);
+    const html = this.htmlRenderer.serialize(result.element);
+    return { html, warnings: result.warnings, stats: result.stats };
   }
+
+  
 }
