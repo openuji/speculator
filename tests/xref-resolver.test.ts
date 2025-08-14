@@ -27,9 +27,16 @@ describe('xref resolver integration', () => {
         toc: { enabled: false },
       },
     });
-    document.body.innerHTML = `<div id="c" data-cite="dom"><section data-format="markdown">Uses [= task queue =].</section></div>`;
+    document.body.innerHTML = `<div id="c"><section data-cite="dom" data-format="markdown">Uses [= task queue =].</section></div>`;
     const container = document.querySelector('#c')!;
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(
+      container.querySelectorAll(
+        'section[data-include], section[data-format], *[data-include], *[data-format]'
+      )
+    ) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    container.innerHTML = '';
+    res.sections.forEach(s => container.appendChild(s));
     const link = container.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
     expect(link.getAttribute('href')).toBe('https://example.com/task-queue');
     expect(resolver.calls[0].specs).toEqual(['dom']);
@@ -51,7 +58,14 @@ describe('xref resolver integration', () => {
     });
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= event loop =]</section></div>`;
     const container = document.querySelector('#c')!;
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(
+      container.querySelectorAll(
+        'section[data-include], section[data-format], *[data-include], *[data-format]'
+      )
+    ) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    container.innerHTML = '';
+    res.sections.forEach(s => container.appendChild(s));
     const link = container.querySelector('a[data-xref="event loop"]') as HTMLAnchorElement;
     expect(link.getAttribute('href')).toBe('https://example.com/html-loop');
     expect(resolver.calls[0].specs).toEqual(['html', 'dom']);
@@ -73,7 +87,14 @@ describe('xref resolver integration', () => {
     });
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= ambiguous =] [= missing =]</section></div>`;
     const container = document.querySelector('#c')!;
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(
+      container.querySelectorAll(
+        'section[data-include], section[data-format], *[data-include], *[data-format]'
+      )
+    ) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    container.innerHTML = '';
+    res.sections.forEach(s => container.appendChild(s));
     const ambiguous = container.querySelector('a[data-xref="ambiguous"]') as HTMLAnchorElement;
     expect(ambiguous.hasAttribute('href')).toBe(false);
     expect(res.warnings.some(w => /Ambiguous xref: "ambiguous"/.test(w))).toBe(true);
@@ -99,9 +120,16 @@ describe('xref resolver integration', () => {
         toc: { enabled: false },
       },
     });
-    document.body.innerHTML = `<div id="c"><section data-format="markdown">[= event loop =]</section><span data-cite="ujse"><section data-format="markdown">[= custom =]</section></span></div>`;
+    document.body.innerHTML = `<div id="c"><section data-format="markdown">[= event loop =]</section><section data-cite="ujse" data-format="markdown">[= custom =]</section></div>`;
     const container = document.querySelector('#c')!;
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(
+      container.querySelectorAll(
+        'section[data-include], section[data-format], *[data-include], *[data-format]'
+      )
+    ) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    container.innerHTML = '';
+    res.sections.forEach(s => container.appendChild(s));
     const loop = container.querySelector('a[data-xref="event loop"]') as HTMLAnchorElement;
     const custom = container.querySelector('a[data-xref="custom"]') as HTMLAnchorElement;
     expect(loop.getAttribute('href')).toBe('https://example.com/html-loop');

@@ -31,11 +31,13 @@ describe('References rendering', () => {
     const renderer = new Speculator({
       postprocess: { biblio: { entries: biblio } }
     });
-
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
 
     // Section exists
-    const refs = container.querySelector('#references')!;
+    const refs = wrapper.querySelector('#references')!;
     expect(refs).toBeTruthy();
 
     // Normative vs Informative split (DOM only in Normative)
@@ -48,8 +50,8 @@ describe('References rendering', () => {
     expect(info.innerHTML).toContain('HTML Standard');
 
     // In-text cites link back to bib items
-    const citeHtml = container.querySelector('a[data-spec="HTML"]')!;
-    const citeDom = container.querySelector('a[data-spec="DOM"]')!;
+    const citeHtml = wrapper.querySelector('a[data-spec="HTML"]')!;
+    const citeDom = wrapper.querySelector('a[data-spec="DOM"]')!;
     expect(citeHtml.getAttribute('href')).toBe('#bib-html');
     expect(citeDom.getAttribute('href')).toBe('#bib-dom');
 
@@ -67,9 +69,11 @@ describe('References rendering', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
-
-    const res = await renderer.renderDocument(container);
-    const refs = container.querySelector('#references')!;
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
+    const refs = wrapper.querySelector('#references')!;
     expect(refs.innerHTML).toContain('[UNKNOWN]');
     expect(res.warnings.some(w => /Unresolved reference: "UNKNOWN"/.test(w))).toBe(true);
   });

@@ -19,15 +19,17 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
         toc: { enabled: true },
       }
     });
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
 
-    await renderer.renderDocument(container);
-
-    const toc = container.querySelector('#toc ol')!;
+    const toc = wrapper.querySelector('#toc ol')!;
     expect(toc).toBeTruthy();
 
-    const conf = container.querySelector('#conformance')!;
-    const sec = container.querySelector('#security')!;
-    const priv = container.querySelector('#privacy')!;
+    const conf = wrapper.querySelector('#conformance')!;
+    const sec = wrapper.querySelector('#security')!;
+    const priv = wrapper.querySelector('#privacy')!;
     expect(conf.previousElementSibling?.id).toBe('toc'); // inserted after ToC
     expect(sec).toBeTruthy();
     expect(priv).toBeTruthy();
@@ -43,10 +45,13 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     const renderer = new Speculator({
       postprocess: { boilerplate: { conformance: true } }
     });
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
+    expect(wrapper.querySelectorAll('#conformance').length).toBe(1);
+    expect(wrapper.querySelector('#conformance')!.textContent).toContain('Custom.');
 
-    await renderer.renderDocument(container);
-    expect(container.querySelectorAll('#conformance').length).toBe(1);
-    expect(container.querySelector('#conformance')!.textContent).toContain('Custom.');
   });
 
   it('diagnostics: duplicate ids and unresolved link placeholders', async () => {
@@ -62,7 +67,8 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
 
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
     expect(res.warnings.some(w => /Duplicate id: "dup"/.test(w))).toBe(true);
     // unresolved placeholders: xref + idl + reference
     expect(res.warnings.some(w => /Unresolved link placeholder: "missing"/.test(w))).toBe(true);
@@ -84,8 +90,8 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     const renderer = new Speculator({
       postprocess: { diagnostics: { suppressClass: 'no-link-warnings' } }
     });
-
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
     expect(res.warnings.some(w => /Duplicate id/.test(w))).toBe(false);
     expect(res.warnings.some(w => /Unresolved link placeholder/.test(w))).toBe(false);
   });
@@ -102,9 +108,11 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator({ postprocess: { toc: { enabled: true } } });
-
-    await renderer.renderDocument(container);
-    const items = container.querySelectorAll('#toc li');
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
+    const items = wrapper.querySelectorAll('#toc li');
     expect(Array.from(items).map(li => li.getAttribute('data-depth'))).toEqual(['1', '2']);
   });
 });

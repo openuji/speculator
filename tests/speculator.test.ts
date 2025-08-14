@@ -49,7 +49,12 @@ describe('Speculator', () => {
       `;
 
       const container = document.querySelector('#container')!;
-      const result = await renderer.renderDocument(container);
+      const sections = Array.from(
+        container.querySelectorAll(
+          'section[data-include], section[data-format], *[data-include], *[data-format]'
+        )
+      ) as Element[];
+      const result = await renderer.renderDocument({ sections });
 
       expect(result.stats.elementsProcessed).toBe(3);
       expect(result.stats.filesIncluded).toBe(2);
@@ -66,7 +71,12 @@ describe('Speculator', () => {
       `;
 
       const container = document.querySelector('#container')!;
-      const result = await renderer.renderDocument(container);
+      const sections = Array.from(
+        container.querySelectorAll(
+          'section[data-include], section[data-format], *[data-include], *[data-format]'
+        )
+      ) as Element[];
+      const result = await renderer.renderDocument({ sections });
 
       expect(result.warnings.length).toBeGreaterThan(0);
     });
@@ -80,6 +90,14 @@ describe('Speculator', () => {
 
       expect(result.html).toContain('<h2 id="test">Test</h2>');
       expect(result.html).toContain('<strong>world</strong>');
+    });
+
+    it('should handle HTML without special attributes', async () => {
+      const html = '<section><p>Hello</p></section>';
+
+      const result = await renderer.renderHTML(html);
+
+      expect(result.html).toContain('<p>Hello</p>');
     });
   });
 

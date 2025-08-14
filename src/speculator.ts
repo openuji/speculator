@@ -5,8 +5,13 @@ import type {
   ProcessingStats,
   HtmlProcessingResult,
   OutputArea,
+  RespecLikeConfig,
+  RenderResult,
 } from './types';
 import { SpeculatorError } from './types';
+import { SectionsRenderer } from './renderers/sections-renderer';
+import { HeaderRenderer } from './renderers/header-renderer';
+import { SotdRenderer } from './renderers/sotd-renderer';
 import { Postprocessor } from './pipeline/postprocess';
 import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
@@ -86,46 +91,28 @@ export class Speculator {
   }
 
   /**
-   * Process an entire document
+   * Process an entire document described by a RespecLikeConfig
    */
-  async renderDocument(container: Element): Promise<ProcessingResult> {
+  async renderDocument(config: RespecLikeConfig): Promise<RenderResult> {
     const startTime = performance.now();
-    const sections = container.querySelectorAll(
-      'section[data-include], section[data-format], *[data-include], *[data-format]'
-    );
+    const sectionsRenderer = new SectionsRenderer(this);
+    const headerRenderer = new HeaderRenderer();
+    const sotdRenderer = new SotdRenderer();
 
-    const allStats: ProcessingStats = {
-      elementsProcessed: 0,
-      filesIncluded: 0,
-      markdownBlocks: 0,
-      processingTime: 0,
-    };
-    const allWarnings: string[] = [];
+    const { sections: processedSections, warnings: sectionWarnings, stats } =
+      await sectionsRenderer.render(config.sections || []);
+    const { header } = headerRenderer.render(config.header);
+    const { sotd } = sotdRenderer.render(config.sotd);
 
-    const processedElements: Element[] = [];
+    const allWarnings = [...sectionWarnings];
 
-    for (const section of Array.from(sections)) {
-      try {
-        const result = await this.processElement(section);
-        processedElements.push(result.element);
-
-        allStats.elementsProcessed += result.stats.elementsProcessed;
-        allStats.filesIncluded += result.stats.filesIncluded;
-        allStats.markdownBlocks += result.stats.markdownBlocks;
-        allWarnings.push(...result.warnings);
-      } catch (error) {
-        allWarnings.push(
-          `Failed to process element: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-        processedElements.push(section);
-      }
+    const baseDoc = (header || sotd || processedSections[0])?.ownerDocument;
+    const container = baseDoc ? baseDoc.createElement('div') : this.htmlRenderer.parse('');
+    if (header) container.appendChild(header);
+    if (sotd) container.appendChild(sotd);
+    for (const section of processedSections) {
+      container.appendChild(section);
     }
-
-    sections.forEach((section, index) => {
-      if (processedElements[index] && section.parentNode) {
-        section.parentNode.replaceChild(processedElements[index], section);
-      }
-    });
 
     try {
       const areas: OutputArea[] = [
@@ -134,7 +121,7 @@ export class Speculator {
         'references',
         'boilerplate',
         'toc',
-        'diagnostics',
+        'diagnostics'
       ];
       const { warnings } = await this.postprocessor.run(
         container,
@@ -146,9 +133,22 @@ export class Speculator {
       allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
 
-    allStats.processingTime = performance.now() - startTime;
+    stats.processingTime = performance.now() - startTime;
 
-    return { element: container, warnings: allWarnings, stats: allStats };
+    const finalSections = Array.from(container.children).filter(
+      el => el !== header && el !== sotd
+    ) as Element[];
+    const result: RenderResult = {
+      sections: finalSections,
+      warnings: allWarnings,
+      stats,
+    };
+    if (header) result.header = header;
+    if (sotd) result.sotd = sotd;
+    if (config.metadata) result.metadata = config.metadata;
+    if (config.pubrules) result.pubrules = config.pubrules;
+    if (config.legal) result.legal = config.legal;
+    return result;
   }
 
   /**
@@ -156,8 +156,17 @@ export class Speculator {
    */
   async renderHTML(inputHtml: string): Promise<HtmlProcessingResult> {
     const container = this.htmlRenderer.parse(inputHtml);
-    const result = await this.renderDocument(container);
-    const html = this.htmlRenderer.serialize(result.element);
+  
+    const sections =  (Array.from(container.children) as Element[]);
+    const result = await this.renderDocument({ sections });
+    const doc = container.ownerDocument!;
+    const root = doc.createElement('div');
+    if (result.header) root.appendChild(result.header);
+    if (result.sotd) root.appendChild(result.sotd);
+    for (const section of result.sections) {
+      root.appendChild(section);
+    }
+    const html = this.htmlRenderer.serialize(root);
     return { html, warnings: result.warnings, stats: result.stats };
   }
 
