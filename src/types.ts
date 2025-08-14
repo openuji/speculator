@@ -77,9 +77,14 @@ export interface ProcessingStats {
 }
 
 /**
- * Supported data formats
+ * Supported data formats. Additional formats can be provided by registering
+ * custom {@link FormatStrategy} implementations with {@link FormatProcessor}.
  */
-export type DataFormat = 'markdown' | 'text' | 'html';
+export type DataFormat =
+  | 'markdown'
+  | 'text'
+  | 'html'
+  | (string & {});
 
 /**
  * Error thrown during rendering
