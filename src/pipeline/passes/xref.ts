@@ -122,11 +122,6 @@ export const xrefPass: PipelinePass = {
     const xrefAnchors = Array.from(root.querySelectorAll<HTMLAnchorElement>('a[data-xref]'));
 
     // 1) Resolve concept links locally and collect unresolved
-    interface UnresolvedEntry {
-      term: string;
-      specs?: string[];
-      anchors: HTMLAnchorElement[];
-    }
     const resolverConfigs = Array.isArray(options.xref)
       ? options.xref
       : options.xref
