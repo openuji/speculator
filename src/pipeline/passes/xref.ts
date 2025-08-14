@@ -4,6 +4,8 @@ import type {
   XrefQuery,
   XrefResult,
   XrefOptions,
+  PipelineContext,
+  PipelineNext,
 } from '../../types';
 
 function uniqueId(doc: Document, base: string): string {
@@ -119,7 +121,10 @@ export class XrefPass implements PipelinePass {
   area = 'xref' as const;
   constructor(private readonly root: Element) {}
 
-  async run(_data: unknown, options: PostprocessOptions) {
+  private async execute(
+    _data: unknown,
+    options: PostprocessOptions,
+  ): Promise<{ warnings: string[] }> {
     const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
     const localMap = buildLocalMap(this.root);
 
@@ -144,6 +149,13 @@ export class XrefPass implements PipelinePass {
     const applyWarnings = applyXrefResults(resolvedEntries, defaultPriority);
 
     return { warnings: [...resolveWarnings, ...applyWarnings] };
+  }
+
+  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
+    const current = ctx.outputs[this.area];
+    const { warnings } = await this.execute(current, ctx.options);
+    if (warnings && warnings.length) ctx.warnings.push(...warnings);
+    await next();
   }
 }
 

@@ -1,5 +1,6 @@
-import { BoilerplatePass } from '../src/pipeline/passes/boilerplate';
+import { BoilerplatePass, type BoilerplateOutput } from '../src/pipeline/passes/boilerplate';
 import { BoilerplateRenderer } from '../src/renderers/boilerplate-renderer';
+import type { PipelineContext } from '../src/types';
 
 describe('Boilerplate rendering', () => {
   it('creates boilerplate sections from descriptors', async () => {
@@ -8,9 +9,13 @@ describe('Boilerplate rendering', () => {
     doc.body.appendChild(root);
 
     const pass = new BoilerplatePass(root);
-    const { data } = await pass.run(undefined, {
-      boilerplate: { conformance: true },
-    } as any);
+    const ctx: PipelineContext = {
+      outputs: {},
+      warnings: [],
+      options: { boilerplate: { conformance: true } } as any,
+    };
+    await pass.run(ctx, async () => {});
+    const data = ctx.outputs.boilerplate as BoilerplateOutput;
 
     const renderer = new BoilerplateRenderer(doc);
     const sections = renderer.render(data.sections);

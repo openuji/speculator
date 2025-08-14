@@ -1,4 +1,9 @@
-import type { PostprocessOptions, PipelinePass } from '@/types';
+import type {
+  PostprocessOptions,
+  PipelinePass,
+  PipelineContext,
+  PipelineNext,
+} from '@/types';
 import { ReferencesRenderer, idForRef, type ReferenceRecord } from '../../renderers/references-renderer';
 
 export interface ReferencesOutput {
@@ -6,11 +11,14 @@ export interface ReferencesOutput {
   citeUpdates: Array<{ element: HTMLAnchorElement; href: string }>;
 }
 
-export class ReferencesPass implements PipelinePass<ReferencesOutput> {
+export class ReferencesPass implements PipelinePass {
   area = 'references' as const;
   constructor(private readonly root: Element, private readonly mount: HTMLElement | null) {}
 
-  async run(_data: ReferencesOutput | undefined, options: PostprocessOptions) {
+  private async execute(
+    _data: ReferencesOutput | undefined,
+    options: PostprocessOptions,
+  ): Promise<{ data: ReferencesOutput; warnings: string[] }> {
     const warnings: string[] = [];
     const biblio = options.biblio?.entries ?? {};
 
@@ -56,5 +64,13 @@ export class ReferencesPass implements PipelinePass<ReferencesOutput> {
     }
 
     return { data: { html, citeUpdates }, warnings };
+  }
+
+  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
+    const current = ctx.outputs[this.area] as ReferencesOutput | undefined;
+    const { data, warnings } = await this.execute(current, ctx.options);
+    if (data !== undefined) ctx.outputs[this.area] = data;
+    if (warnings && warnings.length) ctx.warnings.push(...warnings);
+    await next();
   }
 }
