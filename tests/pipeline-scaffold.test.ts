@@ -24,9 +24,8 @@ describe('Postprocess pipeline (scaffold)', () => {
     `;
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
-
-    const res = await renderer.renderDocument(container);
-    console.log('res', res);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
     expect(res.warnings.some(w => /No matching xref: "task queue"/.test(w))).toBe(true);
     expect(res.warnings.some(w => /Unresolved IDL link: "SmoothScroller"/.test(w))).toBe(true);
   });
@@ -41,9 +40,11 @@ describe('Postprocess pipeline (scaffold)', () => {
     `;
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
-
-    await renderer.renderDocument(container);
-    const refs = container.querySelector('#references')!;
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
+    const refs = wrapper.querySelector('#references')!;
     expect(refs).toBeTruthy();
     expect(refs.innerHTML).toContain('Normative references');
     expect(refs.innerHTML).toContain('Informative references');
@@ -64,9 +65,12 @@ describe('Postprocess pipeline (scaffold)', () => {
     `;
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
-    await renderer.renderDocument(container);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
 
-    const toc = container.querySelector('#toc ol');
+    const toc = wrapper.querySelector('#toc ol');
     expect(toc).toBeTruthy();
     expect(toc!.querySelectorAll('a').length).toBeGreaterThan(0);
   });
@@ -81,7 +85,8 @@ describe('Postprocess pipeline (scaffold)', () => {
     `;
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
     expect(res.warnings.some(w => /suppressed/.test(w))).toBe(false);
   });
 });

@@ -95,6 +95,38 @@ export class SpeculatorError extends Error {
   }
 }
 
+/**
+ * Simplified configuration object inspired by ReSpec's configuration.
+ */
+export interface RespecLikeConfig {
+  /** Document sections to process */
+  sections?: Element[];
+  /** Optional document header */
+  header?: Element;
+  /** Status of This Document section */
+  sotd?: Element;
+  /** Arbitrary metadata */
+  metadata?: Record<string, unknown>;
+  /** Pubrules-specific content */
+  pubrules?: Element;
+  /** Legal boilerplate content */
+  legal?: Element;
+}
+
+/**
+ * Result returned after rendering a RespecLikeConfig.
+ */
+export interface RenderResult {
+  sections: Element[];
+  header?: Element;
+  sotd?: Element;
+  metadata?: Record<string, unknown>;
+  pubrules?: Element;
+  legal?: Element;
+  warnings: string[];
+  stats: ProcessingStats;
+}
+
 // …existing types…
 
 export type XrefQuery = {

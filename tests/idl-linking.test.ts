@@ -27,9 +27,11 @@ describe('IDL linking', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator({ fileLoader: mockFileLoader });
-
-    const res = await renderer.renderDocument(container);
-    const a = container.querySelector('a[data-idl="SmoothScroller"]') as HTMLAnchorElement;
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
+    const a = wrapper.querySelector('a[data-idl="SmoothScroller"]') as HTMLAnchorElement;
 
     expect(a).toBeTruthy();
     expect(a.getAttribute('href')).toMatch(/^#idl-smoothscroller/);
@@ -47,11 +49,13 @@ describe('IDL linking', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator({ fileLoader: mockFileLoader });
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
 
-    await renderer.renderDocument(container);
-
-    const a1 = container.querySelector('a[data-idl="SmoothScroller.isScrolling"]') as HTMLAnchorElement;
-    const a2 = container.querySelector('a[data-idl="SmoothScroller.scrollTo"]') as HTMLAnchorElement;
+    const a1 = wrapper.querySelector('a[data-idl="SmoothScroller.isScrolling"]') as HTMLAnchorElement;
+    const a2 = wrapper.querySelector('a[data-idl="SmoothScroller.scrollTo"]') as HTMLAnchorElement;
 
     expect(a1.getAttribute('href')).toMatch(/^#idl-smoothscroller-isscrolling/);
     expect(a2.getAttribute('href')).toMatch(/^#idl-smoothscroller-scrollto/);
@@ -65,8 +69,8 @@ describe('IDL linking', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
-
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
     expect(res.warnings.some(w => /IDL parse error/.test(w))).toBe(true);
   });
 });

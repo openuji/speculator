@@ -13,9 +13,11 @@ describe('Xref local resolution', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
-
-    const res = await renderer.renderDocument(container);
-    const a = container.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
+    const a = wrapper.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
 
     expect(a).toBeTruthy();
     expect(a.getAttribute('href')).toBe('#task-queue');
@@ -33,10 +35,12 @@ describe('Xref local resolution', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
-
-    await renderer.renderDocument(container);
-    const h2 = container.querySelector('h2#task-queue')!;
-    const a = container.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
+    const wrapper = document.createElement('div');
+    res.sections.forEach(s => wrapper.appendChild(s));
+    const h2 = wrapper.querySelector('h2#task-queue')!;
+    const a = wrapper.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
 
     expect(h2).toBeTruthy();
     expect(a).toBeTruthy();
@@ -53,8 +57,8 @@ describe('Xref local resolution', () => {
     `;
     const container = document.querySelector('#c')!;
     const renderer = new Speculator();
-
-    const res = await renderer.renderDocument(container);
+    const sections = Array.from(container.children) as Element[];
+    const res = await renderer.renderDocument({ sections });
     expect(res.warnings.some(w => /Unresolved IDL link: "SmoothScroller"/.test(w))).toBe(true);
     expect(res.warnings.some(w => /No matching xref: "missing"/.test(w))).toBe(true);
   });

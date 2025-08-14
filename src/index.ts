@@ -22,7 +22,9 @@ export type {
   MarkdownOptions,
   ProcessingResult,
   ProcessingStats,
-  DataFormat
+  DataFormat,
+  RespecLikeConfig,
+  RenderResult
 } from './types';
 
 export { SpeculatorError } from './types';

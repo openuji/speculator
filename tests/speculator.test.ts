@@ -49,7 +49,12 @@ describe('Speculator', () => {
       `;
 
       const container = document.querySelector('#container')!;
-      const result = await renderer.renderDocument(container);
+      const sections = Array.from(
+        container.querySelectorAll(
+          'section[data-include], section[data-format], *[data-include], *[data-format]'
+        )
+      ) as Element[];
+      const result = await renderer.renderDocument({ sections });
 
       expect(result.stats.elementsProcessed).toBe(3);
       expect(result.stats.filesIncluded).toBe(2);
@@ -66,7 +71,12 @@ describe('Speculator', () => {
       `;
 
       const container = document.querySelector('#container')!;
-      const result = await renderer.renderDocument(container);
+      const sections = Array.from(
+        container.querySelectorAll(
+          'section[data-include], section[data-format], *[data-include], *[data-format]'
+        )
+      ) as Element[];
+      const result = await renderer.renderDocument({ sections });
 
       expect(result.warnings.length).toBeGreaterThan(0);
     });
