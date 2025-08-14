@@ -6,12 +6,14 @@ import type {
   HtmlProcessingResult,
   RespecLikeConfig,
   RenderResult,
+  PipelinePass,
+  OutputArea,
 } from './types';
 import { SpeculatorError } from './types';
 import { SectionsRenderer } from './renderers/sections-renderer';
 import { HeaderRenderer } from './renderers/header-renderer';
 import { SotdRenderer } from './renderers/sotd-renderer';
-import { Postprocessor } from './pipeline/postprocess';
+import { Postprocessor, type PipelineResult } from './pipeline/postprocess';
 import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
 import type { HtmlRenderer } from './html-renderer';
@@ -34,6 +36,7 @@ export class Speculator {
   private readonly formatProcessor: FormatProcessor;
   private readonly htmlRenderer: HtmlRenderer;
   private readonly postprocessOptions: SpeculatorOptions['postprocess'];
+  private readonly passFactory: (container: Element) => PipelinePass[];
   private prevConfig: RespecLikeConfig | undefined;
 
   constructor(options: SpeculatorOptions = {}) {
@@ -46,6 +49,71 @@ export class Speculator {
     this.includeProcessor =
       options.includeProcessor || new IncludeProcessor(baseUrl, fileLoader, this.formatProcessor);
     this.htmlRenderer = options.htmlRenderer || new DOMHtmlRenderer();
+
+    const passes = options.passes;
+    if (Array.isArray(passes)) {
+      this.passFactory = () => passes;
+    } else if (typeof passes === 'function') {
+      this.passFactory = passes;
+    } else {
+      this.passFactory = (container: Element) => {
+        const tocMount = container.querySelector('#toc') as HTMLElement | null;
+        const refsMount = container.querySelector('#references') as HTMLElement | null;
+        return [
+          new IdlPass(container),
+          new XrefPass(container),
+          new ReferencesPass(container, refsMount),
+          new BoilerplatePass(container),
+          new TocPass(container, tocMount),
+          new DiagnosticsPass(container),
+        ];
+      };
+    }
+  }
+
+  private async buildContainer(config: RespecLikeConfig): Promise<{
+    container: Element;
+    header?: Element;
+    sotd?: Element;
+    stats: ProcessingStats;
+    warnings: string[];
+  }> {
+    const sectionsRenderer = new SectionsRenderer(this);
+    const headerRenderer = new HeaderRenderer();
+    const sotdRenderer = new SotdRenderer();
+
+    const { sections: processedSections, warnings, stats } =
+      await sectionsRenderer.render(config.sections || []);
+    const { header } = headerRenderer.render(config.header);
+    const { sotd } = sotdRenderer.render(config.sotd);
+
+    const baseDoc = (header || sotd || processedSections[0])?.ownerDocument;
+    const container = baseDoc ? baseDoc.createElement('div') : this.htmlRenderer.parse('');
+    if (header) container.appendChild(header);
+    if (sotd) container.appendChild(sotd);
+    for (const section of processedSections) {
+      container.appendChild(section);
+    }
+
+    const result: {
+      container: Element;
+      header?: Element;
+      sotd?: Element;
+      stats: ProcessingStats;
+      warnings: string[];
+    } = { container, stats, warnings };
+    if (header) result.header = header;
+    if (sotd) result.sotd = sotd;
+    return result;
+  }
+
+  private async runPasses(
+    container: Element,
+    areas: OutputArea[],
+  ): Promise<PipelineResult> {
+    const passes = this.passFactory(container);
+    const processor = new Postprocessor(passes);
+    return processor.run(areas, this.postprocessOptions || {});
   }
 
   /**
@@ -106,44 +174,18 @@ export class Speculator {
    */
   async renderDocument(config: RespecLikeConfig): Promise<RenderResult> {
     const startTime = performance.now();
-    const sectionsRenderer = new SectionsRenderer(this);
-    const headerRenderer = new HeaderRenderer();
-    const sotdRenderer = new SotdRenderer();
-
-    const { sections: processedSections, warnings: sectionWarnings, stats } =
-      await sectionsRenderer.render(config.sections || []);
-    const { header } = headerRenderer.render(config.header);
-    const { sotd } = sotdRenderer.render(config.sotd);
-
+    const { container, header, sotd, stats, warnings: sectionWarnings } =
+      await this.buildContainer(config);
     const allWarnings = [...sectionWarnings];
-
-    const baseDoc = (header || sotd || processedSections[0])?.ownerDocument;
-    const container = baseDoc ? baseDoc.createElement('div') : this.htmlRenderer.parse('');
-    if (header) container.appendChild(header);
-    if (sotd) container.appendChild(sotd);
-    for (const section of processedSections) {
-      container.appendChild(section);
-    }
 
     const areas = getChangedOutputAreas(this.prevConfig, config);
     try {
       if (areas.length) {
+        const { outputs, warnings } = await this.runPasses(container, areas);
+        allWarnings.push(...warnings);
+
         const tocMount = container.querySelector('#toc') as HTMLElement | null;
         const refsMount = container.querySelector('#references') as HTMLElement | null;
-        const passes = [
-          new IdlPass(container),
-          new XrefPass(container),
-          new ReferencesPass(container, refsMount),
-          new BoilerplatePass(container),
-          new TocPass(container, tocMount),
-          new DiagnosticsPass(container),
-        ];
-        const processor = new Postprocessor(passes);
-        const { outputs, warnings } = await processor.run(
-          areas,
-          this.postprocessOptions || {}
-        );
-        allWarnings.push(...warnings);
 
         const tocHtml = outputs.toc as string | undefined;
         if (tocHtml && tocMount) {
@@ -167,17 +209,21 @@ export class Speculator {
           } else {
             container.insertAdjacentHTML('beforeend', refOut.html);
           }
-          refOut.citeUpdates.forEach(({ element, href }) => element.setAttribute('href', href));
+          refOut.citeUpdates.forEach(({ element, href }) =>
+            element.setAttribute('href', href),
+          );
         }
       }
     } catch (e) {
-      allWarnings.push(`Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
+      allWarnings.push(
+        `Postprocess failed: ${e instanceof Error ? e.message : 'Unknown error'}`,
+      );
     }
 
     stats.processingTime = performance.now() - startTime;
 
     const finalSections = Array.from(container.children).filter(
-      el => el !== header && el !== sotd
+      el => el !== header && el !== sotd,
     ) as Element[];
     const result: RenderResult = {
       sections: finalSections,
@@ -192,7 +238,6 @@ export class Speculator {
     this.prevConfig = config;
     return result;
   }
-
   /**
    * Process HTML string and return processed HTML
    */
