@@ -1,5 +1,6 @@
 import { FormatProcessor } from '../src/browser';
-import type { ProcessingStats } from '../src/types';
+import type { ProcessingStats, DataFormat } from '../src/types';
+import type { FormatStrategy } from '../src/browser';
 import { describe, it, expect } from '@jest/globals';
 
 describe('FormatProcessor', () => {
@@ -38,5 +39,29 @@ describe('FormatProcessor', () => {
     const { content } = processor.process(element, stats);
 
     expect(content).not.toContain('<br>');
+  });
+
+  it('throws on unsupported formats', () => {
+    const processor = new FormatProcessor();
+    expect(() => processor.processContent('test', 'xml' as DataFormat)).toThrow(
+      'Unsupported format: xml'
+    );
+  });
+
+  it('allows custom strategies', () => {
+    const upper: FormatStrategy = {
+      convert: (c: string) => c.toUpperCase(),
+    };
+    const processor = new FormatProcessor({}, { upper });
+
+    const element = document.createElement('div');
+    element.setAttribute('data-format', 'upper');
+    element.textContent = 'hello';
+
+    const stats = createStats();
+    const { content, error } = processor.process(element, stats);
+
+    expect(error).toBeUndefined();
+    expect(content).toBe('HELLO');
   });
 });
