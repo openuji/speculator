@@ -4,25 +4,13 @@ import { describe, it, expect } from '@jest/globals';
 
 class StubResolver implements XrefResolver {
   public calls: XrefQuery[] = [];
+  constructor(private readonly data: Record<string, XrefResult[]> = {}) {}
+
   async resolveBatch(queries: XrefQuery[]): Promise<Map<string, XrefResult[]>> {
     this.calls.push(...queries);
     const map = new Map<string, XrefResult[]>();
     for (const q of queries) {
-      if (q.term === 'task queue') {
-        map.set(q.id || q.term, [{ href: 'https://example.com/task-queue', cite: 'dom' }]);
-      } else if (q.term === 'event loop') {
-        map.set(q.id || q.term, [
-          { href: 'https://example.com/html-loop', cite: 'html' },
-          { href: 'https://example.com/dom-loop', cite: 'dom' },
-        ]);
-      } else if (q.term === 'ambiguous') {
-        map.set(q.id || q.term, [
-          { href: 'https://a.test', cite: 'dom' },
-          { href: 'https://b.test', cite: 'dom' },
-        ]);
-      } else {
-        map.set(q.id || q.term, []);
-      }
+      map.set(q.id || q.term, this.data[q.term] || []);
     }
     return map;
   }
@@ -30,7 +18,9 @@ class StubResolver implements XrefResolver {
 
 describe('xref resolver integration', () => {
   it('uses closest data-cite scope and links when exactly one match exists', async () => {
-    const resolver = new StubResolver();
+    const resolver = new StubResolver({
+      'task queue': [{ href: 'https://example.com/task-queue', cite: 'dom' }],
+    });
     const renderer = new Speculator({
       postprocess: {
         xref: { resolver, specs: ['html', 'dom'] },
@@ -47,7 +37,12 @@ describe('xref resolver integration', () => {
   });
 
   it('resolves against multiple specs using priority order', async () => {
-    const resolver = new StubResolver();
+    const resolver = new StubResolver({
+      'event loop': [
+        { href: 'https://example.com/html-loop', cite: 'html' },
+        { href: 'https://example.com/dom-loop', cite: 'dom' },
+      ],
+    });
     const renderer = new Speculator({
       postprocess: {
         xref: { resolver, specs: ['html', 'dom'] },
@@ -64,7 +59,12 @@ describe('xref resolver integration', () => {
   });
 
   it('emits warnings for ambiguous and missing terms', async () => {
-    const resolver = new StubResolver();
+    const resolver = new StubResolver({
+      ambiguous: [
+        { href: 'https://a.test', cite: 'dom' },
+        { href: 'https://b.test', cite: 'dom' },
+      ],
+    });
     const renderer = new Speculator({
       postprocess: {
         xref: { resolver, specs: ['dom'] },
@@ -81,26 +81,15 @@ describe('xref resolver integration', () => {
   });
 
   it('supports multiple resolver configurations', async () => {
-    class StubResolverB implements XrefResolver {
-      public calls: XrefQuery[] = [];
-      async resolveBatch(queries: XrefQuery[]): Promise<Map<string, XrefResult[]>> {
-        this.calls.push(...queries);
-        const map = new Map<string, XrefResult[]>();
-        for (const q of queries) {
-          if (q.term === 'custom') {
-            map.set(q.id || q.term, [
-              { href: 'https://example.com/uj-custom', cite: 'ujse' },
-            ]);
-          } else {
-            map.set(q.id || q.term, []);
-          }
-        }
-        return map;
-      }
-    }
-
-    const resolverA = new StubResolver();
-    const resolverB = new StubResolverB();
+    const resolverA = new StubResolver({
+      'event loop': [
+        { href: 'https://example.com/html-loop', cite: 'html' },
+        { href: 'https://example.com/dom-loop', cite: 'dom' },
+      ],
+    });
+    const resolverB = new StubResolver({
+      custom: [{ href: 'https://example.com/uj-custom', cite: 'ujse' }],
+    });
     const renderer = new Speculator({
       postprocess: {
         xref: [
