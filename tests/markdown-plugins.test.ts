@@ -1,6 +1,17 @@
 import { parseMarkdown } from '../src/index';
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import type MarkdownIt from 'markdown-it';
+
+jest.mock(
+  'mermaid',
+  () => ({
+    mermaidAPI: {
+      initialize: jest.fn(),
+      render: jest.fn(() => '<svg class="mock"></svg>'),
+    },
+  }),
+  { virtual: true },
+);
 
 describe('ReSpec shorthand plugins', () => {
   it('renders [= concept =] as xref placeholder', () => {
@@ -22,6 +33,26 @@ describe('ReSpec shorthand plugins', () => {
       { id: 'HTML', normative: false },
       { id: 'DOM', normative: true },
     ]);
+  });
+});
+
+describe('mermaid plugin', () => {
+  it('renders mermaid code blocks into SVG', () => {
+    const input = '```mermaid\ngraph TD;A-->B;\n```';
+    const html = parseMarkdown(input, { mermaid: true });
+    expect(html).toContain('<div class="mermaid"><svg class="mock"></svg></div>');
+  });
+
+  it('uses global mermaidAPI when available', () => {
+    const mockAPI = {
+      initialize: jest.fn(),
+      render: jest.fn(() => '<svg class="global"></svg>'),
+    };
+    (globalThis as any).mermaidAPI = mockAPI;
+    const input = '```mermaid\nflowchart TD;A-->B;\n```';
+    const html = parseMarkdown(input, { mermaid: true });
+    expect(html).toContain('<div class="mermaid"><svg class="global"></svg></div>');
+    delete (globalThis as any).mermaidAPI;
   });
 });
 

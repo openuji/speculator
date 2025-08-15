@@ -3,6 +3,7 @@ import type { MarkdownOptions } from '../types.js';
 import { respecConceptPlugin } from '../markdown/plugins/concept.js';
 import { respecIdlPlugin } from '../markdown/plugins/idl.js';
 import { respecCitePlugin } from '../markdown/plugins/cite.js';
+import { respecMermaidPlugin } from '../markdown/plugins/mermaid.js';
 import { renderError } from '../utils/render.js';
 
 export function createMarkdownRenderer(options: MarkdownOptions = {}): MarkdownIt {
@@ -45,6 +46,11 @@ export function createMarkdownRenderer(options: MarkdownOptions = {}): MarkdownI
   md.use(respecConceptPlugin);
   md.use(respecIdlPlugin);
   md.use(respecCitePlugin);
+
+  if (options.mermaid) {
+    const config = options.mermaid === true ? {} : options.mermaid;
+    md.use(respecMermaidPlugin, config);
+  }
 
   for (const extension of options.extensions ?? []) {
     if (Array.isArray(extension)) {
