@@ -21,6 +21,6 @@ describe('Speculator (Node with linkedom)', () => {
       '<section data-format="markdown">## Node Test</section>',
       outputs,
     );
-    expect(result.html).toContain('<h2 id="node-test">Node Test</h2>');
+    expect(result.sections).toContain('<h2 id="node-test">Node Test</h2>');
   });
 });

@@ -2,11 +2,11 @@ import { getDefaultFileLoader } from './utils/file-loader/index.js';
 import type {
   SpeculatorOptions,
   ProcessingResult,
-  HtmlProcessingResult,
   RespecLikeConfig,
   RenderResult,
   PipelinePass,
   OutputArea,
+  RenderHtmlResult,
 } from './types';
 import { SpeculatorError } from './types';
 import { DocumentBuilder } from './document-builder';
@@ -139,18 +139,16 @@ export class Speculator {
    * Process an entire document described by a RespecLikeConfig
    */
   async renderDocument(
+    sections: Element[],
     config: RespecLikeConfig,
-    requestedOutputs?: OutputArea[],
   ): Promise<RenderResult> {
     const startTime = performance.now();
     const { container, header, sotd, stats, warnings: sectionWarnings } =
-      await this.documentBuilder.build(config);
+      await this.documentBuilder.build({sections});
     const allWarnings = [...sectionWarnings];
 
-    const changed = getChangedOutputAreas(this.prevConfig, config);
-    const areas = requestedOutputs
-      ? changed.filter(a => requestedOutputs.includes(a))
-      : changed;
+    const areas = getChangedOutputAreas(this.prevConfig, config);
+  
     try {
       if (areas.length) {
         const { outputs, warnings } = await this.pipelineRunner.run(
@@ -207,12 +205,6 @@ export class Speculator {
     };
     if (header) result.header = header;
     if (sotd) result.sotd = sotd;
-    const isRequested = (area: OutputArea) =>
-      !requestedOutputs || requestedOutputs.includes(area);
-    if (config.metadata && isRequested('metadata')) result.metadata = config.metadata;
-    if (config.pubrules && isRequested('pubrules')) result.pubrules = config.pubrules;
-    if (config.legal && isRequested('legal')) result.legal = config.legal;
-    this.prevConfig = config;
     return result;
   }
   /**
@@ -220,21 +212,30 @@ export class Speculator {
    */
   async renderHTML(
     inputHtml: string,
-    requestedOutputs?: OutputArea[],
-  ): Promise<HtmlProcessingResult> {
+    config: RespecLikeConfig = {},
+  ): Promise<RenderHtmlResult> {
     const container = this.htmlRenderer.parse(inputHtml);
 
-    const sections = (Array.from(container.children) as Element[]);
-    const result = await this.renderDocument({ sections }, requestedOutputs);
+    const sections = Array.from(container.children) as Element[];
+    const result = await this.renderDocument(sections, config);
     const doc = container.ownerDocument!;
     const root = doc.createElement('div');
-    if (result.header) root.appendChild(result.header);
-    if (result.sotd) root.appendChild(result.sotd);
+    
     for (const section of result.sections) {
       root.appendChild(section);
     }
-    const html = this.htmlRenderer.serialize(root);
-    return { html, warnings: result.warnings, stats: result.stats };
+    const htmlSections = this.htmlRenderer.serialize(root);
+    
+    const response: RenderHtmlResult =  {sections: htmlSections, warnings: result.warnings, stats: result.stats};
+    if (result.header) {
+      response.header = this.htmlRenderer.serialize(result.header);
+    }
+    if (result.sotd) {
+      response.sotd = this.htmlRenderer.serialize(result.sotd);
+    }
+    
+
+    return response
   }
 
   

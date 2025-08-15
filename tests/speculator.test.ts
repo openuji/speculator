@@ -116,8 +116,8 @@ describe('Speculator', () => {
 
       const result = await renderer.renderHTML(html, outputs);
 
-      expect(result.html).toContain('<h2 id="test">Test</h2>');
-      expect(result.html).toContain('<strong>world</strong>');
+      expect(result.sections).toContain('<h2 id="test">Test</h2>');
+      expect(result.sections).toContain('<strong>world</strong>');
     });
 
     it('should handle HTML without special attributes', async () => {
@@ -125,7 +125,7 @@ describe('Speculator', () => {
 
       const result = await renderer.renderHTML(html, outputs);
 
-      expect(result.html).toContain('<p>Hello</p>');
+      expect(result.sections).toContain('<p>Hello</p>');
     });
   });
 

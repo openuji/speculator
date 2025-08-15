@@ -145,6 +145,18 @@ export interface RenderResult {
   stats: ProcessingStats;
 }
 
+export interface RenderHtmlResult {
+  sections: string;
+  header?: string;
+  sotd?: string;
+  metadata?: Record<string, unknown>;
+  pubrules?: string;
+  legal?: string;
+  warnings: string[];
+  stats: ProcessingStats;
+}
+
+
 // …existing types…
 
 export type XrefQuery = {
