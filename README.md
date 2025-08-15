@@ -50,4 +50,24 @@ parseMarkdown('# Title', { markdownOptions: { extensions: [anchor] } });
 Each entry can be a plugin function or a `[plugin, options]` tuple and will be
 installed after the built-in ReSpec shorthand plugins.
 
+## Mermaid diagrams
+
+Render [Mermaid](https://mermaid.js.org/) code blocks by enabling the
+`mermaid` option when parsing Markdown:
+
+```ts
+import { parseMarkdown } from '@openui/speculator';
+
+const md = '```mermaid\nflowchart TD;A-->B;\n```';
+const html = parseMarkdown(md, { mermaid: true });
+```
+
+Configuration can be passed directly to Mermaid if needed:
+
+```ts
+parseMarkdown(md, {
+  mermaid: { theme: 'forest' },
+});
+```
+
 
