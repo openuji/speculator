@@ -3,6 +3,7 @@ import type { MarkdownOptions } from '../types.js';
 import { respecConceptPlugin } from '../markdown/plugins/concept.js';
 import { respecIdlPlugin } from '../markdown/plugins/idl.js';
 import { respecCitePlugin } from '../markdown/plugins/cite.js';
+import { respecMermaidPlugin } from '../markdown/plugins/mermaid.js';
 import { renderError } from '../utils/render.js';
 
 export function createMarkdownRenderer(options: MarkdownOptions = {}): MarkdownIt {
@@ -47,12 +48,8 @@ export function createMarkdownRenderer(options: MarkdownOptions = {}): MarkdownI
   md.use(respecCitePlugin);
 
   if (options.mermaid) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mermaidPlugin = require('markdown-it-mermaid');
-    md.use(
-      mermaidPlugin.default || mermaidPlugin,
-      options.mermaid === true ? {} : options.mermaid,
-    );
+    const config = options.mermaid === true ? {} : options.mermaid;
+    md.use(respecMermaidPlugin, config);
   }
 
   for (const extension of options.extensions ?? []) {
