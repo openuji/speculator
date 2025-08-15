@@ -38,10 +38,22 @@ export interface MarkdownOptions {
   smartypants?: boolean;
   /** Generate header IDs */
   headerIds?: boolean;
+  /** Enable Mermaid diagrams */
+  mermaid?: boolean | MermaidConfig;
   /** Custom renderer extensions */
   extensions?: Array<
     MarkdownIt.PluginSimple | [MarkdownIt.PluginWithOptions<any>, any]
   >;
+}
+
+/**
+ * Configuration options for the Mermaid markdown plugin
+ */
+export interface MermaidConfig {
+  /** Theme to use when rendering diagrams */
+  theme?: string;
+  /** Additional Mermaid settings */
+  [key: string]: unknown;
 }
 
 /**

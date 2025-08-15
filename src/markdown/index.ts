@@ -46,6 +46,15 @@ export function createMarkdownRenderer(options: MarkdownOptions = {}): MarkdownI
   md.use(respecIdlPlugin);
   md.use(respecCitePlugin);
 
+  if (options.mermaid) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mermaidPlugin = require('markdown-it-mermaid');
+    md.use(
+      mermaidPlugin.default || mermaidPlugin,
+      options.mermaid === true ? {} : options.mermaid,
+    );
+  }
+
   for (const extension of options.extensions ?? []) {
     if (Array.isArray(extension)) {
       const [plugin, pluginOptions] = extension;
