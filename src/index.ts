@@ -31,8 +31,9 @@ export type {
   ProcessingStats,
   DataFormat,
   RespecLikeConfig,
-    RenderResult
-  } from './types';
+  RenderResult,
+  MermaidConfig,
+} from './types';
 export type { FormatResult } from './processors/format-processor';
 export type { FieldMapping } from './utils/output-areas';
 
