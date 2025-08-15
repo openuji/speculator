@@ -2,7 +2,6 @@ import { getDefaultFileLoader } from './utils/file-loader/index.js';
 import type {
   SpeculatorOptions,
   ProcessingResult,
-  ProcessingStats,
   HtmlProcessingResult,
   RespecLikeConfig,
   RenderResult,
@@ -10,10 +9,8 @@ import type {
   OutputArea,
 } from './types';
 import { SpeculatorError } from './types';
-import { SectionsRenderer } from './renderers/sections-renderer';
-import { HeaderRenderer } from './renderers/header-renderer';
-import { SotdRenderer } from './renderers/sotd-renderer';
-import { Postprocessor, type PipelineResult } from './pipeline/postprocess';
+import { DocumentBuilder } from './document-builder';
+import { PipelineRunner } from './pipeline/pipeline-runner';
 import { IncludeProcessor } from './processors/include-processor';
 import { FormatProcessor } from './processors/format-processor';
 import type { ElementProcessor } from './processors/element-processor';
@@ -40,6 +37,8 @@ export class Speculator {
   private readonly htmlRenderer: HtmlRenderer;
   private readonly postprocessOptions: SpeculatorOptions['postprocess'];
   private readonly passFactory: (container: Element) => PipelinePass[];
+  private readonly documentBuilder: DocumentBuilder;
+  private readonly pipelineRunner: PipelineRunner;
   private prevConfig: RespecLikeConfig | undefined;
 
   constructor(options: SpeculatorOptions = {}) {
@@ -52,6 +51,8 @@ export class Speculator {
     this.includeProcessor =
       options.includeProcessor || new IncludeProcessor(baseUrl, fileLoader, this.formatProcessor);
     this.htmlRenderer = options.htmlRenderer || new DOMHtmlRenderer();
+
+    this.documentBuilder = new DocumentBuilder(this, this.htmlRenderer);
 
     this.processors = [this.includeProcessor, this.formatProcessor];
 
@@ -74,52 +75,8 @@ export class Speculator {
         ];
       };
     }
-  }
 
-  private async buildContainer(config: RespecLikeConfig): Promise<{
-    container: Element;
-    header?: Element;
-    sotd?: Element;
-    stats: ProcessingStats;
-    warnings: string[];
-  }> {
-    const sectionsRenderer = new SectionsRenderer(this);
-    const headerRenderer = new HeaderRenderer();
-    const sotdRenderer = new SotdRenderer();
-
-    const tracker = new StatsTracker();
-    const { sections: processedSections, warnings, stats } =
-      await sectionsRenderer.render(config.sections || [], tracker);
-    const { header } = headerRenderer.render(config.header);
-    const { sotd } = sotdRenderer.render(config.sotd);
-
-    const baseDoc = (header || sotd || processedSections[0])?.ownerDocument;
-    const container = baseDoc ? baseDoc.createElement('div') : this.htmlRenderer.parse('');
-    if (header) container.appendChild(header);
-    if (sotd) container.appendChild(sotd);
-    for (const section of processedSections) {
-      container.appendChild(section);
-    }
-
-    const result: {
-      container: Element;
-      header?: Element;
-      sotd?: Element;
-      stats: ProcessingStats;
-      warnings: string[];
-    } = { container, stats, warnings };
-    if (header) result.header = header;
-    if (sotd) result.sotd = sotd;
-    return result;
-  }
-
-  private async runPasses(
-    container: Element,
-    areas: OutputArea[],
-  ): Promise<PipelineResult> {
-    const passes = this.passFactory(container);
-    const processor = new Postprocessor(passes);
-    return processor.run(areas, this.postprocessOptions || {});
+    this.pipelineRunner = new PipelineRunner(this.passFactory, this.postprocessOptions);
   }
 
   /**
@@ -180,7 +137,7 @@ export class Speculator {
   ): Promise<RenderResult> {
     const startTime = performance.now();
     const { container, header, sotd, stats, warnings: sectionWarnings } =
-      await this.buildContainer(config);
+      await this.documentBuilder.build(config);
     const allWarnings = [...sectionWarnings];
 
     const changed = getChangedOutputAreas(this.prevConfig, config);
@@ -189,7 +146,10 @@ export class Speculator {
       : changed;
     try {
       if (areas.length) {
-        const { outputs, warnings } = await this.runPasses(container, areas);
+        const { outputs, warnings } = await this.pipelineRunner.run(
+          container,
+          areas,
+        );
         allWarnings.push(...warnings);
 
         const tocMount = container.querySelector('#toc') as HTMLElement | null;
