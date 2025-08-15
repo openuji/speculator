@@ -1,5 +1,5 @@
 import type { FileLoader, DataFormat } from '../types';
-import { FormatProcessor } from './format-processor';
+import { FormatRegistry } from '../format-registry';
 import { logger } from '../utils/logger';
 import { StatsTracker } from '../utils/stats-tracker';
 import type { ElementProcessor, ProcessorResult } from './element-processor';
@@ -11,7 +11,7 @@ export class IncludeProcessor implements ElementProcessor {
   constructor(
     private readonly baseUrl: string | undefined,
     private readonly fileLoader: FileLoader,
-    private readonly formatProcessor: FormatProcessor
+    private readonly formatRegistry: FormatRegistry
   ) {}
 
   matches(element: Element): boolean {
@@ -37,7 +37,7 @@ export class IncludeProcessor implements ElementProcessor {
       const fullPath = this.resolveFilePath(includePath);
       const content = await this.fileLoader(fullPath);
 
-      const processedContent = this.formatProcessor.processContent(content, includeFormat);
+      const processedContent = this.formatRegistry.processContent(content, includeFormat);
       tracker.incrementFiles();
       if (includeFormat === 'markdown') {
         tracker.incrementMarkdownBlocks();

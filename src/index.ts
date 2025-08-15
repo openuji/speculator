@@ -2,11 +2,12 @@
 export { Speculator } from './speculator';
 export { IncludeProcessor } from './processors/include-processor';
 export { FormatProcessor } from './processors/format-processor';
+export { FormatRegistry } from './format-registry';
 export type {
   ElementProcessor,
   ProcessorResult,
 } from './processors/element-processor';
-export type { FormatStrategy } from './processors/format-processor';
+export type { FormatStrategy } from './format-registry';
 export { DOMHtmlRenderer } from './html-renderer';
 export {
   parseMarkdown,

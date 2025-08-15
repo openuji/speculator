@@ -1,35 +1,8 @@
-import { parseMarkdown } from '../markdown';
 import { stripIndent } from '../utils/strip-ident';
-import type { MarkdownOptions, DataFormat } from '../types';
+import type { DataFormat } from '../types';
 import { StatsTracker } from '../utils/stats-tracker';
 import type { ElementProcessor, ProcessorResult } from './element-processor';
-
-/**
- * Strategy interface for converting content based on its format.
- */
-export interface FormatStrategy {
-  convert(content: string): string;
-}
-
-/**
- * Strategy for converting Markdown content to HTML.
- */
-class MarkdownStrategy implements FormatStrategy {
-  constructor(private readonly options: MarkdownOptions = {}) {}
-
-  convert(content: string): string {
-    return parseMarkdown(content, this.options);
-  }
-}
-
-/**
- * Strategy that returns content unchanged (used for text and html).
- */
-class PassthroughStrategy implements FormatStrategy {
-  convert(content: string): string {
-    return content;
-  }
-}
+import { FormatRegistry } from '../format-registry';
 
 /**
  * Result returned from {@link FormatProcessor.process}.
@@ -40,44 +13,12 @@ export interface FormatResult extends ProcessorResult {
 }
 
 /**
- * Service responsible for processing data-format attributes and markdown content.
+ * Processor responsible for handling elements with a `data-format` attribute.
+ * Delegates content conversion to {@link FormatRegistry}.
  */
 export class FormatProcessor implements ElementProcessor {
-  private readonly strategies: Map<DataFormat, FormatStrategy>;
+  constructor(private readonly registry: FormatRegistry = new FormatRegistry()) {}
 
-  constructor(
-    markdownOptions: MarkdownOptions = {},
-    customStrategies: Record<string, FormatStrategy> = {}
-  ) {
-    const markdown = new MarkdownStrategy(markdownOptions);
-    const passthrough = new PassthroughStrategy();
-
-    this.strategies = new Map<DataFormat, FormatStrategy>([
-      ['markdown', markdown],
-      ['text', passthrough],
-      ['html', passthrough],
-    ]);
-
-    for (const [format, strategy] of Object.entries(customStrategies)) {
-      this.strategies.set(format as DataFormat, strategy);
-    }
-  }
-
-  /**
-  * Convert content based on the specified format.
-  */
-  processContent(content: string, format: DataFormat): string {
-    const strategy = this.strategies.get(format);
-    if (!strategy) {
-      throw new Error(`Unsupported format: ${format}`);
-    }
-    return strategy.convert(content);
-  }
-
-  /**
-   * Process an element with a data-format attribute and return the resulting
-   * content or an error message. This method no longer mutates `innerHTML`.
-   */
   matches(element: Element): boolean {
     return element.hasAttribute('data-format');
   }
@@ -93,7 +34,7 @@ export class FormatProcessor implements ElementProcessor {
     if (format === 'markdown' && element.innerHTML.trim()) {
       try {
         const markdownContent = stripIndent(element.innerHTML).trim();
-        result.content = this.processContent(markdownContent, format);
+        result.content = this.registry.processContent(markdownContent, format);
         tracker.incrementMarkdownBlocks();
       } catch (error) {
         result.error = `Failed to process markdown: ${
@@ -102,7 +43,7 @@ export class FormatProcessor implements ElementProcessor {
       }
     } else {
       try {
-        result.content = this.processContent(element.innerHTML, format);
+        result.content = this.registry.processContent(element.innerHTML, format);
       } catch (error) {
         result.error = error instanceof Error ? error.message : String(error);
       }

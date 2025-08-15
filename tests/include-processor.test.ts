@@ -1,4 +1,4 @@
-import { IncludeProcessor, FormatProcessor, StatsTracker } from '../src/browser';
+import { IncludeProcessor, FormatRegistry, StatsTracker } from '../src/browser';
 import type { FileLoader } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
@@ -17,8 +17,8 @@ const mockFileLoader: FileLoader = async (path: string) => {
 
 describe('IncludeProcessor', () => {
   it('includes external markdown', async () => {
-    const format = new FormatProcessor();
-    const processor = new IncludeProcessor(undefined, mockFileLoader, format);
+    const registry = new FormatRegistry();
+    const processor = new IncludeProcessor(undefined, mockFileLoader, registry);
     const element = document.createElement('section');
     element.setAttribute('data-include', '/sections/intro.md');
     element.setAttribute('data-include-format', 'markdown');
@@ -37,8 +37,8 @@ describe('IncludeProcessor', () => {
   });
 
   it('includes text without processing', async () => {
-    const format = new FormatProcessor();
-    const processor = new IncludeProcessor(undefined, mockFileLoader, format);
+    const registry = new FormatRegistry();
+    const processor = new IncludeProcessor(undefined, mockFileLoader, registry);
     const element = document.createElement('pre');
     element.setAttribute('data-include', '/idl/sample.idl');
     element.setAttribute('data-include-format', 'text');
@@ -56,8 +56,8 @@ describe('IncludeProcessor', () => {
   });
 
   it('handles file loading errors', async () => {
-    const format = new FormatProcessor();
-    const processor = new IncludeProcessor('/', mockFileLoader, format);
+    const registry = new FormatRegistry();
+    const processor = new IncludeProcessor('/', mockFileLoader, registry);
     const element = document.createElement('section');
     element.setAttribute('data-include', '/missing.md');
 
@@ -69,8 +69,8 @@ describe('IncludeProcessor', () => {
   });
 
   it('warns on empty include attribute', async () => {
-    const format = new FormatProcessor();
-    const processor = new IncludeProcessor(undefined, mockFileLoader, format);
+    const registry = new FormatRegistry();
+    const processor = new IncludeProcessor(undefined, mockFileLoader, registry);
     const element = document.createElement('section');
     element.setAttribute('data-include', '');
 
