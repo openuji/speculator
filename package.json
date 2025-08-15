@@ -23,10 +23,14 @@
   ],
   "peerDependencies": {
     "linkedom": ">=0.18.0",
-    "typescript": ">=5.0.0"
+    "typescript": ">=5.0.0",
+    "mermaid": ">=11.0.0"
   },
   "peerDependenciesMeta": {
     "linkedom": {
+      "optional": true
+    },
+    "mermaid": {
       "optional": true
     }
   },
@@ -75,6 +79,7 @@
     "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^22.1.0",
     "linkedom": "^0.18.11",
+    "mermaid": "^11.9.0",
     "ts-jest": "^29.1.1",
     "tsup": "^8.5.0",
     "typescript": "^5.2.2"
