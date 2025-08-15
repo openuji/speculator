@@ -92,39 +92,46 @@ export class Speculator {
     const clonedElement = element.cloneNode(true) as Element;
 
     try {
-      for (const processor of this.processors) {
-        if (!processor.matches(clonedElement)) {
-          continue;
-        }
-        const { content, error } = await processor.process(
-          clonedElement,
-          tracker,
-          warnings,
-        );
-        if (error) {
-          warnings.push(error);
-          insertContent(clonedElement, renderError(error));
-          continue;
-        }
-        if (content !== undefined && content !== null) {
-          let renderedContent = content;
-          if (processor instanceof FormatProcessor) {
-            const rendered = this.htmlRenderer.parse(content);
-            renderedContent = this.htmlRenderer.serialize(rendered);
-          }
-          insertContent(clonedElement, renderedContent);
-        }
-      }
-
-      tracker.incrementElements();
+      await this.processNode(clonedElement, tracker, warnings);
       tracker.stop();
-
       return { element: clonedElement, warnings, stats: tracker.toJSON() };
     } catch (error) {
       throw new SpeculatorError(
         `Failed to process element: ${error instanceof Error ? error.message : 'Unknown error'}`,
         element
       );
+    }
+  }
+
+  private async processNode(
+    node: Element,
+    tracker: StatsTracker,
+    warnings: string[],
+  ): Promise<void> {
+    let matched = false;
+    for (const processor of this.processors) {
+      if (!processor.matches(node)) continue;
+      matched = true;
+      const { content, error } = await processor.process(node, tracker, warnings);
+      if (error) {
+        warnings.push(error);
+        insertContent(node, renderError(error));
+        continue;
+      }
+      if (content !== undefined && content !== null) {
+        let renderedContent = content;
+        if (processor instanceof FormatProcessor) {
+          const rendered = this.htmlRenderer.parse(content);
+          renderedContent = this.htmlRenderer.serialize(rendered);
+        }
+        insertContent(node, renderedContent);
+      }
+    }
+    if (matched) tracker.incrementElements();
+
+    const children = Array.from(node.children) as Element[];
+    for (const child of children) {
+      await this.processNode(child, tracker, warnings);
     }
   }
 

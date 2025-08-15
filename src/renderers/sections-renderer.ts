@@ -20,7 +20,8 @@ export class SectionsRenderer {
       try {
         if (
           section.hasAttribute('data-include') ||
-          section.hasAttribute('data-format')
+          section.hasAttribute('data-format') ||
+          section.querySelector('[data-include],[data-format]')
         ) {
           const res = await this.speculator.processElement(section, tracker);
           processed.push(res.element);

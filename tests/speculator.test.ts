@@ -74,6 +74,22 @@ describe('Speculator', () => {
       expect(result.stats.processingTime).toBeGreaterThan(0);
     });
 
+    it('should process nested includes within a section', async () => {
+      document.body.innerHTML = `
+        <section id="idl">
+          <h2>WebIDL</h2>
+          <pre data-include="/idl/ujse.webidl" data-include-format="text"></pre>
+        </section>
+      `;
+
+      const section = document.querySelector('#idl')!;
+      const result = await renderer.renderDocument({ sections: [section] }, outputs);
+      const pre = result.sections[0].querySelector('pre');
+
+      expect(pre?.textContent).toContain('interface SmoothScroller');
+      expect(pre?.hasAttribute('data-include')).toBe(false);
+    });
+
     it('should aggregate warnings from multiple elements', async () => {
       document.body.innerHTML = `
         <div id="container">
