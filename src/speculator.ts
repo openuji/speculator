@@ -5,7 +5,6 @@ import type {
   RespecLikeConfig,
   RenderResult,
   PipelinePass,
-  OutputArea,
   RenderHtmlResult,
 } from './types';
 import { SpeculatorError } from './types';
@@ -139,7 +138,7 @@ export class Speculator {
    * Process an entire document described by a RespecLikeConfig
    */
   async renderDocument(
-    sections: Element[],
+    {sections}: {sections: Element[]},
     config: RespecLikeConfig,
   ): Promise<RenderResult> {
     const startTime = performance.now();
@@ -217,7 +216,7 @@ export class Speculator {
     const container = this.htmlRenderer.parse(inputHtml);
 
     const sections = Array.from(container.children) as Element[];
-    const result = await this.renderDocument(sections, config);
+    const result = await this.renderDocument({sections}, config);
     const doc = container.ownerDocument!;
     const root = doc.createElement('div');
     
