@@ -33,8 +33,8 @@ export function idForRef(id: string): string {
 export class ReferencesRenderer {
   constructor(private readonly doc: Document) {}
 
-  render(data: ReferencesData, mount: HTMLElement | null): string {
-    const section = mount ?? this.doc.createElement('section');
+  render(data: ReferencesData): string {
+    const section = this.doc.createElement('section');
     section.id = 'references';
 
     const normSec = this.doc.createElement('section');

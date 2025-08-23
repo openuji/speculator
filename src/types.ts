@@ -135,6 +135,9 @@ export interface RenderResult {
   legal?: Element;
   warnings: string[];
   stats: ProcessingStats;
+  toc?: string;
+  boilerplate?: string[];
+  references?: string;
 }
 
 /**
@@ -189,6 +192,9 @@ export interface RenderHtmlResult {
   legal?: string;
   warnings: string[];
   stats: ProcessingStats;
+  toc?: string;
+  boilerplate?: string[];
+  references?: string;
 }
 
 

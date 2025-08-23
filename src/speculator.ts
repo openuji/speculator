@@ -68,14 +68,12 @@ export class Speculator {
       this.passFactory = passes;
     } else {
       this.passFactory = (container: Element) => {
-        const tocMount = container.querySelector('#toc') as HTMLElement | null;
-        const refsMount = container.querySelector('#references') as HTMLElement | null;
         return [
           new IdlPass(container),
           new XrefPass(container),
-          new ReferencesPass(container, refsMount),
+          new ReferencesPass(container),
           new BoilerplatePass(container),
-          new TocPass(container, tocMount),
+          new TocPass(container),
           new DiagnosticsPass(container),
         ];
       };
@@ -163,6 +161,11 @@ export class Speculator {
     if (Array.isArray(configOrOutputs)) {
       areas = areas.filter(a => configOrOutputs.includes(a));
     }
+    const finalResult: RenderResult = {
+      sections: [],
+      warnings: allWarnings,
+      stats,
+    };
 
     let pipelineOutputs: Partial<Record<OutputArea, unknown>> = {};
     try {
@@ -171,36 +174,30 @@ export class Speculator {
         pipelineOutputs = result.outputs;
         allWarnings.push(...result.warnings);
 
-        const tocMount = container.querySelector('#toc') as HTMLElement | null;
-        const refsMount = container.querySelector('#references') as HTMLElement | null;
-
-        const tocHtml = result.outputs.toc as string | undefined;
-        if (tocHtml && tocMount) {
-          tocMount.innerHTML = tocHtml;
+       
+        if(result.outputs.toc) {
+          finalResult.toc = result.outputs.toc as string;
         }
-
+       
         const bpOut = result.outputs.boilerplate as BoilerplateOutput | undefined;
+        let bpHtml;
         if (bpOut && bpOut.sections.length) {
           const renderer = new BoilerplateRenderer(container.ownerDocument!);
-          const rendered = renderer.render(bpOut.sections);
-          rendered.forEach(sec => {
-            if (bpOut.ref) container.insertBefore(sec, bpOut.ref);
-            else container.appendChild(sec);
-          });
+          bpHtml = renderer.render(bpOut.sections).map(html => html.innerHTML);     
+          finalResult.boilerplate = bpHtml;     
         }
 
         const refOut = result.outputs.references as ReferencesOutput | undefined;
-        if (refOut && refOut.html) {
-          if (refsMount) {
-            refsMount.outerHTML = refOut.html;
-          } else {
-            container.insertAdjacentHTML('beforeend', refOut.html);
-          }
+        if (refOut && refOut.html) {          
           refOut.citeUpdates.forEach(({ element, href }) =>
             element.setAttribute('href', href),
           );
+
+          finalResult.references = refOut.html;
         }
       }
+
+      
 
       const hooks = config.postProcess
         ? Array.isArray(config.postProcess)
@@ -221,14 +218,12 @@ export class Speculator {
     const finalSections = Array.from(container.children).filter(
       el => el !== header && el !== sotd,
     ) as Element[];
-    const result: RenderResult = {
-      sections: finalSections,
-      warnings: allWarnings,
-      stats,
-    };
-    if (header) result.header = header;
-    if (sotd) result.sotd = sotd;
-    return result;
+    finalResult.sections = finalSections;
+    finalResult.warnings = allWarnings;
+    finalResult.stats = stats;
+    if (header) finalResult.header = header;
+    if (sotd) finalResult.sotd = sotd;
+    return finalResult;
   }
   /**
    * Process HTML string and return processed HTML
@@ -249,14 +244,29 @@ export class Speculator {
     }
     const htmlSections = this.htmlRenderer.serialize(root);
     
-    const response: RenderHtmlResult =  {sections: htmlSections, warnings: result.warnings, stats: result.stats};
+    const response: RenderHtmlResult =  {
+      sections: htmlSections, 
+      warnings: result.warnings, 
+      stats: result.stats,     
+    };
+
     if (result.header) {
       response.header = this.htmlRenderer.serialize(result.header);
     }
     if (result.sotd) {
       response.sotd = this.htmlRenderer.serialize(result.sotd);
     }
+    if (result.toc) {
+      response.toc = result.toc;
+    }
+    if (result.boilerplate) {
+      response.boilerplate = result.boilerplate;
+    }
+    if (result.references) {
+      response.references = result.references;
+    }
     
+
 
     return response
   }

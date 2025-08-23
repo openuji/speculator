@@ -13,7 +13,7 @@ export interface ReferencesOutput {
 
 export class ReferencesPass implements PipelinePass {
   area = 'references' as const;
-  constructor(private readonly root: Element, private readonly mount: HTMLElement | null) {}
+  constructor(private readonly root: Element) {}
 
   private async execute(
     _data: ReferencesOutput | undefined,
@@ -54,7 +54,7 @@ export class ReferencesPass implements PipelinePass {
       });
 
     const renderer = new ReferencesRenderer(this.root.ownerDocument!);
-    const html = renderer.render({ normative, informative }, this.mount);
+    const html = renderer.render({ normative, informative });
 
     const citeUpdates: Array<{ element: HTMLAnchorElement; href: string }> = [];
     for (const a of cites) {

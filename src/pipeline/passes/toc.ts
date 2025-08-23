@@ -25,14 +25,15 @@ export function collectTocItems(root: Element): TocItem[] {
 
 export class TocPass implements PipelinePass {
   area = 'toc' as const;
-  constructor(private readonly root: Element, private readonly mount: HTMLElement | null) {}
+  constructor(private readonly root: Element) {}
 
   private async execute(
     _data: string | undefined,
     config: SpeculatorConfig,
   ): Promise<{ data: string; warnings: string[] }> {
     const { toc } = config.postprocess || {};
-    if (toc?.enabled === false || !this.mount) return { data: '', warnings: [] };
+    
+    if (toc?.enabled === false) return { data: '', warnings: [] };
 
     const items = collectTocItems(this.root);
     if (!items.length) return { data: '', warnings: [] };
