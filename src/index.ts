@@ -26,7 +26,7 @@ export { StatsTracker } from './utils/stats-tracker';
 export type {
   SpeculatorOptions,
   SpeculatorConfig,
-  RespecLikeConfig,
+  PostProcessHook,
   RespecConfig,
   FileLoader,
   MarkdownOptions,
