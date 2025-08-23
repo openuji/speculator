@@ -1,8 +1,8 @@
 import type {
   OutputArea,
   PipelinePass,
-  PostprocessOptions,
   PipelineContext,
+  SpeculatorConfig,
 } from '@/types';
 
 export interface PipelineResult {
@@ -24,11 +24,8 @@ export class Postprocessor {
    *              are executed.
    * @param options Configuration options for the passes.
    */
-  async run(
-    areas?: OutputArea[],
-    options: PostprocessOptions = {},
-  ): Promise<PipelineResult> {
-    const ctx: PipelineContext = { outputs: {}, warnings: [], options };
+  async run(config: SpeculatorConfig, areas?: OutputArea[]): Promise<PipelineResult> {
+    const ctx: PipelineContext = { outputs: {}, warnings: [], config };
 
     const active = areas
       ? this.passes.filter(p => areas.includes(p.area))
@@ -47,11 +44,11 @@ export class Postprocessor {
  */
 export async function postprocess(
   passes: PipelinePass[],
+  config: SpeculatorConfig,
   areas?: OutputArea[],
-  options: PostprocessOptions = {},
 ): Promise<PipelineResult> {
   const processor = new Postprocessor(passes);
-  return processor.run(areas, options);
+  return processor.run(config, areas);
 }
 
 function compose(passes: PipelinePass[]): (ctx: PipelineContext) => Promise<void> {
