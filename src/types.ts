@@ -1,6 +1,7 @@
 import type MarkdownIt from 'markdown-it';
 import type { IncludeProcessor } from "./processors/include-processor";
 import type { FormatProcessor } from "./processors/format-processor";
+import type { FormatRegistry } from "./format-registry";
 import type { HtmlRenderer } from "./html-renderer";
 
 /**
@@ -16,6 +17,7 @@ export interface SpeculatorOptions {
   postprocess?: PostprocessOptions;
   includeProcessor?: IncludeProcessor;
   formatProcessor?: FormatProcessor;
+  formatRegistry?: FormatRegistry;
   htmlRenderer?: HtmlRenderer;
   passes?: PipelinePass[] | ((container: Element) => PipelinePass[]);
 
@@ -91,7 +93,7 @@ export interface ProcessingStats {
 
 /**
  * Supported data formats. Additional formats can be provided by registering
- * custom {@link FormatStrategy} implementations with {@link FormatProcessor}.
+ * custom {@link FormatStrategy} implementations with {@link FormatRegistry}.
  */
 export type DataFormat =
   | 'markdown'
