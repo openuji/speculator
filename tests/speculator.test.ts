@@ -108,6 +108,25 @@ describe('Speculator', () => {
 
       expect(result.warnings.length).toBeGreaterThan(0);
     });
+
+    it('should run preProcess hooks before processing', async () => {
+      document.body.innerHTML = '<section id="sec">Hello</section>';
+      const section = document.querySelector('#sec')!;
+      const preProcess = [
+        (root: Element) => {
+          const el = root.querySelector('#sec')!;
+          el.setAttribute('data-format', 'markdown');
+          el.textContent = '## Hooked';
+        },
+      ];
+
+      const result = await renderer.renderDocument(
+        { sections: [section], preProcess } as any,
+        outputs,
+      );
+
+      expect(result.sections[0].querySelector('h2')?.textContent).toBe('Hooked');
+    });
   });
 
   describe('renderHTML', () => {
