@@ -129,6 +129,8 @@ export interface RespecLikeConfig {
   pubrules?: Element;
   /** Legal boilerplate content */
   legal?: Element;
+  /** Additional, implementation-specific fields. */
+  [key: string]: unknown;
 }
 
 /**
@@ -144,6 +146,37 @@ export interface RenderResult {
   warnings: string[];
   stats: ProcessingStats;
 }
+
+/**
+ * Full configuration for Speculator combining document areas and processing
+ * options.
+ */
+export interface SpeculatorConfig
+  extends RespecLikeConfig,
+    SpeculatorOptions {
+  /** Hook invoked before any processing begins. */
+  preHook?: (container: Element) => void | Promise<void>;
+  /** Hook invoked after rendering completes. */
+  postHook?: (result: RenderResult) => void | Promise<void>;
+}
+
+/**
+ * Respec's configuration shape. Used for migrating existing specs to the new
+ * {@link SpeculatorConfig}.
+ */
+export interface RespecConfig
+  extends RespecLikeConfig,
+    SpeculatorOptions {
+  [key: string]: unknown;
+}
+
+/**
+ * Convert a {@link RespecConfig} object to a {@link SpeculatorConfig}.
+ */
+export function fromRespecConfig(respec: RespecConfig): SpeculatorConfig {
+  return { ...respec };
+}
+
 
 export interface RenderHtmlResult {
   sections: string;

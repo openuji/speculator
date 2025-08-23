@@ -6,6 +6,7 @@ import type {
   RenderResult,
   PipelinePass,
   RenderHtmlResult,
+  OutputArea,
 } from './types';
 import { SpeculatorError } from './types';
 import { DocumentBuilder } from './document-builder';
@@ -138,15 +139,19 @@ export class Speculator {
    * Process an entire document described by a RespecLikeConfig
    */
   async renderDocument(
-    {sections}: {sections: Element[]},
-    config: RespecLikeConfig,
+    spec: RespecLikeConfig,
+    configOrOutputs: RespecLikeConfig | OutputArea[] = {},
   ): Promise<RenderResult> {
     const startTime = performance.now();
     const { container, header, sotd, stats, warnings: sectionWarnings } =
-      await this.documentBuilder.build({sections});
+      await this.documentBuilder.build(spec);
     const allWarnings = [...sectionWarnings];
 
-    const areas = getChangedOutputAreas(this.prevConfig, config);
+    let areas = getChangedOutputAreas(this.prevConfig, spec);
+    this.prevConfig = spec;
+    if (Array.isArray(configOrOutputs)) {
+      areas = areas.filter(a => configOrOutputs.includes(a));
+    }
   
     try {
       if (areas.length) {
@@ -211,12 +216,12 @@ export class Speculator {
    */
   async renderHTML(
     inputHtml: string,
-    config: RespecLikeConfig = {},
+    configOrOutputs: RespecLikeConfig | OutputArea[] = {},
   ): Promise<RenderHtmlResult> {
     const container = this.htmlRenderer.parse(inputHtml);
 
     const sections = Array.from(container.children) as Element[];
-    const result = await this.renderDocument({sections}, config);
+    const result = await this.renderDocument({ sections }, configOrOutputs);
     const doc = container.ownerDocument!;
     const root = doc.createElement('div');
     
