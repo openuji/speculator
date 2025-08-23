@@ -14,7 +14,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     'pubrules',
     'legal',
   ];
-  it('inserts Conformance/Security/Privacy when enabled and missing', async () => {
+  it('outputs Conformance/Security/Privacy when enabled and missing', async () => {
     document.body.innerHTML = `
       <div id="c">
         <nav id="toc"></nav>
@@ -33,18 +33,11 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     });
     const sections = Array.from(container.children) as Element[];
     const res = await renderer.renderDocument({ sections }, outputs);
-    const wrapper = document.createElement('div');
-    res.sections.forEach(s => wrapper.appendChild(s));
-
-    const toc = wrapper.querySelector('#toc ol')!;
-    expect(toc).toBeTruthy();
-
-    const conf = wrapper.querySelector('#conformance')!;
-    const sec = wrapper.querySelector('#security')!;
-    const priv = wrapper.querySelector('#privacy')!;
-    expect(conf.previousElementSibling?.id).toBe('toc'); // inserted after ToC
-    expect(sec).toBeTruthy();
-    expect(priv).toBeTruthy();
+    expect(res.toc).toBeTruthy();
+    expect(res.boilerplate).toBeTruthy();
+    expect(res.boilerplate!.some(b => /id="conformance"/.test(b))).toBe(true);
+    expect(res.boilerplate!.some(b => /id="security"/.test(b))).toBe(true);
+    expect(res.boilerplate!.some(b => /id="privacy"/.test(b))).toBe(true);
   });
 
   it('does not overwrite existing sections', async () => {
@@ -63,6 +56,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     res.sections.forEach(s => wrapper.appendChild(s));
     expect(wrapper.querySelectorAll('#conformance').length).toBe(1);
     expect(wrapper.querySelector('#conformance')!.textContent).toContain('Custom.');
+    expect(res.boilerplate).toBeUndefined();
 
   });
 
@@ -123,8 +117,8 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     const sections = Array.from(container.children) as Element[];
     const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');
-    res.sections.forEach(s => wrapper.appendChild(s));
-    const items = wrapper.querySelectorAll('#toc li');
+    wrapper.innerHTML = res.toc!;
+    const items = wrapper.querySelectorAll('li');
     expect(Array.from(items).map(li => li.getAttribute('data-depth'))).toEqual(['1', '2']);
   });
 });

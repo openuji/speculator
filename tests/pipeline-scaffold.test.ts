@@ -55,10 +55,10 @@ describe('Postprocess pipeline (scaffold)', () => {
     const container = document.querySelector('#c')!;
     const sections = Array.from(container.children) as Element[];
     const res = await renderer.renderDocument({ sections }, outputs);
+    expect(res.references).toBeTruthy();
     const wrapper = document.createElement('div');
-    res.sections.forEach(s => wrapper.appendChild(s));
+    wrapper.innerHTML = res.references!;
     const refs = wrapper.querySelector('#references')!;
-    expect(refs).toBeTruthy();
     expect(refs.innerHTML).toContain('Normative references');
     expect(refs.innerHTML).toContain('Informative references');
     // Placeholders for now:
@@ -80,12 +80,12 @@ describe('Postprocess pipeline (scaffold)', () => {
     const container = document.querySelector('#c')!;
     const sections = Array.from(container.children) as Element[];
     const res = await renderer.renderDocument({ sections }, outputs);
+    expect(res.toc).toBeTruthy();
     const wrapper = document.createElement('div');
-    res.sections.forEach(s => wrapper.appendChild(s));
-
-    const toc = wrapper.querySelector('#toc ol');
+    wrapper.innerHTML = res.toc!;
+    const toc = wrapper.querySelector('ol');
     expect(toc).toBeTruthy();
-    expect(toc!.querySelectorAll('a').length).toBeGreaterThan(0);
+    expect(wrapper.querySelectorAll('a').length).toBeGreaterThan(0);
   });
 
   it('suppresses warnings inside .no-link-warnings', async () => {

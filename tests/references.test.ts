@@ -45,29 +45,24 @@ describe('References rendering', () => {
     });
     const sections = Array.from(container.children) as Element[];
     const res = await renderer.renderDocument({ sections }, outputs);
-    const wrapper = document.createElement('div');
-    res.sections.forEach(s => wrapper.appendChild(s));
+    expect(res.references).toBeTruthy();
+    const refsWrapper = document.createElement('div');
+    refsWrapper.innerHTML = res.references!;
 
-    // Section exists
-    const refs = wrapper.querySelector('#references')!;
-    expect(refs).toBeTruthy();
-
-    // Normative vs Informative split (DOM only in Normative)
+    const refs = refsWrapper.querySelector('#references')!;
     const norm = refs.querySelector('#normative-references ul')!;
     const info = refs.querySelector('#informative-references ul')!;
     expect(norm.innerHTML).toContain('DOM Standard');
     expect(info.innerHTML).not.toContain('DOM Standard');
-
-    // HTML appears in Informative (only cited informatively)
     expect(info.innerHTML).toContain('HTML Standard');
 
-    // In-text cites link back to bib items
-    const citeHtml = wrapper.querySelector('a[data-spec="HTML"]')!;
-    const citeDom = wrapper.querySelector('a[data-spec="DOM"]')!;
+    const sectionWrapper = document.createElement('div');
+    res.sections.forEach(s => sectionWrapper.appendChild(s));
+    const citeHtml = sectionWrapper.querySelector('a[data-spec="HTML"]')!;
+    const citeDom = sectionWrapper.querySelector('a[data-spec="DOM"]')!;
     expect(citeHtml.getAttribute('href')).toBe('#bib-html');
     expect(citeDom.getAttribute('href')).toBe('#bib-dom');
 
-    // No unresolved warnings for provided entries
     expect(res.warnings.some(w => /Unresolved reference/.test(w))).toBe(false);
   });
 
@@ -83,8 +78,9 @@ describe('References rendering', () => {
     const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
     const res = await renderer.renderDocument({ sections }, outputs);
+    expect(res.references).toBeTruthy();
     const wrapper = document.createElement('div');
-    res.sections.forEach(s => wrapper.appendChild(s));
+    wrapper.innerHTML = res.references!;
     const refs = wrapper.querySelector('#references')!;
     expect(refs.innerHTML).toContain('[UNKNOWN]');
     expect(res.warnings.some(w => /Unresolved reference: "UNKNOWN"/.test(w))).toBe(true);

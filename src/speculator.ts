@@ -161,12 +161,10 @@ export class Speculator {
     if (Array.isArray(configOrOutputs)) {
       areas = areas.filter(a => configOrOutputs.includes(a));
     }
-    const finalResult: RenderResult = {
-      sections: [],
-      warnings: allWarnings,
-      stats,
-    };
 
+    let toc: string | undefined;
+    let boilerplate: string[] | undefined;
+    let references: string | undefined;
     let pipelineOutputs: Partial<Record<OutputArea, unknown>> = {};
     try {
       if (areas.length) {
@@ -174,30 +172,25 @@ export class Speculator {
         pipelineOutputs = result.outputs;
         allWarnings.push(...result.warnings);
 
-       
-        if(result.outputs.toc) {
-          finalResult.toc = result.outputs.toc as string;
+        if (result.outputs.toc) {
+          toc = result.outputs.toc as string;
         }
-       
+
         const bpOut = result.outputs.boilerplate as BoilerplateOutput | undefined;
-        let bpHtml;
         if (bpOut && bpOut.sections.length) {
           const renderer = new BoilerplateRenderer(container.ownerDocument!);
-          bpHtml = renderer.render(bpOut.sections).map(html => html.innerHTML);     
-          finalResult.boilerplate = bpHtml;     
+          const nodes = renderer.render(bpOut.sections);
+          boilerplate = nodes.map(el => el.outerHTML);
         }
 
         const refOut = result.outputs.references as ReferencesOutput | undefined;
-        if (refOut && refOut.html) {          
+        if (refOut && refOut.html) {
           refOut.citeUpdates.forEach(({ element, href }) =>
             element.setAttribute('href', href),
           );
-
-          finalResult.references = refOut.html;
+          references = refOut.html;
         }
       }
-
-      
 
       const hooks = config.postProcess
         ? Array.isArray(config.postProcess)
@@ -218,12 +211,17 @@ export class Speculator {
     const finalSections = Array.from(container.children).filter(
       el => el !== header && el !== sotd,
     ) as Element[];
-    finalResult.sections = finalSections;
-    finalResult.warnings = allWarnings;
-    finalResult.stats = stats;
-    if (header) finalResult.header = header;
-    if (sotd) finalResult.sotd = sotd;
-    return finalResult;
+
+    return {
+      sections: finalSections,
+      warnings: allWarnings,
+      stats,
+      ...(header ? { header } : {}),
+      ...(sotd ? { sotd } : {}),
+      ...(toc ? { toc } : {}),
+      ...(boilerplate ? { boilerplate } : {}),
+      ...(references ? { references } : {}),
+    } as RenderResult;
   }
   /**
    * Process HTML string and return processed HTML
@@ -244,31 +242,20 @@ export class Speculator {
     }
     const htmlSections = this.htmlRenderer.serialize(root);
     
-    const response: RenderHtmlResult =  {
-      sections: htmlSections, 
-      warnings: result.warnings, 
-      stats: result.stats,     
-    };
-
-    if (result.header) {
-      response.header = this.htmlRenderer.serialize(result.header);
-    }
-    if (result.sotd) {
-      response.sotd = this.htmlRenderer.serialize(result.sotd);
-    }
-    if (result.toc) {
-      response.toc = result.toc;
-    }
-    if (result.boilerplate) {
-      response.boilerplate = result.boilerplate;
-    }
-    if (result.references) {
-      response.references = result.references;
-    }
-    
-
-
-    return response
+    return {
+      sections: htmlSections,
+      warnings: result.warnings,
+      stats: result.stats,
+      ...(result.header
+        ? { header: this.htmlRenderer.serialize(result.header) }
+        : {}),
+      ...(result.sotd
+        ? { sotd: this.htmlRenderer.serialize(result.sotd) }
+        : {}),
+      ...(result.toc ? { toc: result.toc } : {}),
+      ...(result.boilerplate ? { boilerplate: result.boilerplate } : {}),
+      ...(result.references ? { references: result.references } : {}),
+    } as RenderHtmlResult;
   }
 
   
