@@ -287,8 +287,8 @@ export interface PipelineContext {
   outputs: Partial<Record<OutputArea, unknown>>;
   /** Accumulated warnings from executed passes. */
   warnings: string[];
-  /** Shared postprocess options. */
-  options: PostprocessOptions;
+  /** Full configuration for the current render. */
+  config: SpeculatorConfig;
 }
 
 export type PipelineNext = () => Promise<void>;

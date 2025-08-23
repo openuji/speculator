@@ -37,7 +37,7 @@ export class Speculator {
   private readonly formatRegistry: FormatRegistry;
   private readonly processors: ElementProcessor[];
   private readonly htmlRenderer: HtmlRenderer;
-  private readonly postprocessOptions: SpeculatorOptions['postprocess'];
+  private readonly baseConfig: SpeculatorConfig;
   private readonly passFactory: (container: Element) => PipelinePass[];
   private readonly documentBuilder: DocumentBuilder;
   private readonly pipelineRunner: PipelineRunner;
@@ -48,7 +48,7 @@ export class Speculator {
     const fileLoader = options.fileLoader || getDefaultFileLoader();
     const markdownOptions = options.markdownOptions || {};
 
-    this.postprocessOptions = options.postprocess || {};
+    this.baseConfig = { postprocess: options.postprocess || {} };
     this.formatRegistry =
       options.formatRegistry || new FormatRegistry(markdownOptions);
     this.formatProcessor =
@@ -81,7 +81,7 @@ export class Speculator {
       };
     }
 
-    this.pipelineRunner = new PipelineRunner(this.passFactory, this.postprocessOptions);
+    this.pipelineRunner = new PipelineRunner(this.passFactory);
   }
 
   /**
@@ -148,12 +148,18 @@ export class Speculator {
     configOrOutputs: SpeculatorConfig | OutputArea[] = {},
   ): Promise<RenderResult> {
     const startTime = performance.now();
+    const config = {
+      ...this.baseConfig,
+      ...spec,
+      postprocess: { ...(this.baseConfig.postprocess || {}), ...(spec.postprocess || {}) },
+    } as SpeculatorConfig;
+
     const { container, header, sotd, stats, warnings: sectionWarnings } =
-      await this.documentBuilder.build(spec);
+      await this.documentBuilder.build(config);
     const allWarnings = [...sectionWarnings];
 
-    let areas = getChangedOutputAreas(this.prevConfig, spec);
-    this.prevConfig = spec;
+    let areas = getChangedOutputAreas(this.prevConfig, config);
+    this.prevConfig = config;
     if (Array.isArray(configOrOutputs)) {
       areas = areas.filter(a => configOrOutputs.includes(a));
     }
@@ -161,7 +167,7 @@ export class Speculator {
     let pipelineOutputs: Partial<Record<OutputArea, unknown>> = {};
     try {
       if (areas.length) {
-        const result = await this.pipelineRunner.run(container, areas);
+        const result = await this.pipelineRunner.run(container, config, areas);
         pipelineOutputs = result.outputs;
         allWarnings.push(...result.warnings);
 
@@ -196,10 +202,10 @@ export class Speculator {
         }
       }
 
-      const hooks = spec.postProcess
-        ? Array.isArray(spec.postProcess)
-          ? spec.postProcess
-          : [spec.postProcess]
+      const hooks = config.postProcess
+        ? Array.isArray(config.postProcess)
+          ? config.postProcess
+          : [config.postProcess]
         : [];
       for (const hook of hooks) {
         await hook(container, pipelineOutputs);

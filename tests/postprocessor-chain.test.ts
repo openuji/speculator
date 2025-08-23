@@ -1,5 +1,5 @@
 import { Postprocessor } from '../src/pipeline/postprocess';
-import type { PipelinePass, PipelineContext, OutputArea } from '../src/types';
+import type { PipelinePass, PipelineContext, OutputArea, SpeculatorConfig } from '../src/types';
 
 class TestPass implements PipelinePass {
   area: OutputArea;
@@ -28,7 +28,7 @@ describe('postprocessor pass chaining', () => {
       new TestPass('metadata', 'b', log),
     ];
     const processor = new Postprocessor(passes);
-    await processor.run();
+    await processor.run({} as SpeculatorConfig);
     expect(log).toEqual(['a', 'b']);
   });
 
@@ -39,7 +39,7 @@ describe('postprocessor pass chaining', () => {
       new TestPass('metadata', 'b', log),
     ];
     const processor = new Postprocessor(passes);
-    await processor.run();
+    await processor.run({} as SpeculatorConfig);
     expect(log).toEqual(['a']);
   });
 });
