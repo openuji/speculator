@@ -1,5 +1,6 @@
 import { Speculator } from '../src/browser';
 import type { FileLoader, OutputArea } from '../src/types';
+import { fromRespecConfig } from '../src';
 import { describe, it, expect, beforeEach } from '@jest/globals';
 
 // Mock file system for testing
@@ -120,10 +121,9 @@ describe('Speculator', () => {
         },
       ];
 
-      const result = await renderer.renderDocument(
-        { sections: [section], preProcess } as any,
-        outputs,
-      );
+      const respecConfig = { sections: [section], preProcess };
+      const config = fromRespecConfig(respecConfig);
+      const result = await renderer.renderDocument(config, outputs);
 
       expect(result.sections[0].querySelector('h2')?.textContent).toBe('Hooked');
     });
