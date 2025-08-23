@@ -1,4 +1,4 @@
-import { IncludeProcessor, FormatProcessor, StatsTracker } from '../src/browser';
+import { IncludeProcessor, FormatProcessor, FormatRegistry, StatsTracker } from '../src/browser';
 import type { FileLoader } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
 
@@ -17,7 +17,8 @@ const mockFileLoader: FileLoader = async (path: string) => {
 
 describe('IncludeProcessor', () => {
   it('includes external markdown', async () => {
-    const format = new FormatProcessor();
+    const registry = new FormatRegistry();
+    const format = new FormatProcessor(registry);
     const processor = new IncludeProcessor(undefined, mockFileLoader, format);
     const element = document.createElement('section');
     element.setAttribute('data-include', '/sections/intro.md');
@@ -37,7 +38,8 @@ describe('IncludeProcessor', () => {
   });
 
   it('includes text without processing', async () => {
-    const format = new FormatProcessor();
+    const registry = new FormatRegistry();
+    const format = new FormatProcessor(registry);
     const processor = new IncludeProcessor(undefined, mockFileLoader, format);
     const element = document.createElement('pre');
     element.setAttribute('data-include', '/idl/sample.idl');
@@ -56,7 +58,8 @@ describe('IncludeProcessor', () => {
   });
 
   it('handles file loading errors', async () => {
-    const format = new FormatProcessor();
+    const registry = new FormatRegistry();
+    const format = new FormatProcessor(registry);
     const processor = new IncludeProcessor('/', mockFileLoader, format);
     const element = document.createElement('section');
     element.setAttribute('data-include', '/missing.md');
@@ -69,7 +72,8 @@ describe('IncludeProcessor', () => {
   });
 
   it('warns on empty include attribute', async () => {
-    const format = new FormatProcessor();
+    const registry = new FormatRegistry();
+    const format = new FormatProcessor(registry);
     const processor = new IncludeProcessor(undefined, mockFileLoader, format);
     const element = document.createElement('section');
     element.setAttribute('data-include', '');

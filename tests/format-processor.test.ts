@@ -1,11 +1,12 @@
-import { FormatProcessor, StatsTracker } from '../src/browser';
+import { FormatProcessor, FormatRegistry, StatsTracker } from '../src/browser';
 import type { DataFormat } from '../src/types';
 import type { FormatStrategy } from '../src/browser';
 import { describe, it, expect } from '@jest/globals';
 
 describe('FormatProcessor', () => {
   it('processes inline markdown', () => {
-    const processor = new FormatProcessor();
+    const registry = new FormatRegistry();
+    const processor = new FormatProcessor(registry);
     const element = document.createElement('section');
     element.setAttribute('data-format', 'markdown');
     element.innerHTML = '## Hello\nThis is **bold** text.';
@@ -23,7 +24,8 @@ describe('FormatProcessor', () => {
   });
 
   it('honors markdown options', () => {
-    const processor = new FormatProcessor({ breaks: false });
+    const registry = new FormatRegistry({ breaks: false });
+    const processor = new FormatProcessor(registry);
     const element = document.createElement('section');
     element.setAttribute('data-format', 'markdown');
     element.innerHTML = 'Line1\nLine2';
@@ -37,7 +39,8 @@ describe('FormatProcessor', () => {
   });
 
   it('throws on unsupported formats', () => {
-    const processor = new FormatProcessor();
+    const registry = new FormatRegistry();
+    const processor = new FormatProcessor(registry);
     expect(() => processor.processContent('test', 'xml' as DataFormat)).toThrow(
       'Unsupported format: xml'
     );
@@ -47,7 +50,8 @@ describe('FormatProcessor', () => {
     const upper: FormatStrategy = {
       convert: (c: string) => c.toUpperCase(),
     };
-    const processor = new FormatProcessor({}, { upper });
+    const registry = new FormatRegistry({}, { upper });
+    const processor = new FormatProcessor(registry);
 
     const element = document.createElement('div');
     element.setAttribute('data-format', 'upper');

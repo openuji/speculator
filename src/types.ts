@@ -1,6 +1,6 @@
 import type MarkdownIt from 'markdown-it';
 import type { IncludeProcessor } from "./processors/include-processor";
-import type { FormatProcessor } from "./processors/format-processor";
+import type { FormatProcessor, FormatRegistry } from "./processors/format-processor";
 import type { HtmlRenderer } from "./html-renderer";
 
 /**
@@ -14,6 +14,7 @@ export interface SpeculatorOptions {
   /** Markdown parsing options */
   markdownOptions?: MarkdownOptions;
   includeProcessor?: IncludeProcessor;
+  formatRegistry?: FormatRegistry;
   formatProcessor?: FormatProcessor;
   htmlRenderer?: HtmlRenderer;
   passes?: PipelinePass[] | ((container: Element) => PipelinePass[]);

@@ -1,7 +1,7 @@
 // Main exports
 export { Speculator } from './speculator';
 export { IncludeProcessor } from './processors/include-processor';
-export { FormatProcessor } from './processors/format-processor';
+export { FormatProcessor, FormatRegistry } from './processors/format-processor';
 export type {
   ElementProcessor,
   ProcessorResult,

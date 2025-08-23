@@ -32,22 +32,14 @@ class PassthroughStrategy implements FormatStrategy {
 }
 
 /**
- * Result returned from {@link FormatProcessor.process}.
- * When `error` is present, `content` will be undefined.
+ * Registry of content conversion strategies.
  */
-export interface FormatResult extends ProcessorResult {
-  content?: string;
-}
-
-/**
- * Service responsible for processing data-format attributes and markdown content.
- */
-export class FormatProcessor implements ElementProcessor {
+export class FormatRegistry {
   private readonly strategies: Map<DataFormat, FormatStrategy>;
 
   constructor(
     markdownOptions: MarkdownOptions = {},
-    customStrategies: Record<string, FormatStrategy> = {}
+    customStrategies: Record<string, FormatStrategy> = {},
   ) {
     const markdown = new MarkdownStrategy(markdownOptions);
     const passthrough = new PassthroughStrategy();
@@ -63,15 +55,34 @@ export class FormatProcessor implements ElementProcessor {
     }
   }
 
-  /**
-  * Convert content based on the specified format.
-  */
-  processContent(content: string, format: DataFormat): string {
+  convert(content: string, format: DataFormat): string {
     const strategy = this.strategies.get(format);
     if (!strategy) {
       throw new Error(`Unsupported format: ${format}`);
     }
     return strategy.convert(content);
+  }
+}
+
+/**
+ * Result returned from {@link FormatProcessor.process}.
+ * When `error` is present, `content` will be undefined.
+ */
+export interface FormatResult extends ProcessorResult {
+  content?: string;
+}
+
+/**
+ * Service responsible for processing data-format attributes and markdown content.
+ */
+export class FormatProcessor implements ElementProcessor {
+  constructor(private readonly registry: FormatRegistry) {}
+
+  /**
+   * Convert content based on the specified format.
+   */
+  processContent(content: string, format: DataFormat): string {
+    return this.registry.convert(content, format);
   }
 
   /**

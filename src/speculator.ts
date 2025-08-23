@@ -12,7 +12,7 @@ import { SpeculatorError } from './types';
 import { DocumentBuilder } from './document-builder';
 import { PipelineRunner } from './pipeline/pipeline-runner';
 import { IncludeProcessor } from './processors/include-processor';
-import { FormatProcessor } from './processors/format-processor';
+import { FormatProcessor, FormatRegistry } from './processors/format-processor';
 import type { ElementProcessor } from './processors/element-processor';
 import type { HtmlRenderer } from './html-renderer';
 import { DOMHtmlRenderer } from './html-renderer';
@@ -32,6 +32,7 @@ import { StatsTracker } from './utils/stats-tracker';
  */
 export class Speculator {
   private readonly includeProcessor: IncludeProcessor;
+  private readonly formatRegistry: FormatRegistry;
   private readonly formatProcessor: FormatProcessor;
   private readonly processors: ElementProcessor[];
   private readonly htmlRenderer: HtmlRenderer;
@@ -45,7 +46,10 @@ export class Speculator {
     const fileLoader = options.fileLoader || getDefaultFileLoader();
     const markdownOptions = options.markdownOptions || {};
 
-    this.formatProcessor = options.formatProcessor || new FormatProcessor(markdownOptions);
+    this.formatRegistry =
+      options.formatRegistry || new FormatRegistry(markdownOptions);
+    this.formatProcessor =
+      options.formatProcessor || new FormatProcessor(this.formatRegistry);
     this.includeProcessor =
       options.includeProcessor || new IncludeProcessor(baseUrl, fileLoader, this.formatProcessor);
     this.htmlRenderer = options.htmlRenderer || new DOMHtmlRenderer();
