@@ -1,4 +1,4 @@
-import type { RespecLikeConfig, ProcessingStats } from './types';
+import type { SpeculatorConfig, ProcessingStats } from './types';
 import type { HtmlRenderer } from './html-renderer';
 import { SectionsRenderer } from './renderers/sections-renderer';
 import { HeaderRenderer } from './renderers/header-renderer';
@@ -23,7 +23,7 @@ export class DocumentBuilder {
     this.sectionsRenderer = new SectionsRenderer(speculator);
   }
 
-  async build(config: RespecLikeConfig): Promise<BuildResult> {
+  async build(config: SpeculatorConfig): Promise<BuildResult> {
     const tracker = new StatsTracker();
     const { sections: processedSections, warnings, stats } =
       await this.sectionsRenderer.render(config.sections || [], tracker);

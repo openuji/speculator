@@ -1,11 +1,11 @@
-import type { RespecLikeConfig, OutputArea } from '../types';
+import type { SpeculatorConfig, OutputArea } from '../types';
 
 export interface FieldMapping<T> {
   fields: (keyof T)[];
   outputs: OutputArea[];
 }
 
-export const CONFIG_TO_OUTPUT_MAP: FieldMapping<RespecLikeConfig>[] = [
+export const CONFIG_TO_OUTPUT_MAP: FieldMapping<SpeculatorConfig>[] = [
   {
     fields: ['sections'],
     outputs: ['idl', 'xref', 'references', 'boilerplate', 'toc', 'diagnostics'],
@@ -13,6 +13,14 @@ export const CONFIG_TO_OUTPUT_MAP: FieldMapping<RespecLikeConfig>[] = [
   {
     fields: ['header', 'sotd', 'pubrules', 'legal'],
     outputs: ['boilerplate'],
+  },
+  {
+    fields: ['lint'],
+    outputs: ['diagnostics'],
+  },
+  {
+    fields: ['xref', 'mdn'],
+    outputs: ['xref'],
   },
 ];
 
@@ -29,8 +37,8 @@ function fieldChanged(oldVal: unknown, newVal: unknown): boolean {
 }
 
 export function getChangedOutputAreas(
-  oldConfig: RespecLikeConfig | undefined,
-  newConfig: RespecLikeConfig,
+  oldConfig: SpeculatorConfig | undefined,
+  newConfig: SpeculatorConfig,
 ): OutputArea[] {
   if (!oldConfig) {
     const all = new Set<OutputArea>();

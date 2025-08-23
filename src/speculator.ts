@@ -2,7 +2,7 @@ import { getDefaultFileLoader } from './utils/file-loader/index.js';
 import type {
   SpeculatorOptions,
   ProcessingResult,
-  RespecLikeConfig,
+  SpeculatorConfig,
   RenderResult,
   PipelinePass,
   RenderHtmlResult,
@@ -39,7 +39,7 @@ export class Speculator {
   private readonly passFactory: (container: Element) => PipelinePass[];
   private readonly documentBuilder: DocumentBuilder;
   private readonly pipelineRunner: PipelineRunner;
-  private prevConfig: RespecLikeConfig | undefined;
+  private prevConfig: SpeculatorConfig | undefined;
 
   constructor(options: SpeculatorOptions = {}) {
     const baseUrl = options.baseUrl;
@@ -136,11 +136,11 @@ export class Speculator {
   }
 
   /**
-   * Process an entire document described by a RespecLikeConfig
+   * Process an entire document described by a SpeculatorConfig
    */
   async renderDocument(
-    spec: RespecLikeConfig,
-    configOrOutputs: RespecLikeConfig | OutputArea[] = {},
+    spec: SpeculatorConfig,
+    configOrOutputs: SpeculatorConfig | OutputArea[] = {},
   ): Promise<RenderResult> {
     const startTime = performance.now();
     const { container, header, sotd, stats, warnings: sectionWarnings } =
@@ -152,24 +152,23 @@ export class Speculator {
     if (Array.isArray(configOrOutputs)) {
       areas = areas.filter(a => configOrOutputs.includes(a));
     }
-  
+
+    let pipelineOutputs: Partial<Record<OutputArea, unknown>> = {};
     try {
       if (areas.length) {
-        const { outputs, warnings } = await this.pipelineRunner.run(
-          container,
-          areas,
-        );
-        allWarnings.push(...warnings);
+        const result = await this.pipelineRunner.run(container, areas);
+        pipelineOutputs = result.outputs;
+        allWarnings.push(...result.warnings);
 
         const tocMount = container.querySelector('#toc') as HTMLElement | null;
         const refsMount = container.querySelector('#references') as HTMLElement | null;
 
-        const tocHtml = outputs.toc as string | undefined;
+        const tocHtml = result.outputs.toc as string | undefined;
         if (tocHtml && tocMount) {
           tocMount.innerHTML = tocHtml;
         }
 
-        const bpOut = outputs.boilerplate as BoilerplateOutput | undefined;
+        const bpOut = result.outputs.boilerplate as BoilerplateOutput | undefined;
         if (bpOut && bpOut.sections.length) {
           const renderer = new BoilerplateRenderer(container.ownerDocument!);
           const rendered = renderer.render(bpOut.sections);
@@ -179,7 +178,7 @@ export class Speculator {
           });
         }
 
-        const refOut = outputs.references as ReferencesOutput | undefined;
+        const refOut = result.outputs.references as ReferencesOutput | undefined;
         if (refOut && refOut.html) {
           if (refsMount) {
             refsMount.outerHTML = refOut.html;
@@ -190,6 +189,15 @@ export class Speculator {
             element.setAttribute('href', href),
           );
         }
+      }
+
+      const hooks = spec.postProcess
+        ? Array.isArray(spec.postProcess)
+          ? spec.postProcess
+          : [spec.postProcess]
+        : [];
+      for (const hook of hooks) {
+        await hook(container, pipelineOutputs);
       }
     } catch (e) {
       allWarnings.push(
@@ -216,7 +224,7 @@ export class Speculator {
    */
   async renderHTML(
     inputHtml: string,
-    configOrOutputs: RespecLikeConfig | OutputArea[] = {},
+    configOrOutputs: SpeculatorConfig | OutputArea[] = {},
   ): Promise<RenderHtmlResult> {
     const container = this.htmlRenderer.parse(inputHtml);
 

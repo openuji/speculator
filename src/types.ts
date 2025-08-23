@@ -114,27 +114,15 @@ export class SpeculatorError extends Error {
 }
 
 /**
- * Simplified configuration object inspired by ReSpec's configuration.
+ * Hook invoked after all pipeline passes have run.
  */
-export interface RespecLikeConfig {
-  /** Document sections to process */
-  sections?: Element[];
-  /** Optional document header */
-  header?: Element;
-  /** Status of This Document section */
-  sotd?: Element;
-  /** Arbitrary metadata */
-  metadata?: Record<string, unknown>;
-  /** Pubrules-specific content */
-  pubrules?: Element;
-  /** Legal boilerplate content */
-  legal?: Element;
-  /** Additional, implementation-specific fields. */
-  [key: string]: unknown;
-}
+export type PostProcessHook = (
+  container: Element,
+  outputs: Partial<Record<OutputArea, unknown>>,
+) => void | Promise<void>;
 
 /**
- * Result returned after rendering a RespecLikeConfig.
+ * Result returned after rendering a {@link SpeculatorConfig}.
  */
 export interface RenderResult {
   sections: Element[];
@@ -151,22 +139,34 @@ export interface RenderResult {
  * Full configuration for Speculator combining document areas and processing
  * options.
  */
-export interface SpeculatorConfig
-  extends RespecLikeConfig,
-    SpeculatorOptions {
+export interface SpeculatorConfig extends SpeculatorOptions {
+  /** Document sections to process */
+  sections?: Element[];
+  /** Optional document header */
+  header?: Element;
+  /** Status of This Document section */
+  sotd?: Element;
+  /** Arbitrary metadata */
+  metadata?: Record<string, unknown>;
+  /** Pubrules-specific content */
+  pubrules?: Element;
+  /** Legal boilerplate content */
+  legal?: Element;
   /** Hook invoked before any processing begins. */
   preHook?: (container: Element) => void | Promise<void>;
   /** Hook invoked after rendering completes. */
   postHook?: (result: RenderResult) => void | Promise<void>;
+  /** Hooks executed after pipeline passes complete. */
+  postProcess?: PostProcessHook | PostProcessHook[];
+  /** Additional, implementation-specific fields. */
+  [key: string]: unknown;
 }
 
 /**
  * Respec's configuration shape. Used for migrating existing specs to the new
  * {@link SpeculatorConfig}.
  */
-export interface RespecConfig
-  extends RespecLikeConfig,
-    SpeculatorOptions {
+export interface RespecConfig extends SpeculatorConfig {
   [key: string]: unknown;
 }
 
