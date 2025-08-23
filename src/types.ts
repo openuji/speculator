@@ -13,7 +13,6 @@ export interface SpeculatorOptions {
   fileLoader?: FileLoader;
   /** Markdown parsing options */
   markdownOptions?: MarkdownOptions;
-  postprocess?: PostprocessOptions;
   includeProcessor?: IncludeProcessor;
   formatProcessor?: FormatProcessor;
   htmlRenderer?: HtmlRenderer;
@@ -257,15 +256,6 @@ export interface BoilerplateOptions {
   mount?: 'end' | 'before-references' | 'after-toc';
 }
 
-export interface PostprocessOptions {
-  xref?: XrefOptions | XrefOptions[];
-  biblio?: BiblioOptions;
-  idl?: IdlOptions;
-  toc?: TocOptions;
-  diagnostics?: DiagnosticsOptions;
-  boilerplate?: BoilerplateOptions;
-}
-
 // Areas of output that individual pipeline passes may contribute to. Each pass
 // declares the area it operates on so callers can select which passes to run
 // based on their output needs.
@@ -285,8 +275,8 @@ export interface PipelineContext {
   outputs: Partial<Record<OutputArea, unknown>>;
   /** Accumulated warnings from executed passes. */
   warnings: string[];
-  /** Shared postprocess options. */
-  options: PostprocessOptions;
+  /** Full spec configuration available to passes. */
+  config: SpeculatorConfig;
 }
 
 export type PipelineNext = () => Promise<void>;

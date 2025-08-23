@@ -35,7 +35,6 @@ export class Speculator {
   private readonly formatProcessor: FormatProcessor;
   private readonly processors: ElementProcessor[];
   private readonly htmlRenderer: HtmlRenderer;
-  private readonly postprocessOptions: SpeculatorOptions['postprocess'];
   private readonly passFactory: (container: Element) => PipelinePass[];
   private readonly documentBuilder: DocumentBuilder;
   private readonly pipelineRunner: PipelineRunner;
@@ -46,7 +45,6 @@ export class Speculator {
     const fileLoader = options.fileLoader || getDefaultFileLoader();
     const markdownOptions = options.markdownOptions || {};
 
-    this.postprocessOptions = options.postprocess || {};
     this.formatProcessor = options.formatProcessor || new FormatProcessor(markdownOptions);
     this.includeProcessor =
       options.includeProcessor || new IncludeProcessor(baseUrl, fileLoader, this.formatProcessor);
@@ -76,7 +74,7 @@ export class Speculator {
       };
     }
 
-    this.pipelineRunner = new PipelineRunner(this.passFactory, this.postprocessOptions);
+    this.pipelineRunner = new PipelineRunner(this.passFactory);
   }
 
   /**
@@ -156,7 +154,7 @@ export class Speculator {
     let pipelineOutputs: Partial<Record<OutputArea, unknown>> = {};
     try {
       if (areas.length) {
-        const result = await this.pipelineRunner.run(container, areas);
+        const result = await this.pipelineRunner.run(container, areas, spec);
         pipelineOutputs = result.outputs;
         allWarnings.push(...result.warnings);
 

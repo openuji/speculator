@@ -1,5 +1,5 @@
 import type {
-  PostprocessOptions,
+  SpeculatorConfig,
   PipelinePass,
   XrefResult,
   XrefOptions,
@@ -37,18 +37,20 @@ export class XrefPass implements PipelinePass {
 
   private async execute(
     _data: unknown,
-    options: PostprocessOptions,
+    config: SpeculatorConfig,
   ): Promise<{ warnings: string[] }> {
-    const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
+    const diagnostics = (config as any).diagnostics || (config as any).lint || {};
+    const suppressClass = diagnostics.suppressClass ?? 'no-link-warnings';
     const localMap = buildLocalMap(this.root);
 
     // Make this an **array** to avoid TS/iterability issues
     const xrefAnchors = Array.from(this.root.querySelectorAll<HTMLAnchorElement>('a[data-xref]'));
 
-    const resolverConfigs: XrefOptions[] = Array.isArray(options.xref)
-      ? options.xref
-      : options.xref
-      ? [options.xref]
+    const cfg = (config as any).xref;
+    const resolverConfigs: XrefOptions[] = Array.isArray(cfg)
+      ? cfg
+      : cfg
+      ? [cfg]
       : [];
 
     const unresolved = collectUnresolvedAnchors(xrefAnchors, localMap, suppressClass);
@@ -67,7 +69,7 @@ export class XrefPass implements PipelinePass {
 
   async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
     const current = ctx.outputs[this.area];
-    const { warnings } = await this.execute(current, ctx.options);
+    const { warnings } = await this.execute(current, ctx.config);
     if (warnings && warnings.length) ctx.warnings.push(...warnings);
     await next();
   }

@@ -1,5 +1,5 @@
 import type {
-  PostprocessOptions,
+  SpeculatorConfig,
   PipelinePass,
   PipelineContext,
   PipelineNext,
@@ -29,9 +29,9 @@ export class TocPass implements PipelinePass {
 
   private async execute(
     _data: string | undefined,
-    options: PostprocessOptions,
+    config: SpeculatorConfig,
   ): Promise<{ data: string; warnings: string[] }> {
-    const { toc } = options;
+    const { toc } = config as any;
     if (toc?.enabled === false || !this.mount) return { data: '', warnings: [] };
 
     const items = collectTocItems(this.root);
@@ -44,7 +44,7 @@ export class TocPass implements PipelinePass {
 
   async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
     const current = ctx.outputs[this.area] as string | undefined;
-    const { data, warnings } = await this.execute(current, ctx.options);
+    const { data, warnings } = await this.execute(current, ctx.config);
     if (data !== undefined) ctx.outputs[this.area] = data;
     if (warnings && warnings.length) ctx.warnings.push(...warnings);
     await next();

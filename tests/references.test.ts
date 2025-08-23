@@ -40,11 +40,12 @@ describe('References rendering', () => {
       </div>
     `;
     const container = document.querySelector('#c')!;
-    const renderer = new Speculator({
-      postprocess: { biblio: { entries: biblio } }
-    });
+    const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, biblio: { entries: biblio } },
+      outputs,
+    );
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
 

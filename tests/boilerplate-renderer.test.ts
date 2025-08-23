@@ -12,7 +12,7 @@ describe('Boilerplate rendering', () => {
     const ctx: PipelineContext = {
       outputs: {},
       warnings: [],
-      options: { boilerplate: { conformance: true } } as any,
+      config: { boilerplate: { conformance: true } } as any,
     };
     await pass.run(ctx, async () => {});
     const data = ctx.outputs.boilerplate as BoilerplateOutput;

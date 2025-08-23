@@ -6,12 +6,7 @@ describe('Postprocess pipeline (scaffold)', () => {
   let renderer: Speculator;
 
   beforeEach(() => {
-    renderer = new Speculator({
-      postprocess: {
-        toc: { enabled: true },
-        diagnostics: { suppressClass: 'no-link-warnings' },
-      },
-    });
+    renderer = new Speculator();
   });
 
   const outputs: OutputArea[] = [
@@ -38,7 +33,10 @@ describe('Postprocess pipeline (scaffold)', () => {
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, toc: { enabled: true }, diagnostics: { suppressClass: 'no-link-warnings' } },
+      outputs,
+    );
     expect(res.warnings.some(w => /No matching xref: "task queue"/.test(w))).toBe(true);
     expect(res.warnings.some(w => /Unresolved IDL link: "SmoothScroller"/.test(w))).toBe(true);
   });
@@ -54,7 +52,10 @@ describe('Postprocess pipeline (scaffold)', () => {
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, toc: { enabled: true }, diagnostics: { suppressClass: 'no-link-warnings' } },
+      outputs,
+    );
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
     const refs = wrapper.querySelector('#references')!;
@@ -79,7 +80,10 @@ describe('Postprocess pipeline (scaffold)', () => {
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, toc: { enabled: true }, diagnostics: { suppressClass: 'no-link-warnings' } },
+      outputs,
+    );
     const wrapper = document.createElement('div');
     res.sections.forEach(s => wrapper.appendChild(s));
 
@@ -99,7 +103,10 @@ describe('Postprocess pipeline (scaffold)', () => {
     document.body.innerHTML = html;
     const container = document.querySelector('#c')!;
     const sections = Array.from(container.children) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, toc: { enabled: true }, diagnostics: { suppressClass: 'no-link-warnings' } },
+      outputs,
+    );
     expect(res.warnings.some(w => /suppressed/.test(w))).toBe(false);
   });
 });

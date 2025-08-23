@@ -1,5 +1,5 @@
 import type {
-  PostprocessOptions,
+  SpeculatorConfig,
   PipelinePass,
   PipelineContext,
   PipelineNext,
@@ -11,11 +11,12 @@ export class DiagnosticsPass implements PipelinePass {
 
   private async execute(
     _data: unknown,
-    options: PostprocessOptions,
+    config: SpeculatorConfig,
   ): Promise<{ warnings: string[] }> {
     const warnings: string[] = [];
-    const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
-    const idsAndLinks = options.diagnostics?.idsAndLinks ?? true;
+    const diagnostics = (config as any).diagnostics || (config as any).lint || {};
+    const suppressClass = diagnostics.suppressClass ?? 'no-link-warnings';
+    const idsAndLinks = diagnostics.idsAndLinks ?? true;
 
     if (idsAndLinks) {
       // Duplicate IDs
@@ -56,7 +57,7 @@ export class DiagnosticsPass implements PipelinePass {
 
   async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
     const current = ctx.outputs[this.area];
-    const { warnings } = await this.execute(current, ctx.options);
+    const { warnings } = await this.execute(current, ctx.config);
     if (warnings && warnings.length) ctx.warnings.push(...warnings);
     await next();
   }

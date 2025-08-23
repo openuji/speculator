@@ -1,5 +1,5 @@
 import type {
-  PostprocessOptions,
+  SpeculatorConfig,
   PipelinePass,
   PipelineContext,
   PipelineNext,
@@ -17,10 +17,10 @@ export class ReferencesPass implements PipelinePass {
 
   private async execute(
     _data: ReferencesOutput | undefined,
-    options: PostprocessOptions,
+    config: SpeculatorConfig,
   ): Promise<{ data: ReferencesOutput; warnings: string[] }> {
     const warnings: string[] = [];
-    const biblio = options.biblio?.entries ?? {};
+    const biblio = (config as any).biblio?.entries ?? {};
 
     const cites = Array.from(this.root.querySelectorAll<HTMLAnchorElement>('a[data-spec]'));
     if (!cites.length) return { data: { html: '', citeUpdates: [] }, warnings };
@@ -68,7 +68,7 @@ export class ReferencesPass implements PipelinePass {
 
   async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
     const current = ctx.outputs[this.area] as ReferencesOutput | undefined;
-    const { data, warnings } = await this.execute(current, ctx.options);
+    const { data, warnings } = await this.execute(current, ctx.config);
     if (data !== undefined) ctx.outputs[this.area] = data;
     if (warnings && warnings.length) ctx.warnings.push(...warnings);
     await next();

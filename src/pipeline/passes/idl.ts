@@ -1,6 +1,6 @@
 import * as WebIDL2 from 'webidl2';
 import type {
-  PostprocessOptions,
+  SpeculatorConfig,
   PipelinePass,
   PipelineContext,
   PipelineNext,
@@ -161,10 +161,11 @@ export class IdlPass implements PipelinePass {
 
   private async execute(
     _data: unknown,
-    options: PostprocessOptions,
+    config: SpeculatorConfig,
   ): Promise<{ warnings: string[] }> {
     const warnings: string[] = [];
-    const suppressClass = options.diagnostics?.suppressClass ?? 'no-link-warnings';
+    const diagnostics = (config as any).diagnostics || (config as any).lint || {};
+    const suppressClass = diagnostics.suppressClass ?? 'no-link-warnings';
     const index = buildIdlIndex(this.root, warnings);
     resolveIdlLinks(this.root, index, warnings, suppressClass);
     return { warnings };
@@ -172,7 +173,7 @@ export class IdlPass implements PipelinePass {
 
   async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
     const current = ctx.outputs[this.area];
-    const { warnings } = await this.execute(current, ctx.options);
+    const { warnings } = await this.execute(current, ctx.config);
     if (warnings && warnings.length) ctx.warnings.push(...warnings);
     await next();
   }

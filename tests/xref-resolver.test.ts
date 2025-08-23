@@ -32,12 +32,7 @@ describe('xref resolver integration', () => {
     const resolver = new StubResolver({
       'task queue': [{ href: 'https://example.com/task-queue', cite: 'dom' }],
     });
-    const renderer = new Speculator({
-      postprocess: {
-        xref: { resolver, specs: ['html', 'dom'] },
-        toc: { enabled: false },
-      },
-    });
+    const renderer = new Speculator();
     document.body.innerHTML = `<div id="c"><section data-cite="dom" data-format="markdown">Uses [= task queue =].</section></div>`;
     const container = document.querySelector('#c')!;
     const sections = Array.from(
@@ -45,7 +40,10 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, xref: { resolver, specs: ['html', 'dom'] }, toc: { enabled: false } },
+      outputs,
+    );
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const link = container.querySelector('a[data-xref="task queue"]') as HTMLAnchorElement;
@@ -61,12 +59,7 @@ describe('xref resolver integration', () => {
         { href: 'https://example.com/dom-loop', cite: 'dom' },
       ],
     });
-    const renderer = new Speculator({
-      postprocess: {
-        xref: { resolver, specs: ['html', 'dom'] },
-        toc: { enabled: false },
-      },
-    });
+    const renderer = new Speculator();
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= event loop =]</section></div>`;
     const container = document.querySelector('#c')!;
     const sections = Array.from(
@@ -74,7 +67,10 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, xref: { resolver, specs: ['html', 'dom'] }, toc: { enabled: false } },
+      outputs,
+    );
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const link = container.querySelector('a[data-xref="event loop"]') as HTMLAnchorElement;
@@ -90,12 +86,7 @@ describe('xref resolver integration', () => {
         { href: 'https://b.test', cite: 'dom' },
       ],
     });
-    const renderer = new Speculator({
-      postprocess: {
-        xref: { resolver, specs: ['dom'] },
-        toc: { enabled: false },
-      },
-    });
+    const renderer = new Speculator();
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= ambiguous =] [= missing =]</section></div>`;
     const container = document.querySelector('#c')!;
     const sections = Array.from(
@@ -103,7 +94,10 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      { sections, xref: { resolver, specs: ['dom'] }, toc: { enabled: false } },
+      outputs,
+    );
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const ambiguous = container.querySelector('a[data-xref="ambiguous"]') as HTMLAnchorElement;
@@ -122,15 +116,7 @@ describe('xref resolver integration', () => {
     const resolverB = new StubResolver({
       custom: [{ href: 'https://example.com/uj-custom', cite: 'ujse' }],
     });
-    const renderer = new Speculator({
-      postprocess: {
-        xref: [
-          { resolver: resolverA, specs: ['html', 'dom'] },
-          { resolver: resolverB, specs: ['ujse', 'ujts'] },
-        ],
-        toc: { enabled: false },
-      },
-    });
+    const renderer = new Speculator();
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= event loop =]</section><section data-cite="ujse" data-format="markdown">[= custom =]</section></div>`;
     const container = document.querySelector('#c')!;
     const sections = Array.from(
@@ -138,7 +124,17 @@ describe('xref resolver integration', () => {
         'section[data-include], section[data-format], *[data-include], *[data-format]'
       )
     ) as Element[];
-    const res = await renderer.renderDocument({ sections }, outputs);
+    const res = await renderer.renderDocument(
+      {
+        sections,
+        xref: [
+          { resolver: resolverA, specs: ['html', 'dom'] },
+          { resolver: resolverB, specs: ['ujse', 'ujts'] },
+        ],
+        toc: { enabled: false },
+      },
+      outputs,
+    );
     container.innerHTML = '';
     res.sections.forEach(s => container.appendChild(s));
     const loop = container.querySelector('a[data-xref="event loop"]') as HTMLAnchorElement;
