@@ -25,15 +25,19 @@ export { StatsTracker } from './utils/stats-tracker';
 // Type exports
 export type {
   SpeculatorOptions,
+  SpeculatorConfig,
+  RespecLikeConfig,
+  RespecConfig,
   FileLoader,
   MarkdownOptions,
   ProcessingResult,
   ProcessingStats,
   DataFormat,
-  RespecLikeConfig,
   RenderResult,
+  RenderHtmlResult,
   MermaidConfig,
 } from './types';
+export { fromRespecConfig } from './types';
 export type { FormatResult } from './processors/format-processor';
 export type { FieldMapping } from './utils/output-areas';
 
