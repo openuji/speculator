@@ -265,6 +265,13 @@ export interface BoilerplateOptions {
   mount?: 'end' | 'before-references' | 'after-toc';
 }
 
+export interface AssertionsOptions {
+  /** Override spec short name (e.g., 'ujse'). Defaults from baseUrl path. */
+  spec?: string;
+  /** Override version string (e.g., '1.0'). Defaults from baseUrl path. */
+  version?: string | number;
+}
+
 export interface PostprocessOptions {
   xref?: XrefOptions | XrefOptions[];
   biblio?: BiblioOptions;
@@ -272,6 +279,7 @@ export interface PostprocessOptions {
   toc?: TocOptions;
   diagnostics?: DiagnosticsOptions;
   boilerplate?: BoilerplateOptions;
+  assertions?: AssertionsOptions;
 }
 
 // Areas of output that individual pipeline passes may contribute to. Each pass
@@ -284,6 +292,7 @@ export type OutputArea =
   | 'boilerplate'
   | 'toc'
   | 'diagnostics'
+  | 'assertions'
   | 'metadata'
   | 'pubrules'
   | 'legal';

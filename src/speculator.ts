@@ -25,6 +25,7 @@ import { BoilerplatePass, BoilerplateOutput } from './pipeline/passes/boilerplat
 import { BoilerplateRenderer } from './renderers/boilerplate-renderer';
 import { TocPass } from './pipeline/passes/toc';
 import { DiagnosticsPass } from './pipeline/passes/diagnostics';
+import { AssertionsPass } from './pipeline/passes/assertions';
 import { getChangedOutputAreas } from './utils/output-areas';
 import { StatsTracker } from './utils/stats-tracker';
 
@@ -74,6 +75,7 @@ export class Speculator {
           new ReferencesPass(container),
           new BoilerplatePass(container),
           new TocPass(container),
+          new AssertionsPass(container),
           new DiagnosticsPass(container),
         ];
       };

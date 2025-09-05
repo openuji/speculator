@@ -8,7 +8,7 @@ export interface FieldMapping<T> {
 export const CONFIG_TO_OUTPUT_MAP: FieldMapping<SpeculatorConfig>[] = [
   {
     fields: ['sections'],
-    outputs: ['idl', 'xref', 'references', 'boilerplate', 'toc', 'diagnostics'],
+    outputs: ['idl', 'xref', 'references', 'boilerplate', 'toc', 'diagnostics', 'assertions'],
   },
   {
     fields: ['header', 'sotd', 'pubrules', 'legal'],
@@ -56,4 +56,3 @@ export function getChangedOutputAreas(
   }
   return Array.from(areas);
 }
-

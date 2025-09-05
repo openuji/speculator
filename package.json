@@ -18,9 +18,13 @@
   "types": "./dist/browser.d.ts",
   "files": [
     "dist",
+    "bin",
     "README.md",
     "LICENSE"
   ],
+  "bin": {
+    "speculator": "./bin/speculator.mjs"
+  },
   "peerDependencies": {
     "linkedom": ">=0.18.0",
     "typescript": ">=5.0.0",
@@ -35,8 +39,8 @@
     }
   },
   "scripts": {
-    "build": "tsup src/browser.ts src/node.ts --format cjs,esm --dts --external linkedom --clean --out-dir dist",
-    "build:watch": "tsup src/browser.ts src/node.ts --format cjs,esm --dts --external linkedom --watch --out-dir dist",
+    "build": "tsup src/browser.ts src/node.ts src/cli/export-assertions.ts --format cjs,esm --dts --external linkedom --clean --out-dir dist",
+    "build:watch": "tsup src/browser.ts src/node.ts src/cli/export-assertions.ts --format cjs,esm --dts --external linkedom --watch --out-dir dist",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
