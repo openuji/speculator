@@ -120,7 +120,12 @@ export async function exportAssertions(
 
   const base = (args.base as string | undefined) || (spec && version ? `https://spec.openuji.dev/${spec}/${version}/` : '');
   const outPath = (args.out as string | undefined) || 'assertions.json';
-  const items: ExportResultItem[] = captured.map(it => ({ id: it.id, url: base ? `${base}#${it.anchorId}` : `#${it.anchorId}`, type: it.type }));
+  const items: ExportResultItem[] = captured.map(it => ({
+    id: it.id, 
+    url: base ? `${base}#${it.anchorId}` : `#${it.anchorId}`,
+    type: it.type,
+    snippet: it.snippet,
+   }));
   await writeFile(outPath, JSON.stringify(items, null, 2) + '\n', 'utf8');
 
   const multiWarnings = warnings.filter(w => /Multiple normative keywords/.test(w));
