@@ -13,11 +13,11 @@ export interface TocItem {
 }
 
 export function collectTocItems(root: Element): TocItem[] {
-  const headings = Array.from(root.querySelectorAll<HTMLElement>('h2, h3'));
+  const headings = Array.from(root.querySelectorAll<HTMLElement>('h2, h3, h4'));
   const items: TocItem[] = [];
   for (const h of headings) {
     if (!h.id) continue;
-    const depth = h.tagName.toLowerCase() === 'h3' ? 2 : 1;
+    const depth = h.tagName.toLowerCase() === 'h3' ? 2 : h.tagName.toLowerCase() === 'h4' ? 3 : 1;
     items.push({ id: h.id, text: h.textContent || '', depth });
   }
   return items;

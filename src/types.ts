@@ -185,6 +185,7 @@ export function fromRespecConfig(respec: RespecConfig): SpeculatorConfig {
 
 export interface RenderHtmlResult {
   sections: string;
+  toc: string;
   header?: string;
   sotd?: string;
   metadata?: Record<string, unknown>;
@@ -192,7 +193,7 @@ export interface RenderHtmlResult {
   legal?: string;
   warnings: string[];
   stats: ProcessingStats;
-  toc?: string;
+  
   boilerplate?: string[];
   references?: string;
 }

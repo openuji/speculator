@@ -246,6 +246,7 @@ export class Speculator {
     
     return {
       sections: htmlSections,
+      toc: result.toc,
       warnings: result.warnings,
       stats: result.stats,
       ...(result.header
@@ -254,7 +255,6 @@ export class Speculator {
       ...(result.sotd
         ? { sotd: this.htmlRenderer.serialize(result.sotd) }
         : {}),
-      ...(result.toc ? { toc: result.toc } : {}),
       ...(result.boilerplate ? { boilerplate: result.boilerplate } : {}),
       ...(result.references ? { references: result.references } : {}),
     } as RenderHtmlResult;
