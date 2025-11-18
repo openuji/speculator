@@ -133,7 +133,7 @@ describe('Speculator', () => {
     it('should process HTML string', async () => {
       const html = '<section data-format="markdown">## Test\nHello **world**!</section>';
 
-      const result = await renderer.renderHTML(html, outputs);
+      const result = await renderer.renderHTML(html);
 
       expect(result.sections).toContain('<h2 id="test">Test</h2>');
       expect(result.sections).toContain('<strong>world</strong>');
@@ -142,7 +142,7 @@ describe('Speculator', () => {
     it('should handle HTML without special attributes', async () => {
       const html = '<section><p>Hello</p></section>';
 
-      const result = await renderer.renderHTML(html, outputs);
+      const result = await renderer.renderHTML(html);
 
       expect(result.sections).toContain('<p>Hello</p>');
     });
