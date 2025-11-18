@@ -156,6 +156,7 @@ export class Speculator {
 
     const { container, header, sotd, stats, warnings: sectionWarnings } =
       await this.documentBuilder.build(config);
+
     const allWarnings = [...sectionWarnings];
 
     let areas = getChangedOutputAreas(this.prevConfig, config);
@@ -217,25 +218,29 @@ export class Speculator {
     return {
       sections: finalSections,
       warnings: allWarnings,
+      toc,
       stats,
       ...(header ? { header } : {}),
       ...(sotd ? { sotd } : {}),
-      ...(toc ? { toc } : {}),
+      
       ...(boilerplate ? { boilerplate } : {}),
       ...(references ? { references } : {}),
     } as RenderResult;
+  }
+
+  async renderSections(inputHtml: string): Promise<RenderResult> {
+    const container = this.htmlRenderer.parse(inputHtml);
+    const sections = Array.from(container.children) as Element[];
+    return this.renderDocument({ sections });
   }
   /**
    * Process HTML string and return processed HTML
    */
   async renderHTML(
-    inputHtml: string,
-    configOrOutputs: SpeculatorConfig | OutputArea[] = {},
+    inputHtml: string
   ): Promise<RenderHtmlResult> {
-    const container = this.htmlRenderer.parse(inputHtml);
-
-    const sections = Array.from(container.children) as Element[];
-    const result = await this.renderDocument({ sections }, configOrOutputs);
+    const result = await this.renderSections(inputHtml);
+    const container = this.htmlRenderer.parse('<div></div>');
     const doc = container.ownerDocument!;
     const root = doc.createElement('div');
     
