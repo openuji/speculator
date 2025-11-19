@@ -30,14 +30,18 @@ export class TocPass implements PipelinePass {
   private async execute(
     _data: string | undefined,
     config: SpeculatorConfig,
-  ): Promise<{ data: string; warnings: string[] }> {
+  ): Promise<{ data: string | TocItem[]; warnings: string[] }> {
     const { toc } = config.postprocess || {};
     
-    if (toc?.enabled === false) return { data: '', warnings: [] };
+    console.log('TOC items:', toc);
+    
 
     const items = collectTocItems(this.root);
     if (!items.length) return { data: '', warnings: [] };
 
+    if (toc && toc.render === false) {
+      return { data: items, warnings: [] };
+    }
     const renderer = new TocRenderer(this.root.ownerDocument!);
     const { toc: tocHtml } = renderer.render(items);
     return { data: tocHtml, warnings: [] };

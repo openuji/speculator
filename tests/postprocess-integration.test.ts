@@ -5,20 +5,7 @@ import { describe, it, expect } from '@jest/globals';
 const outputs: OutputArea[] = ['toc'];
 
 describe('postprocess integration', () => {
-  it('skips ToC pass when disabled in config', async () => {
-    const renderer = new Speculator({
-      postprocess: { toc: { enabled: false } },
-    });
 
-    document.body.innerHTML = '<nav id="toc"></nav><section data-format="markdown">## One</section>';
-    const container = document.body;
-    const sections = Array.from(container.children) as Element[];
-
-    const result = await renderer.renderDocument({ sections }, outputs);
-
-    const toc = result.sections.find(s => s.id === 'toc');
-    expect(toc?.innerHTML).toBe('');
-  });
 
   it('runs postProcess hooks with pipeline outputs', async () => {
     const renderer = new Speculator();

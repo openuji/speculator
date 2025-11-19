@@ -247,9 +247,7 @@ export interface IdlOptions {
 }
 
 export interface TocOptions {
-  /** CSS selector for the ToC mount point (default: '#toc'). */
-  selector?: string;
-  enabled?: boolean;
+  render?: boolean; // default: true
 }
 
 export interface DiagnosticsOptions {

@@ -8,7 +8,6 @@ describe('Postprocess pipeline (scaffold)', () => {
   beforeEach(() => {
     renderer = new Speculator({
       postprocess: {
-        toc: { enabled: true },
         diagnostics: { suppressClass: 'no-link-warnings' },
       },
     });

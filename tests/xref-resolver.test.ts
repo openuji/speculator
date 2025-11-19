@@ -35,7 +35,6 @@ describe('xref resolver integration', () => {
     const renderer = new Speculator({
       postprocess: {
         xref: { resolver, specs: ['html', 'dom'] },
-        toc: { enabled: false },
       },
     });
     document.body.innerHTML = `<div id="c"><section data-cite="dom" data-format="markdown">Uses [= task queue =].</section></div>`;
@@ -64,7 +63,6 @@ describe('xref resolver integration', () => {
     const renderer = new Speculator({
       postprocess: {
         xref: { resolver, specs: ['html', 'dom'] },
-        toc: { enabled: false },
       },
     });
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= event loop =]</section></div>`;
@@ -93,7 +91,6 @@ describe('xref resolver integration', () => {
     const renderer = new Speculator({
       postprocess: {
         xref: { resolver, specs: ['dom'] },
-        toc: { enabled: false },
       },
     });
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= ambiguous =] [= missing =]</section></div>`;
@@ -128,7 +125,6 @@ describe('xref resolver integration', () => {
           { resolver: resolverA, specs: ['html', 'dom'] },
           { resolver: resolverB, specs: ['ujse', 'ujts'] },
         ],
-        toc: { enabled: false },
       },
     });
     document.body.innerHTML = `<div id="c"><section data-format="markdown">[= event loop =]</section><section data-cite="ujse" data-format="markdown">[= custom =]</section></div>`;

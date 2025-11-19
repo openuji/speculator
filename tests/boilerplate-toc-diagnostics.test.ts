@@ -28,7 +28,6 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
     const renderer = new Speculator({
       postprocess: {
         boilerplate: { conformance: true, security: true, privacy: true, mount: 'after-toc' },
-        toc: { enabled: true },
       }
     });
     const sections = Array.from(container.children) as Element[];
@@ -113,7 +112,7 @@ describe('Boilerplate, ToC polish, Diagnostics', () => {
       </div>
     `;
     const container = document.querySelector('#c')!;
-    const renderer = new Speculator({ postprocess: { toc: { enabled: true } } });
+    const renderer = new Speculator();
     const sections = Array.from(container.children) as Element[];
     const res = await renderer.renderDocument({ sections }, outputs);
     const wrapper = document.createElement('div');

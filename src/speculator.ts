@@ -145,7 +145,7 @@ export class Speculator {
    */
   async renderDocument(
     spec: SpeculatorConfig,
-    configOrOutputs: SpeculatorConfig | OutputArea[] = {},
+    outputs: OutputArea[] = [],
   ): Promise<RenderResult> {
     const startTime = performance.now();
     const config = {
@@ -161,8 +161,8 @@ export class Speculator {
 
     let areas = getChangedOutputAreas(this.prevConfig, config);
     this.prevConfig = config;
-    if (Array.isArray(configOrOutputs)) {
-      areas = areas.filter(a => configOrOutputs.includes(a));
+    if (Array.isArray(outputs)  && outputs.length > 0) {
+      areas = areas.filter(a => outputs.includes(a));
     }
 
     let toc: string | undefined;
@@ -172,6 +172,7 @@ export class Speculator {
     try {
       if (areas.length) {
         const result = await this.pipelineRunner.run(container, config, areas);
+
         pipelineOutputs = result.outputs;
         allWarnings.push(...result.warnings);
 
