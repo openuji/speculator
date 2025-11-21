@@ -1,6 +1,8 @@
 # Speculator
 
-A TypeScript library for processing ReSpec-like markup and open for intgration in any frontend framework out there
+Speculator is a TypeScript-first, Markdown-friendly, theming-agnostic *spec engine* that reuses ReSpec’s good ideas but is designed to drop cleanly into modern SSGs and design system sites.
+
+
 
 
 ## Installation
