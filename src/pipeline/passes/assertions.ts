@@ -1,8 +1,7 @@
 import type {
   SpeculatorConfig,
   PipelinePass,
-  PipelineContext,
-  PipelineNext,
+  PassResult,
 } from '@/types';
 
 export type NormativeType = 'MUST' | 'MUST NOT' | 'SHOULD' | 'MAY';
@@ -62,13 +61,11 @@ function ensureUniqueId(root: Element, desired: string): string {
 }
 
 export class AssertionsPass implements PipelinePass {
-  area = 'assertions' as const;
-  constructor(private readonly root: Element) {}
+  name = 'assertions';
 
-  private async execute(
-    _data: AssertionItem[] | undefined,
-    config: SpeculatorConfig,
-  ): Promise<{ data: AssertionItem[]; warnings: string[] }> {
+  constructor(private readonly root: Element) { }
+
+  private execute(config: SpeculatorConfig): { assertions: AssertionItem[]; warnings: string[] } {
     const warnings: string[] = [];
 
     const { spec: specOpt, version: versionOpt } = (config.postprocess as any)?.assertions || {};
@@ -98,7 +95,7 @@ export class AssertionsPass implements PipelinePass {
       map.set(block, entry);
     }
 
-    if (!map.size) return { data: [], warnings };
+    if (!map.size) return { assertions: [], warnings };
 
     // Determine document order of blocks by scanning relevant block elements
     const selectors = 'p, li, dd, dt, td, th, blockquote';
@@ -133,14 +130,21 @@ export class AssertionsPass implements PipelinePass {
       items.push({ id: standardId, anchorId, type, snippet: normText(block) });
     }
 
-    return { data: items, warnings };
+    return { assertions: items, warnings };
   }
 
-  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
-    const current = ctx.outputs[this.area] as AssertionItem[] | undefined;
-    const { data, warnings } = await this.execute(current, ctx.config);
-    if (data !== undefined) ctx.outputs[this.area] = data;
-    if (warnings && warnings.length) ctx.warnings.push(...warnings);
-    await next();
+  async run(
+    _root: Element,
+    config: SpeculatorConfig,
+    next: () => Promise<PassResult>
+  ): Promise<PassResult> {
+    const { assertions, warnings } = this.execute(config);
+    const downstream = await next();
+
+    return {
+      ...downstream,
+      assertions,
+      warnings: [...warnings, ...downstream.warnings],
+    };
   }
 }

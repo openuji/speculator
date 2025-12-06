@@ -1,66 +1,69 @@
 import type {
-  OutputArea,
   PipelinePass,
-  PipelineContext,
+  PassResult,
   SpeculatorConfig,
 } from '@/types';
 
-export interface PipelineResult {
-  /** Map of data produced by passes, keyed by their output area. */
-  outputs: Partial<Record<OutputArea, unknown>>;
-  /** Accumulated warnings from all executed passes. */
-  warnings: string[];
-}
-
 /**
- * Orchestrates execution of post-processing passes.
+ * Orchestrates execution of post-processing passes using functional composition.
  */
 export class Postprocessor {
-  constructor(private readonly passes: PipelinePass[]) {}
+  constructor(
+    private readonly passes: PipelinePass[],
+    private readonly root: Element,
+  ) { }
 
   /**
    * Run the configured passes.
-   * @param areas Optional list of output areas to run. If omitted, all passes
-   *              are executed.
-   * @param options Configuration options for the passes.
+   * @param config Configuration options for the passes.
+   * @param passNames Optional list of pass names to run. If omitted, all passes are executed.
    */
-  async run(config: SpeculatorConfig, areas?: OutputArea[]): Promise<PipelineResult> {
-    const ctx: PipelineContext = { outputs: {}, warnings: [], config };
-
-    const active = areas
-      ? this.passes.filter(p => areas.includes(p.area))
+  async run(config: SpeculatorConfig, passNames?: string[]): Promise<PassResult> {
+    const active = passNames
+      ? this.passes.filter(p => p.name && passNames.includes(p.name))
       : this.passes;
 
-    const composed = compose(active);
-    await composed(ctx);
-
-    return { outputs: ctx.outputs, warnings: ctx.warnings };
+    const composed = compose(active, this.root, config);
+    return composed();
   }
 }
 
 /**
- * Convenience function mirroring the previous API. A one-off postprocessing run
- * can be performed without manually instantiating the {@link Postprocessor}.
+ * Convenience function for one-off postprocessing runs.
  */
 export async function postprocess(
   passes: PipelinePass[],
+  root: Element,
   config: SpeculatorConfig,
-  areas?: OutputArea[],
-): Promise<PipelineResult> {
-  const processor = new Postprocessor(passes);
-  return processor.run(config, areas);
+  passNames?: string[],
+): Promise<PassResult> {
+  const processor = new Postprocessor(passes, root);
+  return processor.run(config, passNames);
 }
 
-function compose(passes: PipelinePass[]): (ctx: PipelineContext) => Promise<void> {
-  return function run(ctx: PipelineContext): Promise<void> {
-    let index = -1;
-    async function dispatch(i: number): Promise<void> {
-      if (i <= index) return;
-      index = i;
-      const pass = passes[i];
-      if (!pass) return;
-      await pass.run(ctx, () => dispatch(i + 1));
+/**
+ * Compose passes into a single function using functional composition.
+ * Each pass receives the root, config, and a next() function that returns
+ * downstream results. Passes merge their output with downstream results.
+ */
+function compose(
+  passes: PipelinePass[],
+  root: Element,
+  config: SpeculatorConfig,
+): () => Promise<PassResult> {
+  let index = -1;
+
+  function dispatch(i: number): Promise<PassResult> {
+    if (i <= index) {
+      return Promise.resolve({ warnings: [] });
     }
-    return dispatch(0);
-  };
+    index = i;
+    const pass = passes[i];
+    if (!pass) {
+      return Promise.resolve({ warnings: [] });
+    }
+    return pass.run(root, config, () => dispatch(i + 1));
+  }
+
+  return () => dispatch(0);
 }

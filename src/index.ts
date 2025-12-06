@@ -20,7 +20,6 @@ export {
   getDefaultFileLoader
 } from './utils/file-loader/index.js';
 export { RespecXrefResolver } from './utils/respec-xref-resolver';
-export { getChangedOutputAreas } from './utils/output-areas';
 export { StatsTracker } from './utils/stats-tracker';
 
 // Type exports
@@ -37,11 +36,11 @@ export type {
   RenderResult,
   RenderHtmlResult,
   MermaidConfig,
+  PassResult,
+  PipelinePass,
 } from './types';
 export { fromRespecConfig } from './types';
 export type { FormatResult } from './processors/format-processor';
-export type { FieldMapping } from './utils/output-areas';
 
 export { SpeculatorError } from './types';
 export type { HtmlRenderer } from './html-renderer';
-

@@ -1,18 +1,15 @@
 import type {
   SpeculatorConfig,
   PipelinePass,
-  PipelineContext,
-  PipelineNext,
+  PassResult,
 } from '@/types';
 
 export class DiagnosticsPass implements PipelinePass {
-  area = 'diagnostics' as const;
-  constructor(private readonly root: Element) {}
+  name = 'diagnostics';
 
-  private async execute(
-    _data: unknown,
-    config: SpeculatorConfig,
-  ): Promise<{ warnings: string[] }> {
+  constructor(private readonly root: Element) { }
+
+  private execute(config: SpeculatorConfig): { warnings: string[] } {
     const warnings: string[] = [];
     const suppressClass = config.postprocess?.diagnostics?.suppressClass ?? 'no-link-warnings';
     const idsAndLinks = config.postprocess?.diagnostics?.idsAndLinks ?? true;
@@ -54,10 +51,17 @@ export class DiagnosticsPass implements PipelinePass {
     return { warnings };
   }
 
-  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
-    const current = ctx.outputs[this.area];
-    const { warnings } = await this.execute(current, ctx.config);
-    if (warnings && warnings.length) ctx.warnings.push(...warnings);
-    await next();
+  async run(
+    _root: Element,
+    config: SpeculatorConfig,
+    next: () => Promise<PassResult>
+  ): Promise<PassResult> {
+    const { warnings } = this.execute(config);
+    const downstream = await next();
+
+    return {
+      ...downstream,
+      warnings: [...warnings, ...downstream.warnings],
+    };
   }
 }

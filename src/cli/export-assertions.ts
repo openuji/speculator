@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { Speculator, LinkedomHtmlRenderer } from '../node';
-import type { PostProcessHook, AssertionsOptions, OutputArea } from '../types';
+import type { PostProcessHook, AssertionsOptions, PassResult } from '../types';
 
 export interface CliIO {
   readFile?: (p: string, enc?: BufferEncoding) => Promise<string>;
@@ -94,7 +94,7 @@ export async function exportAssertions(
         version = parts[parts.length - 2];
       }
     }
-  } catch {}
+  } catch { }
 
   const baseUrl = new URL('./', pathToFileURL(input)).toString();
   const html = await readFile(input, 'utf8');
@@ -105,8 +105,8 @@ export async function exportAssertions(
   const speculator = new Speculator({ baseUrl, postprocess: { assertions } });
 
   let captured: any[] = [];
-  const hook: PostProcessHook = (_container, outs) => {
-    const items = outs['assertions'] as any[] | undefined;
+  const hook: PostProcessHook = (_container, result: PassResult) => {
+    const items = result['assertions'] as any[] | undefined;
     if (Array.isArray(items)) captured = items;
   };
 
@@ -114,18 +114,17 @@ export async function exportAssertions(
   const htmlRenderer = new LinkedomHtmlRenderer();
   const container = htmlRenderer.parse(html);
   const sections = Array.from(container.children) as Element[];
-  const areas: OutputArea[] = ['assertions'];
-  const res = await speculator.renderDocument({ sections, postProcess: hook }, areas);
+  const res = await speculator.renderDocument({ sections, postProcess: hook });
   warnings.push(...res.warnings);
 
   const base = (args.base as string | undefined) || (spec && version ? `https://spec.openuji.dev/${spec}/${version}/` : '');
   const outPath = (args.out as string | undefined) || 'assertions.json';
   const items: ExportResultItem[] = captured.map(it => ({
-    id: it.id, 
+    id: it.id,
     url: base ? `${base}#${it.anchorId}` : `#${it.anchorId}`,
     type: it.type,
     snippet: it.snippet,
-   }));
+  }));
   await writeFile(outPath, JSON.stringify(items, null, 2) + '\n', 'utf8');
 
   const multiWarnings = warnings.filter(w => /Multiple normative keywords/.test(w));

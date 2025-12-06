@@ -1,8 +1,7 @@
 import type {
   SpeculatorConfig,
   PipelinePass,
-  PipelineContext,
-  PipelineNext,
+  PassResult,
 } from '@/types';
 
 interface BPConfig {
@@ -23,15 +22,13 @@ export interface BoilerplateOutput {
 }
 
 export class BoilerplatePass implements PipelinePass {
-  area = 'boilerplate' as const;
-  constructor(private readonly root: Element) {}
+  name = 'boilerplate';
 
-  private async execute(
-    _data: BoilerplateOutput | undefined,
-    config: SpeculatorConfig,
-  ): Promise<{ data: BoilerplateOutput; warnings: string[] }> {
+  constructor(private readonly root: Element) { }
+
+  private execute(config: SpeculatorConfig): { boilerplate: BoilerplateOutput; warnings: string[] } {
     const bp = config.postprocess?.boilerplate;
-    if (!bp) return { data: { sections: [], ref: null }, warnings: [] };
+    if (!bp) return { boilerplate: { sections: [], ref: null }, warnings: [] };
 
     const mountMode = bp.mount || 'end';
 
@@ -67,14 +64,21 @@ export class BoilerplatePass implements PipelinePass {
       sections.push(descriptor);
     }
 
-    return { data: { sections, ref }, warnings: [] };
+    return { boilerplate: { sections, ref }, warnings: [] };
   }
 
-  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
-    const current = ctx.outputs[this.area] as BoilerplateOutput | undefined;
-    const { data, warnings } = await this.execute(current, ctx.config);
-    if (data !== undefined) ctx.outputs[this.area] = data;
-    if (warnings && warnings.length) ctx.warnings.push(...warnings);
-    await next();
+  async run(
+    _root: Element,
+    config: SpeculatorConfig,
+    next: () => Promise<PassResult>
+  ): Promise<PassResult> {
+    const { boilerplate, warnings } = this.execute(config);
+    const downstream = await next();
+
+    return {
+      ...downstream,
+      boilerplate,
+      warnings: [...warnings, ...downstream.warnings],
+    };
   }
 }

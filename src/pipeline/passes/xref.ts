@@ -1,10 +1,9 @@
 import type {
   SpeculatorConfig,
   PipelinePass,
+  PassResult,
   XrefResult,
   XrefOptions,
-  PipelineContext,
-  PipelineNext,
 } from '../../types';
 import type { LocalTarget } from '../../xref/local-map';
 import { buildLocalMap, norm } from '../../xref/local-map';
@@ -32,13 +31,11 @@ function getCiteSpecs(node: Element): string[] | undefined {
 
 
 export class XrefPass implements PipelinePass {
-  area = 'xref' as const;
-  constructor(private readonly root: Element) {}
+  name = 'xref';
 
-  private async execute(
-    _data: unknown,
-    config: SpeculatorConfig,
-  ): Promise<{ warnings: string[] }> {
+  constructor(private readonly root: Element) { }
+
+  private async execute(config: SpeculatorConfig): Promise<{ warnings: string[] }> {
     const suppressClass = config.postprocess?.diagnostics?.suppressClass ?? 'no-link-warnings';
     const localMap = buildLocalMap(this.root);
 
@@ -48,8 +45,8 @@ export class XrefPass implements PipelinePass {
     const resolverConfigs: XrefOptions[] = Array.isArray(config.postprocess?.xref)
       ? (config.postprocess!.xref as XrefOptions[])
       : config.postprocess?.xref
-      ? [config.postprocess.xref as XrefOptions]
-      : [];
+        ? [config.postprocess.xref as XrefOptions]
+        : [];
 
     const unresolved = collectUnresolvedAnchors(xrefAnchors, localMap, suppressClass);
 
@@ -65,11 +62,18 @@ export class XrefPass implements PipelinePass {
     return { warnings: [...resolveWarnings, ...applyWarnings] };
   }
 
-  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
-    const current = ctx.outputs[this.area];
-    const { warnings } = await this.execute(current, ctx.config);
-    if (warnings && warnings.length) ctx.warnings.push(...warnings);
-    await next();
+  async run(
+    _root: Element,
+    config: SpeculatorConfig,
+    next: () => Promise<PassResult>
+  ): Promise<PassResult> {
+    const { warnings } = await this.execute(config);
+    const downstream = await next();
+
+    return {
+      ...downstream,
+      warnings: [...warnings, ...downstream.warnings],
+    };
   }
 }
 
@@ -160,4 +164,3 @@ function applyXrefResults(
   }
   return warnings;
 }
-

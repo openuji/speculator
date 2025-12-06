@@ -6,7 +6,7 @@ import type {
   RenderResult,
   PipelinePass,
   RenderHtmlResult,
-  OutputArea,
+  PassResult,
 } from './types';
 import { SpeculatorError } from './types';
 import { DocumentBuilder } from './document-builder';
@@ -26,7 +26,6 @@ import { BoilerplateRenderer } from './renderers/boilerplate-renderer';
 import { TocPass } from './pipeline/passes/toc';
 import { DiagnosticsPass } from './pipeline/passes/diagnostics';
 import { AssertionsPass } from './pipeline/passes/assertions';
-import { getChangedOutputAreas } from './utils/output-areas';
 import { StatsTracker } from './utils/stats-tracker';
 
 /**
@@ -42,7 +41,6 @@ export class Speculator {
   private readonly passFactory: (container: Element) => PipelinePass[];
   private readonly documentBuilder: DocumentBuilder;
   private readonly pipelineRunner: PipelineRunner;
-  private prevConfig: SpeculatorConfig | undefined;
 
   constructor(options: SpeculatorOptions = {}) {
     const baseUrl = options.baseUrl;
@@ -145,7 +143,7 @@ export class Speculator {
    */
   async renderDocument(
     spec: SpeculatorConfig,
-    outputs: OutputArea[] = [],
+    passNames?: string[],
   ): Promise<RenderResult> {
     const startTime = performance.now();
     const config = {
@@ -159,41 +157,32 @@ export class Speculator {
 
     const allWarnings = [...sectionWarnings];
 
-    let areas = getChangedOutputAreas(this.prevConfig, config);
-    this.prevConfig = config;
-    if (Array.isArray(outputs)  && outputs.length > 0) {
-      areas = areas.filter(a => outputs.includes(a));
-    }
-
     let toc: string | undefined;
     let boilerplate: string[] | undefined;
     let references: string | undefined;
-    let pipelineOutputs: Partial<Record<OutputArea, unknown>> = {};
+    let pipelineResult: PassResult = { warnings: [] };
+
     try {
-      if (areas.length) {
-        const result = await this.pipelineRunner.run(container, config, areas);
+      pipelineResult = await this.pipelineRunner.run(container, config, passNames);
+      allWarnings.push(...pipelineResult.warnings);
 
-        pipelineOutputs = result.outputs;
-        allWarnings.push(...result.warnings);
+      if (pipelineResult.toc) {
+        toc = pipelineResult.toc as string;
+      }
 
-        if (result.outputs.toc) {
-          toc = result.outputs.toc as string;
-        }
+      const bpOut = pipelineResult.boilerplate as BoilerplateOutput | undefined;
+      if (bpOut && bpOut.sections.length) {
+        const renderer = new BoilerplateRenderer(container.ownerDocument!);
+        const nodes = renderer.render(bpOut.sections);
+        boilerplate = nodes.map(el => el.outerHTML);
+      }
 
-        const bpOut = result.outputs.boilerplate as BoilerplateOutput | undefined;
-        if (bpOut && bpOut.sections.length) {
-          const renderer = new BoilerplateRenderer(container.ownerDocument!);
-          const nodes = renderer.render(bpOut.sections);
-          boilerplate = nodes.map(el => el.outerHTML);
-        }
-
-        const refOut = result.outputs.references as ReferencesOutput | undefined;
-        if (refOut && refOut.html) {
-          refOut.citeUpdates.forEach(({ element, href }) =>
-            element.setAttribute('href', href),
-          );
-          references = refOut.html;
-        }
+      const refOut = pipelineResult.references as ReferencesOutput | undefined;
+      if (refOut && refOut.html) {
+        refOut.citeUpdates.forEach(({ element, href }) =>
+          element.setAttribute('href', href),
+        );
+        references = refOut.html;
       }
 
       const hooks = config.postProcess
@@ -202,7 +191,7 @@ export class Speculator {
           : [config.postProcess]
         : [];
       for (const hook of hooks) {
-        await hook(container, pipelineOutputs);
+        await hook(container, pipelineResult);
       }
     } catch (e) {
       allWarnings.push(
@@ -223,7 +212,7 @@ export class Speculator {
       stats,
       ...(header ? { header } : {}),
       ...(sotd ? { sotd } : {}),
-      
+
       ...(boilerplate ? { boilerplate } : {}),
       ...(references ? { references } : {}),
     } as RenderResult;
@@ -244,12 +233,12 @@ export class Speculator {
     const container = this.htmlRenderer.parse('<div></div>');
     const doc = container.ownerDocument!;
     const root = doc.createElement('div');
-    
+
     for (const section of result.sections) {
       root.appendChild(section);
     }
     const htmlSections = this.htmlRenderer.serialize(root);
-    
+
     return {
       sections: htmlSections,
       toc: result.toc,
@@ -266,5 +255,5 @@ export class Speculator {
     } as RenderHtmlResult;
   }
 
-  
+
 }

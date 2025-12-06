@@ -120,7 +120,7 @@ export class SpeculatorError extends Error {
  */
 export type PostProcessHook = (
   container: Element,
-  outputs: Partial<Record<OutputArea, unknown>>,
+  result: PassResult,
 ) => void | Promise<void>;
 
 /**
@@ -193,7 +193,7 @@ export interface RenderHtmlResult {
   legal?: string;
   warnings: string[];
   stats: ProcessingStats;
-  
+
   boilerplate?: string[];
   references?: string;
 }
@@ -281,37 +281,35 @@ export interface PostprocessOptions {
   assertions?: AssertionsOptions;
 }
 
-// Areas of output that individual pipeline passes may contribute to. Each pass
-// declares the area it operates on so callers can select which passes to run
-// based on their output needs.
-export type OutputArea =
-  | 'idl'
-  | 'xref'
-  | 'references'
-  | 'boilerplate'
-  | 'toc'
-  | 'diagnostics'
-  | 'assertions'
-  | 'metadata'
-  | 'pubrules'
-  | 'legal';
-
-export interface PipelineContext {
-  /** Accumulated outputs from earlier passes. */
-  outputs: Partial<Record<OutputArea, unknown>>;
-  /** Accumulated warnings from executed passes. */
+/**
+ * Result returned from a pipeline pass. Each pass returns its own result
+ * merged with downstream results via functional composition.
+ */
+export interface PassResult {
+  /** Accumulated warnings from this pass and downstream passes. */
   warnings: string[];
-  /** Full configuration for the current render. */
-  config: SpeculatorConfig;
+  /** Pass-specific output data. Each pass adds its own properties. */
+  [key: string]: unknown;
 }
 
-export type PipelineNext = () => Promise<void>;
-
-// A pipeline pass operates on the {@link PipelineContext} and decides whether to
-// continue execution by invoking the provided `next()` callback.
+/**
+ * A pipeline pass transforms the document and returns results.
+ * Uses functional composition: each pass calls next() to get downstream
+ * results, then merges its own output before returning.
+ */
 export interface PipelinePass {
-  /** Which output area this pass is responsible for. */
-  area: OutputArea;
-  /** Execute the pass. */
-  run(context: PipelineContext, next: PipelineNext): Promise<void>;
+  /** Optional name for debugging/filtering. */
+  name?: string;
+  /**
+   * Execute the pass.
+   * @param root - The container element to process
+   * @param config - Full configuration for the current render
+   * @param next - Call to execute downstream passes and get their results
+   * @returns Combined result from this pass and downstream passes
+   */
+  run(
+    root: Element,
+    config: SpeculatorConfig,
+    next: () => Promise<PassResult>
+  ): Promise<PassResult>;
 }

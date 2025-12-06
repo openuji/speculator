@@ -2,8 +2,7 @@ import * as WebIDL2 from 'webidl2';
 import type {
   SpeculatorConfig,
   PipelinePass,
-  PipelineContext,
-  PipelineNext,
+  PassResult,
 } from '@/types';
 
 type IdlTarget = { id: string; key: string; text: string };
@@ -62,7 +61,7 @@ function collectTargetsFromAst(ast: WebIDL2.IDLRootType[]): { defs: IdlTarget[] 
         }
         break;
       }
-      // 'includes' doesn’t add new top-level names — skip
+      // 'includes' doesn't add new top-level names — skip
     }
   }
 
@@ -156,13 +155,11 @@ function resolveIdlLinks(root: Element, index: Map<string, string>, warnings: st
 
 /** Public pass */
 export class IdlPass implements PipelinePass {
-  area = 'idl' as const;
-  constructor(private readonly root: Element) {}
+  name = 'idl';
 
-  private async execute(
-    _data: unknown,
-    config: SpeculatorConfig,
-  ): Promise<{ warnings: string[] }> {
+  constructor(private readonly root: Element) { }
+
+  private execute(config: SpeculatorConfig): { warnings: string[] } {
     const warnings: string[] = [];
     const suppressClass = config.postprocess?.diagnostics?.suppressClass ?? 'no-link-warnings';
     const index = buildIdlIndex(this.root, warnings);
@@ -170,10 +167,17 @@ export class IdlPass implements PipelinePass {
     return { warnings };
   }
 
-  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
-    const current = ctx.outputs[this.area];
-    const { warnings } = await this.execute(current, ctx.config);
-    if (warnings && warnings.length) ctx.warnings.push(...warnings);
-    await next();
+  async run(
+    _root: Element,
+    config: SpeculatorConfig,
+    next: () => Promise<PassResult>
+  ): Promise<PassResult> {
+    const { warnings } = this.execute(config);
+    const downstream = await next();
+
+    return {
+      ...downstream,
+      warnings: [...warnings, ...downstream.warnings],
+    };
   }
 }

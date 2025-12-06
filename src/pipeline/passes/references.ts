@@ -1,8 +1,7 @@
 import type {
   SpeculatorConfig,
   PipelinePass,
-  PipelineContext,
-  PipelineNext,
+  PassResult,
 } from '@/types';
 import { ReferencesRenderer, idForRef, type ReferenceRecord } from '../../renderers/references-renderer';
 
@@ -12,18 +11,16 @@ export interface ReferencesOutput {
 }
 
 export class ReferencesPass implements PipelinePass {
-  area = 'references' as const;
-  constructor(private readonly root: Element) {}
+  name = 'references';
 
-  private async execute(
-    _data: ReferencesOutput | undefined,
-    config: SpeculatorConfig,
-  ): Promise<{ data: ReferencesOutput; warnings: string[] }> {
+  constructor(private readonly root: Element) { }
+
+  private execute(config: SpeculatorConfig): { references: ReferencesOutput; warnings: string[] } {
     const warnings: string[] = [];
     const biblio = config.postprocess?.biblio?.entries ?? {};
 
     const cites = Array.from(this.root.querySelectorAll<HTMLAnchorElement>('a[data-spec]'));
-    if (!cites.length) return { data: { html: '', citeUpdates: [] }, warnings };
+    if (!cites.length) return { references: { html: '', citeUpdates: [] }, warnings };
 
     const normativeIds = new Set<string>();
     const informativeIds = new Set<string>();
@@ -63,14 +60,21 @@ export class ReferencesPass implements PipelinePass {
       citeUpdates.push({ element: a, href: `#${targetId}` });
     }
 
-    return { data: { html, citeUpdates }, warnings };
+    return { references: { html, citeUpdates }, warnings };
   }
 
-  async run(ctx: PipelineContext, next: PipelineNext): Promise<void> {
-    const current = ctx.outputs[this.area] as ReferencesOutput | undefined;
-    const { data, warnings } = await this.execute(current, ctx.config);
-    if (data !== undefined) ctx.outputs[this.area] = data;
-    if (warnings && warnings.length) ctx.warnings.push(...warnings);
-    await next();
+  async run(
+    _root: Element,
+    config: SpeculatorConfig,
+    next: () => Promise<PassResult>
+  ): Promise<PassResult> {
+    const { references, warnings } = this.execute(config);
+    const downstream = await next();
+
+    return {
+      ...downstream,
+      references,
+      warnings: [...warnings, ...downstream.warnings],
+    };
   }
 }
