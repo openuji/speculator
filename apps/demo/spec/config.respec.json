@@ -1,0 +1,12 @@
+{
+    "title": "Speculator Demo Specification",
+    "shortName": "spec-demo",
+    "status": "ED",
+    "editors": [
+        {
+            "name": "Antigravity",
+            "url": "https://google.com"
+        }
+    ],
+    "abstract": "This specification demonstrates the capabilities of the Speculator parser and render pipeline."
+}

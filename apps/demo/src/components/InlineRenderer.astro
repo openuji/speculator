@@ -1,0 +1,51 @@
+---
+import type { Inline } from '@openuji/speculator';
+import InlineRenderer from './InlineRenderer.astro';
+
+interface Props {
+  nodes: Inline[];
+}
+
+const { nodes } = Astro.props;
+---
+
+{nodes.map((node) => {
+  switch (node.type) {
+    case 'text':
+      return <>{node.value}</>;
+      
+    case 'emphasis':
+      return <em><InlineRenderer nodes={node.children} /></em>;
+      
+    case 'strong':
+      return <strong><InlineRenderer nodes={node.children} /></strong>;
+      
+    case 'inlineCode':
+      return <code>{node.value}</code>;
+      
+    case 'link':
+      return <a href={node.url} title={node.title || undefined}><InlineRenderer nodes={node.children} /></a>;
+      
+    case 'image':
+      return <img src={node.url} alt={node.alt || ''} title={node.title || ''} />;
+      
+    case 'definition':
+      return <span class="term" id={node.id} title={node.term}><InlineRenderer nodes={node.children} /></span>;
+      
+    case 'reference':
+      return <a href={`#${node.targetId}`} class="reference"><InlineRenderer nodes={node.children} /></a>;
+      
+    case 'requirement':
+       return <span class="requirement" id={node.id}>{node.keyword}</span>;
+       
+    case 'issue':
+       return (
+         <span class="issue" data-status={node.status} style="color: orange; border: 1px solid orange; padding: 2px; border-radius: 4px;">
+           Issue {node.id && `#${node.id}`}: <InlineRenderer nodes={node.children} />
+         </span>
+       );
+       
+    default:
+       return <span style="color: red; border: 1px solid red;">[Unknown Inline: {(node as any).type}]</span>;
+  }
+})}

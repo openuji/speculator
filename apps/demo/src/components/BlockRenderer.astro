@@ -1,0 +1,107 @@
+---
+import type { Block, Section } from '@openuji/speculator';
+import InlineRenderer from './InlineRenderer.astro';
+import BlockRenderer from './BlockRenderer.astro';
+
+interface Props {
+  node: Block | Section;
+}
+
+const { node } = Astro.props;
+
+// Helper to determine heading level for section
+const getHeadingTag = (depth: number) => `h${Math.min(depth, 6)}`;
+---
+
+{(() => {
+    switch(node.type) {
+        case 'section':
+             // Section logic
+             const HeadingTag = node.heading ? getHeadingTag(node.heading.depth) : 'h2'; // fallback
+             return (
+                 <section id={node.id} class="spec-section">
+                    {node.heading && (
+                        // @ts-ignore - Dynamic tag
+                        <HeadingTag id={node.heading.id}>
+                            <InlineRenderer nodes={node.heading.children} />
+                        </HeadingTag>
+                    )}
+                    {node.children.map(child => <BlockRenderer node={child} />)}
+                 </section>
+             );
+
+        case 'paragraph':
+            return <p><InlineRenderer nodes={node.children} /></p>;
+
+        case 'heading':
+            const H = getHeadingTag(node.depth);
+            // @ts-ignore
+            return <H id={node.id}><InlineRenderer nodes={node.children} /></H>;
+
+        case 'codeBlock':
+            return (
+                <pre><code class={node.lang || ''}>{node.value}</code></pre>
+            );
+
+        case 'blockquote':
+             return (
+                 <blockquote>
+                     {node.children.map(child => <BlockRenderer node={child} />)}
+                 </blockquote>
+             );
+
+        case 'list':
+             const ListTag = node.ordered ? 'ol' : 'ul';
+             return (
+                // @ts-ignore
+                <ListTag start={node.start}>
+                    {node.children.map(item => (
+                        <li>
+                            {/* ListItem children are Blocks */}
+                             {item.children.map(child => <BlockRenderer node={child} />)}
+                        </li>
+                    ))}
+                </ListTag>
+             );
+
+        case 'table':
+            return (
+                <table>
+                    <tbody>
+                        {node.children.map(row => (
+                            <tr>
+                                {row.children.map(cell => {
+                                    const CellTag = cell.header ? 'th' : 'td';
+                                    return (
+                                        // @ts-ignore
+                                        <CellTag style={{textAlign: cell.align || 'left'}}>
+                                            <InlineRenderer nodes={cell.children} />
+                                        </CellTag>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            );
+            
+        case 'thematicBreak':
+            return <hr />;
+            
+        case 'html':
+            return <div set:html={node.value} />;
+
+        case 'example':
+            return (
+                <div class="example" id={node.id}>
+                    {node.title && <div class="example-title">{node.title}</div>}
+                    <div class="example-content">
+                        {node.children.map(child => <BlockRenderer node={child} />)}
+                    </div>
+                </div>
+            )
+
+        default:
+            return <div style="border:1px solid red">Unknown block: {(node as any).type}</div>
+    }
+})()}

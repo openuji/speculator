@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Speculator HTML Demo</title>
+</head>
+<body>
+    <section id="introduction">
+        <h1>Introduction</h1>
+        <p>This is a demonstration of the <strong>Speculator</strong> parsing system using an <em>HTML entry point</em>.</p>
+        <p>It covers various HTML features.</p>
+    </section>
+
+    <section id="formatting">
+        <h2>Text Formatting</h2>
+        <p>We support <em>emphasis</em>, <strong>strong text</strong>, <code>inline code</code>, and <a href="https://example.com">links</a>.</p>
+    </section>
+
+    <section id="lists">
+        <h2>Lists</h2>
+        
+        <h3>Unordered</h3>
+        <ul>
+            <li>Item 1</li>
+            <li>Item 2
+                <ul>
+                    <li>Nested Item 2.1</li>
+                    <li>Nested Item 2.2</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Ordered</h3>
+        <ol>
+            <li>First</li>
+            <li>Second</li>
+            <li>Third</li>
+        </ol>
+    </section>
+
+    <section id="code">
+        <h2>Code Blocks</h2>
+        <pre><code class="language-typescript">
+function hello() {
+    console.log("Hello HTML World");
+}
+        </code></pre>
+    </section>
+
+    <section id="quotes">
+        <h2>Blockquotes</h2>
+        <blockquote>
+            <p>This is a blockquote in HTML.</p>
+            <p>It can span multiple lines.</p>
+        </blockquote>
+    </section>
+
+    <section id="includes">
+        <h2>Includes</h2>
+        <!-- Using the data-include attribute mechanism -->
+        <div data-include="./included.md"></div>
+    </section>
+
+    <section id="definitions">
+        <h2>Definitions</h2>
+        <p>This spec defines <dfn>Term</dfn> as a concept. One can refer to <a class="reference" href="#term">Term</a>.</p>
+        <!-- HTML syntax for definitions/references varies, assuming parser handles standard HTML5 or specific classes. 
+             If the parser supports {{Term}} syntax in HTML text nodes, we can use that too. 
+             Let's try standard text interpolation if supported, or just clean markup. 
+             Assuming the HTML parsers generally map directly to AST nodes. 
+        -->
+        <p>Alternatively: The implementation MUST support this requirement.</p>
+    </section>
+</body>
+</html>
