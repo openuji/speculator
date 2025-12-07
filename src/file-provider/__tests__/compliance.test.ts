@@ -7,7 +7,7 @@ import {
     MemoryFileProvider,
     NodeFileProvider,
     FileNotFoundError
-} from '../index.js';
+} from '#src/file-provider/index';
 import * as path from 'path';
 
 // Helper to test common compliance requirements

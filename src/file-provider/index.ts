@@ -9,9 +9,9 @@ export {
     FileReadError,
     isFileNotFoundError,
     isFileReadError
-} from './types.js';
+} from '#src/file-provider/types';
 
 // Implementations
-export { MemoryFileProvider } from './memory.js';
-export { NodeFileProvider } from './node.js';
-export { WebFileProvider } from './web.js';
+export { MemoryFileProvider } from '#src/file-provider/memory';
+export { NodeFileProvider } from '#src/file-provider/node';
+export { WebFileProvider } from '#src/file-provider/web';

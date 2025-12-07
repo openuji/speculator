@@ -11,7 +11,7 @@ import {
     FileProvider,
     FileNotFoundError,
     FileReadError
-} from './types.js';
+} from '#src/file-provider/types';
 
 /**
  * Node.js file provider

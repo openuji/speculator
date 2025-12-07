@@ -5,6 +5,9 @@
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "imports": {
+        "#src/*": "./dist/*.js"
+    },
     "scripts": {
         "build": "tsc",
         "generate:types": "ts-node scripts/generate-types.ts",
