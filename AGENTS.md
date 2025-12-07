@@ -15,6 +15,9 @@ This repo extends Speculator with:
 
 ## Non-Negotiable Requirements
 
+### Import Conventions
+- Use the `#src/*` alias for internal modules (no `@src`, no deep relative `../../` chains). Keep TS `paths` + package `imports` aligned.
+
 ### Authoring + Composition
 Supported authoring forms:
 1) Markdown directive:
