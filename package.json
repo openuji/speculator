@@ -1,0 +1,42 @@
+{
+    "name": "speculator",
+    "version": "0.1.0",
+    "description": "AST-first specification processor with schema-central architecture",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "generate:types": "ts-node scripts/generate-types.ts",
+        "validate:schema": "ajv compile -s schema/spec-ast.schema.json --strict=false",
+        "test": "vitest run",
+        "lint": "eslint src --ext .ts",
+        "lint:fix": "eslint src --ext .ts --fix",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.0",
+        "@typescript-eslint/eslint-plugin": "^7.0.0",
+        "@typescript-eslint/parser": "^7.0.0",
+        "ajv": "^8.12.0",
+        "ajv-cli": "^5.0.0",
+        "ajv-formats": "^2.1.1",
+        "eslint": "^8.57.0",
+        "json-schema-to-typescript": "^13.1.0",
+        "ts-node": "^10.9.0",
+        "typescript": "^5.3.0",
+        "vitest": "^1.0.0"
+    },
+    "files": [
+        "dist",
+        "schema"
+    ],
+    "keywords": [
+        "ast",
+        "specification",
+        "schema",
+        "respec",
+        "markdown"
+    ],
+    "license": "MIT"
+}

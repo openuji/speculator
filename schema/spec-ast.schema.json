@@ -1,0 +1,1122 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://speculator.dev/schema/spec-ast.schema.json",
+    "title": "Speculator AST Schema",
+    "version": "1.0.0",
+    "x-schema-version": "1.0.0",
+    "description": "AST-first schema for Speculator specification documents. Indexes are extracted via inline markers during post-parse indexing phase.",
+    "definitions": {
+        "SourcePos": {
+            "type": "object",
+            "description": "Source position for bidirectional AST-to-source mapping",
+            "properties": {
+                "file": {
+                    "type": "string",
+                    "description": "Canonical file path (preserves include origins)"
+                },
+                "line": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "1-indexed line number"
+                },
+                "column": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "1-indexed column number"
+                },
+                "offset": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "0-indexed byte offset from file start"
+                },
+                "endLine": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "endColumn": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "endOffset": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "file",
+                "line",
+                "column"
+            ]
+        },
+        "BaseNode": {
+            "type": "object",
+            "properties": {
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            }
+        },
+        "InlineText": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "text"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value"
+                    ]
+                }
+            ]
+        },
+        "InlineEmphasis": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "emphasis"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "InlineStrong": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "strong"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "InlineCode": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "inlineCode"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value"
+                    ]
+                }
+            ]
+        },
+        "InlineLink": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "link"
+                        },
+                        "url": {
+                            "type": "string"
+                        },
+                        "title": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "url",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "InlineImage": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "image"
+                        },
+                        "url": {
+                            "type": "string"
+                        },
+                        "alt": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "title": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "url"
+                    ]
+                }
+            ]
+        },
+        "InlineDefinition": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Inline definition marker (dfn). Indexed during post-parse phase.",
+                    "properties": {
+                        "type": {
+                            "const": "definition"
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Unique identifier for this definition"
+                        },
+                        "term": {
+                            "type": "string",
+                            "description": "The term being defined"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "id",
+                        "term",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "InlineReference": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Cross-reference to a definition. Indexed during post-parse phase.",
+                    "properties": {
+                        "type": {
+                            "const": "reference"
+                        },
+                        "targetId": {
+                            "type": "string",
+                            "description": "ID of the referenced definition"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "targetId",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "InlineRequirement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "RFC 2119 requirement keyword. Indexed during post-parse phase.",
+                    "properties": {
+                        "type": {
+                            "const": "requirement"
+                        },
+                        "keyword": {
+                            "type": "string",
+                            "enum": [
+                                "MUST",
+                                "MUST NOT",
+                                "REQUIRED",
+                                "SHALL",
+                                "SHALL NOT",
+                                "SHOULD",
+                                "SHOULD NOT",
+                                "RECOMMENDED",
+                                "MAY",
+                                "OPTIONAL"
+                            ]
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional requirement identifier"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "keyword"
+                    ]
+                }
+            ]
+        },
+        "InlineIssue": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Open issue or TODO marker. Indexed during post-parse phase.",
+                    "properties": {
+                        "type": {
+                            "const": "issue"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string",
+                            "enum": [
+                                "open",
+                                "closed",
+                                "wontfix"
+                            ],
+                            "default": "open"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "Inline": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/InlineText"
+                },
+                {
+                    "$ref": "#/definitions/InlineEmphasis"
+                },
+                {
+                    "$ref": "#/definitions/InlineStrong"
+                },
+                {
+                    "$ref": "#/definitions/InlineCode"
+                },
+                {
+                    "$ref": "#/definitions/InlineLink"
+                },
+                {
+                    "$ref": "#/definitions/InlineImage"
+                },
+                {
+                    "$ref": "#/definitions/InlineDefinition"
+                },
+                {
+                    "$ref": "#/definitions/InlineReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineRequirement"
+                },
+                {
+                    "$ref": "#/definitions/InlineIssue"
+                }
+            ]
+        },
+        "BlockParagraph": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "paragraph"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockHeading": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "heading"
+                        },
+                        "depth": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 6
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional explicit heading ID"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "depth",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockCodeBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "codeBlock"
+                        },
+                        "lang": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "meta": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value"
+                    ]
+                }
+            ]
+        },
+        "BlockExample": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Example block. Indexed during post-parse phase.",
+                    "properties": {
+                        "type": {
+                            "const": "example"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "title": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockQuote": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "blockquote"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "ListItem": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "listItem"
+                        },
+                        "checked": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ],
+                            "description": "For task lists: true/false/null"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockList": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "list"
+                        },
+                        "ordered": {
+                            "type": "boolean"
+                        },
+                        "start": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "description": "Starting number for ordered lists"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ListItem"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "ordered",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "TableCell": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "tableCell"
+                        },
+                        "header": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "align": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "left",
+                                "center",
+                                "right",
+                                null
+                            ]
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "TableRow": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "tableRow"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/TableCell"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockTable": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "table"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/TableRow"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockThematicBreak": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "thematicBreak"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
+            ]
+        },
+        "BlockHtml": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "html"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value"
+                    ]
+                }
+            ]
+        },
+        "Block": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/BlockParagraph"
+                },
+                {
+                    "$ref": "#/definitions/BlockHeading"
+                },
+                {
+                    "$ref": "#/definitions/BlockCodeBlock"
+                },
+                {
+                    "$ref": "#/definitions/BlockExample"
+                },
+                {
+                    "$ref": "#/definitions/BlockQuote"
+                },
+                {
+                    "$ref": "#/definitions/BlockList"
+                },
+                {
+                    "$ref": "#/definitions/BlockTable"
+                },
+                {
+                    "$ref": "#/definitions/BlockThematicBreak"
+                },
+                {
+                    "$ref": "#/definitions/BlockHtml"
+                }
+            ]
+        },
+        "Section": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "A section groups related content. Supports in-place authoring without includes.",
+                    "properties": {
+                        "type": {
+                            "const": "section"
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional explicit section identifier"
+                        },
+                        "heading": {
+                            "$ref": "#/definitions/BlockHeading",
+                            "description": "Optional section heading"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/definitions/Section"
+                                    },
+                                    {
+                                        "$ref": "#/definitions/Block"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "IndexDefinitionEntry": {
+            "type": "object",
+            "description": "Entry in the definitions index, extracted from InlineDefinition nodes",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "term": {
+                    "type": "string"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "id",
+                "term",
+                "sourcePos"
+            ]
+        },
+        "IndexReferenceEntry": {
+            "type": "object",
+            "description": "Entry in the references index, extracted from InlineReference nodes",
+            "properties": {
+                "targetId": {
+                    "type": "string"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "targetId",
+                "sourcePos"
+            ]
+        },
+        "IndexRequirementEntry": {
+            "type": "object",
+            "description": "Entry in the requirements index, extracted from InlineRequirement nodes",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "keyword": {
+                    "type": "string"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "keyword",
+                "sourcePos"
+            ]
+        },
+        "IndexIssueEntry": {
+            "type": "object",
+            "description": "Entry in the issues index, extracted from InlineIssue nodes",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "sourcePos"
+            ]
+        },
+        "IndexExampleEntry": {
+            "type": "object",
+            "description": "Entry in the examples index, extracted from BlockExample nodes",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "sourcePos"
+            ]
+        },
+        "Indexes": {
+            "type": "object",
+            "description": "Indexes extracted from AST during post-parse indexing phase. Not computed fields.",
+            "properties": {
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexDefinitionEntry"
+                    }
+                },
+                "references": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexReferenceEntry"
+                    }
+                },
+                "requirements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexRequirementEntry"
+                    }
+                },
+                "issues": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexIssueEntry"
+                    }
+                },
+                "examples": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexExampleEntry"
+                    }
+                }
+            }
+        },
+        "TocEntry": {
+            "type": "object",
+            "description": "Table of contents entry",
+            "x-computed": true,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "depth": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string",
+                    "description": "Hierarchical number like '1.2.3'"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TocEntry"
+                    }
+                }
+            },
+            "required": [
+                "depth",
+                "text"
+            ]
+        },
+        "ComputedFields": {
+            "type": "object",
+            "description": "Optional computed fields. Marked x-computed for semantic/full AST distinction.",
+            "x-computed": true,
+            "properties": {
+                "toc": {
+                    "type": "array",
+                    "description": "Table of contents derived from headings",
+                    "x-computed": true,
+                    "items": {
+                        "$ref": "#/definitions/TocEntry"
+                    }
+                },
+                "headingNumbers": {
+                    "type": "object",
+                    "description": "Map of heading ID to hierarchical number string",
+                    "x-computed": true,
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "wordCount": {
+                    "type": "integer",
+                    "description": "Total word count",
+                    "x-computed": true
+                },
+                "readingTime": {
+                    "type": "integer",
+                    "description": "Estimated reading time in minutes",
+                    "x-computed": true
+                }
+            }
+        },
+        "DocumentMetadata": {
+            "type": "object",
+            "description": "Document-level metadata from frontmatter or config",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "shortName": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "editors": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "authors": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "publishDate": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "ISO 8601 date format (YYYY-MM-DD)"
+                },
+                "abstract": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "type": "object",
+    "description": "Root document node",
+    "properties": {
+        "schemaVersion": {
+            "type": "string",
+            "const": "1.0.0",
+            "description": "Schema version for this AST format"
+        },
+        "type": {
+            "const": "document"
+        },
+        "metadata": {
+            "$ref": "#/definitions/DocumentMetadata"
+        },
+        "children": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "$ref": "#/definitions/Section"
+                    },
+                    {
+                        "$ref": "#/definitions/Block"
+                    }
+                ]
+            }
+        },
+        "indexes": {
+            "$ref": "#/definitions/Indexes",
+            "description": "Indexes extracted from inline markers during post-parse phase"
+        },
+        "computed": {
+            "$ref": "#/definitions/ComputedFields",
+            "description": "Optional computed fields (x-computed: true)"
+        },
+        "sourcePos": {
+            "$ref": "#/definitions/SourcePos"
+        }
+    },
+    "required": [
+        "type",
+        "children"
+    ]
+}
