@@ -4,7 +4,7 @@
     "title": "Speculator AST Schema",
     "version": "1.0.0",
     "x-schema-version": "1.0.0",
-    "description": "AST-first schema for Speculator specification documents. Indexes are extracted via inline markers during post-parse indexing phase.",
+    "description": "AST-first schema for Speculator specification documents. Semantic marker nodes are introduced during parse and may be refined during resolve. Indexes are extracted from marker nodes during the indexing phase. Optional computed fields may be embedded via compute options.",
     "definitions": {
         "SourcePos": {
             "type": "object",
@@ -226,14 +226,18 @@
                 },
                 {
                     "type": "object",
-                    "description": "Inline definition marker (dfn). Indexed during post-parse phase.",
+                    "description": "Inline definition marker (dfn). The term and children are parse-level requirements. The canonical id may be author-specified or assigned/refined during resolve. Indexed during the indexing phase.",
                     "properties": {
                         "type": {
                             "const": "definition"
                         },
+                        "explicitId": {
+                            "type": "string",
+                            "description": "Author-specified definition identifier, if provided."
+                        },
                         "id": {
                             "type": "string",
-                            "description": "Unique identifier for this definition"
+                            "description": "Canonical unique identifier for this definition. May be assigned/refined during resolve."
                         },
                         "term": {
                             "type": "string",
@@ -248,7 +252,6 @@
                     },
                     "required": [
                         "type",
-                        "id",
                         "term",
                         "children"
                     ]
@@ -262,14 +265,18 @@
                 },
                 {
                     "type": "object",
-                    "description": "Cross-reference to a definition. Indexed during post-parse phase.",
+                    "description": "Cross-reference marker. Parse requires targetTerm and children. Resolve may bind targetId after global dfn collection. Indexed during the indexing phase.",
                     "properties": {
                         "type": {
                             "const": "reference"
                         },
+                        "targetTerm": {
+                            "type": "string",
+                            "description": "Human/author-facing reference text used to resolve a target definition id."
+                        },
                         "targetId": {
                             "type": "string",
-                            "description": "ID of the referenced definition"
+                            "description": "Resolved ID of the referenced definition."
                         },
                         "children": {
                             "type": "array",
@@ -280,7 +287,7 @@
                     },
                     "required": [
                         "type",
-                        "targetId",
+                        "targetTerm",
                         "children"
                     ]
                 }
@@ -293,7 +300,7 @@
                 },
                 {
                     "type": "object",
-                    "description": "RFC 2119 requirement keyword. Indexed during post-parse phase.",
+                    "description": "RFC 2119 requirement keyword. Indexed during the indexing phase.",
                     "properties": {
                         "type": {
                             "const": "requirement"
@@ -332,7 +339,7 @@
                 },
                 {
                     "type": "object",
-                    "description": "Open issue or TODO marker. Indexed during post-parse phase.",
+                    "description": "Open issue or TODO marker. Indexed during the indexing phase.",
                     "properties": {
                         "type": {
                             "const": "issue"
@@ -359,6 +366,45 @@
                     "required": [
                         "type",
                         "children"
+                    ]
+                }
+            ]
+        },
+        "InlineCite": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Citation marker. The key is parse-level; resolve may link to a bibliography entry and validate presence/ambiguity. Indexed during the indexing phase.",
+                    "properties": {
+                        "type": {
+                            "const": "cite"
+                        },
+                        "key": {
+                            "type": "string",
+                            "description": "Citation key (e.g., RFC2119, WHATWG-URL, etc.)"
+                        },
+                        "kind": {
+                            "type": "string",
+                            "enum": [
+                                "normative",
+                                "informative"
+                            ],
+                            "description": "Optional citation kind if the author provides it."
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            },
+                            "description": "Optional inline content that represents the cite text."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "key"
                     ]
                 }
             ]
@@ -394,6 +440,9 @@
                 },
                 {
                     "$ref": "#/definitions/InlineIssue"
+                },
+                {
+                    "$ref": "#/definitions/InlineCite"
                 }
             ]
         },
@@ -498,7 +547,7 @@
                 },
                 {
                     "type": "object",
-                    "description": "Example block. Indexed during post-parse phase.",
+                    "description": "Example block. Indexed during the indexing phase.",
                     "properties": {
                         "type": {
                             "const": "example"
@@ -849,12 +898,15 @@
                 "targetId": {
                     "type": "string"
                 },
+                "targetTerm": {
+                    "type": "string"
+                },
                 "sourcePos": {
                     "$ref": "#/definitions/SourcePos"
                 }
             },
             "required": [
-                "targetId",
+                "targetTerm",
                 "sourcePos"
             ]
         },
@@ -916,9 +968,57 @@
                 "sourcePos"
             ]
         },
+        "IndexCiteEntry": {
+            "type": "object",
+            "description": "Entry in the citations index, extracted from InlineCite nodes",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "normative",
+                        "informative"
+                    ]
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "key",
+                "sourcePos"
+            ]
+        },
+        "IndexBiblioEntry": {
+            "type": "object",
+            "description": "Entry in the bibliography index, merged from config and/or authored biblio sources during resolve/index phases",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Optional status or classification for the reference (e.g., 'standard', 'draft')"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "key"
+            ]
+        },
         "Indexes": {
             "type": "object",
-            "description": "Indexes extracted from AST during post-parse indexing phase. Not computed fields.",
+            "description": "Indexes extracted from AST marker nodes during indexing. Not computed fields.",
             "properties": {
                 "definitions": {
                     "type": "array",
@@ -948,6 +1048,18 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/IndexExampleEntry"
+                    }
+                },
+                "citations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexCiteEntry"
+                    }
+                },
+                "bibliography": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexBiblioEntry"
                     }
                 }
             }
@@ -1081,7 +1193,7 @@
     "properties": {
         "schemaVersion": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "1.1.0",
             "description": "Schema version for this AST format"
         },
         "type": {
@@ -1105,7 +1217,7 @@
         },
         "indexes": {
             "$ref": "#/definitions/Indexes",
-            "description": "Indexes extracted from inline markers during post-parse phase"
+            "description": "Indexes extracted from marker nodes during indexing"
         },
         "computed": {
             "$ref": "#/definitions/ComputedFields",

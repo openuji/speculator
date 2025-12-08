@@ -1,3 +1,4 @@
+---
 # Speculator AI Development Playbook (AST-First + Optional Compute)
 
 This repo extends Speculator with:
@@ -56,11 +57,12 @@ Users must be able to:
 ### 1) AST Schema Is Central
 The AST JSON Schema is the single source of truth.
 All of these must validate against it:
-- parser output
+- parser output (may include unresolved marker fields allowed by schema)
 - transformed AST
 - resolved AST
 - embedded-compute AST (if enabled)
 
+Stricter invariants per stage are enforced via **phase guards** in addition to schema validation.
 
 ### 2) No String-Only Include Flattening
 Do not merge included files into a single string.
@@ -71,96 +73,86 @@ Parse per unit to preserve `sourcePos.file`.
 - file-provider: IO + path resolution + canonicalization
 - include: marker scanning + graph + cycle detection + deterministic expansion
 - preprocess: config + include orchestration -> CompositeSource
-- parse: SourceUnit -> semantic AST
+- parse-engine:
+  - converts Markdown → Markdown IR
+  - converts HTML → DOM IR
+  - provides a unified traversal/dispatch surface
+- parse-dispatch:
+  - runs plugins over IR to emit schema-valid AST nodes
 - transform: structural normalization only
-- resolve: semantic enrichment (dfn/xref/rfc2119/biblio)
-- index: derived indexes
+- resolve: semantic enrichment (dfn/xref/rfc2119/biblio etc.)
+- index: derived indexes from marker nodes
 - compute: optional derived views
 - render: HTML + JSON outputs
 - workspace: multi-doc/global indexes
+- diagnostics: cross-phase collection + reporting
 - cli: user interface, no core logic
 
-### 4) Phase-Aware Plugins
-Plugins declare one pipeline phase:
+### 4) Unified Plugin Contract
+There is a **single plugin interface**.
+A plugin may register hooks across multiple phases:
 `preprocess | parse | transform | resolve | index | compute | render`
 
-Include resolution is core infrastructure, not a plugin.
+Plugins may also register parse handlers for:
+- HTML tags (single or grouped)
+- Markdown constructs
+- Shared “semantic” patterns that appear in both
+
+No AST node kind is privileged by core code; if a node kind is produced, it is because a plugin emitted it.
+
+### 5) Deterministic Ordering
+- Each phase executes hooks in a stable order.
+- Plugins may declare per-phase order weights.
+- If two plugins target the same IR pattern, conflict resolution is deterministic and documented.
 
 ---
 
-## Deliverables
+## Plugin Interface (Normative)
 
-### A) AST + Schema
-- `spec-ast.schema.json`
-- generated TS types from schema
-- runtime validators/guards
-- AST JSON serializer
+Each plugin exports:
 
-### B) FileProviders
-- NodeFileProvider
-- WebFileProvider
-- MemoryFileProvider
+- `name`
+- optional `phases` with handlers
+- optional `parse` handlers for HTML and/or Markdown IR
 
-### C) Includes
-- Markdown include scanner
-- HTML include scanner
-- IncludeGraph
-- cycle detection
-- deterministic expansion
-- CompositeSource output
+A plugin **must not** perform IO directly; it uses provided context services.
 
-### D) Pipeline
-Phases:
-1) loadConfig
-2) loadEntry
-3) preprocessIncludes
-4) parse
-5) transform
-6) resolve
-7) index
-8) compute (optional)
-9) render
+Suggested shape:
 
-### E) CLI
-- `speculator build`
-- `speculator ast`
-- `speculator lint`
-- `speculator debug:includes`
-Flags for compute modes:
-- `--compute-toc none|return|embed`
-- `--compute-numbering none|return|embed`
+```ts
+type Phase =
+  | "preprocess"
+  | "parse"
+  | "transform"
+  | "resolve"
+  | "index"
+  | "compute"
+  | "render";
 
-### F) Tests
-- unit tests for scanners, graph, determinism, compute helpers
-- integration tests using MemoryFileProvider
-- schema validation tests for each pipeline stage
+interface Plugin {
+  name: string;
 
----
+  order?: Partial<Record<Phase, number>>;
 
-## Definition of Done
+  preprocess?(ctx): Promise<void>;
 
-1) Both include syntaxes work.
-2) Includes are resolved before parse/resolve/index.
-3) Cycle detection produces actionable diagnostics.
-4) Preprocess is deterministic.
-5) AST schema is canonical and enforced in CI.
-6) Parser emits semantic AST.
-7) Users can:
-   - compute ToC/numbering externally
-   - or enable return/embed modes
-8) AST nodes from included files have correct `sourcePos.file`.
-9) Indexers work regardless of compute mode.
-10) CLI supports entry + config + compute flags.
+  /**
+   * Parse is a single phase.
+   * The parse engine provides a normalized IR for each SourceUnit:
+   * - htmlIR: DOM-like tree
+   * - mdIR:  Markdown AST-like tree
+   *
+   * Plugins may implement either or both handlers.
+   * Plugins emit Speculator AST nodes through ctx.emit().
+   */
+  parse?: {
+    html?: (node: HtmlIRNode, ctx: ParseContext) => void;
+    markdown?: (node: MdIRNode, ctx: ParseContext) => void;
+  };
 
----
-
-## Review Checklist
-
-- Does every public output validate against the AST schema?
-- Is include expansion deterministic and cycle-safe?
-- Do included nodes preserve `sourcePos.file`?
-- Are modules SRP-clean?
-- Are compute helpers pure and side-effect free?
-- Is the plugin phase contract respected?
-- Do tests cover mixed authoring:
-  - in-place sections + includes in same document?
+  transform?(ctx): Promise<void>;
+  resolve?(ctx): Promise<void>;
+  index?(ctx): Promise<void>;
+  compute?(ctx): Promise<void>;
+  render?(ctx): Promise<void>;
+}

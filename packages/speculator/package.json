@@ -10,6 +10,7 @@
     },
     "scripts": {
         "build": "tsc",
+        "dev": "tsc --watch",
         "generate:types": "ts-node scripts/generate-types.ts",
         "validate:schema": "ajv compile -s schema/spec-ast.schema.json --strict=false",
         "test": "vitest run",

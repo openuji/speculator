@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2025-12-07T09:48:23.695Z
+ * Generated at: 2025-12-08T09:12:56.075Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -37,7 +37,8 @@ export type Inline =
   | InlineDefinition
   | InlineReference
   | InlineRequirement
-  | InlineIssue;
+  | InlineIssue
+  | InlineCite;
 export type InlineText = BaseNode & {
   type: 'text';
   value: string;
@@ -69,9 +70,13 @@ export type InlineImage = BaseNode & {
 export type InlineDefinition = BaseNode & {
   type: 'definition';
   /**
-   * Unique identifier for this definition
+   * Author-specified definition identifier, if provided.
    */
-  id: string;
+  explicitId?: string;
+  /**
+   * Canonical unique identifier for this definition. May be assigned/refined during resolve.
+   */
+  id?: string;
   /**
    * The term being defined
    */
@@ -81,9 +86,13 @@ export type InlineDefinition = BaseNode & {
 export type InlineReference = BaseNode & {
   type: 'reference';
   /**
-   * ID of the referenced definition
+   * Human/author-facing reference text used to resolve a target definition id.
    */
-  targetId: string;
+  targetTerm: string;
+  /**
+   * Resolved ID of the referenced definition.
+   */
+  targetId?: string;
   children: Inline[];
 };
 export type InlineRequirement = BaseNode & {
@@ -109,6 +118,21 @@ export type InlineIssue = BaseNode & {
   id?: string;
   status?: 'open' | 'closed' | 'wontfix';
   children: Inline[];
+};
+export type InlineCite = BaseNode & {
+  type: 'cite';
+  /**
+   * Citation key (e.g., RFC2119, WHATWG-URL, etc.)
+   */
+  key: string;
+  /**
+   * Optional citation kind if the author provides it.
+   */
+  kind?: 'normative' | 'informative';
+  /**
+   * Optional inline content that represents the cite text.
+   */
+  children?: Inline[];
 };
 export type Block =
   | BlockParagraph
@@ -195,7 +219,7 @@ export interface SpeculatorASTSchema {
   /**
    * Schema version for this AST format
    */
-  schemaVersion?: '1.0.0';
+  schemaVersion?: '1.1.0';
   type: 'document';
   metadata?: DocumentMetadata;
   children: (Section | Block)[];
@@ -255,7 +279,7 @@ export interface SourcePos {
   endOffset?: number;
 }
 /**
- * Indexes extracted from inline markers during post-parse phase
+ * Indexes extracted from marker nodes during indexing
  */
 export interface Indexes {
   definitions?: IndexDefinitionEntry[];
@@ -263,6 +287,8 @@ export interface Indexes {
   requirements?: IndexRequirementEntry[];
   issues?: IndexIssueEntry[];
   examples?: IndexExampleEntry[];
+  citations?: IndexCiteEntry[];
+  bibliography?: IndexBiblioEntry[];
 }
 /**
  * Entry in the definitions index, extracted from InlineDefinition nodes
@@ -276,7 +302,8 @@ export interface IndexDefinitionEntry {
  * Entry in the references index, extracted from InlineReference nodes
  */
 export interface IndexReferenceEntry {
-  targetId: string;
+  targetId?: string;
+  targetTerm: string;
   sourcePos: SourcePos;
 }
 /**
@@ -302,6 +329,27 @@ export interface IndexExampleEntry {
   id?: string;
   title?: string | null;
   sourcePos: SourcePos;
+}
+/**
+ * Entry in the citations index, extracted from InlineCite nodes
+ */
+export interface IndexCiteEntry {
+  key: string;
+  kind?: 'normative' | 'informative';
+  sourcePos: SourcePos;
+}
+/**
+ * Entry in the bibliography index, merged from config and/or authored biblio sources during resolve/index phases
+ */
+export interface IndexBiblioEntry {
+  key: string;
+  title?: string;
+  url?: string;
+  /**
+   * Optional status or classification for the reference (e.g., 'standard', 'draft')
+   */
+  status?: string;
+  sourcePos?: SourcePos;
 }
 /**
  * Optional computed fields (x-computed: true)

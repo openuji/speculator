@@ -1,43 +1,37 @@
 /**
  * Markdown Unit Parser
  * 
- * Parses markdown content using remark and transforms to Speculator AST.
+ * Parses markdown content using remark and transforms to Speculator AST
+ * using the modular handler registry.
  */
 
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
-import type { Root, Content, Heading, Paragraph, List, ListItem as MdastListItem, Code, Blockquote, ThematicBreak, Html, Text, Emphasis, Strong, InlineCode, Link, Image, Table, TableRow as MdastTableRow, TableCell as MdastTableCell } from 'mdast';
+import type { Root, RootContent } from 'mdast';
 import type { SourceUnit } from '#src/preprocess/types';
 import type { UnitParser } from '#src/parse/types';
 import type {
     Section,
     Block,
     Inline,
-    BlockParagraph,
-    BlockHeading,
-    BlockCodeBlock,
-    BlockList,
-    BlockQuote,
-    BlockThematicBreak,
-    BlockHtml,
-    BlockTable,
-    ListItem,
-    TableRow,
-    TableCell,
-    InlineText,
-    InlineEmphasis,
-    InlineStrong,
-    InlineCode as InlineCodeType,
-    InlineLink,
-    InlineImage,
     SourcePos,
 } from '#src/types/ast.generated';
+import {
+    ParseHandlerRegistry,
+    defaultRegistry,
+    type MdParseContext,
+    type NodeWithPosition,
+} from '#src/parse/registry';
+import { registerDefaultMdHandlers } from '#src/parse/markdown/handlers/index';
+
+// Register default handlers on import
+registerDefaultMdHandlers(defaultRegistry);
 
 /**
  * Create source position from mdast node position
  */
-function createSourcePos(unit: SourceUnit, node: { position?: { start: { line: number; column: number; offset?: number }; end?: { line: number; column: number; offset?: number } } }): SourcePos | undefined {
+function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos | undefined {
     if (!node.position) return undefined;
 
     const pos = node.position;
@@ -62,258 +56,17 @@ function createSourcePos(unit: SourceUnit, node: { position?: { start: { line: n
 }
 
 /**
- * Transform mdast inline nodes to Speculator inline nodes
- */
-function transformInline(node: Content, unit: SourceUnit): Inline | null {
-    const sourcePos = createSourcePos(unit, node);
-
-    switch (node.type) {
-        case 'text': {
-            const textNode = node as Text;
-            const result: InlineText = {
-                type: 'text',
-                value: textNode.value,
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'emphasis': {
-            const emphNode = node as Emphasis;
-            const result: InlineEmphasis = {
-                type: 'emphasis',
-                children: transformInlineChildren(emphNode.children, unit),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'strong': {
-            const strongNode = node as Strong;
-            const result: InlineStrong = {
-                type: 'strong',
-                children: transformInlineChildren(strongNode.children, unit),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'inlineCode': {
-            const codeNode = node as InlineCode;
-            const result: InlineCodeType = {
-                type: 'inlineCode',
-                value: codeNode.value,
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'link': {
-            const linkNode = node as Link;
-            const result: InlineLink = {
-                type: 'link',
-                url: linkNode.url,
-                children: transformInlineChildren(linkNode.children, unit),
-            };
-            if (linkNode.title) result.title = linkNode.title;
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'image': {
-            const imgNode = node as Image;
-            const result: InlineImage = {
-                type: 'image',
-                url: imgNode.url,
-            };
-            if (imgNode.alt) result.alt = imgNode.alt;
-            if (imgNode.title) result.title = imgNode.title;
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        default:
-            return null;
-    }
-}
-
-/**
- * Transform array of inline children
- */
-function transformInlineChildren(children: Content[], unit: SourceUnit): Inline[] {
-    return children
-        .map(child => transformInline(child, unit))
-        .filter((n): n is Inline => n !== null);
-}
-
-/**
- * Transform mdast block nodes to Speculator block nodes
- */
-function transformBlock(node: Content, unit: SourceUnit): Block | null {
-    const sourcePos = createSourcePos(unit, node);
-
-    switch (node.type) {
-        case 'heading': {
-            const headingNode = node as Heading;
-            const result: BlockHeading = {
-                type: 'heading',
-                depth: headingNode.depth,
-                children: transformInlineChildren(headingNode.children, unit),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'paragraph': {
-            const paraNode = node as Paragraph;
-            const result: BlockParagraph = {
-                type: 'paragraph',
-                children: transformInlineChildren(paraNode.children, unit),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'list': {
-            const listNode = node as List;
-            const result: BlockList = {
-                type: 'list',
-                ordered: listNode.ordered ?? false,
-                children: listNode.children.map(item => transformListItem(item, unit)),
-            };
-            if (listNode.start !== undefined && listNode.start !== null) {
-                result.start = listNode.start;
-            }
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'code': {
-            const codeNode = node as Code;
-            const result: BlockCodeBlock = {
-                type: 'codeBlock',
-                value: codeNode.value,
-            };
-            if (codeNode.lang) result.lang = codeNode.lang;
-            if (codeNode.meta) result.meta = codeNode.meta;
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'blockquote': {
-            const quoteNode = node as Blockquote;
-            const result: BlockQuote = {
-                type: 'blockquote',
-                children: quoteNode.children
-                    .map(child => transformBlock(child, unit))
-                    .filter((n): n is Block => n !== null),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'thematicBreak': {
-            const result: BlockThematicBreak = {
-                type: 'thematicBreak',
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'html': {
-            const htmlNode = node as Html;
-            const result: BlockHtml = {
-                type: 'html',
-                value: htmlNode.value,
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'table': {
-            const tableNode = node as Table;
-            const result: BlockTable = {
-                type: 'table',
-                children: tableNode.children.map((row, rowIndex) =>
-                    transformTableRow(row, unit, rowIndex === 0, tableNode.align ?? undefined)
-                ),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        default:
-            return null;
-    }
-}
-
-/**
- * Transform list item
- */
-function transformListItem(node: MdastListItem, unit: SourceUnit): ListItem {
-    const sourcePos = createSourcePos(unit, node);
-    const result: ListItem = {
-        type: 'listItem',
-        children: node.children
-            .map(child => transformBlock(child, unit))
-            .filter((n): n is Block => n !== null),
-    };
-    if (node.checked !== undefined && node.checked !== null) {
-        result.checked = node.checked;
-    }
-    if (sourcePos) result.sourcePos = sourcePos;
-    return result;
-}
-
-/**
- * Transform table row
- */
-function transformTableRow(
-    node: MdastTableRow,
-    unit: SourceUnit,
-    isHeader: boolean,
-    align?: (string | null)[]
-): TableRow {
-    const sourcePos = createSourcePos(unit, node);
-    const result: TableRow = {
-        type: 'tableRow',
-        children: node.children.map((cell, index) =>
-            transformTableCell(cell, unit, isHeader, align?.[index])
-        ),
-    };
-    if (sourcePos) result.sourcePos = sourcePos;
-    return result;
-}
-
-/**
- * Transform table cell
- */
-function transformTableCell(
-    node: MdastTableCell,
-    unit: SourceUnit,
-    isHeader: boolean,
-    align?: string | null
-): TableCell {
-    const sourcePos = createSourcePos(unit, node);
-    const result: TableCell = {
-        type: 'tableCell',
-        children: transformInlineChildren(node.children, unit),
-    };
-    if (isHeader) result.header = true;
-    if (align === 'left' || align === 'center' || align === 'right') {
-        result.align = align;
-    }
-    if (sourcePos) result.sourcePos = sourcePos;
-    return result;
-}
-
-/**
- * Markdown unit parser implementation
+ * Markdown unit parser implementation using handler registry
  */
 export class MarkdownUnitParser implements UnitParser {
     readonly format = 'markdown' as const;
 
     private processor = unified().use(remarkParse).use(remarkGfm);
+    private registry: ParseHandlerRegistry;
+
+    constructor(registry: ParseHandlerRegistry = defaultRegistry) {
+        this.registry = registry;
+    }
 
     /**
      * Parse markdown unit to AST blocks
@@ -321,15 +74,84 @@ export class MarkdownUnitParser implements UnitParser {
     parse(unit: SourceUnit): (Section | Block)[] {
         const tree = this.processor.parse(unit.content) as Root;
 
+        // Create context for handlers
+        const ctx = this.createContext(unit);
+
         const blocks: Block[] = [];
 
         for (const child of tree.children) {
-            const block = transformBlock(child, unit);
+            const block = this.transformBlock(child, ctx);
             if (block) {
                 blocks.push(block);
             }
         }
 
         return blocks;
+    }
+
+    /**
+     * Create parse context for handlers
+     */
+    private createContext(unit: SourceUnit): MdParseContext {
+        const self = this;
+
+        return {
+            unit,
+            createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
+            transformInlineChildren: (children: RootContent[]) => self.transformInlineChildren(children, unit),
+            transformBlockChildren: (children: RootContent[]) => {
+                const results: Block[] = [];
+                const ctx = self.createContext(unit);
+                for (const child of children) {
+                    const block = self.transformBlock(child, ctx);
+                    if (block) {
+                        results.push(block);
+                    }
+                }
+                return results;
+            },
+        };
+    }
+
+    /**
+     * Transform mdast node to Speculator block
+     */
+    private transformBlock(node: RootContent, ctx: MdParseContext): Block | null {
+        // Look up handler in registry
+        const handler = this.registry.getMdBlockHandler(node.type);
+
+        if (handler?.handleBlock) {
+            return handler.handleBlock(node, ctx);
+        }
+
+        return null;
+    }
+
+    /**
+     * Transform mdast inline node to Speculator inline
+     */
+    private transformInline(node: RootContent, unit: SourceUnit): Inline | null {
+        const ctx = this.createContext(unit);
+
+        // Look up handler in registry
+        const handler = this.registry.getMdInlineHandler(node.type);
+
+        if (handler?.handleInline) {
+            const result = handler.handleInline(node, ctx);
+            if (result === null) return null;
+            if (Array.isArray(result)) return result.length === 1 ? result[0] : null;
+            return result;
+        }
+
+        return null;
+    }
+
+    /**
+     * Transform array of inline children
+     */
+    private transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
+        return children
+            .map(child => this.transformInline(child, unit))
+            .filter((n): n is Inline => n !== null);
     }
 }

@@ -1,7 +1,8 @@
 /**
  * HTML Unit Parser
  * 
- * Parses HTML content using rehype and transforms to Speculator AST.
+ * Parses HTML content using rehype and transforms to Speculator AST
+ * using the modular handler registry.
  */
 
 import { unified } from 'unified';
@@ -14,25 +15,23 @@ import type {
     Block,
     Inline,
     BlockParagraph,
-    BlockHeading,
-    BlockCodeBlock,
-    BlockList,
-    BlockQuote,
-    BlockHtml,
-    ListItem,
-    InlineText,
-    InlineEmphasis,
-    InlineStrong,
-    InlineCode as InlineCodeType,
-    InlineLink,
-    InlineImage,
     SourcePos,
 } from '#src/types/ast.generated';
+import {
+    ParseHandlerRegistry,
+    defaultRegistry,
+    type HtmlParseContext,
+    type NodeWithPosition,
+} from '#src/parse/registry';
+import { registerDefaultHtmlHandlers } from '#src/parse/html/handlers/index';
+
+// Register default handlers on import
+registerDefaultHtmlHandlers(defaultRegistry);
 
 /**
  * Create source position from hast node position
  */
-function createSourcePos(unit: SourceUnit, node: { position?: { start: { line: number; column: number; offset?: number }; end?: { line: number; column: number; offset?: number } } }): SourcePos | undefined {
+function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos | undefined {
     if (!node.position) return undefined;
 
     const pos = node.position;
@@ -67,117 +66,6 @@ function getAttr(element: Element, name: string): string | undefined {
 }
 
 /**
- * Check if element is a heading (h1-h6)
- */
-function isHeading(tagName: string): boolean {
-    return /^h[1-6]$/i.test(tagName);
-}
-
-/**
- * Get heading depth from tag name
- */
-function getHeadingDepth(tagName: string): number {
-    const match = tagName.match(/^h([1-6])$/i);
-    return match ? parseInt(match[1], 10) : 1;
-}
-
-/**
- * Transform hast inline content to Speculator inline
- */
-function transformInline(node: RootContent, unit: SourceUnit): Inline | null {
-    if (node.type === 'text') {
-        const textNode = node as HastText;
-        // Skip whitespace-only text
-        if (!textNode.value.trim()) return null;
-
-        const result: InlineText = {
-            type: 'text',
-            value: textNode.value,
-        };
-        return result;
-    }
-
-    if (node.type !== 'element') return null;
-
-    const element = node as Element;
-    const sourcePos = createSourcePos(unit, element);
-
-    switch (element.tagName.toLowerCase()) {
-        case 'em':
-        case 'i': {
-            const result: InlineEmphasis = {
-                type: 'emphasis',
-                children: transformInlineChildren(element.children, unit),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'strong':
-        case 'b': {
-            const result: InlineStrong = {
-                type: 'strong',
-                children: transformInlineChildren(element.children, unit),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'code': {
-            const text = getTextContent(element);
-            const result: InlineCodeType = {
-                type: 'inlineCode',
-                value: text,
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'a': {
-            const href = getAttr(element, 'href') ?? '';
-            const title = getAttr(element, 'title');
-            const result: InlineLink = {
-                type: 'link',
-                url: href,
-                children: transformInlineChildren(element.children, unit),
-            };
-            if (title) result.title = title;
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'img': {
-            const src = getAttr(element, 'src') ?? '';
-            const alt = getAttr(element, 'alt');
-            const title = getAttr(element, 'title');
-            const result: InlineImage = {
-                type: 'image',
-                url: src,
-            };
-            if (alt) result.alt = alt;
-            if (title) result.title = title;
-            if (sourcePos) result.sourcePos = sourcePos;
-            return result;
-        }
-
-        case 'span': {
-            // Flatten span children
-            const children = transformInlineChildren(element.children, unit);
-            return children.length === 1 ? children[0] : null;
-        }
-
-        default: {
-            // For other elements, try to extract text
-            const text = getTextContent(element);
-            if (text.trim()) {
-                return { type: 'text', value: text };
-            }
-            return null;
-        }
-    }
-}
-
-/**
  * Get text content of element recursively
  */
 function getTextContent(element: Element): string {
@@ -193,230 +81,17 @@ function getTextContent(element: Element): string {
 }
 
 /**
- * Transform array of inline children
- */
-function transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
-    return children
-        .map(child => transformInline(child, unit))
-        .filter((n): n is Inline => n !== null);
-}
-
-/**
- * Transform hast element to Speculator block
- */
-function transformBlock(node: RootContent, unit: SourceUnit): (Section | Block)[] {
-    if (node.type !== 'element') return [];
-
-    const element = node as Element;
-    const sourcePos = createSourcePos(unit, element);
-    const tagName = element.tagName.toLowerCase();
-
-    // Handle section elements
-    if (tagName === 'section') {
-        return [transformSection(element, unit)];
-    }
-
-    // Handle headings
-    if (isHeading(tagName)) {
-        const result: BlockHeading = {
-            type: 'heading',
-            depth: getHeadingDepth(tagName),
-            children: transformInlineChildren(element.children, unit),
-        };
-        const id = getAttr(element, 'id');
-        if (id) result.id = id;
-        if (sourcePos) result.sourcePos = sourcePos;
-        return [result];
-    }
-
-    switch (tagName) {
-        case 'p': {
-            const result: BlockParagraph = {
-                type: 'paragraph',
-                children: transformInlineChildren(element.children, unit),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return [result];
-        }
-
-        case 'ul':
-        case 'ol': {
-            const result: BlockList = {
-                type: 'list',
-                ordered: tagName === 'ol',
-                children: element.children
-                    .filter((c): c is Element => c.type === 'element' && (c as Element).tagName === 'li')
-                    .map(li => transformListItem(li, unit)),
-            };
-            const start = getAttr(element, 'start');
-            if (start) result.start = parseInt(start, 10);
-            if (sourcePos) result.sourcePos = sourcePos;
-            return [result];
-        }
-
-        case 'pre': {
-            // Look for code element inside
-            const codeEl = element.children.find(
-                (c): c is Element => c.type === 'element' && (c as Element).tagName === 'code'
-            );
-
-            const result: BlockCodeBlock = {
-                type: 'codeBlock',
-                value: codeEl ? getTextContent(codeEl) : getTextContent(element),
-            };
-
-            // Try to extract language from class
-            if (codeEl) {
-                const className = getAttr(codeEl, 'class') ?? getAttr(codeEl, 'className');
-                if (className) {
-                    const langMatch = className.match(/language-(\S+)/);
-                    if (langMatch) result.lang = langMatch[1];
-                }
-            }
-
-            if (sourcePos) result.sourcePos = sourcePos;
-            return [result];
-        }
-
-        case 'blockquote': {
-            const result: BlockQuote = {
-                type: 'blockquote',
-                children: element.children
-                    .flatMap(child => transformBlock(child, unit))
-                    .filter((n): n is Block => n !== null && n.type !== 'section'),
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return [result];
-        }
-
-        case 'div':
-        case 'article':
-        case 'main':
-        case 'body': {
-            // Process children of container elements
-            return element.children.flatMap(child => transformBlock(child, unit));
-        }
-
-        case 'html':
-        case 'head':
-        case 'script':
-        case 'style':
-        case 'meta':
-        case 'link':
-        case 'title': {
-            // Skip these elements
-            return [];
-        }
-
-        default: {
-            // For other elements, try wrapping content in paragraph
-            const inlines = transformInlineChildren(element.children, unit);
-            if (inlines.length > 0) {
-                const result: BlockParagraph = {
-                    type: 'paragraph',
-                    children: inlines,
-                };
-                if (sourcePos) result.sourcePos = sourcePos;
-                return [result];
-            }
-            return [];
-        }
-    }
-}
-
-/**
- * Transform HTML section element to Section node
- */
-function transformSection(element: Element, unit: SourceUnit): Section {
-    const sourcePos = createSourcePos(unit, element);
-    const id = getAttr(element, 'id');
-
-    // Find heading and other children
-    let heading: Section['heading'] | undefined;
-    const children: (Section | Block)[] = [];
-
-    for (const child of element.children) {
-        if (child.type !== 'element') continue;
-
-        const childEl = child as Element;
-        const tagName = childEl.tagName.toLowerCase();
-
-        if (!heading && isHeading(tagName)) {
-            // First heading becomes section heading
-            heading = {
-                type: 'heading',
-                depth: getHeadingDepth(tagName),
-                children: transformInlineChildren(childEl.children, unit),
-            };
-            const headingId = getAttr(childEl, 'id');
-            if (headingId) heading.id = headingId;
-            const headingPos = createSourcePos(unit, childEl);
-            if (headingPos) heading.sourcePos = headingPos;
-        } else {
-            const blocks = transformBlock(child, unit);
-            children.push(...blocks);
-        }
-    }
-
-    const result: Section = {
-        type: 'section',
-        children,
-    };
-
-    if (id) result.id = id;
-    if (heading) result.heading = heading;
-    if (sourcePos) result.sourcePos = sourcePos;
-
-    return result;
-}
-
-/**
- * Transform list item
- */
-function transformListItem(element: Element, unit: SourceUnit): ListItem {
-    const sourcePos = createSourcePos(unit, element);
-
-    // Check for task list checkbox
-    let checked: boolean | null | undefined;
-    const firstChild = element.children[0];
-    if (firstChild?.type === 'element') {
-        const firstEl = firstChild as Element;
-        if (firstEl.tagName === 'input' && getAttr(firstEl, 'type') === 'checkbox') {
-            checked = firstEl.properties?.checked === true;
-        }
-    }
-
-    const result: ListItem = {
-        type: 'listItem',
-        children: element.children
-            .flatMap(child => transformBlock(child, unit))
-            .filter((n): n is Block => n !== null && n.type !== 'section'),
-    };
-
-    // If no block children, wrap inline content in paragraph
-    if (result.children.length === 0) {
-        const inlines = transformInlineChildren(element.children, unit);
-        if (inlines.length > 0) {
-            result.children = [{
-                type: 'paragraph',
-                children: inlines,
-            }];
-        }
-    }
-
-    if (checked !== undefined) result.checked = checked;
-    if (sourcePos) result.sourcePos = sourcePos;
-
-    return result;
-}
-
-/**
- * HTML unit parser implementation
+ * HTML unit parser implementation using handler registry
  */
 export class HtmlUnitParser implements UnitParser {
     readonly format = 'html' as const;
 
     private processor = unified().use(rehypeParse, { fragment: true });
+    private registry: ParseHandlerRegistry;
+
+    constructor(registry: ParseHandlerRegistry = defaultRegistry) {
+        this.registry = registry;
+    }
 
     /**
      * Parse HTML unit to AST blocks
@@ -424,11 +99,146 @@ export class HtmlUnitParser implements UnitParser {
     parse(unit: SourceUnit): (Section | Block)[] {
         const tree = this.processor.parse(unit.content) as Root;
 
+        // Create context for handlers
+        const ctx = this.createContext(unit);
+
         const results: (Section | Block)[] = [];
 
         for (const child of tree.children) {
-            const blocks = transformBlock(child, unit);
+            const blocks = this.transformBlock(child, ctx);
             results.push(...blocks);
+        }
+
+        return results;
+    }
+
+    /**
+     * Create parse context for handlers
+     */
+    private createContext(unit: SourceUnit): HtmlParseContext {
+        const self = this;
+
+        return {
+            unit,
+            createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
+            transformInlineChildren: (children: RootContent[]) => self.transformInlineChildren(children, unit),
+            transformBlockChildren: (children: RootContent[]) => {
+                const results: (Section | Block)[] = [];
+                const ctx = self.createContext(unit);
+                for (const child of children) {
+                    results.push(...self.transformBlock(child, ctx));
+                }
+                return results;
+            },
+            getTextContent,
+            getAttr,
+        };
+    }
+
+    /**
+     * Transform hast element to Speculator block(s)
+     */
+    private transformBlock(node: RootContent, ctx: HtmlParseContext): (Section | Block)[] {
+        if (node.type !== 'element') return [];
+
+        const element = node as Element;
+        const tagName = element.tagName.toLowerCase();
+
+        // Look up handler in registry
+        const handler = this.registry.getHtmlBlockHandler(tagName);
+
+        if (handler?.handleBlock) {
+            const result = handler.handleBlock(element, ctx);
+            if (result === null) return [];
+            if (Array.isArray(result)) return result;
+            return [result];
+        }
+
+        // Fallback: try to wrap inline content in paragraph
+        const sourcePos = ctx.createSourcePos(element);
+        const inlines = ctx.transformInlineChildren(element.children);
+        if (inlines.length > 0) {
+            const result: BlockParagraph = {
+                type: 'paragraph',
+                children: inlines,
+            };
+            if (sourcePos) result.sourcePos = sourcePos;
+            return [result];
+        }
+
+        return [];
+    }
+
+    /**
+     * Transform hast inline content to Speculator inline
+     */
+    private transformInline(node: RootContent, unit: SourceUnit): Inline | null {
+        if (node.type === 'text') {
+            const textNode = node as HastText;
+            // Skip whitespace-only text
+            if (!textNode.value.trim()) return null;
+
+            return {
+                type: 'text',
+                value: textNode.value,
+            };
+        }
+
+        if (node.type !== 'element') return null;
+
+        const element = node as Element;
+        const tagName = element.tagName.toLowerCase();
+        const ctx = this.createContext(unit);
+
+        // Look up handler in registry
+        const handler = this.registry.getHtmlInlineHandler(tagName);
+
+        if (handler?.handleInline) {
+            const result = handler.handleInline(element, ctx);
+            if (result === null) return null;
+            if (Array.isArray(result)) return result.length === 1 ? result[0] : null;
+            return result;
+        }
+
+        // Fallback: extract text content
+        const text = getTextContent(element);
+        if (text.trim()) {
+            return { type: 'text', value: text };
+        }
+
+        return null;
+    }
+
+    /**
+     * Transform array of inline children
+     */
+    private transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
+        const results: Inline[] = [];
+
+        for (const child of children) {
+            if (child.type === 'element') {
+                const element = child as Element;
+                const tagName = element.tagName.toLowerCase();
+                const ctx = this.createContext(unit);
+                const handler = this.registry.getHtmlInlineHandler(tagName);
+
+                if (handler?.handleInline) {
+                    const result = handler.handleInline(element, ctx);
+                    if (result !== null) {
+                        if (Array.isArray(result)) {
+                            results.push(...result);
+                        } else {
+                            results.push(result);
+                        }
+                        continue;
+                    }
+                }
+            }
+
+            const inline = this.transformInline(child, unit);
+            if (inline) {
+                results.push(inline);
+            }
         }
 
         return results;
