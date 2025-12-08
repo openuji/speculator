@@ -43,7 +43,10 @@ describe('DfnResolvePlugin', () => {
     it('resolves reference to definition with same term', async () => {
         const doc = createDocWithDfnAndRef('event loop', 'event loop');
 
+
+        await dfnResolvePlugin.index!({ document: doc });
         await dfnResolvePlugin.resolve!({ document: doc });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
@@ -55,7 +58,10 @@ describe('DfnResolvePlugin', () => {
     it('assigns ID to definition', async () => {
         const doc = createDocWithDfnAndRef('task queue', 'task queue');
 
+
+        await dfnResolvePlugin.index!({ document: doc });
         await dfnResolvePlugin.resolve!({ document: doc });
+
 
         const section = doc.children[0] as Section;
         const dfnPara = section.children[0] as BlockParagraph;
@@ -92,7 +98,10 @@ describe('DfnResolvePlugin', () => {
             } as Section],
         };
 
+
+        await dfnResolvePlugin.index!({ document: doc });
         await dfnResolvePlugin.resolve!({ document: doc });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
@@ -129,7 +138,10 @@ describe('DfnResolvePlugin', () => {
             } as Section],
         };
 
+
+        await dfnResolvePlugin.index!({ document: doc });
         await dfnResolvePlugin.resolve!({ document: doc });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
@@ -141,7 +153,10 @@ describe('DfnResolvePlugin', () => {
     it('leaves targetId undefined for unresolved reference', async () => {
         const doc = createDocWithDfnAndRef('foo', 'bar');
 
+
+        await dfnResolvePlugin.index!({ document: doc });
         await dfnResolvePlugin.resolve!({ document: doc });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
@@ -167,7 +182,10 @@ describe('DfnResolvePlugin', () => {
             } as Section],
         };
 
+
+        await dfnResolvePlugin.index!({ document: doc });
         await dfnResolvePlugin.resolve!({ document: doc });
+
 
         const section = doc.children[0] as Section;
         const dfnPara = section.children[0] as BlockParagraph;

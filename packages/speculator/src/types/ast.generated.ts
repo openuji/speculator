@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2025-12-08T12:46:28.534Z
+ * Generated at: 2025-12-08T13:31:51.008Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -373,6 +373,18 @@ export interface Indexes {
 export interface IndexDefinitionEntry {
   id: string;
   term: string;
+  /**
+   * Alternative link texts (aliases)
+   */
+  linkTexts?: string[];
+  /**
+   * Contexts this definition applies to
+   */
+  forContexts?: (string | null)[];
+  /**
+   * Type of definition (e.g. 'interface', 'dfn')
+   */
+  dfnType?: string;
   sourcePos: SourcePos;
 }
 /**

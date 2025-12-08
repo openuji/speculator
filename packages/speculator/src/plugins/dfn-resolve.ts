@@ -4,13 +4,11 @@
  * Resolves cross-references (xref) to their target definitions (dfn).
  * 
  * Process:
- * 1. Walk AST to collect all InlineDefinition nodes into an index
- * 2. Walk AST to find all InlineReference nodes
- * 3. Match references to definitions using term/candidateTerms + forContext
- * 4. Fill in targetId on matched references
+ * 1. Index Phase: Walk AST to collect all InlineDefinition nodes into document.indexes.definitions
+ * 2. Resolve Phase: Match references to definitions using term/candidateTerms + forContext
  */
 
-import type { Plugin, ResolveContext } from '#src/pipeline/types';
+import type { Plugin, ResolveContext, IndexContext } from '#src/pipeline/types';
 import type {
     SpeculatorASTSchema as Document,
     Section,
@@ -18,19 +16,9 @@ import type {
     Inline,
     InlineDefinition,
     InlineReference,
+    IndexDefinitionEntry,
 } from '#src/types/ast.generated';
 import { normalizeTerm } from '#src/parse/normalize';
-
-/**
- * Definition index entry
- */
-interface DefinitionEntry {
-    id: string;
-    term: string;
-    linkTexts: string[];
-    forContexts: (string | null)[];
-    dfnType: string;
-}
 
 /**
  * Generate a unique ID for a definition if not already set
@@ -45,10 +33,17 @@ function generateDfnId(term: string, forContext: string | null): string {
 }
 
 /**
- * Build definition index from document
+ * Build definition index from document into document.indexes
  */
-function buildDefinitionIndex(document: Document): Map<string, DefinitionEntry[]> {
-    const index = new Map<string, DefinitionEntry[]>();
+function buildDefinitionIndex(document: Document): void {
+    // Initialize indexes structure
+    if (!document.indexes) {
+        document.indexes = {};
+    }
+    if (!document.indexes.definitions) {
+        document.indexes.definitions = [];
+    }
+    const definitionIndex = document.indexes.definitions;
 
     function addToIndex(dfn: InlineDefinition) {
         // Generate ID if not present
@@ -58,29 +53,22 @@ function buildDefinitionIndex(document: Document): Map<string, DefinitionEntry[]
         // Assign ID back to the node
         (dfn as any).id = id;
 
-        const entry: DefinitionEntry = {
+        // Create index entry
+        const entry: IndexDefinitionEntry = {
             id,
             term: dfn.term,
-            linkTexts: (dfn as any).linkTexts || [dfn.term],
-            forContexts: (dfn as any).forContexts || [null],
-            dfnType: (dfn as any).dfnType || 'dfn',
+            linkTexts: (dfn as any).linkTexts,
+            forContexts: (dfn as any).forContexts,
+            dfnType: (dfn as any).dfnType,
+            // Use existing sourcePos or a fallback
+            sourcePos: (dfn as any).sourcePos || {
+                file: 'unknown',
+                start: { line: 0, column: 0, offset: 0 },
+                end: { line: 0, column: 0, offset: 0 }
+            }
         };
 
-        // Index by all link texts
-        for (const text of entry.linkTexts) {
-            const key = normalizeTerm(text);
-            const existing = index.get(key) || [];
-            existing.push(entry);
-            index.set(key, existing);
-        }
-
-        // Also index by the primary term if different
-        const termKey = normalizeTerm(entry.term);
-        if (!entry.linkTexts.some(lt => normalizeTerm(lt) === termKey)) {
-            const existing = index.get(termKey) || [];
-            existing.push(entry);
-            index.set(termKey, existing);
-        }
+        definitionIndex.push(entry);
     }
 
     function walkInlines(inlines: Inline[]) {
@@ -143,8 +131,36 @@ function buildDefinitionIndex(document: Document): Map<string, DefinitionEntry[]
             walkBlock(child);
         }
     }
+}
 
-    return index;
+/**
+ * Build lookup map from definition index
+ */
+function buildLookupMap(document: Document): Map<string, IndexDefinitionEntry[]> {
+    const map = new Map<string, IndexDefinitionEntry[]>();
+    const definitions = document.indexes?.definitions || [];
+
+    for (const entry of definitions) {
+        const linkTexts = entry.linkTexts || [entry.term];
+
+        // Index by all link texts
+        for (const text of linkTexts) {
+            const key = normalizeTerm(text);
+            const existing = map.get(key) || [];
+            existing.push(entry);
+            map.set(key, existing);
+        }
+
+        // Also index by the primary term if different
+        const termKey = normalizeTerm(entry.term);
+        if (!linkTexts.some(lt => normalizeTerm(lt) === termKey)) {
+            const existing = map.get(termKey) || [];
+            existing.push(entry);
+            map.set(termKey, existing);
+        }
+    }
+
+    return map;
 }
 
 /**
@@ -152,8 +168,8 @@ function buildDefinitionIndex(document: Document): Map<string, DefinitionEntry[]
  */
 function resolveReference(
     ref: InlineReference,
-    index: Map<string, DefinitionEntry[]>
-): DefinitionEntry | null {
+    index: Map<string, IndexDefinitionEntry[]>
+): IndexDefinitionEntry | null {
     const candidateTerms = (ref as any).candidateTerms || [ref.targetTerm];
     const forContexts = (ref as any).forContexts || [null];
     const preferredType = (ref as any).preferredType;
@@ -172,7 +188,7 @@ function resolveReference(
         const refForContext = forContexts.find((fc: string | null) => fc !== null);
         if (refForContext) {
             const exactMatches = matches.filter(e =>
-                e.forContexts.some(fc => fc && normalizeTerm(fc) === normalizeTerm(refForContext))
+                (e.forContexts || [null]).some(fc => fc && normalizeTerm(fc) === normalizeTerm(refForContext))
             );
             if (exactMatches.length > 0) {
                 matches = exactMatches;
@@ -199,7 +215,7 @@ function resolveReference(
 /**
  * Walk document and resolve all references
  */
-function resolveReferences(document: Document, index: Map<string, DefinitionEntry[]>) {
+function resolveReferences(document: Document, index: Map<string, IndexDefinitionEntry[]>) {
     function walkInlines(inlines: Inline[]) {
         for (const inline of inlines) {
             if (inline.type === 'reference') {
@@ -265,11 +281,16 @@ function resolveReferences(document: Document, index: Map<string, DefinitionEntr
  */
 export const dfnResolvePlugin: Plugin = {
     name: 'dfn-resolve',
-    order: { resolve: 10 },
+    order: { index: 10, resolve: 10 },
+
+    async index(ctx: IndexContext): Promise<void> {
+        // Build definition index into AST
+        buildDefinitionIndex(ctx.document);
+    },
 
     async resolve(ctx: ResolveContext): Promise<void> {
-        // Build definition index
-        const index = buildDefinitionIndex(ctx.document);
+        // Build lookup map from AST index
+        const index = buildLookupMap(ctx.document);
 
         // Resolve all references
         resolveReferences(ctx.document, index);

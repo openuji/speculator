@@ -1040,6 +1040,27 @@
                 "term": {
                     "type": "string"
                 },
+                "linkTexts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Alternative link texts (aliases)"
+                },
+                "forContexts": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "description": "Contexts this definition applies to"
+                },
+                "dfnType": {
+                    "type": "string",
+                    "description": "Type of definition (e.g. 'interface', 'dfn')"
+                },
                 "sourcePos": {
                     "$ref": "#/definitions/SourcePos"
                 }

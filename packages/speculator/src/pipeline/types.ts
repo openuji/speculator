@@ -30,7 +30,7 @@ export type Phase = 'parse' | 'transform' | 'resolve' | 'index' | 'compute' | 'r
 /**
  * Ordered list of phases for iteration
  */
-export const PHASES: Phase[] = ['parse', 'transform', 'resolve', 'index', 'compute', 'render'];
+export const PHASES: Phase[] = ['parse', 'transform', 'index', 'resolve', 'compute', 'render'];
 
 // ============================================================================
 // Future Phase Context Types (Stubs)
@@ -44,16 +44,16 @@ export interface TransformContext {
 }
 
 /**
- * Context for resolve phase
+ * Context for index phase
  */
-export interface ResolveContext {
+export interface IndexContext {
     readonly document: Document;
 }
 
 /**
- * Context for index phase
+ * Context for resolve phase
  */
-export interface IndexContext {
+export interface ResolveContext {
     readonly document: Document;
 }
 
@@ -122,11 +122,11 @@ export interface Plugin {
     /** Transform phase hook */
     transform?(ctx: TransformContext): Promise<void>;
 
-    /** Resolve phase hook */
-    resolve?(ctx: ResolveContext): Promise<void>;
-
-    /** Index phase hook */
+    /** Index phase hook (runs before resolve to build indexes) */
     index?(ctx: IndexContext): Promise<void>;
+
+    /** Resolve phase hook (uses indexes) */
+    resolve?(ctx: ResolveContext): Promise<void>;
 
     /** Compute phase hook */
     compute?(ctx: ComputeContext): Promise<void>;

@@ -155,18 +155,6 @@ export class SpeculatorPipeline {
         }
 
         // =================================================================
-        // RESOLVE PHASE
-        // =================================================================
-        const resolvePlugins = sortPluginsForPhase(
-            this.plugins.filter(p => p.resolve),
-            'resolve'
-        );
-        for (const plugin of resolvePlugins) {
-            const ctx: ResolveContext = { document };
-            await plugin.resolve!(ctx);
-        }
-
-        // =================================================================
         // INDEX PHASE
         // =================================================================
         const indexPlugins = sortPluginsForPhase(
@@ -176,6 +164,18 @@ export class SpeculatorPipeline {
         for (const plugin of indexPlugins) {
             const ctx: IndexContext = { document };
             await plugin.index!(ctx);
+        }
+
+        // =================================================================
+        // RESOLVE PHASE
+        // =================================================================
+        const resolvePlugins = sortPluginsForPhase(
+            this.plugins.filter(p => p.resolve),
+            'resolve'
+        );
+        for (const plugin of resolvePlugins) {
+            const ctx: ResolveContext = { document };
+            await plugin.resolve!(ctx);
         }
 
         // =================================================================
