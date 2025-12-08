@@ -138,6 +138,21 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                     </div>
                 );
 
+            case "note":
+                // BlockNote - informative note/warning/example containers
+                const noteType = (node as any).noteType || "note";
+                const noteClass = `note note-${noteType}`;
+                return (
+                    <aside class={noteClass} id={node.id} role="note">
+                        <div class="note-header">{noteType.toUpperCase()}</div>
+                        <div class="note-content">
+                            {node.children.map((child) => (
+                                <RecursiveBlockRenderer node={child} />
+                            ))}
+                        </div>
+                    </aside>
+                );
+
             default:
                 return (
                     <div style="border:1px solid red">

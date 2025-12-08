@@ -2,12 +2,38 @@
  * Misc Plugin
  * 
  * Handles miscellaneous elements: thematic break (hr), containers, raw HTML.
+ * Also handles div elements with note/warning/example classes as informative blocks.
  */
 
 import type { Element, RootContent } from 'hast';
 import type { ThematicBreak, Html, RootContent as MdastRootContent } from 'mdast';
 import type { Plugin, ParseContext, BlockHandlerResult } from '#src/pipeline/types';
-import type { BlockThematicBreak, BlockHtml, Section, Block } from '#src/types/ast.generated';
+import type { BlockThematicBreak, BlockHtml, BlockNote, Section, Block } from '#src/types/ast.generated';
+
+/**
+ * Note type classifications
+ */
+const NOTE_CLASSES = ['note', 'warning', 'example', 'issue', 'advisement'] as const;
+type NoteType = 'note' | 'warning' | 'example' | 'issue';
+
+/**
+ * Check if element has a note-like class
+ */
+function getNoteTypeFromDiv(element: Element, ctx: ParseContext): NoteType | null {
+    // hast converts 'class' to 'className'
+    const className = ctx.getAttr(element, 'className') ?? '';
+    const classes = className.toLowerCase().split(/\s+/);
+
+    for (const noteClass of NOTE_CLASSES) {
+        if (classes.includes(noteClass)) {
+            // Map advisement to warning
+            if (noteClass === 'advisement') return 'warning';
+            return noteClass as NoteType;
+        }
+    }
+
+    return null;
+}
 
 /**
  * Plugin for miscellaneous elements.
@@ -35,8 +61,34 @@ export const miscPlugin: Plugin = {
                     return result;
                 }
 
-                // Container elements - pass through children
-                if (tagName === 'div' || tagName === 'article' || tagName === 'main' || tagName === 'body') {
+                // Container elements
+                if (tagName === 'div') {
+                    // Check for note/warning/example class
+                    const noteType = getNoteTypeFromDiv(element, ctx);
+                    if (noteType) {
+                        const id = ctx.getAttr(element, 'id');
+                        const childBlocks = ctx.transformBlockChildren(element.children as RootContent[]);
+                        // Filter out sections - notes only contain blocks
+                        const children = childBlocks.filter((c): c is Block => c.type !== 'section');
+
+                        const result: BlockNote = {
+                            type: 'note',
+                            noteType,
+                            informative: true,
+                            children,
+                        };
+
+                        if (id) result.id = id;
+                        if (sourcePos) result.sourcePos = sourcePos;
+                        return result;
+                    }
+
+                    // Regular div - pass through children
+                    return ctx.transformBlockChildren(element.children) as (Section | Block)[];
+                }
+
+                // Other container elements - pass through children
+                if (tagName === 'article' || tagName === 'main' || tagName === 'body') {
                     return ctx.transformBlockChildren(element.children) as (Section | Block)[];
                 }
 

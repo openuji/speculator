@@ -26,7 +26,12 @@ body {
     padding: 2rem;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     color: var(--text-primary);
     font-weight: 700;
     line-height: 1.2;
@@ -34,12 +39,33 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 1rem;
 }
 
-h1 { font-size: 2.5rem; background: linear-gradient(to right, var(--accent), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-h2 { font-size: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-h3 { font-size: 1.5rem; }
+h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(to right, var(--accent), #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
-a:hover { color: var(--accent-hover); text-decoration: underline; }
+h2 {
+    font-size: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
 
 code {
     font-family: var(--font-mono);
@@ -75,7 +101,8 @@ blockquote {
     border-radius: 0 8px 8px 0;
 }
 
-ul, ol {
+ul,
+ol {
     padding-left: 1.5rem;
 }
 
@@ -89,7 +116,8 @@ table {
     margin: 1.5rem 0;
 }
 
-th, td {
+th,
+td {
     padding: 0.75rem;
     border: 1px solid var(--border);
     text-align: left;
@@ -114,7 +142,104 @@ th {
     font-family: var(--font-mono);
 }
 
-.term {
-    border-bottom: 1px dotted var(--accent);
+/* Definition (dfn) */
+dfn {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 2px dotted var(--accent);
     cursor: help;
+}
+
+/* Cross-reference (xref) */
+.xref {
+    color: #a78bfa;
+    border-bottom: 1px dashed #a78bfa;
+}
+
+.xref:hover {
+    color: #c4b5fd;
+}
+
+/* Citation */
+cite {
+    font-style: normal;
+    color: #fbbf24;
+}
+
+cite.normative {
+    font-weight: bold;
+    color: #f97316;
+}
+
+cite.informative {
+    color: #a3e635;
+}
+
+cite::before {
+    content: '[';
+}
+
+cite::after {
+    content: ']';
+}
+
+/* Notes and Asides */
+.note {
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid;
+}
+
+.note-header {
+    font-weight: bold;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.note-content p {
+    margin: 0.5rem 0;
+}
+
+/* Note type variations */
+.note-note {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: var(--accent);
+    color: #bae6fd;
+}
+
+.note-warning {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: #fbbf24;
+    color: #fef3c7;
+}
+
+.note-example {
+    background: rgba(163, 230, 53, 0.1);
+    border-color: #a3e635;
+    color: #d9f99d;
+}
+
+.note-issue {
+    background: rgba(249, 115, 22, 0.1);
+    border-color: #f97316;
+    color: #fed7aa;
+}
+
+/* Example block */
+.example {
+    background: rgba(163, 230, 53, 0.05);
+    border: 1px solid rgba(163, 230, 53, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+.example-title {
+    font-weight: bold;
+    color: #a3e635;
+    margin-bottom: 0.5rem;
 }

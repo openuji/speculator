@@ -241,7 +241,28 @@
                         },
                         "term": {
                             "type": "string",
-                            "description": "The term being defined"
+                            "description": "The term being defined (normalized)"
+                        },
+                        "linkTexts": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Alternative link texts from data-lt attribute. Parse fills from data-lt or [term]."
+                        },
+                        "forContexts": {
+                            "type": "array",
+                            "items": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "description": "For-contexts from data-dfn-for attribute (e.g., owning interface). Parse fills from data-dfn-for or [null]."
+                        },
+                        "dfnType": {
+                            "type": "string",
+                            "description": "Definition type from data-dfn-type (e.g., dfn, attribute, method). Defaults to 'dfn'."
                         },
                         "children": {
                             "type": "array",
@@ -272,11 +293,47 @@
                         },
                         "targetTerm": {
                             "type": "string",
-                            "description": "Human/author-facing reference text used to resolve a target definition id."
+                            "description": "Primary reference term used to resolve a target definition."
+                        },
+                        "candidateTerms": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Alternative term candidates from data-lt. Parse fills from data-lt or [targetTerm]."
+                        },
+                        "forContexts": {
+                            "type": "array",
+                            "items": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "description": "For-contexts from data-xref-for (e.g., owning interface). Parse fills from data-xref-for or [null]."
+                        },
+                        "preferredType": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "description": "Preferred definition type from data-link-type."
+                        },
+                        "xrefSpec": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "description": "Explicit spec to search from data-xref-spec. Restricts external search."
+                        },
+                        "allowExternal": {
+                            "type": "boolean",
+                            "description": "Whether external lookup is allowed. False if data-allow-external='no'.",
+                            "default": true
                         },
                         "targetId": {
                             "type": "string",
-                            "description": "Resolved ID of the referenced definition."
+                            "description": "Resolved ID of the referenced definition. Filled during resolve phase."
                         },
                         "children": {
                             "type": "array",
@@ -392,7 +449,40 @@
                                 "normative",
                                 "informative"
                             ],
-                            "description": "Optional citation kind if the author provides it."
+                            "description": "Final citation kind. Determined by forcing or section context."
+                        },
+                        "expanded": {
+                            "type": "boolean",
+                            "description": "True for [[[FOO]]] form - displays full title."
+                        },
+                        "forcedNormative": {
+                            "type": "boolean",
+                            "description": "True if [[!FOO]] or data-cite starts with !."
+                        },
+                        "forcedInformative": {
+                            "type": "boolean",
+                            "description": "True if [[?FOO]] form."
+                        },
+                        "specId": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "description": "Spec shortname from data-cite (e.g., 'html', 'dom')."
+                        },
+                        "path": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "description": "Path component from data-cite (e.g., '/section-2')."
+                        },
+                        "fragment": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "description": "Fragment identifier from data-cite (e.g., 'the-a-element')."
                         },
                         "children": {
                             "type": "array",
@@ -820,6 +910,51 @@
                 }
             ]
         },
+        "BlockNote": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Note or aside block. Content is informative (non-normative). Used for <aside>, <div class='note'>, etc.",
+                    "properties": {
+                        "type": {
+                            "const": "note"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "noteType": {
+                            "type": "string",
+                            "enum": [
+                                "note",
+                                "warning",
+                                "example",
+                                "issue"
+                            ],
+                            "description": "Type of note, derived from class or element semantics."
+                        },
+                        "informative": {
+                            "type": "boolean",
+                            "const": true,
+                            "description": "Always true - marks content scope as informative for citation classification."
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "informative",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "Block": {
             "oneOf": [
                 {
@@ -848,6 +983,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockHtml"
+                },
+                {
+                    "$ref": "#/definitions/BlockNote"
                 }
             ]
         },

@@ -156,10 +156,78 @@ function hello(): void {
     </section>
 
     <section id="definitions">
-        <h2>Definitions</h2>
-        <p>This spec defines <dfn>Term</dfn> as a concept. One can refer to <a class="reference" href="#term">Term</a>.
-        </p>
-        <p>The implementation MUST support this requirement.</p>
+        <h2>Definitions (dfn)</h2>
+        <p>This spec defines <dfn>event loop</dfn> as a fundamental runtime concept.</p>
+        <p>The <dfn data-lt="queue;message queue">task queue</dfn> holds pending callbacks.</p>
+        <p>The <dfn data-dfn-for="Window">postMessage()</dfn> method sends messages cross-origin.</p>
+        <p>A <dfn data-dfn-type="interface">MessageEvent</dfn> carries posted data.</p>
+        <p>The <dfn id="dom-focus">focus</dfn> method sets keyboard focus.</p>
+    </section>
+
+    <hr />
+
+    <section id="cross-references">
+        <h2>Cross-References (xref)</h2>
+        <p>See the <xref>event loop</xref> for how JavaScript execution works.</p>
+        <p>The <xref data-xref-for="Window">postMessage()</xref> method is crucial for iframes.</p>
+        <p>Refer to <xref data-allow-external="no">task queue</xref> for local definitions only.</p>
+        <p>When using <a data-lt="event loop">the loop</a> concept, be careful.</p>
+    </section>
+
+    <hr />
+
+    <section id="citations">
+        <h2>Citations (data-cite)</h2>
+        <p>The <a data-cite="HTML#the-a-element">anchor element</a> is fundamental.</p>
+        <p>Keywords are defined in <a data-cite="!RFC2119">RFC 2119</a> (normative).</p>
+        <p>For background, see <a data-cite="?CSS#selectors">CSS Selectors</a> (informative).</p>
+        <p>See <a data-cite="DOM/section-1#nodes">DOM Nodes</a> for a specific section.</p>
+    </section>
+
+    <hr />
+
+    <section id="notes">
+        <h2>Notes and Asides</h2>
+
+        <aside>
+            <p>This is a basic note inside an aside element.</p>
+        </aside>
+
+        <aside class="note">
+            <p>Notes provide supplementary information.</p>
+        </aside>
+
+        <aside class="warning">
+            <p><strong>Warning:</strong> This feature is deprecated!</p>
+        </aside>
+
+        <aside class="example">
+            <p>Example: Here's how to use the API:</p>
+            <pre><code>window.postMessage(data, origin);</code></pre>
+        </aside>
+
+        <div class="note">
+            <p>Notes can also use div elements with class="note".</p>
+        </div>
+
+        <div class="warning">
+            <p>Warnings indicate potential issues.</p>
+        </div>
+
+        <div class="issue">
+            <p>Issue: This needs further specification.</p>
+        </div>
+    </section>
+
+    <hr />
+
+    <section id="bracket-citations">
+        <h2>Bracket Citations (Transform Phase)</h2>
+        <p>Basic citation: See [[RFC2119]] for keyword definitions.</p>
+        <p>Normative: This specification [[!HTML]] MUST be followed.</p>
+        <p>Informative: For background, see [[?CSS]].</p>
+        <p>Expanded: The [[[DOM]]] specification provides full details.</p>
+        <p>Multiple: Both [[HTML]] and [[CSS]] are relevant.</p>
     </section>
 </body>
 

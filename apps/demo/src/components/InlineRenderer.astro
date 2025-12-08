@@ -49,17 +49,55 @@ const { nodes } = Astro.props;
                 );
 
             case "definition":
+                // Render <dfn> with ReSpec attributes
+                const dfnId = (node as any).explicitId || (node as any).id;
+                const dfnFor = (node as any).forContexts
+                    ?.filter(Boolean)
+                    .join(", ");
+                const dfnType = (node as any).dfnType;
                 return (
-                    <span class="term" id={node.id} title={node.term}>
+                    <dfn
+                        id={dfnId}
+                        title={node.term}
+                        data-dfn-for={dfnFor || undefined}
+                        data-dfn-type={dfnType !== "dfn" ? dfnType : undefined}
+                    >
                         <RecursiveInlineRenderer nodes={node.children} />
-                    </span>
+                    </dfn>
                 );
 
             case "reference":
+                // Render cross-reference
+                const xrefFor = (node as any).forContexts
+                    ?.filter(Boolean)
+                    .join(", ");
                 return (
-                    <a href={`#${node.targetId}`} class="reference">
+                    <a
+                        href={`#${(node as any).targetId || ""}`}
+                        class="xref"
+                        data-xref-for={xrefFor || undefined}
+                        title={(node as any).targetTerm}
+                    >
                         <RecursiveInlineRenderer nodes={node.children} />
                     </a>
+                );
+
+            case "cite":
+                // Render citation
+                const cite = node as any;
+                const citeClass = cite.forcedNormative
+                    ? "cite normative"
+                    : cite.forcedInformative
+                      ? "cite informative"
+                      : "cite";
+                return (
+                    <cite class={citeClass} data-cite={cite.key}>
+                        {cite.children ? (
+                            <RecursiveInlineRenderer nodes={cite.children} />
+                        ) : (
+                            <>[{cite.key}]</>
+                        )}
+                    </cite>
                 );
 
             case "requirement":

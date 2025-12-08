@@ -15,11 +15,21 @@ import {
     tablePlugin,
     sectionPlugin,
     inlinePlugin,
-    miscPlugin
+    miscPlugin,
+    // ReSpec plugins
+    dfnPlugin,
+    xrefPlugin,
+    asidePlugin,
 } from '#src/plugins/index';
 
 // Register HTML handlers from core plugins to default registry
+// Note: Order matters - earlier plugins take precedence for same tags
 const htmlPlugins = [
+    // ReSpec plugins (higher priority for semantic handling)
+    dfnPlugin,
+    xrefPlugin,
+    asidePlugin,
+    // Standard plugins
     sectionPlugin,
     headingPlugin,
     paragraphPlugin,
@@ -27,8 +37,8 @@ const htmlPlugins = [
     codePlugin,
     blockquotePlugin,
     tablePlugin,
-    inlinePlugin,
-    miscPlugin,
+    inlinePlugin,  // also handles data-cite and xref on <a>
+    miscPlugin,    // also handles div.note
 ];
 
 for (const plugin of htmlPlugins) {

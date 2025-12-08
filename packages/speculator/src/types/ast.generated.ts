@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2025-12-08T09:57:34.379Z
+ * Generated at: 2025-12-08T12:46:28.534Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -78,19 +78,51 @@ export type InlineDefinition = BaseNode & {
    */
   id?: string;
   /**
-   * The term being defined
+   * The term being defined (normalized)
    */
   term: string;
+  /**
+   * Alternative link texts from data-lt attribute. Parse fills from data-lt or [term].
+   */
+  linkTexts?: string[];
+  /**
+   * For-contexts from data-dfn-for attribute (e.g., owning interface). Parse fills from data-dfn-for or [null].
+   */
+  forContexts?: (string | null)[];
+  /**
+   * Definition type from data-dfn-type (e.g., dfn, attribute, method). Defaults to 'dfn'.
+   */
+  dfnType?: string;
   children: Inline[];
 };
 export type InlineReference = BaseNode & {
   type: 'reference';
   /**
-   * Human/author-facing reference text used to resolve a target definition id.
+   * Primary reference term used to resolve a target definition.
    */
   targetTerm: string;
   /**
-   * Resolved ID of the referenced definition.
+   * Alternative term candidates from data-lt. Parse fills from data-lt or [targetTerm].
+   */
+  candidateTerms?: string[];
+  /**
+   * For-contexts from data-xref-for (e.g., owning interface). Parse fills from data-xref-for or [null].
+   */
+  forContexts?: (string | null)[];
+  /**
+   * Preferred definition type from data-link-type.
+   */
+  preferredType?: string | null;
+  /**
+   * Explicit spec to search from data-xref-spec. Restricts external search.
+   */
+  xrefSpec?: string | null;
+  /**
+   * Whether external lookup is allowed. False if data-allow-external='no'.
+   */
+  allowExternal?: boolean;
+  /**
+   * Resolved ID of the referenced definition. Filled during resolve phase.
    */
   targetId?: string;
   children: Inline[];
@@ -126,9 +158,33 @@ export type InlineCite = BaseNode & {
    */
   key: string;
   /**
-   * Optional citation kind if the author provides it.
+   * Final citation kind. Determined by forcing or section context.
    */
   kind?: 'normative' | 'informative';
+  /**
+   * True for [[[FOO]]] form - displays full title.
+   */
+  expanded?: boolean;
+  /**
+   * True if [[!FOO]] or data-cite starts with !.
+   */
+  forcedNormative?: boolean;
+  /**
+   * True if [[?FOO]] form.
+   */
+  forcedInformative?: boolean;
+  /**
+   * Spec shortname from data-cite (e.g., 'html', 'dom').
+   */
+  specId?: string | null;
+  /**
+   * Path component from data-cite (e.g., '/section-2').
+   */
+  path?: string | null;
+  /**
+   * Fragment identifier from data-cite (e.g., 'the-a-element').
+   */
+  fragment?: string | null;
   /**
    * Optional inline content that represents the cite text.
    */
@@ -143,7 +199,8 @@ export type Block =
   | BlockList
   | BlockTable
   | BlockThematicBreak
-  | BlockHtml;
+  | BlockHtml
+  | BlockNote;
 export type BlockParagraph = BaseNode & {
   type: 'paragraph';
   id?: string;
@@ -217,6 +274,19 @@ export type BlockHtml = BaseNode & {
   type: 'html';
   id?: string;
   value: string;
+};
+export type BlockNote = BaseNode & {
+  type: 'note';
+  id?: string;
+  /**
+   * Type of note, derived from class or element semantics.
+   */
+  noteType?: 'note' | 'warning' | 'example' | 'issue';
+  /**
+   * Always true - marks content scope as informative for citation classification.
+   */
+  informative: true;
+  children: Block[];
 };
 
 /**
