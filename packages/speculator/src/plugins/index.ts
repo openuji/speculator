@@ -22,6 +22,9 @@ export { asidePlugin } from './aside.js';
 // Transform plugins
 export { citationTransformPlugin } from './citation-transform.js';
 
+// Resolve plugins
+export { dfnResolvePlugin } from './dfn-resolve.js';
+
 /**
  * All core plugins in recommended order
  */
@@ -43,6 +46,9 @@ import { asidePlugin } from './aside.js';
 // Transform plugins
 import { citationTransformPlugin } from './citation-transform.js';
 
+// Resolve plugins
+import { dfnResolvePlugin } from './dfn-resolve.js';
+
 export const corePlugins = [
     // ReSpec parse plugins (lower order number = higher priority)
     dfnPlugin,       // order: 5 - handles <dfn> elements
@@ -60,4 +66,6 @@ export const corePlugins = [
     miscPlugin,      // order: 10 - also handles div.note
     // Transform plugins
     citationTransformPlugin, // order: 10
+    // Resolve plugins
+    dfnResolvePlugin, // order: 10
 ];
