@@ -40,13 +40,16 @@ export type BlockHandlerResult = Section | Block | (Section | Block)[] | null;
 export type InlineHandlerResult = Inline | Inline[] | null;
 
 // ============================================================================
-// HTML Handler Types
+// Unified Parse Context
 // ============================================================================
 
 /**
- * Context provided to HTML tag handlers
+ * Unified context provided to parse handlers
+ * 
+ * This is the common interface for both HTML and Markdown handlers.
+ * Some methods may be no-ops depending on the format.
  */
-export interface HtmlParseContext {
+export interface ParseContext {
     /** Source unit being parsed */
     readonly unit: SourceUnit;
 
@@ -54,17 +57,33 @@ export interface HtmlParseContext {
     createSourcePos(node: NodeWithPosition): SourcePos | undefined;
 
     /** Transform children to inline nodes */
-    transformInlineChildren(children: RootContent[]): Inline[];
+    transformInlineChildren(children: RootContent[] | MdastRootContent[]): Inline[];
 
     /** Transform children to block nodes (recursive) */
-    transformBlockChildren(children: RootContent[]): (Section | Block)[];
+    transformBlockChildren(children: RootContent[] | MdastRootContent[]): (Section | Block)[];
 
-    /** Get text content of element */
+    /** Get text content of element (HTML) */
     getTextContent(element: Element): string;
 
-    /** Get attribute value */
+    /** Get attribute value (HTML) */
     getAttr(element: Element, name: string): string | undefined;
 }
+
+/**
+ * Legacy HTML parse context (for backwards compatibility)
+ * @deprecated Use ParseContext instead
+ */
+export type HtmlParseContext = ParseContext;
+
+/**
+ * Legacy Markdown parse context (for backwards compatibility)
+ * @deprecated Use ParseContext instead
+ */
+export type MdParseContext = ParseContext;
+
+// ============================================================================
+// Handler Types
+// ============================================================================
 
 /**
  * Handler for HTML tag(s)
@@ -74,31 +93,10 @@ export interface HtmlTagHandler {
     readonly tags: string[];
 
     /** Handle a block-level element */
-    handleBlock?(element: Element, ctx: HtmlParseContext): BlockHandlerResult;
+    handleBlock?(element: Element, ctx: ParseContext): BlockHandlerResult;
 
     /** Handle an inline-level element */
-    handleInline?(element: Element, ctx: HtmlParseContext): InlineHandlerResult;
-}
-
-// ============================================================================
-// Markdown Handler Types
-// ============================================================================
-
-/**
- * Context provided to Markdown node handlers
- */
-export interface MdParseContext {
-    /** Source unit being parsed */
-    readonly unit: SourceUnit;
-
-    /** Create source position from node */
-    createSourcePos(node: NodeWithPosition): SourcePos | undefined;
-
-    /** Transform children to inline nodes */
-    transformInlineChildren(children: MdastRootContent[]): Inline[];
-
-    /** Transform children to block nodes (recursive) */
-    transformBlockChildren(children: MdastRootContent[]): Block[];
+    handleInline?(element: Element, ctx: ParseContext): InlineHandlerResult;
 }
 
 /**
@@ -109,10 +107,10 @@ export interface MdNodeHandler {
     readonly nodeTypes: string[];
 
     /** Handle a block-level node */
-    handleBlock?(node: MdastRootContent, ctx: MdParseContext): Block | null;
+    handleBlock?(node: MdastRootContent, ctx: ParseContext): Block | null;
 
     /** Handle an inline-level node */
-    handleInline?(node: MdastRootContent, ctx: MdParseContext): InlineHandlerResult;
+    handleInline?(node: MdastRootContent, ctx: ParseContext): InlineHandlerResult;
 }
 
 // ============================================================================

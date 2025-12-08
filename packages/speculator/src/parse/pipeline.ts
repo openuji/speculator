@@ -10,18 +10,44 @@ import type { UnitParser, ParseResult, ParseDiagnostic } from '#src/parse/types'
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
+import { ParseHandlerRegistry, defaultRegistry } from '#src/parse/registry';
+import { corePlugins } from '#src/plugins/index';
+
+// Initialize default registry with core plugin handlers
+for (const plugin of corePlugins) {
+    if (plugin.parse?.html) {
+        defaultRegistry.registerHtmlHandler({
+            tags: plugin.parse.html.tags,
+            handleBlock: plugin.parse.html.handleBlock,
+            handleInline: plugin.parse.html.handleInline,
+        });
+    }
+    if (plugin.parse?.markdown) {
+        defaultRegistry.registerMdHandler({
+            nodeTypes: plugin.parse.markdown.nodeTypes,
+            handleBlock: plugin.parse.markdown.handleBlock,
+            handleInline: plugin.parse.markdown.handleInline,
+        });
+    }
+}
 
 /**
- * Parser registry - maps format to parser instance
+ * Parser registry - maps format to parser factory
  */
-const parsers = new Map<SourceFormat, UnitParser>();
-parsers.set('markdown', new MarkdownUnitParser());
-parsers.set('html', new HtmlUnitParser());
+function createParsers(registry: ParseHandlerRegistry): Map<SourceFormat, UnitParser> {
+    const parsers = new Map<SourceFormat, UnitParser>();
+    parsers.set('markdown', new MarkdownUnitParser(registry));
+    parsers.set('html', new HtmlUnitParser(registry));
+    return parsers;
+}
+
+// Default parsers using the default registry
+const defaultParsers = createParsers(defaultRegistry);
 
 /**
- * Get parser for a format
+ * Get parser for a format from a parser map
  */
-function getParser(format: SourceFormat): UnitParser {
+function getParser(parsers: Map<SourceFormat, UnitParser>, format: SourceFormat): UnitParser {
     const parser = parsers.get(format);
     if (!parser) {
         throw new Error(`No parser registered for format: ${format}`);
@@ -32,11 +58,14 @@ function getParser(format: SourceFormat): UnitParser {
 /**
  * Parse a single source unit
  */
-function parseUnit(unit: SourceUnit): { blocks: (Section | Block)[]; diagnostics: ParseDiagnostic[] } {
+function parseUnit(
+    unit: SourceUnit,
+    parsers: Map<SourceFormat, UnitParser>
+): { blocks: (Section | Block)[]; diagnostics: ParseDiagnostic[] } {
     const diagnostics: ParseDiagnostic[] = [];
 
     try {
-        const parser = getParser(unit.format);
+        const parser = getParser(parsers, unit.format);
         const blocks = parser.parse(unit);
         return { blocks, diagnostics };
     } catch (error) {
@@ -51,29 +80,18 @@ function parseUnit(unit: SourceUnit): { blocks: (Section | Block)[]; diagnostics
 }
 
 /**
- * Parse a preprocessed spec into a Document AST
- * 
- * @param preprocessed - Preprocessed spec with config and source units
- * @returns ParseResult with document and diagnostics
- * 
- * @example
- * ```typescript
- * const preprocessResult = await preprocess({ entry: '/spec/format.md', fileProvider });
- * if (preprocessResult.result) {
- *   const parseResult = parse(preprocessResult.result);
- *   if (!parseResult.hasErrors) {
- *     console.log(parseResult.result.document);
- *   }
- * }
- * ```
+ * Internal parse implementation
  */
-export function parse(preprocessed: PreprocessedSpec): ParseResult {
+function parseInternal(
+    preprocessed: PreprocessedSpec,
+    parsers: Map<SourceFormat, UnitParser>
+): ParseResult {
     const diagnostics: ParseDiagnostic[] = [];
     const allBlocks: (Section | Block)[] = [];
 
     // Parse each unit in order
     for (const unit of preprocessed.source.units) {
-        const unitResult = parseUnit(unit);
+        const unitResult = parseUnit(unit, parsers);
         diagnostics.push(...unitResult.diagnostics);
         allBlocks.push(...unitResult.blocks);
     }
@@ -103,12 +121,41 @@ export function parse(preprocessed: PreprocessedSpec): ParseResult {
 }
 
 /**
+ * Parse a preprocessed spec into a Document AST
+ * 
+ * Uses the default registry with core handlers.
+ * 
+ * @param preprocessed - Preprocessed spec with config and source units
+ * @returns ParseResult with document and diagnostics
+ */
+export function parse(preprocessed: PreprocessedSpec): ParseResult {
+    return parseInternal(preprocessed, defaultParsers);
+}
+
+/**
+ * Parse a preprocessed spec using a custom handler registry
+ * 
+ * This allows the pipeline to use plugin-registered handlers.
+ * 
+ * @param preprocessed - Preprocessed spec with config and source units
+ * @param registry - Custom handler registry with plugin handlers
+ * @returns ParseResult with document and diagnostics
+ */
+export function parseWithRegistry(
+    preprocessed: PreprocessedSpec,
+    registry: ParseHandlerRegistry
+): ParseResult {
+    const parsers = createParsers(registry);
+    return parseInternal(preprocessed, parsers);
+}
+
+/**
  * Register a custom parser for a format
  * 
  * Useful for extending with custom format support.
  */
 export function registerParser(parser: UnitParser): void {
-    parsers.set(parser.format, parser);
+    defaultParsers.set(parser.format, parser);
 }
 
 /**

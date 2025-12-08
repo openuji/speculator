@@ -20,13 +20,9 @@ import type {
 import {
     ParseHandlerRegistry,
     defaultRegistry,
-    type HtmlParseContext,
+    type ParseContext,
     type NodeWithPosition,
 } from '#src/parse/registry';
-import { registerDefaultHtmlHandlers } from '#src/parse/html/handlers/index';
-
-// Register default handlers on import
-registerDefaultHtmlHandlers(defaultRegistry);
 
 /**
  * Create source position from hast node position
@@ -115,7 +111,7 @@ export class HtmlUnitParser implements UnitParser {
     /**
      * Create parse context for handlers
      */
-    private createContext(unit: SourceUnit): HtmlParseContext {
+    private createContext(unit: SourceUnit): ParseContext {
         const self = this;
 
         return {
@@ -138,7 +134,7 @@ export class HtmlUnitParser implements UnitParser {
     /**
      * Transform hast element to Speculator block(s)
      */
-    private transformBlock(node: RootContent, ctx: HtmlParseContext): (Section | Block)[] {
+    private transformBlock(node: RootContent, ctx: ParseContext): (Section | Block)[] {
         if (node.type !== 'element') return [];
 
         const element = node as Element;

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { HtmlUnitParser } from '#src/parse/html/parser';
+import { HtmlUnitParser } from '#src/parse/html/index';
 import type { SourceUnit } from '#src/preprocess/types';
 
 function createUnit(content: string, file = '/spec/test.html'): SourceUnit {

@@ -9,6 +9,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import type { Root, RootContent } from 'mdast';
+import type { Element } from 'hast';
 import type { SourceUnit } from '#src/preprocess/types';
 import type { UnitParser } from '#src/parse/types';
 import type {
@@ -20,13 +21,9 @@ import type {
 import {
     ParseHandlerRegistry,
     defaultRegistry,
-    type MdParseContext,
+    type ParseContext,
     type NodeWithPosition,
 } from '#src/parse/registry';
-import { registerDefaultMdHandlers } from '#src/parse/markdown/handlers/index';
-
-// Register default handlers on import
-registerDefaultMdHandlers(defaultRegistry);
 
 /**
  * Create source position from mdast node position
@@ -92,7 +89,7 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Create parse context for handlers
      */
-    private createContext(unit: SourceUnit): MdParseContext {
+    private createContext(unit: SourceUnit): ParseContext {
         const self = this;
 
         return {
@@ -110,13 +107,16 @@ export class MarkdownUnitParser implements UnitParser {
                 }
                 return results;
             },
+            // HTML-specific methods - no-op for markdown
+            getTextContent: (_element: Element) => '',
+            getAttr: (_element: Element, _name: string) => undefined,
         };
     }
 
     /**
      * Transform mdast node to Speculator block
      */
-    private transformBlock(node: RootContent, ctx: MdParseContext): Block | null {
+    private transformBlock(node: RootContent, ctx: ParseContext): Block | null {
         // Look up handler in registry
         const handler = this.registry.getMdBlockHandler(node.type);
 

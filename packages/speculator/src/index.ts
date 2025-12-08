@@ -11,3 +11,21 @@ export type { FileProvider } from './file-provider/types.js';
 
 // AST Types
 export * from './types/ast.generated.js';
+
+// Pipeline (Single Entrypoint)
+export { speculate, SpeculatorPipeline, PHASES } from './pipeline/index.js';
+export type { Plugin, Phase, SpeculateOptions, SpeculateResult, SpeculateDiagnostic } from './pipeline/types.js';
+
+// All Plugins
+export {
+    headingPlugin,
+    paragraphPlugin,
+    listPlugin,
+    codePlugin,
+    blockquotePlugin,
+    tablePlugin,
+    sectionPlugin,
+    inlinePlugin,
+    miscPlugin,
+    corePlugins,
+} from './plugins/index.js';

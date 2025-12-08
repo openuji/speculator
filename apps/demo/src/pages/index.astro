@@ -1,52 +1,46 @@
 ---
-import { Preprocess, Parse, NodeFileProvider } from '@openuji/speculator';
-import BlockRenderer from '../components/BlockRenderer.astro';
-import '../styles/global.css';
-import path from 'path';
+import { speculate, corePlugins, NodeFileProvider } from "@openuji/speculator";
+import BlockRenderer from "../components/BlockRenderer.astro";
+import "../styles/global.css";
+import path from "path";
 
 // Setup Speculator
-const fileProvider = new NodeFileProvider();
-const specDir = path.resolve('spec');
-const entryFile = path.join(specDir, 'index.md');
-const configFile = path.join(specDir, 'config.respec.json');
+const specDir = path.resolve("spec");
+const entryFile = path.join(specDir, "index.md");
+const configFile = path.join(specDir, "config.respec.json");
 
 console.log(`Loading spec from: ${entryFile}`);
 
-// 1. Preprocess
-const preprocessResult = await Preprocess.preprocess({
+// Run the full pipeline with plugins
+const result = await speculate({
     entry: entryFile,
     configPath: configFile,
-    fileProvider
+    plugins: corePlugins,
+    fileProvider: new NodeFileProvider(),
 });
 
-if (preprocessResult.hasErrors) {
-    console.error('Preprocess errors:', preprocessResult.diagnostics);
-    throw new Error('Preprocess failed: ' + JSON.stringify(preprocessResult.diagnostics, null, 2));
+if (result.hasErrors) {
+    console.error("Pipeline errors:", result.diagnostics);
+    if (!result.document) {
+        throw new Error(
+            "Pipeline failed: " + JSON.stringify(result.diagnostics, null, 2),
+        );
+    }
 }
 
-// 2. Parse
-const parseResult = Parse.parse(preprocessResult.result!);
-
-if (parseResult.hasErrors) {
-    console.error('Parse errors:', parseResult.diagnostics);
-     // We might want to render what we have anyway, or throw
-     if (!parseResult.result) {
-        throw new Error('Parse failed completely');
-     }
-}
-
-const { document, config } = parseResult.result!;
+const document = result.document!;
+const config = document.metadata || {};
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{config.title || 'Speculator Demo'}</title>
-	</head>
-	<body>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>{config.title || "Speculator Demo"}</title>
+    </head>
+    <body>
         <div class="container">
             <header class="spec-header">
                 <nav class="nav">
@@ -56,34 +50,48 @@ const { document, config } = parseResult.result!;
 
                 <h1>{config.title}</h1>
                 {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
-                
+
                 <div class="metadata">
                     <dl>
-                        {config.status && (
-                            <>
-                                <dt>Status:</dt>
-                                <dd>{config.status}</dd>
-                            </>
-                        )}
-                        {config.editors && config.editors.length > 0 && (
-                            <>
-                                <dt>Editors:</dt>
-                                <dd>
-                                    {config.editors.map((editor, i) => (
-                                        <span>
-                                            {editor.url ? <a href={editor.url}>{editor.name}</a> : editor.name}
-                                            {i < config.editors!.length - 1 ? ', ' : ''}
-                                        </span>
-                                    ))}
-                                </dd>
-                            </>
-                        )}
-                         {config.abstract && (
-                            <>
-                                <dt>Abstract:</dt>
-                                <dd>{config.abstract}</dd>
-                            </>
-                        )}
+                        {
+                            config.status && (
+                                <>
+                                    <dt>Status:</dt>
+                                    <dd>{config.status}</dd>
+                                </>
+                            )
+                        }
+                        {
+                            config.editors && config.editors.length > 0 && (
+                                <>
+                                    <dt>Editors:</dt>
+                                    <dd>
+                                        {config.editors.map((editor, i) => (
+                                            <span>
+                                                {editor.url ? (
+                                                    <a href={editor.url}>
+                                                        {editor.name}
+                                                    </a>
+                                                ) : (
+                                                    editor.name
+                                                )}
+                                                {i < config.editors!.length - 1
+                                                    ? ", "
+                                                    : ""}
+                                            </span>
+                                        ))}
+                                    </dd>
+                                </>
+                            )
+                        }
+                        {
+                            config.abstract && (
+                                <>
+                                    <dt>Abstract:</dt>
+                                    <dd>{config.abstract}</dd>
+                                </>
+                            )
+                        }
                     </dl>
                 </div>
             </header>
@@ -91,15 +99,19 @@ const { document, config } = parseResult.result!;
             <hr />
 
             <main class="spec-content">
-                {document.children.map(child => <BlockRenderer node={child} />)}
+                {
+                    document.children.map((child) => (
+                        <BlockRenderer node={child} />
+                    ))
+                }
             </main>
-            
+
             <footer>
                 <hr />
                 <p>Generated by Speculator</p>
             </footer>
         </div>
-	</body>
+    </body>
 </html>
 
 <style>

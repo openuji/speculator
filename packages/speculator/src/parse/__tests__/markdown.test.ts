@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { MarkdownUnitParser } from '#src/parse/markdown/parser';
+import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import type { SourceUnit } from '#src/preprocess/types';
 
 function createUnit(content: string, file = '/spec/test.md'): SourceUnit {

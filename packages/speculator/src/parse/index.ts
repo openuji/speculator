@@ -6,7 +6,7 @@
  */
 
 // Main parse function
-export { parse, parseCompositeSource, registerParser } from '#src/parse/pipeline';
+export { parse, parseCompositeSource, parseWithRegistry, registerParser } from '#src/parse/pipeline';
 
 // Registry and handler types (for plugin development)
 export {
@@ -17,17 +17,12 @@ export {
 export type {
     HtmlTagHandler,
     MdNodeHandler,
-    HtmlParseContext,
-    MdParseContext,
+    ParseContext,
     NodeWithPosition,
     HandlerResult,
     BlockHandlerResult,
     InlineHandlerResult,
 } from '#src/parse/registry';
-
-// Handler registration utilities
-export { registerDefaultHtmlHandlers } from '#src/parse/html/handlers/index';
-export { registerDefaultMdHandlers } from '#src/parse/markdown/handlers/index';
 
 // Types
 export type {
@@ -47,4 +42,3 @@ export { buildSectionHierarchy, assembleDocument } from '#src/parse/assembler';
 // Parsers (for advanced use)
 export { MarkdownUnitParser } from '#src/parse/markdown/index';
 export { HtmlUnitParser } from '#src/parse/html/index';
-
