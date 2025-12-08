@@ -8,6 +8,10 @@ It covers various markdown features.
 
 We support *emphasis*, **strong text**, `inline code`, and [links](https://example.com).
 
+You can also use images: ![Example Image](https://via.placeholder.com/150)
+
+---
+
 ## Lists
 
 ### Unordered
@@ -16,6 +20,7 @@ We support *emphasis*, **strong text**, `inline code`, and [links](https://examp
 - Item 2
   - Nested Item 2.1
   - Nested Item 2.2
+- Item 3
 
 ### Ordered
 
@@ -23,32 +28,87 @@ We support *emphasis*, **strong text**, `inline code`, and [links](https://examp
 2. Second
 3. Third
 
+### Task List
+
+- [x] Completed task
+- [ ] Pending task
+- [ ] Another task
+
+---
+
+## Tables
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Headings | ✅ | h1-h6 supported |
+| Paragraphs | ✅ | Basic blocks |
+| Lists | ✅ | Ordered, unordered, nested |
+| Tables | ✅ | GFM tables |
+| Code | ✅ | Fenced blocks |
+| Blockquotes | ✅ | Nested support |
+
+---
+
 ## Code Blocks
 
+Inline code: `const x = 42;`
+
+Fenced code block:
+
 ```typescript
-function hello() {
+function hello(): void {
     console.log("Hello World");
 }
 ```
+
+```json
+{
+    "name": "speculator",
+    "version": "0.1.0"
+}
+```
+
+---
 
 ## Blockquotes
 
 > This is a blockquote.
 > It can span multiple lines.
 
+Nested blockquotes:
+
+> First level quote
+> > Nested quote
+> > > Deeply nested
+
+---
+
+## Horizontal Rules
+
+Above is a horizontal rule (thematic break).
+
+---
+
 ## Includes
 
 :::include ./included.md :::
+
+---
 
 ## Definitions
 
 This spec defines {{Term}} as a concept. One can refer to [[Term]].
 
+---
+
 ## Requirements
 
 The implementation MUST support this requirement.
 
+The implementation SHOULD follow best practices.
+
+---
+
 ## Issues
 
 This is an open issue: {{?issue-id Open Issue regarding semantics}}.
-

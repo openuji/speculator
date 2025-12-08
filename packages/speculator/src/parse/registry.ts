@@ -9,6 +9,7 @@ import type { Element, RootContent } from 'hast';
 import type { RootContent as MdastRootContent } from 'mdast';
 import type { SourceUnit } from '#src/preprocess/types';
 import type { Section, Block, Inline, SourcePos } from '#src/types/ast.generated';
+import type { ParseDiagnostic } from '#src/parse/types';
 
 // ============================================================================
 // Shared Types
@@ -61,6 +62,12 @@ export interface ParseContext {
 
     /** Transform children to block nodes (recursive) */
     transformBlockChildren(children: RootContent[] | MdastRootContent[]): (Section | Block)[];
+
+    /** 
+     * Emit a diagnostic from the handler.
+     * Use for warnings about invalid structure, unsupported elements, etc.
+     */
+    emitDiagnostic(diagnostic: Omit<ParseDiagnostic, 'file'>): void;
 
     /** Get text content of element (HTML) */
     getTextContent(element: Element): string;

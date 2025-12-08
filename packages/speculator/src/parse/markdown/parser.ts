@@ -11,7 +11,7 @@ import remarkGfm from 'remark-gfm';
 import type { Root, RootContent } from 'mdast';
 import type { Element } from 'hast';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { UnitParser } from '#src/parse/types';
+import type { UnitParser, ParseDiagnostic } from '#src/parse/types';
 import type {
     Section,
     Block,
@@ -53,6 +53,14 @@ function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos | 
 }
 
 /**
+ * Parser result including diagnostics
+ */
+export interface MarkdownParseResult {
+    blocks: (Section | Block)[];
+    diagnostics: ParseDiagnostic[];
+}
+
+/**
  * Markdown unit parser implementation using handler registry
  */
 export class MarkdownUnitParser implements UnitParser {
@@ -69,10 +77,18 @@ export class MarkdownUnitParser implements UnitParser {
      * Parse markdown unit to AST blocks
      */
     parse(unit: SourceUnit): (Section | Block)[] {
+        return this.parseWithDiagnostics(unit).blocks;
+    }
+
+    /**
+     * Parse markdown unit to AST blocks with diagnostics
+     */
+    parseWithDiagnostics(unit: SourceUnit): MarkdownParseResult {
         const tree = this.processor.parse(unit.content) as Root;
+        const diagnostics: ParseDiagnostic[] = [];
 
         // Create context for handlers
-        const ctx = this.createContext(unit);
+        const ctx = this.createContext(unit, diagnostics);
 
         const blocks: Block[] = [];
 
@@ -83,22 +99,22 @@ export class MarkdownUnitParser implements UnitParser {
             }
         }
 
-        return blocks;
+        return { blocks, diagnostics };
     }
 
     /**
      * Create parse context for handlers
      */
-    private createContext(unit: SourceUnit): ParseContext {
+    private createContext(unit: SourceUnit, diagnostics: ParseDiagnostic[]): ParseContext {
         const self = this;
 
         return {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            transformInlineChildren: (children: RootContent[]) => self.transformInlineChildren(children, unit),
+            transformInlineChildren: (children: RootContent[]) => self.transformInlineChildren(children, unit, diagnostics),
             transformBlockChildren: (children: RootContent[]) => {
                 const results: Block[] = [];
-                const ctx = self.createContext(unit);
+                const ctx = self.createContext(unit, diagnostics);
                 for (const child of children) {
                     const block = self.transformBlock(child, ctx);
                     if (block) {
@@ -106,6 +122,9 @@ export class MarkdownUnitParser implements UnitParser {
                     }
                 }
                 return results;
+            },
+            emitDiagnostic: (diagnostic) => {
+                diagnostics.push({ ...diagnostic, file: unit.file });
             },
             // HTML-specific methods - no-op for markdown
             getTextContent: (_element: Element) => '',
@@ -130,8 +149,8 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Transform mdast inline node to Speculator inline
      */
-    private transformInline(node: RootContent, unit: SourceUnit): Inline | null {
-        const ctx = this.createContext(unit);
+    private transformInline(node: RootContent, unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline | null {
+        const ctx = this.createContext(unit, diagnostics);
 
         // Look up handler in registry
         const handler = this.registry.getMdInlineHandler(node.type);
@@ -149,9 +168,9 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Transform array of inline children
      */
-    private transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
+    private transformInlineChildren(children: RootContent[], unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline[] {
         return children
-            .map(child => this.transformInline(child, unit))
+            .map(child => this.transformInline(child, unit, diagnostics))
             .filter((n): n is Inline => n !== null);
     }
 }
