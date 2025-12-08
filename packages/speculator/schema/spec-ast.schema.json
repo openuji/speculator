@@ -457,6 +457,9 @@
                         "type": {
                             "const": "paragraph"
                         },
+                        "id": {
+                            "type": "string"
+                        },
                         "children": {
                             "type": "array",
                             "items": {
@@ -516,6 +519,9 @@
                     "properties": {
                         "type": {
                             "const": "codeBlock"
+                        },
+                        "id": {
+                            "type": "string"
                         },
                         "lang": {
                             "type": [
@@ -586,6 +592,9 @@
                         "type": {
                             "const": "blockquote"
                         },
+                        "id": {
+                            "type": "string"
+                        },
                         "children": {
                             "type": "array",
                             "items": {
@@ -645,6 +654,9 @@
                         },
                         "ordered": {
                             "type": "boolean"
+                        },
+                        "id": {
+                            "type": "string"
                         },
                         "start": {
                             "type": [
@@ -750,6 +762,9 @@
                             "items": {
                                 "$ref": "#/definitions/TableRow"
                             }
+                        },
+                        "id": {
+                            "type": "string"
                         }
                     },
                     "required": [
@@ -769,6 +784,9 @@
                     "properties": {
                         "type": {
                             "const": "thematicBreak"
+                        },
+                        "id": {
+                            "type": "string"
                         }
                     },
                     "required": [
@@ -787,6 +805,9 @@
                     "properties": {
                         "type": {
                             "const": "html"
+                        },
+                        "id": {
+                            "type": "string"
                         },
                         "value": {
                             "type": "string"

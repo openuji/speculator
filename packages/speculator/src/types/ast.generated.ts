@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2025-12-08T09:12:56.075Z
+ * Generated at: 2025-12-08T09:57:34.379Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -146,6 +146,7 @@ export type Block =
   | BlockHtml;
 export type BlockParagraph = BaseNode & {
   type: 'paragraph';
+  id?: string;
   children: Inline[];
 };
 export type BlockHeading = BaseNode & {
@@ -159,6 +160,7 @@ export type BlockHeading = BaseNode & {
 };
 export type BlockCodeBlock = BaseNode & {
   type: 'codeBlock';
+  id?: string;
   lang?: string | null;
   meta?: string | null;
   value: string;
@@ -171,11 +173,13 @@ export type BlockExample = BaseNode & {
 };
 export type BlockQuote = BaseNode & {
   type: 'blockquote';
+  id?: string;
   children: Block[];
 };
 export type BlockList = BaseNode & {
   type: 'list';
   ordered: boolean;
+  id?: string;
   /**
    * Starting number for ordered lists
    */
@@ -193,6 +197,7 @@ export type ListItem = BaseNode & {
 export type BlockTable = BaseNode & {
   type: 'table';
   children: TableRow[];
+  id?: string;
 };
 export type TableRow = BaseNode & {
   type: 'tableRow';
@@ -206,9 +211,11 @@ export type TableCell = BaseNode & {
 };
 export type BlockThematicBreak = BaseNode & {
   type: 'thematicBreak';
+  id?: string;
 };
 export type BlockHtml = BaseNode & {
   type: 'html';
+  id?: string;
   value: string;
 };
 
