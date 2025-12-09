@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { citationTransformPlugin } from '#src/postprocess/citation-transform';
+import { citationTransformPlugin } from '#src/postprocess/plugins/citation-transform';
 import type {
     SpeculatorASTSchema as Document,
     Section,

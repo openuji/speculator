@@ -8,23 +8,32 @@
  */
 
 // Transform plugins
-export { citationTransformPlugin } from './citation-transform.js';
+export { citationTransformPlugin } from './plugins/citation-transform.js';
+
+// Index plugins
+export { dfnIndexPlugin } from './plugins/dfn-index.js';
 
 // Resolve plugins
-export { dfnResolvePlugin } from './dfn-resolve.js';
+export { referenceResolvePlugin } from './plugins/reference-resolve.js';
+
+// Utilities
+export { walkDocument, type AstVisitor } from './walk-ast.js';
 
 /**
  * All core postprocess plugins in recommended order.
  * 
  * Phase execution order: transform → index → resolve → compute → render
  */
-import { citationTransformPlugin } from './citation-transform.js';
-import { dfnResolvePlugin } from './dfn-resolve.js';
+import { citationTransformPlugin } from './plugins/citation-transform.js';
+import { dfnIndexPlugin } from './plugins/dfn-index.js';
+import { referenceResolvePlugin } from './plugins/reference-resolve.js';
 
 export const corePlugins = [
     // Transform plugins
-    citationTransformPlugin, // order: { transform: 10 }
-    // Index + Resolve plugins
-    dfnResolvePlugin,        // order: { index: 10, resolve: 10 }
+    citationTransformPlugin,    // order: { transform: 10 }
+    // Index plugins
+    dfnIndexPlugin,             // order: { index: 10 }
+    // Resolve plugins
+    referenceResolvePlugin,     // order: { resolve: 10 }
 ];
 
