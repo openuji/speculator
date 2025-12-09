@@ -1,8 +1,8 @@
 /**
  * Parse Handler Registry
  * 
- * Provides a modular, plugin-ready architecture for tag/node handling.
- * Plugins can register handlers for HTML tags and Markdown node types.
+ * Provides a modular architecture for parser modules.
+ * Parser modules handle specific hast/mdast nodes and emit SpecAST nodes.
  */
 
 import type { Element, RootContent } from 'hast';
@@ -45,9 +45,9 @@ export type InlineHandlerResult = Inline | Inline[] | null;
 // ============================================================================
 
 /**
- * Unified context provided to parse handlers
+ * Unified context provided to parser modules
  * 
- * This is the common interface for both HTML and Markdown handlers.
+ * This is the common interface for both HTML and Markdown parser modules.
  * Some methods may be no-ops depending on the format.
  */
 export interface ParseContext {
@@ -64,7 +64,7 @@ export interface ParseContext {
     transformBlockChildren(children: RootContent[] | MdastRootContent[]): (Section | Block)[];
 
     /** 
-     * Emit a diagnostic from the handler.
+     * Emit a diagnostic from the parser module.
      * Use for warnings about invalid structure, unsupported elements, etc.
      */
     emitDiagnostic(diagnostic: Omit<ParseDiagnostic, 'file'>): void;
@@ -76,28 +76,28 @@ export interface ParseContext {
     getAttr(element: Element, name: string): string | undefined;
 }
 
-/**
- * Legacy HTML parse context (for backwards compatibility)
- * @deprecated Use ParseContext instead
- */
-export type HtmlParseContext = ParseContext;
-
-/**
- * Legacy Markdown parse context (for backwards compatibility)
- * @deprecated Use ParseContext instead
- */
-export type MdParseContext = ParseContext;
-
 // ============================================================================
-// Handler Types
+// Parser Module Interfaces (per AGENTS.md)
 // ============================================================================
 
 /**
- * Handler for HTML tag(s)
+ * HTML parser module for handling hast elements.
+ * 
+ * Parser modules are first-class modules that live in src/parse/.
+ * They handle specific HTML tags and emit SpecAST nodes.
  */
-export interface HtmlTagHandler {
-    /** Tag names this handler processes (e.g., ['em', 'i']) */
-    readonly tags: string[];
+export interface HtmlParserModule {
+    /** Unique parser module name */
+    name: string;
+
+    /** Tag names this parser handles (e.g., ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']) */
+    handles: string[];
+
+    /** 
+     * Order for deterministic dispatch. 
+     * Lower numbers run first. Default is 10.
+     */
+    order?: number;
 
     /** Handle a block-level element */
     handleBlock?(element: Element, ctx: ParseContext): BlockHandlerResult;
@@ -107,11 +107,23 @@ export interface HtmlTagHandler {
 }
 
 /**
- * Handler for Markdown node type(s)
+ * Markdown parser module for handling mdast nodes.
+ * 
+ * Parser modules are first-class modules that live in src/parse/.
+ * They handle specific mdast node types and emit SpecAST nodes.
  */
-export interface MdNodeHandler {
-    /** Node types this handler processes (e.g., ['heading', 'paragraph']) */
-    readonly nodeTypes: string[];
+export interface MarkdownParserModule {
+    /** Unique parser module name */
+    name: string;
+
+    /** Node types this parser handles (e.g., ['heading']) */
+    handles: string[];
+
+    /** 
+     * Order for deterministic dispatch. 
+     * Lower numbers run first. Default is 10.
+     */
+    order?: number;
 
     /** Handle a block-level node */
     handleBlock?(node: MdastRootContent, ctx: ParseContext): Block | null;
@@ -125,70 +137,85 @@ export interface MdNodeHandler {
 // ============================================================================
 
 /**
- * Registry for parse handlers
+ * Registry for parser modules
  * 
- * Allows plugins to register handlers for specific HTML tags or Markdown node types.
+ * Manages parser modules for HTML tags and Markdown node types.
+ * Supports ordering for deterministic dispatch.
  */
 export class ParseHandlerRegistry {
-    private htmlBlockHandlers = new Map<string, HtmlTagHandler>();
-    private htmlInlineHandlers = new Map<string, HtmlTagHandler>();
-    private mdBlockHandlers = new Map<string, MdNodeHandler>();
-    private mdInlineHandlers = new Map<string, MdNodeHandler>();
+    private htmlBlockHandlers = new Map<string, HtmlParserModule>();
+    private htmlInlineHandlers = new Map<string, HtmlParserModule>();
+    private mdBlockHandlers = new Map<string, MarkdownParserModule>();
+    private mdInlineHandlers = new Map<string, MarkdownParserModule>();
 
     /**
-     * Register an HTML tag handler
+     * Register an HTML parser module
      */
-    registerHtmlHandler(handler: HtmlTagHandler): void {
-        for (const tag of handler.tags) {
+    registerHtmlParser(parser: HtmlParserModule): void {
+        for (const tag of parser.handles) {
             const normalizedTag = tag.toLowerCase();
-            if (handler.handleBlock) {
-                this.htmlBlockHandlers.set(normalizedTag, handler);
+            // Check if we should override based on order
+            if (parser.handleBlock) {
+                const existing = this.htmlBlockHandlers.get(normalizedTag);
+                if (!existing || (parser.order ?? 10) < (existing.order ?? 10)) {
+                    this.htmlBlockHandlers.set(normalizedTag, parser);
+                }
             }
-            if (handler.handleInline) {
-                this.htmlInlineHandlers.set(normalizedTag, handler);
-            }
-        }
-    }
-
-    /**
-     * Register a Markdown node handler
-     */
-    registerMdHandler(handler: MdNodeHandler): void {
-        for (const nodeType of handler.nodeTypes) {
-            if (handler.handleBlock) {
-                this.mdBlockHandlers.set(nodeType, handler);
-            }
-            if (handler.handleInline) {
-                this.mdInlineHandlers.set(nodeType, handler);
+            if (parser.handleInline) {
+                const existing = this.htmlInlineHandlers.get(normalizedTag);
+                if (!existing || (parser.order ?? 10) < (existing.order ?? 10)) {
+                    this.htmlInlineHandlers.set(normalizedTag, parser);
+                }
             }
         }
     }
 
     /**
-     * Get HTML block handler for a tag
+     * Register a Markdown parser module
      */
-    getHtmlBlockHandler(tagName: string): HtmlTagHandler | undefined {
+    registerMarkdownParser(parser: MarkdownParserModule): void {
+        for (const nodeType of parser.handles) {
+            // Check if we should override based on order
+            if (parser.handleBlock) {
+                const existing = this.mdBlockHandlers.get(nodeType);
+                if (!existing || (parser.order ?? 10) < (existing.order ?? 10)) {
+                    this.mdBlockHandlers.set(nodeType, parser);
+                }
+            }
+            if (parser.handleInline) {
+                const existing = this.mdInlineHandlers.get(nodeType);
+                if (!existing || (parser.order ?? 10) < (existing.order ?? 10)) {
+                    this.mdInlineHandlers.set(nodeType, parser);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get HTML block parser for a tag
+     */
+    getHtmlBlockHandler(tagName: string): HtmlParserModule | undefined {
         return this.htmlBlockHandlers.get(tagName.toLowerCase());
     }
 
     /**
-     * Get HTML inline handler for a tag
+     * Get HTML inline parser for a tag
      */
-    getHtmlInlineHandler(tagName: string): HtmlTagHandler | undefined {
+    getHtmlInlineHandler(tagName: string): HtmlParserModule | undefined {
         return this.htmlInlineHandlers.get(tagName.toLowerCase());
     }
 
     /**
-     * Get Markdown block handler for a node type
+     * Get Markdown block parser for a node type
      */
-    getMdBlockHandler(nodeType: string): MdNodeHandler | undefined {
+    getMdBlockHandler(nodeType: string): MarkdownParserModule | undefined {
         return this.mdBlockHandlers.get(nodeType);
     }
 
     /**
-     * Get Markdown inline handler for a node type
+     * Get Markdown inline parser for a node type
      */
-    getMdInlineHandler(nodeType: string): MdNodeHandler | undefined {
+    getMdInlineHandler(nodeType: string): MarkdownParserModule | undefined {
         return this.mdInlineHandlers.get(nodeType);
     }
 

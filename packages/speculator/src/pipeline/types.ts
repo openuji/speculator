@@ -2,38 +2,42 @@
  * Pipeline Types
  * 
  * Unified plugin interface and phase definitions.
- * Plugins register handlers that execute during specific pipeline phases.
+ * Plugins register handlers that execute during specific postprocess phases.
+ * 
+ * Note: Parsing is now a separate stage handled by parser modules in src/parse/.
+ * The Plugin interface only covers postprocess phases.
  */
 
-import type { Element } from 'hast';
-import type { RootContent as MdastRootContent } from 'mdast';
-import type { SpeculatorASTSchema as Document, Block } from '#src/types/ast.generated';
-
-// Re-export parse context from registry for plugins
-export type {
-    ParseContext,
-    NodeWithPosition,
-    BlockHandlerResult,
-    InlineHandlerResult,
-} from '#src/parse/registry';
+import type { SpeculatorASTSchema as Document } from '#src/types/ast.generated';
 
 // ============================================================================
 // Phase Definitions
 // ============================================================================
 
 /**
- * Pipeline phases in execution order.
- * Preprocess runs before plugins; it's not a plugin phase.
+ * Postprocess pipeline phases in execution order.
+ * 
+ * Note: Parsing is a separate stage before postprocess, not a plugin phase.
  */
-export type Phase = 'parse' | 'transform' | 'resolve' | 'index' | 'compute' | 'render';
+export type PostprocessPhase = 'transform' | 'resolve' | 'index' | 'compute' | 'render';
 
 /**
- * Ordered list of phases for iteration
+ * Ordered list of postprocess phases for iteration
  */
-export const PHASES: Phase[] = ['parse', 'transform', 'index', 'resolve', 'compute', 'render'];
+export const POSTPROCESS_PHASES: PostprocessPhase[] = ['transform', 'index', 'resolve', 'compute', 'render'];
+
+/**
+ * @deprecated Use PostprocessPhase instead
+ */
+export type Phase = PostprocessPhase;
+
+/**
+ * @deprecated Use POSTPROCESS_PHASES instead
+ */
+export const PHASES: Phase[] = POSTPROCESS_PHASES;
 
 // ============================================================================
-// Future Phase Context Types (Stubs)
+// Phase Context Types
 // ============================================================================
 
 /**
@@ -72,15 +76,14 @@ export interface RenderContext {
 }
 
 // ============================================================================
-// Plugin Interface
+// Plugin Interface (Postprocess Only)
 // ============================================================================
 
 /**
- * Unified plugin interface.
+ * Postprocess plugin interface.
  * 
- * Plugins may register hooks for any phase. The pipeline runner
- * executes hooks in phase order, with plugins sorted by their
- * declared order within each phase.
+ * Plugins register hooks for postprocess phases only.
+ * Parsing is handled separately by parser modules in src/parse/.
  */
 export interface Plugin {
     /** Unique plugin name */
@@ -90,34 +93,7 @@ export interface Plugin {
      * Optional ordering per phase.
      * Lower numbers run first. Default is 100.
      */
-    order?: Partial<Record<Phase, number>>;
-
-    /**
-     * Parse phase handlers.
-     * 
-     * Plugins implement HTML and/or Markdown handlers that receive
-     * IR nodes and emit AST nodes via the context.
-     */
-    parse?: {
-        /** Handle HTML elements */
-        html?: {
-            /** Tag names this handler processes */
-            tags: string[];
-            /** Handle block-level element */
-            handleBlock?(element: Element, ctx: import('#src/parse/registry').ParseContext): import('#src/parse/registry').BlockHandlerResult;
-            /** Handle inline element */
-            handleInline?(element: Element, ctx: import('#src/parse/registry').ParseContext): import('#src/parse/registry').InlineHandlerResult;
-        };
-        /** Handle Markdown nodes */
-        markdown?: {
-            /** Node types this handler processes */
-            nodeTypes: string[];
-            /** Handle block-level node */
-            handleBlock?(node: MdastRootContent, ctx: import('#src/parse/registry').ParseContext): Block | null;
-            /** Handle inline node */
-            handleInline?(node: MdastRootContent, ctx: import('#src/parse/registry').ParseContext): import('#src/parse/registry').InlineHandlerResult;
-        };
-    };
+    order?: Partial<Record<PostprocessPhase, number>>;
 
     /** Transform phase hook */
     transform?(ctx: TransformContext): Promise<void>;
@@ -149,7 +125,7 @@ export interface SpeculateOptions {
     /** Optional path to config file (e.g., config.respec.json) */
     configPath?: string;
 
-    /** Plugins to execute during pipeline phases */
+    /** Plugins to execute during postprocess phases */
     plugins: Plugin[];
 
     /** File provider for reading files (defaults to NodeFileProvider) */
@@ -174,10 +150,11 @@ export interface SpeculateResult {
  * Diagnostic from any phase
  */
 export interface SpeculateDiagnostic {
-    phase: 'preprocess' | Phase;
+    phase: 'preprocess' | 'parse' | PostprocessPhase;
     severity: 'error' | 'warning' | 'info';
     code: string;
     message: string;
     file?: string;
     sourcePos?: import('#src/types/ast.generated').SourcePos;
 }
+

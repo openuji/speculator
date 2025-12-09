@@ -8,15 +8,15 @@
 // Main parse function
 export { parse, parseCompositeSource, parseWithRegistry, registerParser } from '#src/parse/pipeline';
 
-// Registry and handler types (for plugin development)
+// Registry and handler types (for parser module development)
 export {
     ParseHandlerRegistry,
     defaultRegistry,
 } from '#src/parse/registry';
 
 export type {
-    HtmlTagHandler,
-    MdNodeHandler,
+    HtmlParserModule,
+    MarkdownParserModule,
     ParseContext,
     NodeWithPosition,
     HandlerResult,
@@ -42,3 +42,7 @@ export { buildSectionHierarchy, assembleDocument } from '#src/parse/assembler';
 // Parsers (for advanced use)
 export { MarkdownUnitParser } from '#src/parse/markdown/index';
 export { HtmlUnitParser } from '#src/parse/html/index';
+
+// Parser module aggregates
+export { coreHtmlParsers, coreMarkdownParsers } from '#src/parse/parsers';
+

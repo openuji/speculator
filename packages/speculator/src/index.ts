@@ -13,19 +13,19 @@ export type { FileProvider } from './file-provider/types.js';
 export * from './types/ast.generated.js';
 
 // Pipeline (Single Entrypoint)
-export { speculate, SpeculatorPipeline, PHASES } from './pipeline/index.js';
-export type { Plugin, Phase, SpeculateOptions, SpeculateResult, SpeculateDiagnostic } from './pipeline/types.js';
+export { speculate, SpeculatorPipeline, PHASES, POSTPROCESS_PHASES } from './pipeline/index.js';
+export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult, SpeculateDiagnostic } from './pipeline/types.js';
 
-// All Plugins
+// Postprocess Plugins
 export {
-    headingPlugin,
-    paragraphPlugin,
-    listPlugin,
-    codePlugin,
-    blockquotePlugin,
-    tablePlugin,
-    sectionPlugin,
-    inlinePlugin,
-    miscPlugin,
+    citationTransformPlugin,
+    dfnResolvePlugin,
     corePlugins,
-} from './plugins/index.js';
+} from './postprocess/index.js';
+
+// Parser Modules (for advanced use)
+export {
+    coreHtmlParsers,
+    coreMarkdownParsers,
+} from './parse/parsers.js';
+

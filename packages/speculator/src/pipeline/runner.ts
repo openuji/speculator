@@ -1,17 +1,18 @@
 /**
  * Pipeline Runner
  * 
- * Orchestrates plugin execution across all phases.
+ * Orchestrates plugin execution across postprocess phases.
+ * Parsing is handled by parser modules registered via html/index and markdown/index.
  */
 
 import type { FileProvider } from '#src/file-provider/types';
-import type { SpeculatorASTSchema as Document } from '#src/types/ast.generated';
 import { preprocess } from '#src/preprocess/pipeline';
 import { parseWithRegistry } from '#src/parse/pipeline';
 import { ParseHandlerRegistry } from '#src/parse/registry';
+import { coreHtmlParsers, coreMarkdownParsers } from '#src/parse/parsers';
 import type {
     Plugin,
-    Phase,
+    PostprocessPhase,
     SpeculateResult,
     SpeculateDiagnostic,
     TransformContext,
@@ -27,45 +28,29 @@ const DEFAULT_ORDER = 100;
 /**
  * Get plugin order for a specific phase
  */
-function getPluginOrder(plugin: Plugin, phase: Phase): number {
+function getPluginOrder(plugin: Plugin, phase: PostprocessPhase): number {
     return plugin.order?.[phase] ?? DEFAULT_ORDER;
 }
 
 /**
  * Sort plugins by order for a given phase
  */
-function sortPluginsForPhase(plugins: Plugin[], phase: Phase): Plugin[] {
+function sortPluginsForPhase(plugins: Plugin[], phase: PostprocessPhase): Plugin[] {
     return [...plugins].sort((a, b) => getPluginOrder(a, phase) - getPluginOrder(b, phase));
 }
 
 /**
- * Register plugin parse handlers to the registry
+ * Register core parser modules to a registry
  */
-function registerPluginParseHandlers(plugins: Plugin[], registry: ParseHandlerRegistry): void {
-    // Sort plugins by parse order
-    const sortedPlugins = sortPluginsForPhase(
-        plugins.filter(p => p.parse),
-        'parse'
-    );
+function registerCoreParsers(registry: ParseHandlerRegistry): void {
+    // Register HTML parser modules
+    for (const parser of coreHtmlParsers) {
+        registry.registerHtmlParser(parser);
+    }
 
-    for (const plugin of sortedPlugins) {
-        // Register HTML handlers
-        if (plugin.parse?.html) {
-            registry.registerHtmlHandler({
-                tags: plugin.parse.html.tags,
-                handleBlock: plugin.parse.html.handleBlock,
-                handleInline: plugin.parse.html.handleInline,
-            });
-        }
-
-        // Register Markdown handlers
-        if (plugin.parse?.markdown) {
-            registry.registerMdHandler({
-                nodeTypes: plugin.parse.markdown.nodeTypes,
-                handleBlock: plugin.parse.markdown.handleBlock,
-                handleInline: plugin.parse.markdown.handleInline,
-            });
-        }
+    // Register Markdown parser modules
+    for (const parser of coreMarkdownParsers) {
+        registry.registerMarkdownParser(parser);
     }
 }
 
@@ -100,6 +85,8 @@ export class SpeculatorPipeline {
             fileProvider: options.fileProvider,
         });
 
+        console.log('result', preprocessResult.result?.source)
+
         // Collect preprocess diagnostics
         for (const d of preprocessResult.diagnostics) {
             diagnostics.push({
@@ -117,10 +104,10 @@ export class SpeculatorPipeline {
         }
 
         // =================================================================
-        // PARSE PHASE (register plugin handlers to fresh registry)
+        // PARSE PHASE (register core parser modules to fresh registry)
         // =================================================================
         const registry = new ParseHandlerRegistry();
-        registerPluginParseHandlers(this.plugins, registry);
+        registerCoreParsers(registry);
 
         const parseResult = parseWithRegistry(preprocessResult.result, registry);
 

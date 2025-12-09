@@ -2,6 +2,7 @@
  * Parse Pipeline
  * 
  * Orchestrates parsing of preprocessed spec into Document AST.
+ * Parser modules are registered automatically when importing html/index and markdown/index.
  */
 
 import type { PreprocessedSpec, SourceUnit, SourceFormat } from '#src/preprocess/types';
@@ -11,25 +12,7 @@ import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
 import { ParseHandlerRegistry, defaultRegistry } from '#src/parse/registry';
-import { corePlugins } from '#src/plugins/index';
 
-// Initialize default registry with core plugin handlers
-for (const plugin of corePlugins) {
-    if (plugin.parse?.html) {
-        defaultRegistry.registerHtmlHandler({
-            tags: plugin.parse.html.tags,
-            handleBlock: plugin.parse.html.handleBlock,
-            handleInline: plugin.parse.html.handleInline,
-        });
-    }
-    if (plugin.parse?.markdown) {
-        defaultRegistry.registerMdHandler({
-            nodeTypes: plugin.parse.markdown.nodeTypes,
-            handleBlock: plugin.parse.markdown.handleBlock,
-            handleInline: plugin.parse.markdown.handleInline,
-        });
-    }
-}
 
 /**
  * Parser registry - maps format to parser factory

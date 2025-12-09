@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { dfnResolvePlugin } from '#src/plugins/dfn-resolve';
+import { dfnResolvePlugin } from '#src/postprocess/dfn-resolve';
 import type {
     SpeculatorASTSchema as Document,
     Section,

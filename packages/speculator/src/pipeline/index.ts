@@ -7,12 +7,12 @@
 import { NodeFileProvider } from '#src/file-provider/node';
 import type { FileProvider } from '#src/file-provider/types';
 import { SpeculatorPipeline } from './runner.js';
-import type { SpeculateOptions, SpeculateResult, Plugin, Phase } from './types.js';
+import type { SpeculateOptions, SpeculateResult, Plugin, Phase, PostprocessPhase } from './types.js';
 
 // Re-export types
-export type { Plugin, Phase, SpeculateOptions, SpeculateResult, SpeculateDiagnostic } from './types.js';
+export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult, SpeculateDiagnostic } from './types.js';
 export { SpeculatorPipeline } from './runner.js';
-export { PHASES } from './types.js';
+export { PHASES, POSTPROCESS_PHASES } from './types.js';
 
 /**
  * Process a specification with the given plugins.
@@ -43,6 +43,7 @@ export async function speculate(options: SpeculateOptions): Promise<SpeculateRes
 
     // Create pipeline with plugins
     const pipeline = new SpeculatorPipeline(options.plugins);
+
 
     // Run the pipeline
     return pipeline.run({

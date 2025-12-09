@@ -9,8 +9,6 @@ const specDir = path.resolve("spec");
 const entryFile = path.join(specDir, "index.html");
 const configFile = path.join(specDir, "config.respec.json");
 
-console.log(`Loading spec from: ${entryFile}`);
-
 // Run the full pipeline with plugins
 const result = await speculate({
     entry: entryFile,
