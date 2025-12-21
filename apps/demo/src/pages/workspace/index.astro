@@ -47,6 +47,31 @@ const docs: Document[] = workspace?.documents || [];
                 <p class="subtitle">
                     Demonstrating cross-document reference resolution
                 </p>
+                <div class="workspace-summary">
+                    <p>
+                        Total Documents: <strong>{docs.length}</strong>
+                    </p>
+                </div>
+
+                {
+                    result.diagnostics.length > 0 && (
+                        <section class="diagnostics">
+                            <h2>Workspace Diagnostics</h2>
+                            <ul class="diag-list">
+                                {result.diagnostics.map((d) => (
+                                    <li class={d.severity}>
+                                        <strong>[{d.code}]</strong> {d.message}
+                                        {d.file && (
+                                            <span class="loc">
+                                                ({path.basename(d.file)})
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )
+                }
             </header>
 
             <div class="workspace-landing">
@@ -102,5 +127,38 @@ const docs: Document[] = workspace?.documents || [];
         margin-bottom: 1rem;
         display: flex;
         gap: 1rem;
+    }
+    .diagnostics {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #fff5f5;
+        border: 1px solid #feb2b2;
+        border-radius: 4px;
+        max-width: 800px;
+    }
+    .diagnostics h2 {
+        font-size: 1rem;
+        margin-top: 0;
+        color: #c53030;
+    }
+    .diag-list {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+    .diag-list li {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    .diag-list li.error {
+        color: #c53030;
+    }
+    .diag-list li.warning {
+        color: #9b2c2c;
+    }
+    .loc {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #718096;
+        margin-left: 0.5rem;
     }
 </style>

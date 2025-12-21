@@ -58,12 +58,19 @@ function buildDefinitionIndex(document: Document): void {
                     linkTexts: (dfn as any).linkTexts,
                     forContexts: (dfn as any).forContexts,
                     dfnType: (dfn as any).dfnType,
-                    sourcePos: (dfn as any).sourcePos || {
-                        file: 'unknown',
-                        start: { line: 0, column: 0, offset: 0 },
-                        end: { line: 0, column: 0, offset: 0 }
+                    sourcePos: dfn.sourcePos || {
+                        file: document.sourcePos?.file || 'unknown',
+                        line: 0,
+                        column: 0
                     }
                 };
+
+
+                // Ensure entry.sourcePos.file is set if sourcePos exists but file is missing
+                if (entry.sourcePos && !entry.sourcePos.file) {
+                    entry.sourcePos.file = document.sourcePos?.file || 'unknown';
+                }
+
 
                 definitionIndex.push(entry);
             }

@@ -28,9 +28,12 @@ export interface RuntimeGlobalIndex {
 export interface RuntimeWorkspace {
     /** Documents in the workspace, keyed by their canonical entry path */
     documents: Map<string, Document>;
+    /** Map of document entry path -> level (0 is highest) */
+    documentLevels: Map<string, number>;
     /** Aggregated index for cross-document resolution */
     globalIndex: RuntimeGlobalIndex;
 }
+
 
 
 
@@ -66,28 +69,48 @@ export const PHASES: Phase[] = POSTPROCESS_PHASES;
 
 export interface TransformContext {
     readonly document: Document;
+    readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly diagnostics: SpeculateDiagnostic[];
 }
+
+
 
 export interface IndexContext {
     readonly document: Document;
+    readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly diagnostics: SpeculateDiagnostic[];
 }
+
+
 
 export interface ResolveContext {
     readonly document: Document;
+    readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly diagnostics: SpeculateDiagnostic[];
 }
+
+
 
 export interface ComputeContext {
     readonly document: Document;
+    readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly diagnostics: SpeculateDiagnostic[];
 }
+
+
 
 export interface RenderContext {
     readonly document: Document;
+    readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly diagnostics: SpeculateDiagnostic[];
 }
+
+
 
 
 

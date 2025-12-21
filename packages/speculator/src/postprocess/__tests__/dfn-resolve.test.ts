@@ -45,7 +45,8 @@ describe('DfnIndexPlugin', () => {
     it('assigns ID to definition', async () => {
         const doc = createDocWithDfnAndRef('task queue', 'task queue');
 
-        await dfnIndexPlugin.index!({ document: doc });
+        await dfnIndexPlugin.index!({ document: doc, level: 0, diagnostics: [] });
+
 
         const section = doc.children[0] as Section;
         const dfnPara = section.children[0] as BlockParagraph;
@@ -71,7 +72,8 @@ describe('DfnIndexPlugin', () => {
             } as Section],
         };
 
-        await dfnIndexPlugin.index!({ document: doc });
+        await dfnIndexPlugin.index!({ document: doc, level: 0, diagnostics: [] });
+
 
         const section = doc.children[0] as Section;
         const dfnPara = section.children[0] as BlockParagraph;
@@ -83,7 +85,8 @@ describe('DfnIndexPlugin', () => {
     it('builds definition index', async () => {
         const doc = createDocWithDfnAndRef('event loop', 'event loop');
 
-        await dfnIndexPlugin.index!({ document: doc });
+        await dfnIndexPlugin.index!({ document: doc, level: 0, diagnostics: [] });
+
 
         expect(doc.indexes?.definitions).toHaveLength(1);
         expect(doc.indexes?.definitions?.[0].term).toBe('event loop');
@@ -95,8 +98,9 @@ describe('ReferenceResolvePlugin', () => {
     it('resolves reference to definition with same term', async () => {
         const doc = createDocWithDfnAndRef('event loop', 'event loop');
 
-        await dfnIndexPlugin.index!({ document: doc });
-        await referenceResolvePlugin.resolve!({ document: doc });
+        await dfnIndexPlugin.index!({ document: doc, level: 0, diagnostics: [] });
+        await referenceResolvePlugin.resolve!({ document: doc, level: 0, diagnostics: [] });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
@@ -133,8 +137,9 @@ describe('ReferenceResolvePlugin', () => {
             } as Section],
         };
 
-        await dfnIndexPlugin.index!({ document: doc });
-        await referenceResolvePlugin.resolve!({ document: doc });
+        await dfnIndexPlugin.index!({ document: doc, level: 0, diagnostics: [] });
+        await referenceResolvePlugin.resolve!({ document: doc, level: 0, diagnostics: [] });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
@@ -171,8 +176,9 @@ describe('ReferenceResolvePlugin', () => {
             } as Section],
         };
 
-        await dfnIndexPlugin.index!({ document: doc });
-        await referenceResolvePlugin.resolve!({ document: doc });
+        await dfnIndexPlugin.index!({ document: doc, level: 0, diagnostics: [] });
+        await referenceResolvePlugin.resolve!({ document: doc, level: 0, diagnostics: [] });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
@@ -184,8 +190,9 @@ describe('ReferenceResolvePlugin', () => {
     it('leaves targetId undefined for unresolved reference', async () => {
         const doc = createDocWithDfnAndRef('foo', 'bar');
 
-        await dfnIndexPlugin.index!({ document: doc });
-        await referenceResolvePlugin.resolve!({ document: doc });
+        await dfnIndexPlugin.index!({ document: doc, level: 0, diagnostics: [] });
+        await referenceResolvePlugin.resolve!({ document: doc, level: 0, diagnostics: [] });
+
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;

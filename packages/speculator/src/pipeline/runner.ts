@@ -128,51 +128,68 @@ export class SpeculatorPipeline {
 
         const runtimeWorkspace: RuntimeWorkspace = {
             documents: new Map(results.map(r => [r.entry, r.doc])),
+            documentLevels: new Map(results.map((r, i) => [r.entry, i])),
             globalIndex: { definitions: new Map(), bibliography: new Map() }
         };
+
+
+
 
         // 2. TRANSFORM phase
         const transformPlugins = sortPluginsForPhase(this.plugins.filter(p => p.transform), 'transform');
         for (const res of results) {
+            const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of transformPlugins) {
-                await plugin.transform!({ document: res.doc, workspace: runtimeWorkspace });
+                await plugin.transform!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
             }
         }
+
+
 
         // 3. INDEX phase
         const indexPlugins = sortPluginsForPhase(this.plugins.filter(p => p.index), 'index');
         for (const res of results) {
+            const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of indexPlugins) {
-                await plugin.index!({ document: res.doc, workspace: runtimeWorkspace });
+                await plugin.index!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
             }
         }
 
         // 4. AGGREGATE Global Index
-        runtimeWorkspace.globalIndex = buildGlobalIndex(runtimeWorkspace.documents);
+        const indexResult = buildGlobalIndex(runtimeWorkspace.documents, runtimeWorkspace.documentLevels);
+        runtimeWorkspace.globalIndex = indexResult.index;
+        for (const d of indexResult.diagnostics) {
+            diagnostics.push({ phase: 'index', ...d } as SpeculateDiagnostic);
+        }
 
         // 5. RESOLVE phase
         const resolvePlugins = sortPluginsForPhase(this.plugins.filter(p => p.resolve), 'resolve');
         for (const res of results) {
+            const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of resolvePlugins) {
-                await plugin.resolve!({ document: res.doc, workspace: runtimeWorkspace });
+                await plugin.resolve!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
             }
         }
 
         // 6. COMPUTE phase
         const computePlugins = sortPluginsForPhase(this.plugins.filter(p => p.compute), 'compute');
         for (const res of results) {
+            const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of computePlugins) {
-                await plugin.compute!({ document: res.doc, workspace: runtimeWorkspace });
+                await plugin.compute!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
             }
         }
 
         // 7. RENDER phase
         const renderPlugins = sortPluginsForPhase(this.plugins.filter(p => p.render), 'render');
         for (const res of results) {
+            const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of renderPlugins) {
-                await plugin.render!({ document: res.doc, workspace: runtimeWorkspace });
+                await plugin.render!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
             }
         }
+
+
 
         // Finalize: Convert runtime workspace to AST
         const workspaceAST = finalizeWorkspace(runtimeWorkspace);

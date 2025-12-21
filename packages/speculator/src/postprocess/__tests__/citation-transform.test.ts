@@ -42,7 +42,8 @@ describe('CitationTransformPlugin', () => {
     it('transforms basic [[FOO]] citations', async () => {
         const doc = createDocument('See [[RFC2119]] for details.');
 
-        await citationTransformPlugin.transform!({ document: doc });
+        await citationTransformPlugin.transform!({ document: doc, level: 0, diagnostics: [] });
+
 
         const para = doc.children[0] as BlockParagraph;
         expect(para.children.length).toBe(3);
@@ -56,7 +57,8 @@ describe('CitationTransformPlugin', () => {
     it('transforms [[!FOO]] as forced normative', async () => {
         const doc = createDocument('As required by [[!RFC2119]].');
 
-        await citationTransformPlugin.transform!({ document: doc });
+        await citationTransformPlugin.transform!({ document: doc, level: 0, diagnostics: [] });
+
 
         const para = doc.children[0] as BlockParagraph;
         const cite = para.children[1] as InlineCite;
@@ -69,7 +71,8 @@ describe('CitationTransformPlugin', () => {
     it('transforms [[?FOO]] as forced informative', async () => {
         const doc = createDocument('For background, see [[?HTML]].');
 
-        await citationTransformPlugin.transform!({ document: doc });
+        await citationTransformPlugin.transform!({ document: doc, level: 0, diagnostics: [] });
+
 
         const para = doc.children[0] as BlockParagraph;
         const cite = para.children[1] as InlineCite;
@@ -82,7 +85,8 @@ describe('CitationTransformPlugin', () => {
     it('transforms [[[FOO]]] as expanded', async () => {
         const doc = createDocument('See [[[RFC2119]]] specification.');
 
-        await citationTransformPlugin.transform!({ document: doc });
+        await citationTransformPlugin.transform!({ document: doc, level: 0, diagnostics: [] });
+
 
         const para = doc.children[0] as BlockParagraph;
         const cite = para.children[1] as InlineCite;
@@ -94,7 +98,8 @@ describe('CitationTransformPlugin', () => {
     it('transforms multiple citations in one text', async () => {
         const doc = createDocument('See [[RFC2119]] and [[HTML]].');
 
-        await citationTransformPlugin.transform!({ document: doc });
+        await citationTransformPlugin.transform!({ document: doc, level: 0, diagnostics: [] });
+
 
         const para = doc.children[0] as BlockParagraph;
         expect(para.children.length).toBe(5);
@@ -106,7 +111,8 @@ describe('CitationTransformPlugin', () => {
     it('transforms citations in sections', async () => {
         const doc = getSectionDocument('Reference [[DOM]].');
 
-        await citationTransformPlugin.transform!({ document: doc });
+        await citationTransformPlugin.transform!({ document: doc, level: 0, diagnostics: [] });
+
 
         const section = doc.children[0] as Section;
         const para = section.children[0] as BlockParagraph;
@@ -117,7 +123,8 @@ describe('CitationTransformPlugin', () => {
     it('preserves text without citations', async () => {
         const doc = createDocument('No citations here.');
 
-        await citationTransformPlugin.transform!({ document: doc });
+        await citationTransformPlugin.transform!({ document: doc, level: 0, diagnostics: [] });
+
 
         const para = doc.children[0] as BlockParagraph;
         expect(para.children.length).toBe(1);

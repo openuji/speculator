@@ -169,7 +169,19 @@ export class HtmlUnitParser implements UnitParser {
             return [result];
         }
 
-        // Fallback: try to wrap inline content in paragraph
+        // Fallback: try to handle as inline (e.g., <dfn> or <span> at top level)
+        const inline = this.transformInline(element, ctx.unit, []); // Empty diagnostics, we'll re-collect if needed
+        if (inline) {
+            const sourcePos = ctx.createSourcePos(element);
+            const result: BlockParagraph = {
+                type: 'paragraph',
+                children: Array.isArray(inline) ? inline : [inline],
+            };
+            if (sourcePos) result.sourcePos = sourcePos;
+            return [result];
+        }
+
+        // Deep fallback: wrap children in paragraph
         const sourcePos = ctx.createSourcePos(element);
         const inlines = ctx.transformInlineChildren(element.children);
         if (inlines.length > 0) {
@@ -180,6 +192,7 @@ export class HtmlUnitParser implements UnitParser {
             if (sourcePos) result.sourcePos = sourcePos;
             return [result];
         }
+
 
         return [];
     }

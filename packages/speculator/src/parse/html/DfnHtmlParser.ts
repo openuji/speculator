@@ -19,7 +19,10 @@ export const DfnHtmlParser: HtmlParserModule = {
     order: 5, // Run before inline parsers to handle dfn first
 
     handleInline(element: Element, ctx: ParseContext): InlineHandlerResult {
+
+
         const sourcePos = ctx.createSourcePos(element);
+
 
         // Get raw text content for term
         const rawText = ctx.getTextContent(element);
