@@ -7,12 +7,13 @@
 import { describe, it, expect } from 'vitest';
 import { citationTransformPlugin } from '#src/postprocess/plugins/citation-transform';
 import type {
-    SpeculatorASTSchema as Document,
+    Document,
     Section,
     BlockParagraph,
     InlineText,
     InlineCite,
 } from '#src/types/ast.generated';
+
 
 function createDocument(paragraphText: string): Document {
     return {

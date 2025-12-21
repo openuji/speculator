@@ -1,14 +1,38 @@
-/**
- * Pipeline Types
- * 
- * Unified plugin interface and phase definitions.
- * Plugins register handlers that execute during specific postprocess phases.
- * 
- * Note: Parsing is now a separate stage handled by parser modules in src/parse/.
- * The Plugin interface only covers postprocess phases.
- */
+import type {
+    Workspace,
+    Document,
+    IndexDefinitionEntry,
+    IndexBiblioEntry,
+    Indexes1 as GlobalIndexAST,
+} from '#src/types/ast.generated';
 
-import type { SpeculatorASTSchema as Document } from '#src/types/ast.generated';
+// Re-export the core AST types for convenience
+export type { Workspace, Document, IndexDefinitionEntry, IndexBiblioEntry, GlobalIndexAST };
+
+
+/**
+ * Aggregated index for runtime lookups during postprocess phases.
+
+ * Uses Maps for O(1) term resolution.
+ */
+export interface RuntimeGlobalIndex {
+    /** Map of normalized term -> definitions */
+    definitions: Map<string, IndexDefinitionEntry[]>;
+    /** Map of key -> bibliography entry */
+    bibliography: Map<string, IndexBiblioEntry>;
+}
+
+/**
+ * Runtime workspace container used during pipeline execution.
+ */
+export interface RuntimeWorkspace {
+    /** Documents in the workspace, keyed by their canonical entry path */
+    documents: Map<string, Document>;
+    /** Aggregated index for cross-document resolution */
+    globalIndex: RuntimeGlobalIndex;
+}
+
+
 
 // ============================================================================
 // Phase Definitions
@@ -40,40 +64,32 @@ export const PHASES: Phase[] = POSTPROCESS_PHASES;
 // Phase Context Types
 // ============================================================================
 
-/**
- * Context for transform phase
- */
 export interface TransformContext {
     readonly document: Document;
+    readonly workspace?: RuntimeWorkspace;
 }
 
-/**
- * Context for index phase
- */
 export interface IndexContext {
     readonly document: Document;
+    readonly workspace?: RuntimeWorkspace;
 }
 
-/**
- * Context for resolve phase
- */
 export interface ResolveContext {
     readonly document: Document;
+    readonly workspace?: RuntimeWorkspace;
 }
 
-/**
- * Context for compute phase
- */
 export interface ComputeContext {
     readonly document: Document;
+    readonly workspace?: RuntimeWorkspace;
 }
 
-/**
- * Context for render phase
- */
 export interface RenderContext {
     readonly document: Document;
+    readonly workspace?: RuntimeWorkspace;
 }
+
+
 
 // ============================================================================
 // Plugin Interface (Postprocess Only)
@@ -136,8 +152,8 @@ export interface SpeculateOptions {
  * Result from speculate()
  */
 export interface SpeculateResult {
-    /** Parsed document AST */
-    document?: Document;
+    /** The root Workspace AST */
+    workspace?: Workspace;
 
     /** Collected diagnostics */
     diagnostics: SpeculateDiagnostic[];
@@ -145,6 +161,7 @@ export interface SpeculateResult {
     /** Quick error check */
     hasErrors: boolean;
 }
+
 
 /**
  * Diagnostic from any phase

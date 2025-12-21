@@ -13,11 +13,8 @@
  */
 
 import type { Plugin, ResolveContext } from '#src/pipeline/types';
-import type {
-    SpeculatorASTSchema as Document,
-    InlineReference,
-    IndexDefinitionEntry,
-} from '#src/types/ast.generated';
+import type { Document, InlineReference, IndexDefinitionEntry } from '#src/types/ast.generated';
+
 import { normalizeTerm } from '#src/parse/normalize';
 import { walkDocument } from '../walk-ast.js';
 
@@ -125,8 +122,14 @@ export const referenceResolvePlugin: Plugin = {
     order: { resolve: 10 },
 
     async resolve(ctx: ResolveContext): Promise<void> {
-        const index = buildLookupMap(ctx.document);
+        // Use global index if in a workspace, otherwise build local lookup map
+        const index = ctx.workspace
+            ? ctx.workspace.globalIndex.definitions
+            : buildLookupMap(ctx.document);
+
         resolveReferences(ctx.document, index);
     },
+
+
 };
 

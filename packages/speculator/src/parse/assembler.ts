@@ -9,9 +9,10 @@ import type {
     Section,
     Block,
     BlockHeading,
-    SpeculatorASTSchema as Document,
+    Document,
     DocumentMetadata,
 } from '#src/types/ast.generated';
+
 import type { SpecConfig } from '#src/preprocess/types';
 
 /**

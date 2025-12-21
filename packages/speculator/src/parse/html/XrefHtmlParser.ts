@@ -23,7 +23,9 @@ function isXrefAnchor(element: Element, ctx: ParseContext): boolean {
     // hast converts data-* to camelCase
     const hasDataXref = ctx.getAttr(element, 'dataXref') !== undefined ||
         ctx.getAttr(element, 'dataLt') !== undefined ||
-        ctx.getAttr(element, 'dataXrefFor') !== undefined;
+        ctx.getAttr(element, 'dataXrefFor') !== undefined ||
+        ctx.getAttr(element, 'dataLinkType') !== undefined;
+
 
     // No href = xref
     if (!href) return hasDataXref;

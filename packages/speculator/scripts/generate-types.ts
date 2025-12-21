@@ -57,28 +57,27 @@ async function generateTypes(): Promise<void> {
 // ============================================================================
 
 /**
- * Alias for the root document type
+ * Alias for the root workspace type
  */
-export type Document = SpeculatorASTSchema;
+export type Workspace = SpeculatorASTSchema;
 
 /**
  * Extracts semantic-only fields from AST (excludes x-computed fields).
  * Use this type when working with indexers or when computed fields are disabled.
  */
-export type SemanticDocument = Omit<SpeculatorASTSchema, 'computed'>;
+export type SemanticWorkspace = Omit<SpeculatorASTSchema, 'globalIndex'>;
 
 /**
- * Full AST with all optional computed fields.
- * Use this type when computed fields are enabled.
+ * Type guard for Workspace nodes
  */
-export type FullDocument = SpeculatorASTSchema & {
-  computed: ComputedFields;
-};
+export function isWorkspace(node: unknown): node is SpeculatorASTSchema {
+  return typeof node === 'object' && node !== null && (node as any).type === 'workspace';
+}
 
 /**
  * Type guard for Document nodes
  */
-export function isDocument(node: unknown): node is SpeculatorASTSchema {
+export function isDocument(node: unknown): node is Document {
   return typeof node === 'object' && node !== null && (node as any).type === 'document';
 }
 
@@ -133,7 +132,8 @@ export function isBlockExample(node: unknown): node is BlockExample {
  * Node visitor type for AST traversal
  */
 export type NodeVisitor<T = void> = {
-  document?: (node: SpeculatorASTSchema) => T;
+  workspace?: (node: SpeculatorASTSchema) => T;
+  document?: (node: Document) => T;
   section?: (node: Section) => T;
   block?: (node: Block) => T;
   inline?: (node: Inline) => T;

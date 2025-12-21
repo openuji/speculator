@@ -4,7 +4,8 @@
     "title": "Speculator AST Schema",
     "version": "1.0.0",
     "x-schema-version": "1.0.0",
-    "description": "AST-first schema for Speculator specification documents. Semantic marker nodes are introduced during parse and may be refined during resolve. Indexes are extracted from marker nodes during the indexing phase. Optional computed fields may be embedded via compute options.",
+    "description": "AST-first schema for Speculator workspace. A workspace contains one or more specification documents. Semantic marker nodes are introduced during parse and may be refined during resolve. Global indexing aggregates definitions across documents.",
+    "type": "object",
     "definitions": {
         "SourcePos": {
             "type": "object",
@@ -1314,6 +1315,9 @@
                 "title": {
                     "type": "string"
                 },
+                "subtitle": {
+                    "type": "string"
+                },
                 "shortName": {
                     "type": "string"
                 },
@@ -1366,10 +1370,48 @@
                     "type": "string"
                 }
             }
+        },
+        "Document": {
+            "type": "object",
+            "description": "A single specification document",
+            "properties": {
+                "type": {
+                    "const": "document"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/DocumentMetadata"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/definitions/Section"
+                            },
+                            {
+                                "$ref": "#/definitions/Block"
+                            }
+                        ]
+                    }
+                },
+                "indexes": {
+                    "$ref": "#/definitions/Indexes",
+                    "description": "Indexes extracted from marker nodes during indexing"
+                },
+                "computed": {
+                    "$ref": "#/definitions/ComputedFields",
+                    "description": "Optional computed fields (x-computed: true)"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "type",
+                "children"
+            ]
         }
     },
-    "type": "object",
-    "description": "Root document node",
     "properties": {
         "schemaVersion": {
             "type": "string",
@@ -1377,38 +1419,22 @@
             "description": "Schema version for this AST format"
         },
         "type": {
-            "const": "document"
+            "const": "workspace"
         },
-        "metadata": {
-            "$ref": "#/definitions/DocumentMetadata"
-        },
-        "children": {
+        "documents": {
             "type": "array",
             "items": {
-                "oneOf": [
-                    {
-                        "$ref": "#/definitions/Section"
-                    },
-                    {
-                        "$ref": "#/definitions/Block"
-                    }
-                ]
-            }
+                "$ref": "#/definitions/Document"
+            },
+            "description": "Collection of documents in the workspace"
         },
-        "indexes": {
+        "globalIndex": {
             "$ref": "#/definitions/Indexes",
-            "description": "Indexes extracted from marker nodes during indexing"
-        },
-        "computed": {
-            "$ref": "#/definitions/ComputedFields",
-            "description": "Optional computed fields (x-computed: true)"
-        },
-        "sourcePos": {
-            "$ref": "#/definitions/SourcePos"
+            "description": "Aggregated global index across all documents"
         }
     },
     "required": [
         "type",
-        "children"
+        "documents"
     ]
 }

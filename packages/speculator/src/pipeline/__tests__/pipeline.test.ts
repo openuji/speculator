@@ -19,8 +19,9 @@ describe('speculate', () => {
         });
 
         expect(result.hasErrors).toBe(false);
-        expect(result.document?.type).toBe('document');
-        expect(result.document?.children.length).toBeGreaterThan(0);
+        expect(result.workspace?.documents[0].type).toBe('document');
+        expect(result.workspace?.documents[0].children.length).toBeGreaterThan(0);
+
     });
 
     it('processes markdown with config', async () => {
@@ -40,7 +41,8 @@ describe('speculate', () => {
         });
 
         expect(result.hasErrors).toBe(false);
-        expect(result.document?.metadata?.title).toBe('Test Spec');
+        expect(result.workspace?.documents[0].metadata?.title).toBe('Test Spec');
+
     });
 
     it('processes HTML spec with sections', async () => {
@@ -60,9 +62,10 @@ describe('speculate', () => {
         });
 
         expect(result.hasErrors).toBe(false);
-        const section = result.document?.children[0] as any;
+        const section = result.workspace?.documents[0].children[0] as any;
         expect(section.type).toBe('section');
         expect(section.id).toBe('abstract');
+
     });
 
     it('collects diagnostics from preprocess phase', async () => {
@@ -92,7 +95,8 @@ describe('speculate', () => {
 
         expect(result.hasErrors).toBe(false);
         // Check that content from both files is present
-        const doc = result.document;
+        const doc = result.workspace?.documents[0];
         expect(doc?.children.length).toBeGreaterThan(0);
+
     });
 });

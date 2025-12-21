@@ -21,14 +21,16 @@ const result = await speculate({
 
 if (result.hasErrors) {
     console.error("Pipeline errors:", result.diagnostics);
-    if (!result.document) {
-        throw new Error(
-            "Pipeline failed: " + JSON.stringify(result.diagnostics, null, 2),
-        );
-    }
 }
 
-const document = result.document!;
+const document = result.workspace?.documents[0];
+if (!document) {
+    throw new Error(
+        "Pipeline failed to produce a document: " +
+            JSON.stringify(result.diagnostics, null, 2),
+    );
+}
+
 console.log(document);
 const config = document.metadata || {};
 ---

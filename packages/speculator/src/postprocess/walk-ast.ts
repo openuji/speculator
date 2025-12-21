@@ -6,11 +6,12 @@
  */
 
 import type {
-    SpeculatorASTSchema as Document,
+    Document,
     Section,
     Block,
     Inline,
 } from '#src/types/ast.generated';
+
 
 /**
  * Visitor interface for AST traversal.

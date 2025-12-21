@@ -5,7 +5,8 @@
  */
 
 import type { SourceUnit, SourceFormat, SpecConfig } from '#src/preprocess/types';
-import type { Section, Block, SourcePos, SpeculatorASTSchema as Document } from '#src/types/ast.generated';
+import type { Section, Block, SourcePos, Document } from '#src/types/ast.generated';
+
 
 // ============================================================================
 // Unit Parser Interface

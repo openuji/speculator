@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2025-12-08T13:31:51.008Z
+ * Generated at: 2025-12-21T12:59:57.547Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -290,13 +290,24 @@ export type BlockNote = BaseNode & {
 };
 
 /**
- * Root document node
+ * AST-first schema for Speculator workspace. A workspace contains one or more specification documents. Semantic marker nodes are introduced during parse and may be refined during resolve. Global indexing aggregates definitions across documents.
  */
 export interface SpeculatorASTSchema {
   /**
    * Schema version for this AST format
    */
   schemaVersion?: '1.1.0';
+  type: 'workspace';
+  /**
+   * Collection of documents in the workspace
+   */
+  documents: Document[];
+  globalIndex?: Indexes1;
+}
+/**
+ * A single specification document
+ */
+export interface Document {
   type: 'document';
   metadata?: DocumentMetadata;
   children: (Section | Block)[];
@@ -309,6 +320,7 @@ export interface SpeculatorASTSchema {
  */
 export interface DocumentMetadata {
   title?: string;
+  subtitle?: string;
   shortName?: string;
   status?: string;
   version?: string;
@@ -476,6 +488,18 @@ export interface TocEntry {
   number?: string;
   children?: TocEntry[];
 }
+/**
+ * Aggregated global index across all documents
+ */
+export interface Indexes1 {
+  definitions?: IndexDefinitionEntry[];
+  references?: IndexReferenceEntry[];
+  requirements?: IndexRequirementEntry[];
+  issues?: IndexIssueEntry[];
+  examples?: IndexExampleEntry[];
+  citations?: IndexCiteEntry[];
+  bibliography?: IndexBiblioEntry[];
+}
 
 
 // ============================================================================
@@ -483,28 +507,27 @@ export interface TocEntry {
 // ============================================================================
 
 /**
- * Alias for the root document type
+ * Alias for the root workspace type
  */
-export type Document = SpeculatorASTSchema;
+export type Workspace = SpeculatorASTSchema;
 
 /**
  * Extracts semantic-only fields from AST (excludes x-computed fields).
  * Use this type when working with indexers or when computed fields are disabled.
  */
-export type SemanticDocument = Omit<SpeculatorASTSchema, 'computed'>;
+export type SemanticWorkspace = Omit<SpeculatorASTSchema, 'globalIndex'>;
 
 /**
- * Full AST with all optional computed fields.
- * Use this type when computed fields are enabled.
+ * Type guard for Workspace nodes
  */
-export type FullDocument = SpeculatorASTSchema & {
-  computed: ComputedFields;
-};
+export function isWorkspace(node: unknown): node is SpeculatorASTSchema {
+  return typeof node === 'object' && node !== null && (node as any).type === 'workspace';
+}
 
 /**
  * Type guard for Document nodes
  */
-export function isDocument(node: unknown): node is SpeculatorASTSchema {
+export function isDocument(node: unknown): node is Document {
   return typeof node === 'object' && node !== null && (node as any).type === 'document';
 }
 
@@ -559,7 +582,8 @@ export function isBlockExample(node: unknown): node is BlockExample {
  * Node visitor type for AST traversal
  */
 export type NodeVisitor<T = void> = {
-  document?: (node: SpeculatorASTSchema) => T;
+  workspace?: (node: SpeculatorASTSchema) => T;
+  document?: (node: Document) => T;
   section?: (node: Section) => T;
   block?: (node: Block) => T;
   inline?: (node: Inline) => T;

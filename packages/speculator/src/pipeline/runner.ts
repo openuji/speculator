@@ -16,11 +16,15 @@ import type {
     SpeculateResult,
     SpeculateDiagnostic,
     TransformContext,
-    ResolveContext,
     IndexContext,
+    ResolveContext,
     ComputeContext,
     RenderContext,
+    RuntimeWorkspace,
+    Workspace,
 } from './types.js';
+import type { Document } from '#src/types/ast.generated';
+import { buildGlobalIndex, finalizeWorkspace } from './workspace-index.js';
 
 // Default order for plugins that don't specify
 const DEFAULT_ORDER = 100;
@@ -43,12 +47,9 @@ function sortPluginsForPhase(plugins: Plugin[], phase: PostprocessPhase): Plugin
  * Register core parser modules to a registry
  */
 function registerCoreParsers(registry: ParseHandlerRegistry): void {
-    // Register HTML parser modules
     for (const parser of coreHtmlParsers) {
         registry.registerHtmlParser(parser);
     }
-
-    // Register Markdown parser modules
     for (const parser of coreMarkdownParsers) {
         registry.registerMarkdownParser(parser);
     }
@@ -58,6 +59,7 @@ function registerCoreParsers(registry: ParseHandlerRegistry): void {
  * Speculator Pipeline Runner
  * 
  * Coordinates execution of plugins across pipeline phases.
+ * In a workspace-first architecture, all runs produce a Workspace AST.
  */
 export class SpeculatorPipeline {
     private plugins: Plugin[];
@@ -67,132 +69,119 @@ export class SpeculatorPipeline {
     }
 
     /**
-     * Run the complete pipeline
+     * Run the pipeline for a single document.
+     * Consolidates to runWorkspace internally.
      */
     async run(options: {
         entry: string;
         configPath?: string;
         fileProvider: FileProvider;
     }): Promise<SpeculateResult> {
-        const diagnostics: SpeculateDiagnostic[] = [];
-
-        // =================================================================
-        // PREPROCESS (not a plugin phase)
-        // =================================================================
-        const preprocessResult = await preprocess({
-            entry: options.entry,
-            configPath: options.configPath,
-            fileProvider: options.fileProvider,
+        return this.runWorkspace({
+            entries: [{ entry: options.entry, configPath: options.configPath }],
+            fileProvider: options.fileProvider
         });
+    }
 
-        console.log('result', preprocessResult.result?.source)
+    /**
+     * Run the complete pipeline for a workspace (one or more documents)
+     */
+    async runWorkspace(options: {
+        entries: { entry: string; configPath?: string }[];
+        fileProvider: FileProvider;
+    }): Promise<SpeculateResult> {
+        const diagnostics: SpeculateDiagnostic[] = [];
+        const results: { doc: Document; entry: string }[] = [];
 
-        // Collect preprocess diagnostics
-        for (const d of preprocessResult.diagnostics) {
-            diagnostics.push({
-                phase: 'preprocess',
-                severity: d.severity,
-                code: d.code,
-                message: d.message,
-                file: d.file,
-                sourcePos: d.sourcePos,
+        // 1. Initial run: Preprocess + Parse
+        for (const entryConfig of options.entries) {
+            const preprocessResult = await preprocess({
+                entry: entryConfig.entry,
+                configPath: entryConfig.configPath,
+                fileProvider: options.fileProvider,
             });
+
+            for (const d of preprocessResult.diagnostics) {
+                diagnostics.push({ phase: 'preprocess', ...d } as SpeculateDiagnostic);
+            }
+
+            if (!preprocessResult.result) continue;
+
+            const registry = new ParseHandlerRegistry();
+            registerCoreParsers(registry);
+            const parseResult = parseWithRegistry(preprocessResult.result, registry);
+
+            for (const d of parseResult.diagnostics) {
+                diagnostics.push({ phase: 'parse', ...d } as SpeculateDiagnostic);
+            }
+
+            if (!parseResult.result) continue;
+            results.push({ doc: parseResult.result.document, entry: entryConfig.entry });
         }
 
-        if (!preprocessResult.result) {
-            return { diagnostics, hasErrors: true };
+        if (results.length === 0) {
+            return {
+                diagnostics,
+                hasErrors: true
+            };
         }
 
-        // =================================================================
-        // PARSE PHASE (register core parser modules to fresh registry)
-        // =================================================================
-        const registry = new ParseHandlerRegistry();
-        registerCoreParsers(registry);
+        const runtimeWorkspace: RuntimeWorkspace = {
+            documents: new Map(results.map(r => [r.entry, r.doc])),
+            globalIndex: { definitions: new Map(), bibliography: new Map() }
+        };
 
-        const parseResult = parseWithRegistry(preprocessResult.result, registry);
-
-        // Collect parse diagnostics
-        for (const d of parseResult.diagnostics) {
-            diagnostics.push({
-                phase: 'parse',
-                severity: d.severity,
-                code: d.code,
-                message: d.message,
-                file: d.file,
-                sourcePos: d.sourcePos,
-            });
+        // 2. TRANSFORM phase
+        const transformPlugins = sortPluginsForPhase(this.plugins.filter(p => p.transform), 'transform');
+        for (const res of results) {
+            for (const plugin of transformPlugins) {
+                await plugin.transform!({ document: res.doc, workspace: runtimeWorkspace });
+            }
         }
 
-        if (!parseResult.result) {
-            return { diagnostics, hasErrors: true };
+        // 3. INDEX phase
+        const indexPlugins = sortPluginsForPhase(this.plugins.filter(p => p.index), 'index');
+        for (const res of results) {
+            for (const plugin of indexPlugins) {
+                await plugin.index!({ document: res.doc, workspace: runtimeWorkspace });
+            }
         }
 
-        let document = parseResult.result.document;
+        // 4. AGGREGATE Global Index
+        runtimeWorkspace.globalIndex = buildGlobalIndex(runtimeWorkspace.documents);
 
-        // =================================================================
-        // TRANSFORM PHASE
-        // =================================================================
-        const transformPlugins = sortPluginsForPhase(
-            this.plugins.filter(p => p.transform),
-            'transform'
-        );
-        for (const plugin of transformPlugins) {
-            const ctx: TransformContext = { document };
-            await plugin.transform!(ctx);
+        // 5. RESOLVE phase
+        const resolvePlugins = sortPluginsForPhase(this.plugins.filter(p => p.resolve), 'resolve');
+        for (const res of results) {
+            for (const plugin of resolvePlugins) {
+                await plugin.resolve!({ document: res.doc, workspace: runtimeWorkspace });
+            }
         }
 
-        // =================================================================
-        // INDEX PHASE
-        // =================================================================
-        const indexPlugins = sortPluginsForPhase(
-            this.plugins.filter(p => p.index),
-            'index'
-        );
-        for (const plugin of indexPlugins) {
-            const ctx: IndexContext = { document };
-            await plugin.index!(ctx);
+        // 6. COMPUTE phase
+        const computePlugins = sortPluginsForPhase(this.plugins.filter(p => p.compute), 'compute');
+        for (const res of results) {
+            for (const plugin of computePlugins) {
+                await plugin.compute!({ document: res.doc, workspace: runtimeWorkspace });
+            }
         }
 
-        // =================================================================
-        // RESOLVE PHASE
-        // =================================================================
-        const resolvePlugins = sortPluginsForPhase(
-            this.plugins.filter(p => p.resolve),
-            'resolve'
-        );
-        for (const plugin of resolvePlugins) {
-            const ctx: ResolveContext = { document };
-            await plugin.resolve!(ctx);
+        // 7. RENDER phase
+        const renderPlugins = sortPluginsForPhase(this.plugins.filter(p => p.render), 'render');
+        for (const res of results) {
+            for (const plugin of renderPlugins) {
+                await plugin.render!({ document: res.doc, workspace: runtimeWorkspace });
+            }
         }
 
-        // =================================================================
-        // COMPUTE PHASE
-        // =================================================================
-        const computePlugins = sortPluginsForPhase(
-            this.plugins.filter(p => p.compute),
-            'compute'
-        );
-        for (const plugin of computePlugins) {
-            const ctx: ComputeContext = { document };
-            await plugin.compute!(ctx);
-        }
-
-        // =================================================================
-        // RENDER PHASE
-        // =================================================================
-        const renderPlugins = sortPluginsForPhase(
-            this.plugins.filter(p => p.render),
-            'render'
-        );
-        for (const plugin of renderPlugins) {
-            const ctx: RenderContext = { document };
-            await plugin.render!(ctx);
-        }
+        // Finalize: Convert runtime workspace to AST
+        const workspaceAST = finalizeWorkspace(runtimeWorkspace);
 
         return {
-            document,
+            workspace: workspaceAST,
             diagnostics,
-            hasErrors: diagnostics.some(d => d.severity === 'error'),
+            hasErrors: diagnostics.some(d => d.severity === 'error')
         };
     }
 }
+

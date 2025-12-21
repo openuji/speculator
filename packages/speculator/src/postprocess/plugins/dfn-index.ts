@@ -10,11 +10,8 @@
  */
 
 import type { Plugin, IndexContext } from '#src/pipeline/types';
-import type {
-    SpeculatorASTSchema as Document,
-    InlineDefinition,
-    IndexDefinitionEntry,
-} from '#src/types/ast.generated';
+import type { Document, InlineDefinition, IndexDefinitionEntry } from '#src/types/ast.generated';
+
 import { walkDocument } from '../walk-ast.js';
 
 /**

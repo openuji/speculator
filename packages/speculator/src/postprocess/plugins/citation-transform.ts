@@ -14,13 +14,14 @@
 
 import type { Plugin, TransformContext } from '#src/pipeline/types';
 import type {
-    SpeculatorASTSchema as Document,
+    Document,
     Section,
     Block,
     Inline,
     InlineText,
     InlineCite,
 } from '#src/types/ast.generated';
+
 import { normalizeTerm } from '#src/parse/normalize';
 
 /**

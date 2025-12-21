@@ -6,12 +6,13 @@ import { describe, it, expect } from 'vitest';
 import { dfnIndexPlugin } from '#src/postprocess/plugins/dfn-index';
 import { referenceResolvePlugin } from '#src/postprocess/plugins/reference-resolve';
 import type {
-    SpeculatorASTSchema as Document,
+    Document,
     Section,
     BlockParagraph,
     InlineDefinition,
     InlineReference,
 } from '#src/types/ast.generated';
+
 
 function createDocWithDfnAndRef(dfnTerm: string, refTerm: string): Document {
     return {

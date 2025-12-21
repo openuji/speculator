@@ -1,13 +1,20 @@
 ---
-import type { Block, Section, BlockHeading } from "@openuji/speculator";
+import type {
+    Block,
+    Section,
+    BlockHeading,
+    Workspace,
+} from "@openuji/speculator";
 import InlineRenderer from "./InlineRenderer.astro";
 import RecursiveBlockRenderer from "./BlockRenderer.astro";
 
 interface Props {
     node: Block | Section;
+    workspace?: Workspace;
+    documentPath?: string;
 }
 
-const { node } = Astro.props;
+const { node, workspace, documentPath } = Astro.props;
 
 // Helper to determine heading level for section
 type HeadingTagName = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -32,11 +39,19 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                         {node.heading && (
                             // @ts-ignore - Dynamic tag
                             <HeadingTag id={node.heading.id}>
-                                <InlineRenderer nodes={node.heading.children} />
+                                <InlineRenderer
+                                    nodes={node.heading.children}
+                                    workspace={workspace}
+                                    documentPath={documentPath}
+                                />
                             </HeadingTag>
                         )}
                         {node.children.map((child) => (
-                            <RecursiveBlockRenderer node={child} />
+                            <RecursiveBlockRenderer
+                                node={child}
+                                workspace={workspace}
+                                documentPath={documentPath}
+                            />
                         ))}
                     </section>
                 );
@@ -44,7 +59,11 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
             case "paragraph":
                 return (
                     <p id={node.id}>
-                        <InlineRenderer nodes={node.children} />
+                        <InlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </p>
                 );
 
@@ -52,7 +71,11 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                 const H = getHeadingTag(node);
                 return (
                     <H id={node.id}>
-                        <InlineRenderer nodes={node.children} />
+                        <InlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </H>
                 );
 
@@ -67,7 +90,11 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                 return (
                     <blockquote id={node.id}>
                         {node.children.map((child) => (
-                            <RecursiveBlockRenderer node={child} />
+                            <RecursiveBlockRenderer
+                                node={child}
+                                workspace={workspace}
+                                documentPath={documentPath}
+                            />
                         ))}
                     </blockquote>
                 );
@@ -81,7 +108,11 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                             <li>
                                 {/* ListItem children are Blocks */}
                                 {item.children.map((child) => (
-                                    <RecursiveBlockRenderer node={child} />
+                                    <RecursiveBlockRenderer
+                                        node={child}
+                                        workspace={workspace}
+                                        documentPath={documentPath}
+                                    />
                                 ))}
                             </li>
                         ))}
@@ -108,6 +139,8 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                                             >
                                                 <InlineRenderer
                                                     nodes={cell.children}
+                                                    workspace={workspace}
+                                                    documentPath={documentPath}
                                                 />
                                             </CellTag>
                                         );
@@ -132,7 +165,11 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                         )}
                         <div class="example-content">
                             {node.children.map((child) => (
-                                <RecursiveBlockRenderer node={child} />
+                                <RecursiveBlockRenderer
+                                    node={child}
+                                    workspace={workspace}
+                                    documentPath={documentPath}
+                                />
                             ))}
                         </div>
                     </div>
@@ -147,7 +184,11 @@ const getHeadingTag = (node: BlockHeading): HeadingTagName => {
                         <div class="note-header">{noteType.toUpperCase()}</div>
                         <div class="note-content">
                             {node.children.map((child) => (
-                                <RecursiveBlockRenderer node={child} />
+                                <RecursiveBlockRenderer
+                                    node={child}
+                                    workspace={workspace}
+                                    documentPath={documentPath}
+                                />
                             ))}
                         </div>
                     </aside>

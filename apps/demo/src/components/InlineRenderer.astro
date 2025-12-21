@@ -1,12 +1,15 @@
 ---
-import type { Inline } from "@openuji/speculator";
+import type { Inline, Workspace } from "@openuji/speculator";
 import RecursiveInlineRenderer from "./InlineRenderer.astro";
+import path from "path";
 
 interface Props {
     nodes: Inline[];
+    workspace?: Workspace;
+    documentPath?: string;
 }
 
-const { nodes } = Astro.props;
+const { nodes, workspace, documentPath } = Astro.props;
 ---
 
 {
@@ -18,14 +21,22 @@ const { nodes } = Astro.props;
             case "emphasis":
                 return (
                     <em>
-                        <RecursiveInlineRenderer nodes={node.children} />
+                        <RecursiveInlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </em>
                 );
 
             case "strong":
                 return (
                     <strong>
-                        <RecursiveInlineRenderer nodes={node.children} />
+                        <RecursiveInlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </strong>
                 );
 
@@ -35,7 +46,11 @@ const { nodes } = Astro.props;
             case "link":
                 return (
                     <a href={node.url} title={node.title || undefined}>
-                        <RecursiveInlineRenderer nodes={node.children} />
+                        <RecursiveInlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </a>
                 );
 
@@ -62,23 +77,53 @@ const { nodes } = Astro.props;
                         data-dfn-for={dfnFor || undefined}
                         data-dfn-type={dfnType !== "dfn" ? dfnType : undefined}
                     >
-                        <RecursiveInlineRenderer nodes={node.children} />
+                        <RecursiveInlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </dfn>
                 );
 
             case "reference":
                 // Render cross-reference
+                const targetId = (node as any).targetId;
+                let href = `#${targetId || ""}`;
+
+                if (workspace && targetId) {
+                    // Find which document contains this definition
+                    const targetDoc = workspace.documents.find((d) =>
+                        (d.indexes?.definitions || []).some(
+                            (def) => def.id === targetId,
+                        ),
+                    );
+
+                    if (targetDoc) {
+                        const targetFilePath = targetDoc.sourcePos?.file;
+                        if (targetFilePath && targetFilePath !== documentPath) {
+                            const pkg = path.basename(
+                                path.dirname(targetFilePath),
+                            );
+                            href = `/workspace/${pkg}#${targetId}`;
+                        }
+                    }
+                }
+
                 const xrefFor = (node as any).forContexts
                     ?.filter(Boolean)
                     .join(", ");
                 return (
                     <a
-                        href={`#${(node as any).targetId || ""}`}
+                        href={href}
                         class="xref"
                         data-xref-for={xrefFor || undefined}
                         title={(node as any).targetTerm}
                     >
-                        <RecursiveInlineRenderer nodes={node.children} />
+                        <RecursiveInlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </a>
                 );
 
@@ -93,7 +138,11 @@ const { nodes } = Astro.props;
                 return (
                     <cite class={citeClass} data-cite={cite.key}>
                         {cite.children ? (
-                            <RecursiveInlineRenderer nodes={cite.children} />
+                            <RecursiveInlineRenderer
+                                nodes={cite.children}
+                                workspace={workspace}
+                                documentPath={documentPath}
+                            />
                         ) : (
                             <>[{cite.key}]</>
                         )}
@@ -115,7 +164,11 @@ const { nodes } = Astro.props;
                         style="color: orange; border: 1px solid orange; padding: 2px; border-radius: 4px;"
                     >
                         Issue {node.id && `#${node.id}`}:{" "}
-                        <RecursiveInlineRenderer nodes={node.children} />
+                        <RecursiveInlineRenderer
+                            nodes={node.children}
+                            workspace={workspace}
+                            documentPath={documentPath}
+                        />
                     </span>
                 );
 
