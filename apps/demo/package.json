@@ -6,10 +6,16 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "vocab:core": "vocab-build build -i vocab/ujm-core.jsonld -o public/vocab -m core --mode ED",
+    "vocab:ui": "vocab-build build -i vocab/ujm-ui.jsonld -o public/vocab -m ui --mode ED",
+    "vocab:build": "pnpm vocab:core && pnpm vocab:ui",
+    "predev": "pnpm vocab:build",
+    "prebuild": "pnpm vocab:build"
   },
   "dependencies": {
     "@openuji/speculator": "workspace:*",
+    "@openuji/vocab-build": "workspace:*",
     "astro": "^5.16.4"
   }
 }
