@@ -1,0 +1,52 @@
+{
+    "name": "@openuji/vocab-build",
+    "version": "0.1.0",
+    "description": "Generate publishable semantic web vocabulary assets from JSON-LD schema source files",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "bin": {
+        "vocab-build": "dist/cli.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc && npm run postbuild",
+        "postbuild": "cp -r src/templates dist/",
+        "dev": "tsc --watch",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "keywords": [
+        "vocabulary",
+        "jsonld",
+        "rdf",
+        "turtle",
+        "semantic-web",
+        "ontology"
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "commander": "^12.0.0",
+        "n3": "^1.17.0",
+        "nunjucks": "^3.2.4",
+        "prettier": "^3.1.0",
+        "zod": "^3.22.0"
+    },
+    "devDependencies": {
+        "@types/n3": "^1.26.1",
+        "@types/node": "^20.10.0",
+        "@types/nunjucks": "^3.2.6",
+        "typescript": "^5.3.0",
+        "vitest": "^1.0.0"
+    }
+}
