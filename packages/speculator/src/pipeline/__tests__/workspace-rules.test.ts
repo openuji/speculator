@@ -1,17 +1,26 @@
+/**
+ * Workspace Hierarchical Rules Tests
+ * 
+ * NOTE: These tests are now obsolete as workspace validation has been moved
+ * to the standalone @openuji/speculator-lint package.
+ * 
+ * The core pipeline no longer performs validation - it only parses, indexes, and resolves.
+ * See @openuji/speculator-lint package for workspace rule validation tests.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { SpeculatorPipeline } from '../runner.js';
 import { corePlugins } from '../../postprocess/index.js';
 import { MemoryFileProvider } from '#src/file-provider/memory';
-import type { SpeculateDiagnostic } from '../types.js';
 
-describe('Workspace Hierarchical Rules', () => {
-    it('should error when a lower spec redefines concepts from a higher one', async () => {
+describe('Workspace Basic Functionality', () => {
+    it('should process workspace with multiple documents', async () => {
         const fileProvider = new MemoryFileProvider();
         fileProvider.setFile('/spec/high.html', `
             <dfn id="dfn-concept">Concept A</dfn>
         `);
         fileProvider.setFile('/spec/low.html', `
-            <dfn id="dfn-concept-redef">Concept A</dfn>
+            <p>Some content</p>
         `);
 
         const pipeline = new SpeculatorPipeline(corePlugins);
@@ -23,44 +32,11 @@ describe('Workspace Hierarchical Rules', () => {
             fileProvider
         });
 
-        expect(result.hasErrors).toBe(true);
-
-        const redefError = result.diagnostics.find((d: SpeculateDiagnostic) => d.code === 'redefinition-error');
-
-        expect(redefError).toBeDefined();
-        expect(redefError?.message).toContain('redefines concept "concept a"');
-
-        expect(redefError?.file).toBe('/spec/low.html');
+        expect(result.workspace).toBeDefined();
+        expect(result.workspace?.documents.length).toBe(2);
     });
 
-    it('should error when a higher spec depends on a lower one', async () => {
-        const fileProvider = new MemoryFileProvider();
-        fileProvider.setFile('/spec/high.html', `
-            <p>Reference to <a data-link-type="dfn">Concept B</a></p>
-        `);
-        fileProvider.setFile('/spec/low.html', `
-            <dfn id="dfn-concept-b">Concept B</dfn>
-        `);
-
-        const pipeline = new SpeculatorPipeline(corePlugins);
-        const result = await pipeline.runWorkspace({
-            entries: [
-                { entry: '/spec/high.html' },
-                { entry: '/spec/low.html' }
-            ],
-            fileProvider
-        });
-
-        expect(result.hasErrors).toBe(true);
-
-        const depError = result.diagnostics.find((d: SpeculateDiagnostic) => d.code === 'dependency-error');
-
-        expect(depError).toBeDefined();
-        expect(depError?.message).toContain('depends on lower-level spec "/spec/low.html"');
-        expect(depError?.file).toBe('/spec/high.html');
-    });
-
-    it('should allow lower specs to depend on higher ones', async () => {
+    it('should allow cross-document references', async () => {
         const fileProvider = new MemoryFileProvider();
         fileProvider.setFile('/spec/high.html', `
             <dfn id="dfn-concept-a">Concept A</dfn>
@@ -78,6 +54,7 @@ describe('Workspace Hierarchical Rules', () => {
             fileProvider
         });
 
-        expect(result.hasErrors).toBe(false);
+        expect(result.workspace).toBeDefined();
+        expect(result.workspace?.documents.length).toBe(2);
     });
 });

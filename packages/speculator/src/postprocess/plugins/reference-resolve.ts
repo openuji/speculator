@@ -134,23 +134,7 @@ export const referenceResolvePlugin: Plugin = {
                     const match = resolveReference(ref, index);
 
                     if (match) {
-                        // Check Rule 2: Higher specs MUST NOT depend on lower ones
-                        if (ctx.workspace) {
-                            const targetDocPath = match.sourcePos.file;
-                            const targetLevel = ctx.workspace.documentLevels.get(targetDocPath!) ?? 0;
-
-                            if (targetLevel > ctx.level) {
-                                ctx.diagnostics.push({
-                                    phase: 'resolve',
-                                    severity: 'error',
-                                    code: 'dependency-error',
-                                    message: `Higher-level spec "${ctx.document.sourcePos?.file}" depends on lower-level spec "${targetDocPath}" (term: "${match.term}").`,
-                                    file: ctx.document.sourcePos?.file,
-                                    sourcePos: ref.sourcePos
-                                });
-                            }
-                        }
-
+                        // Assign the resolved target ID
                         (ref as any).targetId = match.id;
                     }
                 }

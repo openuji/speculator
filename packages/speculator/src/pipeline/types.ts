@@ -71,7 +71,6 @@ export interface TransformContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
-    readonly diagnostics: SpeculateDiagnostic[];
 }
 
 
@@ -80,7 +79,6 @@ export interface IndexContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
-    readonly diagnostics: SpeculateDiagnostic[];
 }
 
 
@@ -89,7 +87,6 @@ export interface ResolveContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
-    readonly diagnostics: SpeculateDiagnostic[];
 }
 
 
@@ -98,7 +95,6 @@ export interface ComputeContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
-    readonly diagnostics: SpeculateDiagnostic[];
 }
 
 
@@ -107,7 +103,6 @@ export interface RenderContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
-    readonly diagnostics: SpeculateDiagnostic[];
 }
 
 
@@ -177,24 +172,5 @@ export interface SpeculateOptions {
 export interface SpeculateResult {
     /** The root Workspace AST */
     workspace?: Workspace;
-
-    /** Collected diagnostics */
-    diagnostics: SpeculateDiagnostic[];
-
-    /** Quick error check */
-    hasErrors: boolean;
-}
-
-
-/**
- * Diagnostic from any phase
- */
-export interface SpeculateDiagnostic {
-    phase: 'preprocess' | 'parse' | PostprocessPhase;
-    severity: 'error' | 'warning' | 'info';
-    code: string;
-    message: string;
-    file?: string;
-    sourcePos?: import('#src/types/ast.generated').SourcePos;
 }
 

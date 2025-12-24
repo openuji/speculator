@@ -5,6 +5,11 @@ import {
     NodeFileProvider,
     type Document,
 } from "@openuji/speculator";
+import {
+    SpeculatorLinter,
+    builtInRules,
+    recommendedConfig,
+} from "@openuji/speculator-lint";
 import BlockRenderer from "../../components/BlockRenderer.astro";
 import "../../styles/global.css";
 import path from "path";
@@ -44,6 +49,30 @@ if (!document) {
 }
 
 const config = document.metadata || {};
+
+// Run linter if workspace was successfully created
+let lintResult;
+if (workspace) {
+    // Build document levels map
+    const documentLevels = new Map<string, number>();
+    workspace.documents.forEach((doc, index) => {
+        const path = doc.sourcePos?.file || "";
+        if (path) {
+            documentLevels.set(path, index);
+        }
+    });
+
+    // Create and run linter
+    const linter = new SpeculatorLinter(builtInRules);
+    lintResult = await linter.lint({
+        workspace,
+        documentLevels,
+        config: recommendedConfig,
+    });
+}
+
+// Combine pipeline and lint diagnostics
+const allDiagnostics = lintResult?.diagnostics || [];
 ---
 
 <html lang="en">
@@ -72,11 +101,17 @@ const config = document.metadata || {};
                 </div>
 
                 {
-                    result.diagnostics.length > 0 && (
+                    allDiagnostics.length > 0 && (
                         <section class="diagnostics">
-                            <h2>Diagnostics</h2>
+                            <h2>Diagnostics ({allDiagnostics.length})</h2>
+                            {lintResult && (
+                                <p class="lint-info">
+                                    ✓ Lint validation:{" "}
+                                    {lintResult.totalTime.toFixed(2)}ms
+                                </p>
+                            )}
                             <ul>
-                                {result.diagnostics.map((d) => (
+                                {allDiagnostics.map((d) => (
                                     <li class={d.severity}>
                                         <strong>[{d.code}]</strong> {d.message}
                                         {d.file && (

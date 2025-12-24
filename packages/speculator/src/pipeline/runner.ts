@@ -14,7 +14,6 @@ import type {
     Plugin,
     PostprocessPhase,
     SpeculateResult,
-    SpeculateDiagnostic,
     TransformContext,
     IndexContext,
     ResolveContext,
@@ -90,7 +89,6 @@ export class SpeculatorPipeline {
         entries: { entry: string; configPath?: string }[];
         fileProvider: FileProvider;
     }): Promise<SpeculateResult> {
-        const diagnostics: SpeculateDiagnostic[] = [];
         const results: { doc: Document; entry: string }[] = [];
 
         // 1. Initial run: Preprocess + Parse
@@ -101,29 +99,18 @@ export class SpeculatorPipeline {
                 fileProvider: options.fileProvider,
             });
 
-            for (const d of preprocessResult.diagnostics) {
-                diagnostics.push({ phase: 'preprocess', ...d } as SpeculateDiagnostic);
-            }
-
             if (!preprocessResult.result) continue;
 
             const registry = new ParseHandlerRegistry();
             registerCoreParsers(registry);
             const parseResult = parseWithRegistry(preprocessResult.result, registry);
 
-            for (const d of parseResult.diagnostics) {
-                diagnostics.push({ phase: 'parse', ...d } as SpeculateDiagnostic);
-            }
-
             if (!parseResult.result) continue;
             results.push({ doc: parseResult.result.document, entry: entryConfig.entry });
         }
 
         if (results.length === 0) {
-            return {
-                diagnostics,
-                hasErrors: true
-            };
+            return {};
         }
 
         const runtimeWorkspace: RuntimeWorkspace = {
@@ -140,7 +127,7 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of transformPlugins) {
-                await plugin.transform!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
+                await plugin.transform!({ document: res.doc, level, workspace: runtimeWorkspace });
             }
         }
 
@@ -151,23 +138,19 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of indexPlugins) {
-                await plugin.index!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
+                await plugin.index!({ document: res.doc, level, workspace: runtimeWorkspace });
             }
         }
 
         // 4. AGGREGATE Global Index
-        const indexResult = buildGlobalIndex(runtimeWorkspace.documents, runtimeWorkspace.documentLevels);
-        runtimeWorkspace.globalIndex = indexResult.index;
-        for (const d of indexResult.diagnostics) {
-            diagnostics.push({ phase: 'index', ...d } as SpeculateDiagnostic);
-        }
+        runtimeWorkspace.globalIndex = buildGlobalIndex(runtimeWorkspace.documents, runtimeWorkspace.documentLevels);
 
         // 5. RESOLVE phase
         const resolvePlugins = sortPluginsForPhase(this.plugins.filter(p => p.resolve), 'resolve');
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of resolvePlugins) {
-                await plugin.resolve!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
+                await plugin.resolve!({ document: res.doc, level, workspace: runtimeWorkspace });
             }
         }
 
@@ -176,7 +159,7 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of computePlugins) {
-                await plugin.compute!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
+                await plugin.compute!({ document: res.doc, level, workspace: runtimeWorkspace });
             }
         }
 
@@ -185,7 +168,7 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of renderPlugins) {
-                await plugin.render!({ document: res.doc, level, workspace: runtimeWorkspace, diagnostics });
+                await plugin.render!({ document: res.doc, level, workspace: runtimeWorkspace });
             }
         }
 
@@ -195,9 +178,7 @@ export class SpeculatorPipeline {
         const workspaceAST = finalizeWorkspace(runtimeWorkspace);
 
         return {
-            workspace: workspaceAST,
-            diagnostics,
-            hasErrors: diagnostics.some(d => d.severity === 'error')
+            workspace: workspaceAST
         };
     }
 }

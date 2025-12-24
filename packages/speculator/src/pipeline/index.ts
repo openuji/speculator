@@ -10,7 +10,7 @@ import { SpeculatorPipeline } from './runner.js';
 import type { SpeculateOptions, SpeculateResult, Plugin, Phase, PostprocessPhase } from './types.js';
 
 // Re-export types
-export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult, SpeculateDiagnostic, Workspace } from './types.js';
+export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult, Workspace } from './types.js';
 
 export { SpeculatorPipeline } from './runner.js';
 export { PHASES, POSTPROCESS_PHASES } from './types.js';

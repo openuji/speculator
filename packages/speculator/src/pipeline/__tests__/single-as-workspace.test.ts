@@ -13,7 +13,6 @@ describe('Single document as workspace', () => {
             fileProvider
         });
 
-        expect(result.hasErrors).toBe(false);
         expect(result.workspace).toBeDefined();
         expect(result.workspace?.type).toBe('workspace');
         expect(result.workspace?.documents.length).toBe(1);

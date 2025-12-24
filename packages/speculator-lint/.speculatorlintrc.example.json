@@ -1,0 +1,9 @@
+{
+    "extends": [
+        "recommended"
+    ],
+    "rules": {
+        "workspace/no-redefinition": "error",
+        "workspace/no-reverse-dependency": "error"
+    }
+}

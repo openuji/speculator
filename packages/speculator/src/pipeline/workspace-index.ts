@@ -5,30 +5,19 @@ import type {
     RuntimeGlobalIndex,
     RuntimeWorkspace,
     Workspace,
-    GlobalIndexAST,
-    SpeculateDiagnostic
+    GlobalIndexAST
 } from './types.js';
 import { normalizeTerm } from '#src/parse/normalize';
 
 /**
- * Result of building a global index
- */
-export interface GlobalIndexResult {
-    index: RuntimeGlobalIndex;
-    diagnostics: Omit<SpeculateDiagnostic, 'phase'>[];
-}
-
-/**
  * Build a global index from a collection of documents.
- * Hierarchical rules: lower specs MUST NOT redefine concepts from higher ones.
  */
 export function buildGlobalIndex(
     documents: Map<string, Document>,
     documentLevels: Map<string, number>
-): GlobalIndexResult {
+): RuntimeGlobalIndex {
     const definitions = new Map<string, IndexDefinitionEntry[]>();
     const bibliography = new Map<string, IndexBiblioEntry>();
-    const diagnostics: Omit<SpeculateDiagnostic, 'phase'>[] = [];
 
     for (const [docPath, doc] of documents) {
         // Aggregate definitions
@@ -42,24 +31,7 @@ export function buildGlobalIndex(
                     const key = normalizeTerm(term);
                     const existing = definitions.get(key) || [];
 
-                    // Check Rule 1: Lower specs MUST NOT redefine concepts from higher ones
-                    if (existing.length > 0) {
-                        const higherEntry = existing[0];
-                        const higherDocPath = higherEntry.sourcePos.file;
-                        const higherLevel = documentLevels.get(higherDocPath!) ?? 0;
-                        const currentLevel = documentLevels.get(docPath) ?? 0;
-
-                        if (currentLevel > higherLevel) {
-                            diagnostics.push({
-                                severity: 'error',
-                                code: 'redefinition-error',
-                                message: `Lower-level spec "${docPath}" redefines concept "${term}" defined in higher-level spec "${higherDocPath}".`,
-                                file: docPath,
-                                sourcePos: entry.sourcePos
-                            });
-                        }
-                    }
-
+                    // Add entry to definitions
                     existing.push(entry);
                     definitions.set(key, existing);
                 }
@@ -77,11 +49,8 @@ export function buildGlobalIndex(
     }
 
     return {
-        index: {
-            definitions,
-            bibliography,
-        },
-        diagnostics
+        definitions,
+        bibliography,
     };
 }
 

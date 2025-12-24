@@ -14,7 +14,7 @@ export * from './types/ast.generated.js';
 
 // Pipeline (Single Entrypoint)
 export { speculate, SpeculatorPipeline, PHASES, POSTPROCESS_PHASES } from './pipeline/index.js';
-export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult, SpeculateDiagnostic } from './pipeline/types.js';
+export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult } from './pipeline/types.js';
 
 // Postprocess Plugins
 export {

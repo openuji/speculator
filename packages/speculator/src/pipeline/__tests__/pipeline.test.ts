@@ -18,7 +18,6 @@ describe('speculate', () => {
             fileProvider,
         });
 
-        expect(result.hasErrors).toBe(false);
         expect(result.workspace?.documents[0].type).toBe('document');
         expect(result.workspace?.documents[0].children.length).toBeGreaterThan(0);
 
@@ -40,7 +39,6 @@ describe('speculate', () => {
             fileProvider,
         });
 
-        expect(result.hasErrors).toBe(false);
         expect(result.workspace?.documents[0].metadata?.title).toBe('Test Spec');
 
     });
@@ -61,24 +59,10 @@ describe('speculate', () => {
             fileProvider,
         });
 
-        expect(result.hasErrors).toBe(false);
         const section = result.workspace?.documents[0].children[0] as any;
         expect(section.type).toBe('section');
         expect(section.id).toBe('abstract');
 
-    });
-
-    it('collects diagnostics from preprocess phase', async () => {
-        const fileProvider = new MemoryFileProvider({});
-
-        const result = await speculate({
-            entry: '/spec/nonexistent.md',
-            plugins: [],
-            fileProvider,
-        });
-
-        expect(result.hasErrors).toBe(true);
-        expect(result.diagnostics.some(d => d.phase === 'preprocess')).toBe(true);
     });
 
     it('works with includes', async () => {
@@ -93,7 +77,6 @@ describe('speculate', () => {
             fileProvider,
         });
 
-        expect(result.hasErrors).toBe(false);
         // Check that content from both files is present
         const doc = result.workspace?.documents[0];
         expect(doc?.children.length).toBeGreaterThan(0);
