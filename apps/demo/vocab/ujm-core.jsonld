@@ -1,0 +1,119 @@
+{
+    "module": "core",
+    "namespace": "http://localhost:4321/vocab/ns#",
+    "docBase": "http://localhost:4321/vocab/ns",
+    "title": "User Journey Map Core Vocabulary",
+    "description": "Core vocabulary for defining user journey maps in a structured, machine-readable format. Enables semantic representation of user journeys, steps, and transitions.",
+    "status": "ED",
+    "updated": "2025-12-23",
+    "terms": [
+        {
+            "id": "Journey",
+            "kind": "Class",
+            "label": "Journey",
+            "comment": "A complete user journey consisting of multiple steps and transitions. Represents the overall flow of a user's interaction with a system or service."
+        },
+        {
+            "id": "Step",
+            "kind": "Class",
+            "label": "Step",
+            "comment": "A single step or touchpoint in a user journey. Represents a discrete action, state, or interaction point that a user experiences."
+        },
+        {
+            "id": "Transition",
+            "kind": "Class",
+            "label": "Transition",
+            "comment": "A transition between two steps in a journey. Defines the flow and connection between different user journey steps."
+        },
+        {
+            "id": "start",
+            "kind": "Property",
+            "label": "start",
+            "comment": "The starting step of a journey. References the initial entry point for the user journey.",
+            "domain": "http://localhost:4321/vocab/ns/index.html#Journey",
+            "range": "http://localhost:4321/vocab/ns/index.html#Step"
+        },
+        {
+            "id": "steps",
+            "kind": "Property",
+            "label": "steps",
+            "comment": "The collection of steps in a journey. Contains all discrete touchpoints that make up the complete user journey.",
+            "domain": "http://localhost:4321/vocab/ns/index.html#Journey",
+            "range": "http://localhost:4321/vocab/ns/index.html#Step"
+        },
+        {
+            "id": "transitions",
+            "kind": "Property",
+            "label": "transitions",
+            "comment": "The collection of transitions between steps. Defines the flow connections within the journey.",
+            "domain": "http://localhost:4321/vocab/ns/index.html#Journey",
+            "range": "http://localhost:4321/vocab/ns/index.html#Transition"
+        },
+        {
+            "id": "from",
+            "kind": "Property",
+            "label": "from",
+            "comment": "The source step of a transition. References the step where the transition originates.",
+            "domain": "http://localhost:4321/vocab/ns/index.html#Transition",
+            "range": "http://localhost:4321/vocab/ns/index.html#Step"
+        },
+        {
+            "id": "to",
+            "kind": "Property",
+            "label": "to",
+            "comment": "The target step of a transition. References the step where the transition leads.",
+            "domain": "http://localhost:4321/vocab/ns/index.html#Transition",
+            "range": "http://localhost:4321/vocab/ns/index.html#Step"
+        },
+        {
+            "id": "label",
+            "kind": "Property",
+            "label": "label",
+            "comment": "A human-readable label for a journey element. Provides a short, descriptive name for steps or transitions.",
+            "range": "http://www.w3.org/2001/XMLSchema#string"
+        },
+        {
+            "id": "description",
+            "kind": "Property",
+            "label": "description",
+            "comment": "A detailed description of a journey element. Provides extended context and information about steps, transitions, or the journey itself.",
+            "range": "http://www.w3.org/2001/XMLSchema#string"
+        }
+    ],
+    "context": {
+        "Journey": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#Journey",
+            "@type": "@id"
+        },
+        "Step": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#Step",
+            "@type": "@id"
+        },
+        "Transition": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#Transition",
+            "@type": "@id"
+        },
+        "start": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#start",
+            "@type": "@id"
+        },
+        "steps": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#steps",
+            "@container": "@set"
+        },
+        "transitions": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#transitions",
+            "@container": "@set"
+        },
+        "from": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#from",
+            "@type": "@id"
+        },
+        "to": {
+            "@id": "http://localhost:4321/vocab/ns/index.html#to",
+            "@type": "@id"
+        },
+        "label": "http://localhost:4321/vocab/ns/index.html#label",
+        "description": "http://localhost:4321/vocab/ns/index.html#description"
+    }
+}

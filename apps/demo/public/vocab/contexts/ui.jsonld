@@ -1,0 +1,36 @@
+{
+  "@context": {
+    "@version": 0.1,
+    "CanvasViewport": {
+      "@id": "http://localhost:4321/vocab/ui/index.html#CanvasViewport",
+      "@type": "@id"
+    },
+    "color": "http://localhost:4321/vocab/ui/index.html#color",
+    "EdgeStyle": {
+      "@id": "http://localhost:4321/vocab/ui/index.html#EdgeStyle",
+      "@type": "@id"
+    },
+    "NodePosition": {
+      "@id": "http://localhost:4321/vocab/ui/index.html#NodePosition",
+      "@type": "@id"
+    },
+    "position": "http://localhost:4321/vocab/ui/index.html#position",
+    "style": "http://localhost:4321/vocab/ui/index.html#style",
+    "width": {
+      "@id": "http://localhost:4321/vocab/ui/index.html#width",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+    "x": {
+      "@id": "http://localhost:4321/vocab/ui/index.html#x",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+    "y": {
+      "@id": "http://localhost:4321/vocab/ui/index.html#y",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+    "zoom": {
+      "@id": "http://localhost:4321/vocab/ui/index.html#zoom",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    }
+  }
+}

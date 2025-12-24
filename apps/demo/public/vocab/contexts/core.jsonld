@@ -1,0 +1,39 @@
+{
+  "@context": {
+    "@version": 0.1,
+    "description": "http://localhost:4321/vocab/ns/index.html#description",
+    "from": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#from",
+      "@type": "@id"
+    },
+    "Journey": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#Journey",
+      "@type": "@id"
+    },
+    "label": "http://localhost:4321/vocab/ns/index.html#label",
+    "start": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#start",
+      "@type": "@id"
+    },
+    "Step": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#Step",
+      "@type": "@id"
+    },
+    "steps": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#steps",
+      "@container": "@set"
+    },
+    "to": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#to",
+      "@type": "@id"
+    },
+    "Transition": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#Transition",
+      "@type": "@id"
+    },
+    "transitions": {
+      "@id": "http://localhost:4321/vocab/ns/index.html#transitions",
+      "@container": "@set"
+    }
+  }
+}

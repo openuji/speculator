@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Journey Map UI Vocabulary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f9f9f9;
+        }
+
+        header {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-tr {
+            background: #27ae60;
+            color: white;
+        }
+
+        .badge-ed {
+            background: #f39c12;
+            color: white;
+        }
+
+        .badge-deprecated {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        main {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .term-id {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .term-iri {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+
+        .copy-btn {
+            cursor: pointer;
+            color: #3498db;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            text-decoration: underline;
+        }
+
+        .copy-btn:hover {
+            color: #2980b9;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 0.125rem 0.25rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            table {
+                font-size: 0.875rem;
+            }
+
+            th,
+            td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>User Journey Map UI Vocabulary</h1>
+        <p>UI-specific vocabulary for visual representation and interactive manipulation of user journey maps in graphical editors.</p>
+        <div class="meta">
+            <span class="badge badge-ed">Editor's Draft</span>
+            <span>Last Updated: 2025-12-23</span>
+            <span>Namespace: <code>http://localhost:4321/vocab/ui/index.html#</code></span>
+        </div>
+    </header>
+
+    <main>
+        <section id="classes">
+            <h2>Classes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Term</th>
+                        <th>Label</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="CanvasViewport">
+                        <td>
+                            <div class="term-id">CanvasViewport</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#CanvasViewport
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#CanvasViewport')">copy</span>
+                            </div>
+                        </td>
+                        <td>Canvas Viewport</td>
+                        <td>
+                            Viewport state for the journey map canvas. Tracks zoom level and pan position for the visual editor.
+                        </td>
+                    </tr>
+                    <tr id="EdgeStyle">
+                        <td>
+                            <div class="term-id">EdgeStyle</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#EdgeStyle
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#EdgeStyle')">copy</span>
+                            </div>
+                        </td>
+                        <td>Edge Style</td>
+                        <td>
+                            Visual styling for edges (transitions) in the journey map. Controls appearance such as color, width, and line type.
+                        </td>
+                    </tr>
+                    <tr id="NodePosition">
+                        <td>
+                            <div class="term-id">NodePosition</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#NodePosition
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#NodePosition')">copy</span>
+                            </div>
+                        </td>
+                        <td>Node Position</td>
+                        <td>
+                            Visual position of a node (step) in the journey map canvas. Defines the x,y coordinates for rendering.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="properties">
+            <h2>Properties</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Term</th>
+                        <th>Label</th>
+                        <th>Description</th>
+                        <th>Domain</th>
+                        <th>Range</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="color">
+                        <td>
+                            <div class="term-id">color</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#color
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#color')">copy</span>
+                            </div>
+                        </td>
+                        <td>color</td>
+                        <td>
+                            Color value for edge styling (e.g., hex color code).
+                        </td>
+                        <td>http://localhost:4321/vocab/ui/index.html#EdgeStyle</td>
+                        <td>http://www.w3.org/2001/XMLSchema#string</td>
+                    </tr>
+                    <tr id="position">
+                        <td>
+                            <div class="term-id">position</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#position
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#position')">copy</span>
+                            </div>
+                        </td>
+                        <td>position</td>
+                        <td>
+                            The visual position of a step node in the canvas coordinate system.
+                        </td>
+                        <td>http://localhost:4321/vocab/ns#Step</td>
+                        <td>http://localhost:4321/vocab/ui/index.html#NodePosition</td>
+                    </tr>
+                    <tr id="style">
+                        <td>
+                            <div class="term-id">style</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#style
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#style')">copy</span>
+                            </div>
+                        </td>
+                        <td>style</td>
+                        <td>
+                            The visual styling applied to a transition edge.
+                        </td>
+                        <td>http://localhost:4321/vocab/ns#Transition</td>
+                        <td>http://localhost:4321/vocab/ui/index.html#EdgeStyle</td>
+                    </tr>
+                    <tr id="width">
+                        <td>
+                            <div class="term-id">width</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#width
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#width')">copy</span>
+                            </div>
+                        </td>
+                        <td>width</td>
+                        <td>
+                            Line width for edge rendering in pixels.
+                        </td>
+                        <td>http://localhost:4321/vocab/ui/index.html#EdgeStyle</td>
+                        <td>http://www.w3.org/2001/XMLSchema#decimal</td>
+                    </tr>
+                    <tr id="x">
+                        <td>
+                            <div class="term-id">x</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#x
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#x')">copy</span>
+                            </div>
+                        </td>
+                        <td>x</td>
+                        <td>
+                            X coordinate of a node position in the canvas.
+                        </td>
+                        <td>http://localhost:4321/vocab/ui/index.html#NodePosition</td>
+                        <td>http://www.w3.org/2001/XMLSchema#decimal</td>
+                    </tr>
+                    <tr id="y">
+                        <td>
+                            <div class="term-id">y</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#y
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#y')">copy</span>
+                            </div>
+                        </td>
+                        <td>y</td>
+                        <td>
+                            Y coordinate of a node position in the canvas.
+                        </td>
+                        <td>http://localhost:4321/vocab/ui/index.html#NodePosition</td>
+                        <td>http://www.w3.org/2001/XMLSchema#decimal</td>
+                    </tr>
+                    <tr id="zoom">
+                        <td>
+                            <div class="term-id">zoom</div>
+                            <div class="term-iri">
+                                http://localhost:4321/vocab/ui/index.html#zoom
+                                <span class="copy-btn"
+                                    onclick="copyToClipboard('http://localhost:4321/vocab/ui/index.html#zoom')">copy</span>
+                            </div>
+                        </td>
+                        <td>zoom</td>
+                        <td>
+                            Zoom level of the canvas viewport (1.0 = 100%).
+                        </td>
+                        <td>http://localhost:4321/vocab/ui/index.html#CanvasViewport</td>
+                        <td>http://www.w3.org/2001/XMLSchema#decimal</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied: ' + text);
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <http://localhost:4321/vocab/ns#>.
+
+<http://localhost:4321/vocab/ns> a owl:Ontology;
+    rdfs:label "User Journey Map Core Vocabulary";
+    rdfs:comment "Core vocabulary for defining user journey maps in a structured, machine-readable format. Enables semantic representation of user journeys, steps, and transitions.".
+:Journey a rdfs:Class;
+    rdfs:label "Journey";
+    rdfs:comment "A complete user journey consisting of multiple steps and transitions. Represents the overall flow of a user's interaction with a system or service.".
+:Step a rdfs:Class;
+    rdfs:label "Step";
+    rdfs:comment "A single step or touchpoint in a user journey. Represents a discrete action, state, or interaction point that a user experiences.".
+:Transition a rdfs:Class;
+    rdfs:label "Transition";
+    rdfs:comment "A transition between two steps in a journey. Defines the flow and connection between different user journey steps.".
+:start a rdf:Property;
+    rdfs:label "start";
+    rdfs:comment "The starting step of a journey. References the initial entry point for the user journey.";
+    rdfs:domain <http://localhost:4321/vocab/ns/index.html#Journey>;
+    rdfs:range <http://localhost:4321/vocab/ns/index.html#Step>.
+:steps a rdf:Property;
+    rdfs:label "steps";
+    rdfs:comment "The collection of steps in a journey. Contains all discrete touchpoints that make up the complete user journey.";
+    rdfs:domain <http://localhost:4321/vocab/ns/index.html#Journey>;
+    rdfs:range <http://localhost:4321/vocab/ns/index.html#Step>.
+:transitions a rdf:Property;
+    rdfs:label "transitions";
+    rdfs:comment "The collection of transitions between steps. Defines the flow connections within the journey.";
+    rdfs:domain <http://localhost:4321/vocab/ns/index.html#Journey>;
+    rdfs:range <http://localhost:4321/vocab/ns/index.html#Transition>.
+:from a rdf:Property;
+    rdfs:label "from";
+    rdfs:comment "The source step of a transition. References the step where the transition originates.";
+    rdfs:domain <http://localhost:4321/vocab/ns/index.html#Transition>;
+    rdfs:range <http://localhost:4321/vocab/ns/index.html#Step>.
+:to a rdf:Property;
+    rdfs:label "to";
+    rdfs:comment "The target step of a transition. References the step where the transition leads.";
+    rdfs:domain <http://localhost:4321/vocab/ns/index.html#Transition>;
+    rdfs:range <http://localhost:4321/vocab/ns/index.html#Step>.
+:label a rdf:Property;
+    rdfs:label "label";
+    rdfs:comment "A human-readable label for a journey element. Provides a short, descriptive name for steps or transitions.";
+    rdfs:range xsd:string.
+:description a rdf:Property;
+    rdfs:label "description";
+    rdfs:comment "A detailed description of a journey element. Provides extended context and information about steps, transitions, or the journey itself.";
+    rdfs:range xsd:string.
