@@ -13,7 +13,6 @@ import type {
 import type {
     LintRule,
     LintContext,
-    LintVisitor,
     LintDiagnostic,
     RuleResult
 } from './types.js';
@@ -121,16 +120,16 @@ function collectReferences(document: Document): InlineReference[] {
     const references: InlineReference[] = [];
 
     // Walk through nodes recursively
-    function walkNode(node: any): void {
-        if (!node) return;
+    function walkNode(node: unknown): void {
+        if (!node || typeof node !== 'object') return;
 
         // Check if this is a reference node
-        if (node.type === 'reference') {
+        if ('type' in node && node.type === 'reference') {
             references.push(node as InlineReference);
         }
 
         // Walk children array (for inline elements, blocks, sections)
-        if (Array.isArray(node.children)) {
+        if ('children' in node && Array.isArray(node.children)) {
             for (const child of node.children) {
                 walkNode(child);
             }
@@ -154,7 +153,9 @@ function resolveReference(
     ref: InlineReference,
     index: Map<string, IndexDefinitionEntry[]>
 ): IndexDefinitionEntry | null {
-    const candidateTerms = (ref as any).candidateTerms || [ref.targetTerm];
+    const candidateTerms = 'candidateTerms' in ref && Array.isArray(ref.candidateTerms)
+        ? ref.candidateTerms
+        : [ref.targetTerm];
 
     for (const term of candidateTerms) {
         const key = normalizeTerm(term);

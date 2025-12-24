@@ -1,6 +1,6 @@
 import { readFile, writeFile, mkdir, access } from 'fs/promises';
 import { join, dirname } from 'path';
-import { VocabSourceSchema, validateVocabSource, validateBuildConfig } from './model.js';
+import { VocabSourceSchema, BuildConfigSchema, validateVocabSource, validateBuildConfig } from './model.js';
 import type { BuildConfig, VocabSource } from './model.js';
 import { generateContext, formatContext } from './generate/context.js';
 import { generateTurtle } from './generate/turtle.js';
@@ -18,11 +18,14 @@ export interface BuildResult {
  */
 export async function buildVocab(config: BuildConfig): Promise<BuildResult> {
     try {
+        // Parse config to apply defaults
+        const parsedConfig = BuildConfigSchema.parse(config);
+
         // Validate configuration
-        validateBuildConfig(config);
+        validateBuildConfig(parsedConfig);
 
         // Load and parse source file
-        const sourceContent = await readFile(config.input, 'utf-8');
+        const sourceContent = await readFile(parsedConfig.input, 'utf-8');
         const sourceData = JSON.parse(sourceContent);
         const source = VocabSourceSchema.parse(sourceData);
 
@@ -30,18 +33,18 @@ export async function buildVocab(config: BuildConfig): Promise<BuildResult> {
         validateVocabSource(source);
 
         // Determine version
-        const version = config.mode === 'TR' ? (config.version || source.version) : undefined;
+        const version = parsedConfig.mode === 'TR' ? (parsedConfig.version || source.version) : undefined;
 
         // Check TR immutability
-        if (config.mode === 'TR' && version && !config.force) {
-            await checkTRImmutability(config.output, source.module, version);
+        if (parsedConfig.mode === 'TR' && version && !parsedConfig.force) {
+            await checkTRImmutability(parsedConfig.output, source.module, version);
         }
 
         // Generate assets
         const contextObj = generateContext(source);
         const contextJson = await formatContext(contextObj);
-        const turtle = generateTurtle(source, { mode: config.mode, version });
-        const html = generateHTML(source, { mode: config.mode, version, baseUrl: config.baseUrl });
+        const turtle = generateTurtle(source, { mode: parsedConfig.mode, version });
+        const html = generateHTML(source, { mode: parsedConfig.mode, version, baseUrl: parsedConfig.baseUrl });
 
         // Determine output paths
         const files: string[] = [];
@@ -49,7 +52,7 @@ export async function buildVocab(config: BuildConfig): Promise<BuildResult> {
         const turtleFilename = `${pathPrefix}.ttl`;
 
         // Write latest versions
-        const latestDir = join(config.output, pathPrefix);
+        const latestDir = join(parsedConfig.output, pathPrefix);
         await ensureDir(latestDir);
 
         await writeFile(join(latestDir, 'index.html'), html);
@@ -58,19 +61,19 @@ export async function buildVocab(config: BuildConfig): Promise<BuildResult> {
         await writeFile(join(latestDir, turtleFilename), turtle);
         files.push(join(latestDir, turtleFilename));
 
-        const contextsDir = join(config.output, 'contexts');
+        const contextsDir = join(parsedConfig.output, 'contexts');
         await ensureDir(contextsDir);
         await writeFile(join(contextsDir, `${source.module}.jsonld`), contextJson);
         files.push(join(contextsDir, `${source.module}.jsonld`));
 
         // Write ED or TR versions
-        if (config.mode === 'ED') {
-            const edDir = join(config.output, 'ED', source.module);
+        if (parsedConfig.mode === 'ED') {
+            const edDir = join(parsedConfig.output, 'ED', source.module);
             await ensureDir(edDir);
             await writeFile(join(edDir, 'index.html'), html);
             files.push(join(edDir, 'index.html'));
-        } else if (config.mode === 'TR' && version) {
-            const trDir = join(config.output, 'TR', source.module, version);
+        } else if (parsedConfig.mode === 'TR' && version) {
+            const trDir = join(parsedConfig.output, 'TR', source.module, version);
             await ensureDir(trDir);
 
             await writeFile(join(trDir, 'index.html'), html);
@@ -84,24 +87,24 @@ export async function buildVocab(config: BuildConfig): Promise<BuildResult> {
         }
 
         // Generate redirects if configured
-        if (config.redirects && config.redirects !== 'none') {
+        if (parsedConfig.redirects && parsedConfig.redirects !== 'none') {
             const redirectContent = generateRedirects({
-                type: config.redirects,
+                type: parsedConfig.redirects,
                 module: source.module,
                 latestVersion: version,
-                baseUrl: config.baseUrl,
+                baseUrl: parsedConfig.baseUrl,
             });
 
             if (redirectContent) {
                 const redirectFile =
-                    config.redirects === 'netlify'
+                    parsedConfig.redirects === 'netlify'
                         ? '_redirects'
-                        : config.redirects === 'cloudflare'
+                        : parsedConfig.redirects === 'cloudflare'
                             ? '_redirects.json'
                             : 'redirects.json';
 
-                await writeFile(join(config.output, redirectFile), redirectContent);
-                files.push(join(config.output, redirectFile));
+                await writeFile(join(parsedConfig.output, redirectFile), redirectContent);
+                files.push(join(parsedConfig.output, redirectFile));
             }
         }
 

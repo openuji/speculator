@@ -13,7 +13,7 @@ import type { Workspace } from '@openuji/speculator';
 import { SpeculatorLinter } from './linter.js';
 import { builtInRules } from './rules/index.js';
 import { loadConfig, loadConfigFromDefaults, recommendedConfig } from './config.js';
-import type { LintConfig } from './types.js';
+import type { LintConfig, LintDiagnostic } from './types.js';
 
 interface CliArgs {
     workspacePath: string;
@@ -59,7 +59,7 @@ Examples:
 `);
 }
 
-function formatDiagnostic(diagnostic: any): string {
+function formatDiagnostic(diagnostic: LintDiagnostic): string {
     const severity = diagnostic.severity.toUpperCase();
     const code = diagnostic.code;
     const file = diagnostic.file || '<unknown>';

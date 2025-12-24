@@ -54,7 +54,7 @@ export const VocabSourceSchema = z.object({
 });
 
 /**
- * Build configuration schema
+ * Build configuration schema (for input validation and parsing)
  */
 export const BuildConfigSchema = z.object({
     input: z.string(),
@@ -62,11 +62,11 @@ export const BuildConfigSchema = z.object({
     module: z.enum(['core', 'ui']),
     mode: z.enum(['ED', 'TR']),
     version: z.string().optional(),
-    force: z.boolean().optional().default(false),
+    force: z.boolean().default(false),
     baseUrl: z.string().url().optional(),
-    git: z.boolean().optional().default(false),
-    redirects: z.enum(['none', 'netlify', 'cloudflare', 'json']).optional().default('netlify'),
-    strict: z.boolean().optional().default(false),
+    git: z.boolean().default(false),
+    redirects: z.enum(['none', 'netlify', 'cloudflare', 'json']).default('netlify'),
+    strict: z.boolean().default(false),
 });
 
 // Export TypeScript types
@@ -74,7 +74,22 @@ export type Example = z.infer<typeof ExampleSchema>;
 export type TermDefinition = z.infer<typeof TermDefinitionSchema>;
 export type ContextMapping = z.infer<typeof ContextMappingSchema>;
 export type VocabSource = z.infer<typeof VocabSourceSchema>;
-export type BuildConfig = z.infer<typeof BuildConfigSchema>;
+
+/**
+ * Build configuration type - input type allows optional fields with defaults
+ */
+export type BuildConfig = {
+    input: string;
+    output?: string;
+    module: 'core' | 'ui';
+    mode: 'ED' | 'TR';
+    version?: string;
+    force?: boolean;
+    baseUrl?: string;
+    git?: boolean;
+    redirects?: 'none' | 'netlify' | 'cloudflare' | 'json';
+    strict?: boolean;
+};
 
 /**
  * Validate that TR mode requires a version

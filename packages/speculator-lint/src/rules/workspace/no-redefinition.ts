@@ -10,7 +10,6 @@
  */
 
 import type { LintRule, LintContext } from '../../types.js';
-import { normalizeTerm } from '../../utils.js';
 
 export const noRedefinitionRule: LintRule = {
     meta: {
