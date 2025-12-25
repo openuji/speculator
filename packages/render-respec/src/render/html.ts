@@ -88,6 +88,7 @@ function extractAbstract(document: Document): string {
 
     for (const child of document.children) {
         if (child.type === 'section') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const section = child as any;
             if (section.id === 'abstract' || section.data?.respecClass === 'abstract') {
                 return renderNode(section);
@@ -105,6 +106,7 @@ function renderDocumentContent(document: Document): string {
     if (!document.children) return '';
 
     return document.children
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((child: any) => child.id !== 'abstract') // Skip abstract, it's rendered separately
         .map(child => renderNode(child))
         .join('\n');
@@ -113,6 +115,7 @@ function renderDocumentContent(document: Document): string {
 /**
  * Recursively render an AST node to HTML
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderNode(node: any): string {
     if (!node || typeof node !== 'object') return '';
 
@@ -146,6 +149,7 @@ function renderNode(node: any): string {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderSection(node: any): string {
     const id = node.id ? ` id="${escapeHtml(node.id)}"` : '';
     const className = node.data?.respecClass ? ` class="${escapeHtml(node.data.respecClass)}"` : '';
@@ -155,35 +159,42 @@ function renderSection(node: any): string {
     return `<section${id}${className}>\n${title}\n${content}\n</section>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderParagraph(node: any): string {
     return `<p>${renderChildren(node)}</p>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderHeading(node: any): string {
     const level = node.level || 2;
     return `<h${level}>${renderChildren(node)}</h${level}>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderDefinition(node: any): string {
     const term = node.term || renderChildren(node);
     const id = node.id ? ` id="${escapeHtml(node.id)}"` : '';
     return `<dfn${id}>${escapeHtml(term)}</dfn>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderReference(node: any): string {
     const targetTerm = node.targetTerm || renderChildren(node);
     const href = node.resolved?.id ? `#${escapeHtml(node.resolved.id)}` : '#';
     return `<a href="${href}" class="internalDFN">${escapeHtml(targetTerm)}</a>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderList(node: any): string {
     const tag = node.ordered ? 'ol' : 'ul';
     const content = renderChildren(node);
     return `<${tag}>${content}</${tag}>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderChildren(node: any): string {
     if (!node.children || !Array.isArray(node.children)) return '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return node.children.map((child: any) => renderNode(child)).join('');
 }
 

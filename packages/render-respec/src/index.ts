@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { speculate, corePlugins } from '@openuji/speculator';
 import { SpeculatorLinter, builtInRules } from '@openuji/speculator-lint';
-import type { Workspace, Document } from '@openuji/speculator';
+import type { Document } from '@openuji/speculator';
 import type { LintResult, LintDiagnostic } from '@openuji/speculator-lint';
 import { RenderConfigSchema, ReSpecConfigSchema, validateRenderConfig, validateReSpecConfig } from './model.js';
 import type { RenderConfig, RenderResult, ReSpecConfig } from './model.js';

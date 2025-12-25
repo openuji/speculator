@@ -18,6 +18,7 @@ export function generateToc(document: Document, maxLevel: number = 3): TocEntry[
     if (document.children) {
         for (const child of document.children) {
             if (child.type === 'section') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const section = child as any;
                 const level = section.level || 1;
 
