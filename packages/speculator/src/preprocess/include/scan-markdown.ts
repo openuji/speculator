@@ -9,7 +9,7 @@
  * to enable accurate source mapping after include resolution.
  */
 
-import type { IncludeDirective, SourceFormat } from '#src/preprocess/types';
+import type { IncludeDirective } from '#src/preprocess/types';
 import { inferFormat } from '#src/preprocess/types';
 
 /**

@@ -55,9 +55,9 @@ function resolveReference(
     ref: InlineReference,
     index: Map<string, IndexDefinitionEntry[]>
 ): IndexDefinitionEntry | null {
-    const candidateTerms = (ref as any).candidateTerms || [ref.targetTerm];
-    const forContexts = (ref as any).forContexts || [null];
-    const preferredType = (ref as any).preferredType;
+    const candidateTerms = ref.candidateTerms || [ref.targetTerm];
+    const forContexts = ref.forContexts || [null];
+    const preferredType = ref.preferredType;
 
     // Try each candidate term
     for (const term of candidateTerms) {
@@ -97,22 +97,7 @@ function resolveReference(
     return null;
 }
 
-/**
- * Walk document and resolve all references
- */
-function resolveReferences(document: Document, index: Map<string, IndexDefinitionEntry[]>) {
-    walkDocument(document, {
-        visitInline: (inline) => {
-            if (inline.type === 'reference') {
-                const ref = inline as InlineReference;
-                const match = resolveReference(ref, index);
-                if (match) {
-                    (ref as any).targetId = match.id;
-                }
-            }
-        }
-    });
-}
+
 
 /**
  * Reference resolve plugin
@@ -134,8 +119,8 @@ export const referenceResolvePlugin: Plugin = {
                     const match = resolveReference(ref, index);
 
                     if (match) {
-                        // Assign the resolved target ID
-                        (ref as any).targetId = match.id;
+                        // Assign the resolved target ID (mutation for resolution)
+                        ref.targetId = match.id;
                     }
                 }
             }

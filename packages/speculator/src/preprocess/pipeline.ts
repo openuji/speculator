@@ -9,7 +9,6 @@ import type { FileProvider } from '#src/file-provider/types';
 import type {
     SourceFormat,
     SpecConfig,
-    PreprocessedSpec,
     PreprocessResult,
     Diagnostic,
 } from '#src/preprocess/types';

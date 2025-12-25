@@ -7,8 +7,7 @@
 
 import {
     FileProvider,
-    FileNotFoundError,
-    FileReadError
+    FileNotFoundError
 } from '#src/file-provider/types';
 
 /**

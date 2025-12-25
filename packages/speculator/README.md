@@ -1,6 +1,8 @@
 # Speculator
 
-AST-first specification processor with schema-central architecture.
+AST-first specification parser and indexer with schema-central architecture.
+
+Speculator transforms specification documents (Markdown or HTML) into structured AST and semantic indexes. It does **not** render output - that responsibility belongs to separate tools. Speculator provides optional JSON serialization of the AST and indexes for consumption by renderers, linters, or other processors.
 
 ## Schema Architecture
 
@@ -76,7 +78,6 @@ validator.validateAtStage(ast, 'transform'); // semantic mode
 validator.validateAtStage(ast, 'resolve');   // semantic mode
 validator.validateAtStage(ast, 'index');     // semantic mode
 validator.validateAtStage(ast, 'compute');   // full mode
-validator.validateAtStage(ast, 'render');    // full mode
 ```
 
 ## Development
@@ -101,11 +102,16 @@ npm run test
 ## Pipeline Phases
 
 ```
-loadConfig → loadEntry → preprocessIncludes → parse → transform → resolve → index → (compute?) → render
+loadConfig → loadEntry → preprocessIncludes → parse → transform → resolve → index → (compute?)
                                                                               ↓
                                                                     Extract indexes from
                                                                     inline markers
 ```
+
+The pipeline produces:
+- **AST**: Structured document tree with semantic nodes
+- **Indexes**: Extracted definitions, references, requirements, issues, examples
+- **JSON Output**: Optional serialization of AST and indexes for external tools
 
 ## Source Position Tracking
 

@@ -37,12 +37,15 @@ describe('Workspace processing', () => {
         expect(result.workspace?.type).toBe('workspace');
         expect(result.workspace?.documents.length).toBe(2);
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         const docA = result.workspace?.documents.find(d => d.sourcePos?.file === '/spec-a.html')!;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         const docB = result.workspace?.documents.find(d => d.sourcePos?.file === '/spec-b.html')!;
 
 
         // Check if Term A was indexed in docA
         expect(docA.indexes?.definitions?.length).toBeGreaterThan(0);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         const termA = docA.indexes?.definitions?.find(d => d.term === 'term a')!; // normalized
         expect(termA).toBeDefined();
         expect(termA.id).toBe('term-a');

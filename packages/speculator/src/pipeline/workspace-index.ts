@@ -14,12 +14,12 @@ import { normalizeTerm } from '#src/parse/normalize';
  */
 export function buildGlobalIndex(
     documents: Map<string, Document>,
-    documentLevels: Map<string, number>
+    _documentLevels: Map<string, number>
 ): RuntimeGlobalIndex {
     const definitions = new Map<string, IndexDefinitionEntry[]>();
     const bibliography = new Map<string, IndexBiblioEntry>();
 
-    for (const [docPath, doc] of documents) {
+    for (const [, doc] of documents) {
         // Aggregate definitions
         if (doc.indexes?.definitions) {
             for (const entry of doc.indexes.definitions) {

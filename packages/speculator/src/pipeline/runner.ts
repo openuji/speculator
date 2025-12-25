@@ -14,13 +14,7 @@ import type {
     Plugin,
     PostprocessPhase,
     SpeculateResult,
-    TransformContext,
-    IndexContext,
-    ResolveContext,
-    ComputeContext,
-    RenderContext,
     RuntimeWorkspace,
-    Workspace,
 } from './types.js';
 import type { Document } from '#src/types/ast.generated';
 import { buildGlobalIndex, finalizeWorkspace } from './workspace-index.js';
@@ -162,16 +156,6 @@ export class SpeculatorPipeline {
                 await plugin.compute!({ document: res.doc, level, workspace: runtimeWorkspace });
             }
         }
-
-        // 7. RENDER phase
-        const renderPlugins = sortPluginsForPhase(this.plugins.filter(p => p.render), 'render');
-        for (const res of results) {
-            const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
-            for (const plugin of renderPlugins) {
-                await plugin.render!({ document: res.doc, level, workspace: runtimeWorkspace });
-            }
-        }
-
 
 
         // Finalize: Convert runtime workspace to AST

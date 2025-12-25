@@ -46,12 +46,12 @@ export interface RuntimeWorkspace {
  * 
  * Note: Parsing is a separate stage before postprocess, not a plugin phase.
  */
-export type PostprocessPhase = 'transform' | 'resolve' | 'index' | 'compute' | 'render';
+export type PostprocessPhase = 'transform' | 'resolve' | 'index' | 'compute';
 
 /**
  * Ordered list of postprocess phases for iteration
  */
-export const POSTPROCESS_PHASES: PostprocessPhase[] = ['transform', 'index', 'resolve', 'compute', 'render'];
+export const POSTPROCESS_PHASES: PostprocessPhase[] = ['transform', 'index', 'resolve', 'compute'];
 
 /**
  * @deprecated Use PostprocessPhase instead
@@ -99,14 +99,6 @@ export interface ComputeContext {
 
 
 
-export interface RenderContext {
-    readonly document: Document;
-    readonly level: number;
-    readonly workspace?: RuntimeWorkspace;
-}
-
-
-
 
 
 // ============================================================================
@@ -140,9 +132,6 @@ export interface Plugin {
 
     /** Compute phase hook */
     compute?(ctx: ComputeContext): Promise<void>;
-
-    /** Render phase hook */
-    render?(ctx: RenderContext): Promise<void>;
 }
 
 // ============================================================================

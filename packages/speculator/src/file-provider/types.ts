@@ -77,7 +77,7 @@ export interface FileProvider {
  */
 export function isFileNotFoundError(error: unknown): error is FileNotFoundError {
     return error instanceof FileNotFoundError ||
-        (error instanceof Error && (error as any).code === 'FILE_NOT_FOUND');
+        (error instanceof Error && 'code' in error && (error as Error & { code: string }).code === 'FILE_NOT_FOUND');
 }
 
 /**
@@ -85,5 +85,5 @@ export function isFileNotFoundError(error: unknown): error is FileNotFoundError 
  */
 export function isFileReadError(error: unknown): error is FileReadError {
     return error instanceof FileReadError ||
-        (error instanceof Error && (error as any).code === 'FILE_READ_ERROR');
+        (error instanceof Error && 'code' in error && (error as Error & { code: string }).code === 'FILE_READ_ERROR');
 }

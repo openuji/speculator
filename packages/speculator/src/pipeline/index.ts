@@ -7,7 +7,7 @@
 import { NodeFileProvider } from '#src/file-provider/node';
 import type { FileProvider } from '#src/file-provider/types';
 import { SpeculatorPipeline } from './runner.js';
-import type { SpeculateOptions, SpeculateResult, Plugin, Phase, PostprocessPhase } from './types.js';
+import type { SpeculateOptions, SpeculateResult } from './types.js';
 
 // Re-export types
 export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult, Workspace } from './types.js';

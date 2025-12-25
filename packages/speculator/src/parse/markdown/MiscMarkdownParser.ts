@@ -4,7 +4,7 @@
  * Handles miscellaneous mdast nodes: thematic break, raw HTML.
  */
 
-import type { ThematicBreak, Html, RootContent as MdastRootContent } from 'mdast';
+import type { Html, RootContent as MdastRootContent } from 'mdast';
 import type { MarkdownParserModule, ParseContext } from '#src/parse/registry';
 import type { BlockThematicBreak, BlockHtml, Block } from '#src/types/ast.generated';
 

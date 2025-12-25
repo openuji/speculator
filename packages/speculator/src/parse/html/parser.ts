@@ -128,6 +128,7 @@ export class HtmlUnitParser implements UnitParser {
      * Create parse context for handlers
      */
     private createContext(unit: SourceUnit, diagnostics: ParseDiagnostic[]): ParseContext {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
         return {

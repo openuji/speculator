@@ -8,7 +8,6 @@
 import type { Element } from 'hast';
 import type { HtmlParserModule, ParseContext, InlineHandlerResult } from '#src/parse/registry';
 import type {
-    InlineText,
     InlineEmphasis,
     InlineStrong,
     InlineCode as InlineCodeType,

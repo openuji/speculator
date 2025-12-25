@@ -68,7 +68,7 @@ export class ASTValidator {
             verbose: true,
             strict: true,
         });
-        (ajvFormats as any)(this.ajv);
+        ajvFormats.default(this.ajv);
     }
 
     /**
@@ -167,10 +167,10 @@ export class ASTValidator {
      */
     validateAtStage(
         ast: unknown,
-        stage: 'parse' | 'transform' | 'resolve' | 'index' | 'compute' | 'render',
+        stage: 'parse' | 'transform' | 'resolve' | 'index' | 'compute',
         allowComputed = false
     ): ValidationResult {
-        const mode: ValidationMode = allowComputed || stage === 'compute' || stage === 'render'
+        const mode: ValidationMode = allowComputed || stage === 'compute'
             ? 'full'
             : 'semantic';
 

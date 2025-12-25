@@ -39,8 +39,9 @@ function walkInlines(inlines: Inline[], visitor: AstVisitor): void {
     for (const inline of inlines) {
         visitor.visitInline?.(inline);
         // Recurse into children
-        if ('children' in inline && Array.isArray((inline as any).children)) {
-            walkInlines((inline as any).children, visitor);
+        if ('children' in inline && Array.isArray(inline.children)) {
+            const inlineWithChildren = inline as Inline & { children: Inline[] };
+            walkInlines(inlineWithChildren.children, visitor);
         }
     }
 }
@@ -52,14 +53,15 @@ function walkBlock(block: Block, visitor: AstVisitor): void {
     visitor.visitBlock?.(block);
 
     if ('children' in block) {
-        const children = (block as any).children;
+        const blockWithChildren = block as Block & { children: Array<Block | Inline> };
+        const children = blockWithChildren.children;
         if (Array.isArray(children) && children.length > 0) {
             const firstChild = children[0];
             if (firstChild && typeof firstChild === 'object' && 'type' in firstChild) {
                 if (INLINE_TYPES.has(firstChild.type)) {
-                    walkInlines(children, visitor);
+                    walkInlines(children as Inline[], visitor);
                 } else {
-                    for (const child of children) {
+                    for (const child of children as Block[]) {
                         walkBlock(child, visitor);
                     }
                 }

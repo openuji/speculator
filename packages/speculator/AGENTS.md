@@ -2,24 +2,29 @@
 
 **AST-First, 3-Stage Pipeline: Preprocess → Parse → Postprocess**
 
-This repo extends Speculator with:
+Speculator transforms specification documents into structured AST and semantic indexes.
+It does **not** render HTML output - that responsibility belongs to separate tools.
+
+This repo provides:
 
 - Spec composition via includes (Markdown directive + HTML marker)
 - Isomorphic FileProvider adapters
-- Schema-central SpecAST with JSON outputs
+- Schema-central SpecAST with JSON serialization
 - Optional ToC + heading numbering (computed views)
 
 Three primary stages:
 
 1. **Preprocess**: config + includes + CompositeSource
 2. **Parse**: hast/mdast → SpecAST via dedicated parsers
-3. **Postprocess**: transform/resolve/index/compute/render via plugins
+3. **Postprocess**: transform/resolve/index/compute via plugins
 
-Preserved killer features:
+Core capabilities:
 
-- JSON AST + indexes
-- plugin-friendly architecture (postprocess)
-- workspace/multi-spec capability
+- AST parsing from Markdown and HTML
+- Semantic indexing (definitions, references, requirements, issues, examples)
+- Optional JSON serialization for external tools (linters, renderers, etc.)
+- Plugin-friendly architecture (postprocess)
+- Workspace/multi-spec capability
 
 ## Non-Negotiable Requirements
 
@@ -55,7 +60,7 @@ Includes are resolved in the **Preprocess** stage, before:
 - transform
 - resolve
 - index
-- render
+- compute
 
 Authors must also be able to define sections in place without any includes.
 
@@ -122,7 +127,7 @@ Stricter invariants per stage are enforced via phase/stage guards in addition to
 - `resolve`: semantic enrichment (dfn/xref/rfc2119/biblio etc.)
 - `index`: derived indexes from marker nodes
 - `compute`: optional derived views (ToC, numbering, etc.)
-- `render`: HTML + JSON outputs
+- `serialize`: optional JSON output of AST + indexes
 - `workspace`: multi-doc/global indexes
 - `diagnostics`: cross-stage collection + reporting
 - `cli`: user interface, no core logic
@@ -302,15 +307,17 @@ The parse engine:
 
 ## Stage 3 – Postprocess
 
-The Postprocess stage takes the parsed SpecAST and runs the classical pipeline:
+The Postprocess stage takes the parsed SpecAST and runs the following pipeline:
 
 - **transform** – structural normalization only
 - **resolve** – semantic enrichment / linking
 - **index** – derived indexes
 - **compute** – optional derived views (ToC, numbering, etc.)
-- **render** – HTML + JSON outputs
+- **serialize** – optional JSON output of AST + indexes for external tools
 
 Postprocess is implemented via plugins, using a unified plugin contract (minus the moved parse responsibilities).
+
+**Note**: Speculator does not render HTML. That responsibility belongs to separate rendering tools that consume the AST and indexes.
 
 ### Postprocess Phases
 
@@ -340,12 +347,11 @@ Postprocess is implemented via plugins, using a unified plugin contract (minus t
 - other derived views
 - may optionally embed results into AST or return alongside it
 
-**render**
+**serialize**
 
-- render SpecAST to:
-  - HTML
-  - JSON AST
-  - (optionally) other formats
+- serialize SpecAST to JSON
+- serialize indexes to JSON
+- output for consumption by external tools (linters, renderers, etc.)
 
 ### Plugin Interface (Normative – Postprocess Only)
 
@@ -360,7 +366,7 @@ type PostprocessPhase =
   | "resolve"
   | "index"
   | "compute"
-  | "render";
+  | "serialize";
 
 interface Plugin {
   name: string;
@@ -375,7 +381,7 @@ interface Plugin {
   resolve?(ctx: ResolveContext): Promise<void> | void;
   index?(ctx: IndexContext): Promise<void> | void;
   compute?(ctx: ComputeContext): Promise<void> | void;
-  render?(ctx: RenderContext): Promise<void> | void;
+  serialize?(ctx: SerializeContext): Promise<void> | void;
 }
 ```
 
@@ -442,7 +448,7 @@ Full pipeline, mapped onto the 3 stages:
 - `resolve` (plugins)
 - `index` (plugins)
 - `compute` (plugins, optional)
-- `render` (plugins)
+- `serialize` (plugins, optional)
 
 ## Phase / Stage Guards
 
@@ -501,19 +507,18 @@ Phases implemented via plugins:
 - `resolve`
 - `index`
 - `compute` (optional)
-- `render`
+- `serialize` (optional)
 
 ### F) CLI
 
-- `speculator build`
-- `speculator ast`
-- `speculator lint`
-- `speculator debug:includes`
+- `speculator parse` - Parse and output AST + indexes as JSON
+- `speculator debug:includes` - Debug include resolution
 
-Flags for compute modes:
+Flags for compute and output modes:
 
 - `--compute-toc none|return|embed`
 - `--compute-numbering none|return|embed`
+- `--output json` - Serialize AST and indexes to JSON
 
 ### G) Diagnostics
 

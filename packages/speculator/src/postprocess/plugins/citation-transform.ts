@@ -14,7 +14,6 @@
 
 import type { Plugin, TransformContext } from '#src/pipeline/types';
 import type {
-    Document,
     Section,
     Block,
     Inline,
@@ -32,7 +31,7 @@ import { normalizeTerm } from '#src/parse/normalize';
  * 2. Modifier (!, ?, or \)
  * 3. Citation key
  */
-const CITATION_PATTERN = /\[\[(\[)?([!?\\])?([^\]\[]+)\]\](\])?/g;
+const CITATION_PATTERN = /\[\[(\[)?([!?\\])?([^\][]+)\]\](\])?/g;
 
 /**
  * Parse citation match to determine properties
@@ -146,8 +145,9 @@ function transformInlineChildren(children: Inline[]): Inline[] {
                 result.push(child);
             }
         } else if ('children' in child && Array.isArray(child.children)) {
-            // Recursively process children of container nodes
-            (child as any).children = transformInlineChildren((child as any).children);
+            // Recursively process children of container nodes (e.g., emphasis, strong, link)
+            const childWithChildren = child as Inline & { children: Inline[] };
+            childWithChildren.children = transformInlineChildren(childWithChildren.children);
             result.push(child);
         } else {
             result.push(child);
@@ -164,10 +164,12 @@ function transformBlock(block: Block): void {
     if ('children' in block && Array.isArray(block.children)) {
         if (block.type === 'paragraph' || block.type === 'heading') {
             // These have Inline[] children
-            (block as any).children = transformInlineChildren((block as any).children);
+            const blockWithChildren = block as Block & { children: Inline[] };
+            blockWithChildren.children = transformInlineChildren(blockWithChildren.children);
         } else {
             // These have Block[] children (list items, blockquote, etc.)
-            for (const child of (block as any).children) {
+            const blockWithChildren = block as Block & { children: Block[] };
+            for (const child of blockWithChildren.children) {
                 if (typeof child === 'object' && child !== null) {
                     transformBlock(child);
                 }

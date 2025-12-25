@@ -45,19 +45,19 @@ function buildDefinitionIndex(document: Document): void {
                 const dfn = inline as InlineDefinition;
 
                 // Generate ID if not present
-                const forContext = (dfn as any).forContexts?.[0] ?? null;
-                const id = dfn.explicitId || (dfn as any).id || generateDfnId(dfn.term, forContext);
+                const forContext = dfn.forContexts?.[0] ?? null;
+                const id = dfn.explicitId || dfn.id || generateDfnId(dfn.term, forContext);
 
-                // Assign ID back to the node
-                (dfn as any).id = id;
+                // Assign ID back to the node (mutation for index building)
+                dfn.id = id;
 
                 // Create index entry
                 const entry: IndexDefinitionEntry = {
                     id,
                     term: dfn.term,
-                    linkTexts: (dfn as any).linkTexts,
-                    forContexts: (dfn as any).forContexts,
-                    dfnType: (dfn as any).dfnType,
+                    linkTexts: dfn.linkTexts,
+                    forContexts: dfn.forContexts,
+                    dfnType: dfn.dfnType,
                     sourcePos: dfn.sourcePos || {
                         file: document.sourcePos?.file || 'unknown',
                         line: 0,
