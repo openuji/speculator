@@ -3,9 +3,27 @@
     "private": true,
     "scripts": {
         "test": "pnpm -r test",
-        "build": "pnpm -r build"
+        "build": "pnpm -r build",
+        "prepare": "husky"
     },
     "devDependencies": {
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.7",
         "typescript": "^5.0.0"
+    },
+    "lint-staged": {
+        "packages/speculator/src/**/*.ts": [
+            "cd packages/speculator && pnpm lint --fix",
+            "cd packages/speculator && pnpm typecheck",
+            "cd packages/speculator && pnpm test --run"
+        ],
+        "packages/speculator-lint/src/**/*.ts": [
+            "cd packages/speculator-lint && pnpm lint --fix",
+            "cd packages/speculator-lint && pnpm typecheck"
+        ],
+        "packages/vocab-build/src/**/*.ts": [
+            "cd packages/vocab-build && pnpm lint --fix",
+            "cd packages/vocab-build && pnpm typecheck"
+        ]
     }
 }
