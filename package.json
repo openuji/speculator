@@ -24,6 +24,10 @@
         "packages/vocab-build/src/**/*.ts": [
             "cd packages/vocab-build && pnpm lint --fix",
             "cd packages/vocab-build && pnpm typecheck"
+        ],
+        "packages/render-respec/src/**/*.ts": [
+            "cd packages/render-respec && pnpm lint --fix",
+            "cd packages/render-respec && pnpm typecheck"
         ]
     }
 }

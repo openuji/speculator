@@ -14,6 +14,7 @@
     "prebuild": "pnpm vocab:build"
   },
   "dependencies": {
+    "@openuji/render-respec": "workspace:*",
     "@openuji/speculator": "workspace:*",
     "@openuji/speculator-lint": "workspace:*",
     "@openuji/vocab-build": "workspace:*",
