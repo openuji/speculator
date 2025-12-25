@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { speculate, corePlugins } from '#src/index';
 import { MemoryFileProvider } from '#src/file-provider/memory';
+import type { Section } from '#src/types/ast.generated';
 
 describe('speculate', () => {
     it('processes a simple markdown spec', async () => {
@@ -59,7 +60,7 @@ describe('speculate', () => {
             fileProvider,
         });
 
-        const section = result.workspace?.documents[0].children[0] as any;
+        const section = result.workspace?.documents[0].children[0] as Section;
         expect(section.type).toBe('section');
         expect(section.id).toBe('abstract');
 

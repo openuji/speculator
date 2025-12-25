@@ -50,7 +50,7 @@ describe('DfnIndexPlugin', () => {
 
         const section = doc.children[0] as Section;
         const dfnPara = section.children[0] as BlockParagraph;
-        const dfn = dfnPara.children[0] as any;
+        const dfn = dfnPara.children[0] as InlineDefinition & { id?: string };
 
         expect(dfn.id).toBe('dfn-task-queue');
     });
@@ -67,7 +67,7 @@ describe('DfnIndexPlugin', () => {
                         term: 'focus',
                         explicitId: 'dom-focus',
                         children: [{ type: 'text', value: 'focus' }],
-                    } as any],
+                    } as InlineDefinition],
                 } as BlockParagraph],
             } as Section],
         };
@@ -77,7 +77,7 @@ describe('DfnIndexPlugin', () => {
 
         const section = doc.children[0] as Section;
         const dfnPara = section.children[0] as BlockParagraph;
-        const dfn = dfnPara.children[0] as any;
+        const dfn = dfnPara.children[0] as InlineDefinition & { id?: string };
 
         expect(dfn.id).toBe('dom-focus');
     });
@@ -104,7 +104,7 @@ describe('ReferenceResolvePlugin', () => {
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as any;
+        const ref = refPara.children[0] as InlineReference & { targetId?: string };
 
         expect(ref.targetId).toBe('dfn-event-loop');
     });
@@ -122,7 +122,7 @@ describe('ReferenceResolvePlugin', () => {
                             term: 'event loop',
                             linkTexts: ['event loop', 'loop'],
                             children: [{ type: 'text', value: 'event loop' }],
-                        } as any],
+                        } as InlineDefinition],
                     } as BlockParagraph,
                     {
                         type: 'paragraph',
@@ -131,7 +131,7 @@ describe('ReferenceResolvePlugin', () => {
                             targetTerm: 'loop',
                             candidateTerms: ['loop'],
                             children: [{ type: 'text', value: 'loop' }],
-                        } as any],
+                        } as InlineReference],
                     } as BlockParagraph,
                 ],
             } as Section],
@@ -143,7 +143,7 @@ describe('ReferenceResolvePlugin', () => {
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as any;
+        const ref = refPara.children[0] as InlineReference & { targetId?: string };
 
         expect(ref.targetId).toBe('dfn-event-loop');
     });
@@ -161,7 +161,7 @@ describe('ReferenceResolvePlugin', () => {
                             term: 'postMessage',
                             forContexts: ['Window'],
                             children: [{ type: 'text', value: 'postMessage' }],
-                        } as any],
+                        } as InlineDefinition],
                     } as BlockParagraph,
                     {
                         type: 'paragraph',
@@ -170,7 +170,7 @@ describe('ReferenceResolvePlugin', () => {
                             targetTerm: 'postMessage',
                             forContexts: ['Window'],
                             children: [{ type: 'text', value: 'postMessage' }],
-                        } as any],
+                        } as InlineReference],
                     } as BlockParagraph,
                 ],
             } as Section],
@@ -182,7 +182,7 @@ describe('ReferenceResolvePlugin', () => {
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as any;
+        const ref = refPara.children[0] as InlineReference & { targetId?: string };
 
         expect(ref.targetId).toBe('dfn-window-postmessage');
     });
@@ -196,7 +196,7 @@ describe('ReferenceResolvePlugin', () => {
 
         const section = doc.children[0] as Section;
         const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as any;
+        const ref = refPara.children[0] as InlineReference & { targetId?: string };
 
         expect(ref.targetId).toBeUndefined();
     });

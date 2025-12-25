@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import type { SourceUnit } from '#src/preprocess/types';
+import type { Section, BlockParagraph, BlockList } from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.html'): SourceUnit {
     return { file, format: 'html', content, startLine: 1 };
@@ -23,7 +24,7 @@ describe('HtmlUnitParser', () => {
                 type: 'section',
                 id: 'intro',
             });
-            const section = blocks[0] as any;
+            const section = blocks[0] as Section;
             expect(section.heading).toMatchObject({
                 type: 'heading',
                 depth: 2,
@@ -42,9 +43,9 @@ describe('HtmlUnitParser', () => {
             const blocks = parser.parse(unit);
 
             expect(blocks).toHaveLength(1);
-            const parent = blocks[0] as any;
+            const parent = blocks[0] as Section;
             expect(parent.id).toBe('parent');
-            expect(parent.children.some((c: any) => c.type === 'section' && c.id === 'child')).toBe(true);
+            expect(parent.children.some((c) => c.type === 'section' && 'id' in c && c.id === 'child')).toBe(true);
         });
     });
 
@@ -81,9 +82,9 @@ describe('HtmlUnitParser', () => {
             const unit = createUnit('<p>Text with <strong>bold</strong> and <em>italic</em>.</p>');
             const blocks = parser.parse(unit);
 
-            const para = blocks[0] as any;
-            expect(para.children.some((c: any) => c.type === 'strong')).toBe(true);
-            expect(para.children.some((c: any) => c.type === 'emphasis')).toBe(true);
+            const para = blocks[0] as BlockParagraph;
+            expect(para.children.some((c) => c.type === 'strong')).toBe(true);
+            expect(para.children.some((c) => c.type === 'emphasis')).toBe(true);
         });
     });
 
@@ -94,7 +95,7 @@ describe('HtmlUnitParser', () => {
 
             expect(blocks).toHaveLength(1);
             expect(blocks[0]).toMatchObject({ type: 'list', ordered: false });
-            expect((blocks[0] as any).children).toHaveLength(2);
+            expect((blocks[0] as BlockList).children).toHaveLength(2);
         });
 
         it('parses ordered lists', () => {
@@ -134,7 +135,7 @@ describe('HtmlUnitParser', () => {
             const unit = createUnit('<p><a href="https://example.com">link</a></p>');
             const blocks = parser.parse(unit);
 
-            const para = blocks[0] as any;
+            const para = blocks[0] as BlockParagraph;
             expect(para.children[0]).toMatchObject({
                 type: 'link',
                 url: 'https://example.com',
@@ -145,7 +146,7 @@ describe('HtmlUnitParser', () => {
             const unit = createUnit('<p><img src="image.png" alt="description"></p>');
             const blocks = parser.parse(unit);
 
-            const para = blocks[0] as any;
+            const para = blocks[0] as BlockParagraph;
             expect(para.children[0]).toMatchObject({
                 type: 'image',
                 url: 'image.png',

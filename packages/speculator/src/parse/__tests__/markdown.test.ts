@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import type { SourceUnit } from '#src/preprocess/types';
+import type { BlockHeading, BlockParagraph, BlockList, BlockTable } from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.md'): SourceUnit {
     return { file, format: 'markdown', content, startLine: 1 };
@@ -29,7 +30,7 @@ describe('MarkdownUnitParser', () => {
             const blocks = parser.parse(unit);
 
             expect(blocks[0].type).toBe('heading');
-            const heading = blocks[0] as any;
+            const heading = blocks[0] as BlockHeading;
             expect(heading.children).toHaveLength(1);
             expect(heading.children[0]).toMatchObject({ type: 'text', value: 'Hello World' });
         });
@@ -50,10 +51,10 @@ describe('MarkdownUnitParser', () => {
             const blocks = parser.parse(unit);
 
             expect(blocks).toHaveLength(1);
-            const para = blocks[0] as any;
+            const para = blocks[0] as BlockParagraph;
             expect(para.children.length).toBeGreaterThan(1);
-            expect(para.children.some((c: any) => c.type === 'strong')).toBe(true);
-            expect(para.children.some((c: any) => c.type === 'emphasis')).toBe(true);
+            expect(para.children.some((c) => c.type === 'strong')).toBe(true);
+            expect(para.children.some((c) => c.type === 'emphasis')).toBe(true);
         });
     });
 
@@ -64,7 +65,7 @@ describe('MarkdownUnitParser', () => {
 
             expect(blocks).toHaveLength(1);
             expect(blocks[0]).toMatchObject({ type: 'list', ordered: false });
-            expect((blocks[0] as any).children).toHaveLength(3);
+            expect((blocks[0] as BlockList).children).toHaveLength(3);
         });
 
         it('parses ordered lists', () => {
@@ -106,7 +107,7 @@ describe('MarkdownUnitParser', () => {
             const blocks = parser.parse(unit);
 
             expect(blocks).toHaveLength(1);
-            const para = blocks[0] as any;
+            const para = blocks[0] as BlockParagraph;
             expect(para.children[0]).toMatchObject({
                 type: 'link',
                 url: 'https://example.com',
@@ -118,7 +119,7 @@ describe('MarkdownUnitParser', () => {
             const blocks = parser.parse(unit);
 
             expect(blocks).toHaveLength(1);
-            const para = blocks[0] as any;
+            const para = blocks[0] as BlockParagraph;
             expect(para.children[0]).toMatchObject({
                 type: 'image',
                 url: 'image.png',
@@ -155,7 +156,7 @@ describe('MarkdownUnitParser', () => {
 
             expect(blocks).toHaveLength(1);
             expect(blocks[0]).toMatchObject({ type: 'table' });
-            const table = blocks[0] as any;
+            const table = blocks[0] as BlockTable;
             expect(table.children).toHaveLength(2); // header + 1 row
         });
     });

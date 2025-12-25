@@ -6,12 +6,13 @@ import { describe, it, expect } from 'vitest';
 import {
     MemoryFileProvider,
     NodeFileProvider,
-    FileNotFoundError
+    FileNotFoundError,
+    type FileProvider
 } from '#src/file-provider/index';
 import * as path from 'path';
 
 // Helper to test common compliance requirements
-function runComplianceTests(name: string, provider: any) {
+function runComplianceTests(name: string, provider: FileProvider) {
     describe(`${name} Compliance`, () => {
         it('canonicalizes paths deterministically', () => {
             // Different inputs should map to same canonical path

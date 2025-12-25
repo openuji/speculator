@@ -53,13 +53,15 @@ describe('Workspace processing', () => {
         // Check if Term A was resolved in docB
         let resolved = false;
         // Deep walk docB to find the reference
-        const findRef = (node: any) => {
-            if (node.type === 'reference' && node.targetTerm === 'term a') {
-                expect(node.targetId).toBe('term-a');
-                resolved = true;
-            }
-            if (node.children) {
-                node.children.forEach(findRef);
+        const findRef = (node: unknown): void => {
+            if (typeof node === 'object' && node !== null && 'type' in node) {
+                if (node.type === 'reference' && 'targetTerm' in node && node.targetTerm === 'term a') {
+                    expect('targetId' in node ? node.targetId : undefined).toBe('term-a');
+                    resolved = true;
+                }
+                if ('children' in node && Array.isArray(node.children)) {
+                    node.children.forEach(findRef);
+                }
             }
         };
         docB.children.forEach(findRef);

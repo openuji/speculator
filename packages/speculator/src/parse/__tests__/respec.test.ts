@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { InlineDefinition, InlineReference, InlineCite, BlockNote } from '#src/types/ast.generated';
+import type { InlineDefinition, InlineReference, InlineCite, BlockNote, BlockParagraph } from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.html'): SourceUnit {
     return { file, format: 'html', content, startLine: 1 };
@@ -20,8 +20,8 @@ describe('DfnPlugin', () => {
         const unit = createUnit('<p><dfn>event loop</dfn> is a term.</p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const dfn = para.children.find((c: any) => c.type === 'definition') as InlineDefinition;
+        const para = blocks[0] as BlockParagraph;
+        const dfn = para.children.find((c) => c.type === 'definition') as InlineDefinition;
 
         expect(dfn).toBeDefined();
         expect(dfn.type).toBe('definition');
@@ -35,8 +35,8 @@ describe('DfnPlugin', () => {
         const unit = createUnit('<p><dfn data-lt="loop;event cycle">event loop</dfn></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const dfn = para.children.find((c: any) => c.type === 'definition') as InlineDefinition;
+        const para = blocks[0] as BlockParagraph;
+        const dfn = para.children.find((c) => c.type === 'definition') as InlineDefinition;
 
         expect(dfn.linkTexts).toEqual(['loop', 'event cycle']);
     });
@@ -45,8 +45,8 @@ describe('DfnPlugin', () => {
         const unit = createUnit('<p><dfn data-dfn-for="Window">postMessage()</dfn></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const dfn = para.children.find((c: any) => c.type === 'definition') as InlineDefinition;
+        const para = blocks[0] as BlockParagraph;
+        const dfn = para.children.find((c) => c.type === 'definition') as InlineDefinition;
 
         expect(dfn.forContexts).toEqual(['window']);
     });
@@ -55,8 +55,8 @@ describe('DfnPlugin', () => {
         const unit = createUnit('<p><dfn data-dfn-type="method">postMessage()</dfn></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const dfn = para.children.find((c: any) => c.type === 'definition') as InlineDefinition;
+        const para = blocks[0] as BlockParagraph;
+        const dfn = para.children.find((c) => c.type === 'definition') as InlineDefinition;
 
         expect(dfn.dfnType).toBe('method');
     });
@@ -65,8 +65,8 @@ describe('DfnPlugin', () => {
         const unit = createUnit('<p><dfn id="dom-event-loop">event loop</dfn></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const dfn = para.children.find((c: any) => c.type === 'definition') as InlineDefinition;
+        const para = blocks[0] as BlockParagraph;
+        const dfn = para.children.find((c) => c.type === 'definition') as InlineDefinition;
 
         expect(dfn.explicitId).toBe('dom-event-loop');
     });
@@ -79,8 +79,8 @@ describe('XrefPlugin', () => {
         const unit = createUnit('<p>See <xref>event loop</xref></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const xref = para.children.find((c: any) => c.type === 'reference') as InlineReference;
+        const para = blocks[0] as BlockParagraph;
+        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
 
         expect(xref).toBeDefined();
         expect(xref.type).toBe('reference');
@@ -93,8 +93,8 @@ describe('XrefPlugin', () => {
         const unit = createUnit('<p><xref data-xref-for="Window">postMessage()</xref></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const xref = para.children.find((c: any) => c.type === 'reference') as InlineReference;
+        const para = blocks[0] as BlockParagraph;
+        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
 
         expect(xref.forContexts).toEqual(['window']);
     });
@@ -103,8 +103,8 @@ describe('XrefPlugin', () => {
         const unit = createUnit('<p><xref data-allow-external="no">event loop</xref></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const xref = para.children.find((c: any) => c.type === 'reference') as InlineReference;
+        const para = blocks[0] as BlockParagraph;
+        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
 
         expect(xref.allowExternal).toBe(false);
     });
@@ -113,8 +113,8 @@ describe('XrefPlugin', () => {
         const unit = createUnit('<p><a data-lt="loop">event loop</a></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const xref = para.children.find((c: any) => c.type === 'reference') as InlineReference;
+        const para = blocks[0] as BlockParagraph;
+        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
 
         expect(xref).toBeDefined();
         expect(xref.candidateTerms).toEqual(['loop']);
@@ -128,8 +128,8 @@ describe('DataCitePlugin', () => {
         const unit = createUnit('<p><a data-cite="HTML#the-a-element">anchor element</a></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const cite = para.children.find((c: any) => c.type === 'cite') as InlineCite;
+        const para = blocks[0] as BlockParagraph;
+        const cite = para.children.find((c) => c.type === 'cite') as InlineCite;
 
         expect(cite).toBeDefined();
         expect(cite.type).toBe('cite');
@@ -141,8 +141,8 @@ describe('DataCitePlugin', () => {
         const unit = createUnit('<p><a data-cite="!RFC2119">keywords</a></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const cite = para.children.find((c: any) => c.type === 'cite') as InlineCite;
+        const para = blocks[0] as BlockParagraph;
+        const cite = para.children.find((c) => c.type === 'cite') as InlineCite;
 
         expect(cite.forcedNormative).toBe(true);
         expect(cite.kind).toBe('normative');
@@ -152,8 +152,8 @@ describe('DataCitePlugin', () => {
         const unit = createUnit('<p><a data-cite="rfc2119/section-2#anchor">section</a></p>');
         const blocks = parser.parse(unit);
 
-        const para = blocks[0] as any;
-        const cite = para.children.find((c: any) => c.type === 'cite') as InlineCite;
+        const para = blocks[0] as BlockParagraph;
+        const cite = para.children.find((c) => c.type === 'cite') as InlineCite;
 
         expect(cite.key).toBe('rfc2119');
         expect(cite.path).toBe('section-2');

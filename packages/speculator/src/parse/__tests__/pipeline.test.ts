@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { parse, parseCompositeSource } from '#src/parse/pipeline';
 import type { PreprocessedSpec, SourceUnit, CompositeSource } from '#src/preprocess/types';
+import type { Section, Block } from '#src/types/ast.generated';
 
 function createPreprocessedSpec(
     units: SourceUnit[],
@@ -49,10 +50,10 @@ describe('parse', () => {
             const result = parse(spec);
 
             expect(result.hasErrors).toBe(false);
-            const rootSection = result.result?.document.children[0] as any;
+            const rootSection = result.result?.document.children[0] as Section;
             expect(rootSection.type).toBe('section');
-            expect(rootSection.heading.depth).toBe(1);
-            expect(rootSection.children.some((c: any) => c.type === 'section')).toBe(true);
+            expect(rootSection.heading?.depth).toBe(1);
+            expect(rootSection.children.some((c) => c.type === 'section')).toBe(true);
         });
     });
 
@@ -68,7 +69,7 @@ describe('parse', () => {
             const result = parse(spec);
 
             expect(result.hasErrors).toBe(false);
-            const section = result.result?.document.children[0] as any;
+            const section = result.result?.document.children[0] as Section;
             expect(section.type).toBe('section');
             expect(section.id).toBe('abstract');
         });
@@ -117,15 +118,22 @@ describe('parse', () => {
             expect(result.hasErrors).toBe(false);
 
             // Find sections and check their sourcePos
-            function collectSourceFiles(node: any): string[] {
+            function collectSourceFiles(node: unknown): string[] {
+                if (typeof node !== 'object' || node === null) return [];
                 const files: string[] = [];
-                if (node.sourcePos?.file) files.push(node.sourcePos.file);
-                if (node.children) {
+                if ('sourcePos' in node && typeof node.sourcePos === 'object' && node.sourcePos !== null && 'file' in node.sourcePos) {
+                    if (typeof node.sourcePos.file === 'string') files.push(node.sourcePos.file);
+                }
+                if ('children' in node && Array.isArray(node.children)) {
                     for (const child of node.children) {
                         files.push(...collectSourceFiles(child));
                     }
                 }
-                if (node.heading?.sourcePos?.file) files.push(node.heading.sourcePos.file);
+                if ('heading' in node && typeof node.heading === 'object' && node.heading !== null) {
+                    if ('sourcePos' in node.heading && typeof node.heading.sourcePos === 'object' && node.heading.sourcePos !== null && 'file' in node.heading.sourcePos) {
+                        if (typeof node.heading.sourcePos.file === 'string') files.push(node.heading.sourcePos.file);
+                    }
+                }
                 return files;
             }
 
@@ -221,7 +229,7 @@ describe('parse', () => {
             // Find nodes from each file
             const doc = result.result?.document;
             const htmlSection = doc?.children.find(
-                (c: any) => c.sourcePos?.file === '/spec/format.html'
+                (c): c is Section | Block => typeof c === 'object' && c !== null && 'sourcePos' in c && c.sourcePos?.file === '/spec/format.html'
             );
             expect(htmlSection).toBeDefined();
         });
