@@ -1,0 +1,406 @@
+---
+import { speculate, corePlugins, NodeFileProvider } from "@openuji/speculator";
+import { searchIndexPlugin } from "@openuji/speculator-search";
+import "../styles/global.css";
+import path from "path";
+
+// Setup Speculator with search plugin
+const specDir = path.resolve("spec");
+const entryFile = path.join(specDir, "index.md");
+const configFile = path.join(specDir, "config.respec.json");
+
+//Run the full pipeline with plugins INCLUDING search plugin
+const result = await speculate({
+    entry: entryFile,
+    configPath: configFile,
+    plugins: [...corePlugins, searchIndexPlugin],
+    fileProvider: new NodeFileProvider(),
+});
+
+const document = result.workspace?.documents[0];
+const config = document?.metadata || {};
+
+// Get the search index and serialize it for client-side use
+const searchIndex = (document?.computed as any)?.searchIndex;
+const serializedIndex = searchIndex
+    ? {
+          terms: Array.from(searchIndex.terms.entries()),
+          phrases: Array.from(searchIndex.phrases.entries()),
+          documents: Array.from(searchIndex.documents.entries()),
+      }
+    : null;
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>Search - {config.title || "Speculator Demo"}</title>
+    </head>
+    <body>
+        <div class="container">
+            <header class="spec-header">
+                <nav class="nav">
+                    <a href="/">Markdown Version</a>
+                    <a href="/html">HTML Version</a>
+                    <a href="/search" class="active">Search</a>
+                </nav>
+
+                <h1>🔍 Search Demo</h1>
+                <p class="subtitle">
+                    Search through the specification using
+                    @openuji/speculator-search
+                </p>
+            </header>
+
+            <hr />
+
+            <main class="spec-content">
+                <div class="search-box">
+                    <form id="search-form">
+                        <input
+                            type="text"
+                            id="search-input"
+                            name="q"
+                            placeholder="Enter search term..."
+                            class="search-input"
+                            autofocus
+                        />
+                        <button type="submit" class="search-button"
+                            >Search</button
+                        >
+                    </form>
+                </div>
+
+                <div id="search-results"></div>
+
+                <div id="empty-state" class="empty-state">
+                    <p>
+                        Enter a search term to find content in the
+                        specification.
+                    </p>
+                    <div class="example-searches">
+                        <p><strong>Try searching for:</strong></p>
+                        <ul>
+                            <li>
+                                <button class="example-btn" data-query="term"
+                                    >term</button
+                                >
+                            </li>
+                            <li>
+                                <button
+                                    class="example-btn"
+                                    data-query="definition">definition</button
+                                >
+                            </li>
+                            <li>
+                                <button
+                                    class="example-btn"
+                                    data-query="formatting">formatting</button
+                                >
+                            </li>
+                            <li>
+                                <button class="example-btn" data-query="code"
+                                    >code</button
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </main>
+
+            <footer>
+                <hr />
+                <p>Search powered by @openuji/speculator-search</p>
+            </footer>
+        </div>
+
+        <!-- Search index data -->
+        <script
+            id="search-index-data"
+            type="application/json"
+            set:html={JSON.stringify(serializedIndex)}
+        />
+
+        <!-- Client-side search script -->
+        <script>
+            // Load search index from embedded data
+            const indexData = JSON.parse(
+                document.getElementById("search-index-data").textContent,
+            );
+            const searchIndex = {
+                terms: new Map(indexData.terms),
+                phrases: new Map(indexData.phrases),
+                documents: new Map(indexData.documents),
+            };
+
+            // Get elements
+            const form = document.getElementById("search-form");
+            const input = document.getElementById("search-input");
+            const resultsDiv = document.getElementById("search-results");
+            const emptyState = document.getElementById("empty-state");
+
+            // Anchor mapper for this demo
+            // Links to /html page because it has proper section IDs
+            // The markdown page (/) has no IDs at all
+            function anchorMapper(sourcePos, nodeId) {
+                // Prefer section ID, then node ID
+                const anchorId = nodeId;
+
+                return {
+                    route: "/html",
+                    anchor: anchorId ? `#${anchorId}` : "",
+                    baseUrl: window.location.origin,
+                };
+            }
+
+            // Search function (simplified client-side version)
+            function performSearch(query) {
+                const startTime = performance.now();
+                const normalizedQuery = query.toLowerCase().trim();
+
+                if (!normalizedQuery) {
+                    showEmptyState();
+                    return;
+                }
+
+                // Search in both terms and phrases
+                const termMatches =
+                    searchIndex.terms.get(normalizedQuery) || [];
+                const phraseMatches =
+                    searchIndex.phrases.get(normalizedQuery) || [];
+                const matches = [...termMatches, ...phraseMatches];
+
+                const queryTime = performance.now() - startTime;
+
+                // Update URL without reload
+                const url = new URL(window.location);
+                url.searchParams.set("q", query);
+                window.history.pushState({}, "", url);
+
+                // Display results
+                displayResults(query, matches, queryTime);
+            }
+
+            function showEmptyState() {
+                resultsDiv.innerHTML = "";
+                emptyState.style.display = "block";
+                // Clear URL param
+                const url = new URL(window.location);
+                url.searchParams.delete("q");
+                window.history.pushState({}, "", url);
+            }
+
+            function displayResults(query, matches, queryTime) {
+                emptyState.style.display = "none";
+
+                if (matches.length === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="search-results">
+                            <h2>0 results for "${query}"</h2>
+                            <p class="no-results">No results found for "${query}"</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const resultsHTML = matches
+                    .map((match) => {
+                        const location = anchorMapper(
+                            match.sourcePos,
+                            match.nodeId,
+                        );
+                        const href = `${location.route}${location.anchor}`;
+                        const breadcrumb =
+                            match.headingPath && match.headingPath.length > 0
+                                ? `<span class="breadcrumb">→ ${match.headingPath.join(" → ")}</span>`
+                                : "";
+
+                        return `
+                        <li class="result-item">
+                            <div class="result-link">
+                                <a href="${href}">
+                                    <strong>${match.term}</strong> in ${match.nodeType}
+                                </a>
+                            </div>
+                            <div class="result-context">${match.context}</div>
+                            <div class="result-meta">
+                                ${match.sourcePos.file}:${match.sourcePos.line}
+                                ${breadcrumb}
+                            </div>
+                        </li>
+                    `;
+                    })
+                    .join("");
+
+                resultsDiv.innerHTML = `
+                    <div class="search-results">
+                        <h2>${matches.length} ${matches.length === 1 ? "result" : "results"} for "${query}"</h2>
+                        <p class="query-time">Query took ${queryTime.toFixed(2)}ms</p>
+                        <ul class="results-list">${resultsHTML}</ul>
+                    </div>
+                `;
+            }
+
+            // Form submission
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                performSearch(input.value);
+            });
+
+            // Example buttons
+            document.querySelectorAll(".example-btn").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const query = btn.dataset.query;
+                    input.value = query;
+                    performSearch(query);
+                });
+            });
+
+            // On page load, check for query param and run search
+            const urlParams = new URLSearchParams(window.location.search);
+            const q = urlParams.get("q");
+            if (q) {
+                input.value = q;
+                performSearch(q);
+            }
+        </script>
+    </body>
+</html>
+
+<style>
+    .nav a.active {
+        font-weight: bold;
+        text-decoration: underline;
+    }
+
+    .search-box {
+        margin: 2rem 0;
+    }
+
+    .search-box form {
+        display: flex;
+        gap: 0.5rem;
+        max-width: 600px;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border: 2px solid var(--border-color, #ddd);
+        border-radius: 4px;
+    }
+
+    .search-button {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        background: var(--primary-color, #0066cc);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .search-button:hover {
+        background: var(--primary-dark, #0052a3);
+    }
+
+    .search-results h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .query-time {
+        color: var(--text-secondary, #666);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .results-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .result-item {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color, #ddd);
+        border-radius: 4px;
+        background: var(--bg-light, #f9f9f9);
+    }
+
+    .result-link a {
+        color: var(--link-color, #0066cc);
+        text-decoration: none;
+        font-size: 1.1rem;
+    }
+
+    .result-link a:hover {
+        text-decoration: underline;
+    }
+
+    .result-context {
+        margin: 0.5rem 0;
+        padding: 0.5rem;
+        background: white;
+        border-left: 3px solid var(--accent-color, #ffa500);
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+
+    .result-meta {
+        font-size: 0.85rem;
+        color: var(--text-secondary, #666);
+    }
+
+    .breadcrumb {
+        margin-left: 1rem;
+        font-style: italic;
+    }
+
+    .no-results {
+        padding: 2rem;
+        text-align: center;
+        color: var(--text-secondary, #666);
+    }
+
+    .empty-state {
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .example-searches {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: var(--bg-light, #f9f9f9);
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .example-searches ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 1rem;
+    }
+
+    .example-searches li {
+        margin: 0.5rem 0;
+    }
+
+    .example-btn {
+        color: var(--link-color, #0066cc);
+        background: none;
+        border: none;
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 0;
+    }
+
+    .example-btn:hover {
+        text-decoration: underline;
+    }
+</style>

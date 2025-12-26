@@ -17,6 +17,7 @@
     "@openuji/render-respec": "workspace:*",
     "@openuji/speculator": "workspace:*",
     "@openuji/speculator-lint": "workspace:*",
+    "@openuji/speculator-search": "workspace:*",
     "@openuji/vocab-build": "workspace:*",
     "astro": "^5.16.4"
   }
