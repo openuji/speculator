@@ -1,4 +1,4 @@
-import { speculate, corePlugins, NodeFileProvider } from '@openuji/speculator';
+import { SpeculatorPipeline, corePlugins, NodeFileProvider } from '@openuji/speculator';
 import { contentIdPlugin, searchIndexPlugin, buildSearchIndex, loadSearchConfig, applyRoutingConfig } from '@openuji/speculator-search';
 import path from 'path';
 import fs from 'fs/promises';
@@ -11,22 +11,27 @@ async function buildSearchIndexFile() {
     console.log('🔍 Building search index...');
 
     const specDir = path.join(rootDir, 'spec');
-    const entryFile = path.join(specDir, 'index.md');
     const searchConfigFile = path.join(rootDir, 'config.search.json');
     const outputFile = path.join(rootDir, 'public', 'search-index.json');
 
     // Load search configuration
     const config = await loadSearchConfig(searchConfigFile);
 
-    // Run Speculator pipeline with search plugins
-    const result = await speculate({
-        entry: entryFile,
-        plugins: [
-            ...corePlugins,
-            contentIdPlugin,
-            searchIndexPlugin({
-                configPath: searchConfigFile
-            })
+    // Setup pipeline with search plugins
+    const pipeline = new SpeculatorPipeline([
+        ...corePlugins,
+        contentIdPlugin,
+        searchIndexPlugin({
+            configPath: searchConfigFile
+        })
+    ]);
+
+    // Run pipeline on all documents (main + workspace)
+    const result = await pipeline.runWorkspace({
+        entries: [
+            { entry: path.join(specDir, 'index.md') },
+            { entry: path.join(specDir, 'workspace/pkg-a/index.html') },
+            { entry: path.join(specDir, 'workspace/pkg-b/index.html') }
         ],
         fileProvider: new NodeFileProvider(),
     });

@@ -1006,6 +1006,367 @@
           }
         }
       ]
+    },
+    {
+      "documentId": "/Users/zavalit/Projects/openuji/speculator/apps/demo/spec/workspace/pkg-a/index.html",
+      "route": "/workspace/pkg-a",
+      "title": "",
+      "entries": [
+        {
+          "searchId": "spec-a.p-0.text-0",
+          "text": "This document defines term a.",
+          "plainText": "this document defines term a",
+          "context": {
+            "sectionTitle": "Spec A",
+            "headingPath": [
+              "Spec A"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "spec-a",
+          "anchor": "#spec-a",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Spec A"
+          }
+        },
+        {
+          "searchId": "spec-a.p-0.dfn-0",
+          "text": "term a",
+          "plainText": "term a",
+          "context": {
+            "sectionTitle": "Spec A",
+            "headingPath": [
+              "Spec A"
+            ],
+            "nodeType": "definition",
+            "inlineType": "definition"
+          },
+          "sectionId": "spec-a",
+          "anchor": "#spec-a",
+          "filters": {
+            "nodeType": "definition",
+            "sectionTitle": "Spec A"
+          }
+        },
+        {
+          "searchId": "spec-a.s-0.workspace-context.p-0.text-0",
+          "text": "It also defines the workspace api.",
+          "plainText": "it also defines the workspace api",
+          "context": {
+            "sectionTitle": "Workspace Context",
+            "headingPath": [
+              "Spec A",
+              "Workspace Context"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "workspace-context",
+          "anchor": "#workspace-context",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Workspace Context"
+          }
+        },
+        {
+          "searchId": "spec-a.s-0.workspace-context.p-0.dfn-0",
+          "text": "workspace api",
+          "plainText": "workspace api",
+          "context": {
+            "sectionTitle": "Workspace Context",
+            "headingPath": [
+              "Spec A",
+              "Workspace Context"
+            ],
+            "nodeType": "definition",
+            "inlineType": "definition"
+          },
+          "sectionId": "workspace-context",
+          "anchor": "#workspace-context",
+          "filters": {
+            "nodeType": "definition",
+            "sectionTitle": "Workspace Context"
+          }
+        },
+        {
+          "searchId": "spec-a.s-0.workspace-context.p-1.text-0",
+          "text": "Here is a reference to a cross reference which is defined in Spec B.",
+          "plainText": "here is a reference to a cross reference which is defined in spec b",
+          "context": {
+            "sectionTitle": "Workspace Context",
+            "headingPath": [
+              "Spec A",
+              "Workspace Context"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "workspace-context",
+          "anchor": "#workspace-context",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Workspace Context"
+          }
+        },
+        {
+          "searchId": "spec-a.s-0.workspace-context.p-1.ref-0",
+          "text": "cross reference",
+          "plainText": "cross reference",
+          "context": {
+            "sectionTitle": "Workspace Context",
+            "headingPath": [
+              "Spec A",
+              "Workspace Context"
+            ],
+            "nodeType": "reference",
+            "inlineType": "reference"
+          },
+          "sectionId": "workspace-context",
+          "anchor": "#workspace-context",
+          "filters": {
+            "nodeType": "reference",
+            "sectionTitle": "Workspace Context"
+          }
+        },
+        {
+          "searchId": "spec-a.s-1.contextual-definitions.p-0.text-0",
+          "text": "A context-specific definition: runner.",
+          "plainText": "a context-specific definition runner",
+          "context": {
+            "sectionTitle": "Contextual Definitions",
+            "headingPath": [
+              "Spec A",
+              "Contextual Definitions"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "contextual-definitions",
+          "anchor": "#contextual-definitions",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Contextual Definitions"
+          }
+        },
+        {
+          "searchId": "spec-a.s-1.contextual-definitions.p-0.dfn-0",
+          "text": "runner",
+          "plainText": "runner",
+          "context": {
+            "sectionTitle": "Contextual Definitions",
+            "headingPath": [
+              "Spec A",
+              "Contextual Definitions"
+            ],
+            "nodeType": "definition",
+            "inlineType": "definition"
+          },
+          "sectionId": "contextual-definitions",
+          "anchor": "#contextual-definitions",
+          "filters": {
+            "nodeType": "definition",
+            "sectionTitle": "Contextual Definitions"
+          }
+        }
+      ]
+    },
+    {
+      "documentId": "/Users/zavalit/Projects/openuji/speculator/apps/demo/spec/workspace/pkg-b/index.html",
+      "route": "/workspace/pkg-b",
+      "title": "",
+      "entries": [
+        {
+          "searchId": "spec-b.p-0.text-0",
+          "text": "This document references term a.",
+          "plainText": "this document references term a",
+          "context": {
+            "sectionTitle": "Spec B",
+            "headingPath": [
+              "Spec B"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "spec-b",
+          "anchor": "#spec-b",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Spec B"
+          }
+        },
+        {
+          "searchId": "spec-b.p-0.ref-0",
+          "text": "term a",
+          "plainText": "term a",
+          "context": {
+            "sectionTitle": "Spec B",
+            "headingPath": [
+              "Spec B"
+            ],
+            "nodeType": "reference",
+            "inlineType": "reference"
+          },
+          "sectionId": "spec-b",
+          "anchor": "#spec-b",
+          "filters": {
+            "nodeType": "reference",
+            "sectionTitle": "Spec B"
+          }
+        },
+        {
+          "searchId": "spec-b.s-0.cross-document-links.p-0.text-0",
+          "text": "It also references the workspace api.",
+          "plainText": "it also references the workspace api",
+          "context": {
+            "sectionTitle": "Cross-Document Links",
+            "headingPath": [
+              "Spec B",
+              "Cross-Document Links"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "cross-document-links",
+          "anchor": "#cross-document-links",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Cross-Document Links"
+          }
+        },
+        {
+          "searchId": "spec-b.s-0.cross-document-links.p-0.ref-0",
+          "text": "workspace api",
+          "plainText": "workspace api",
+          "context": {
+            "sectionTitle": "Cross-Document Links",
+            "headingPath": [
+              "Spec B",
+              "Cross-Document Links"
+            ],
+            "nodeType": "reference",
+            "inlineType": "reference"
+          },
+          "sectionId": "cross-document-links",
+          "anchor": "#cross-document-links",
+          "filters": {
+            "nodeType": "reference",
+            "sectionTitle": "Cross-Document Links"
+          }
+        },
+        {
+          "searchId": "spec-b.s-0.cross-document-links.p-1.text-0",
+          "text": "Here we define the cross reference.",
+          "plainText": "here we define the cross reference",
+          "context": {
+            "sectionTitle": "Cross-Document Links",
+            "headingPath": [
+              "Spec B",
+              "Cross-Document Links"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "cross-document-links",
+          "anchor": "#cross-document-links",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Cross-Document Links"
+          }
+        },
+        {
+          "searchId": "spec-b.s-0.cross-document-links.p-1.dfn-0",
+          "text": "cross reference",
+          "plainText": "cross reference",
+          "context": {
+            "sectionTitle": "Cross-Document Links",
+            "headingPath": [
+              "Spec B",
+              "Cross-Document Links"
+            ],
+            "nodeType": "definition",
+            "inlineType": "definition"
+          },
+          "sectionId": "cross-document-links",
+          "anchor": "#cross-document-links",
+          "filters": {
+            "nodeType": "definition",
+            "sectionTitle": "Cross-Document Links"
+          }
+        },
+        {
+          "searchId": "spec-b.s-1.contextual-references.p-0.text-0",
+          "text": "Reference to the runner from Spec A.",
+          "plainText": "reference to the runner from spec a",
+          "context": {
+            "sectionTitle": "Contextual References",
+            "headingPath": [
+              "Spec B",
+              "Contextual References"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "contextual-references",
+          "anchor": "#contextual-references",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Contextual References"
+          }
+        },
+        {
+          "searchId": "spec-b.s-1.contextual-references.p-0.ref-0",
+          "text": "runner",
+          "plainText": "runner",
+          "context": {
+            "sectionTitle": "Contextual References",
+            "headingPath": [
+              "Spec B",
+              "Contextual References"
+            ],
+            "nodeType": "reference",
+            "inlineType": "reference"
+          },
+          "sectionId": "contextual-references",
+          "anchor": "#contextual-references",
+          "filters": {
+            "nodeType": "reference",
+            "sectionTitle": "Contextual References"
+          }
+        },
+        {
+          "searchId": "spec-b.s-1.contextual-references.p-1.text-0",
+          "text": "We also define our own runner.",
+          "plainText": "we also define our own runner",
+          "context": {
+            "sectionTitle": "Contextual References",
+            "headingPath": [
+              "Spec B",
+              "Contextual References"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "contextual-references",
+          "anchor": "#contextual-references",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Contextual References"
+          }
+        },
+        {
+          "searchId": "spec-b.s-1.contextual-references.p-1.dfn-0",
+          "text": "runner",
+          "plainText": "runner",
+          "context": {
+            "sectionTitle": "Contextual References",
+            "headingPath": [
+              "Spec B",
+              "Contextual References"
+            ],
+            "nodeType": "definition",
+            "inlineType": "definition"
+          },
+          "sectionId": "contextual-references",
+          "anchor": "#contextual-references",
+          "filters": {
+            "nodeType": "definition",
+            "sectionTitle": "Contextual References"
+          }
+        }
+      ]
     }
   ]
 }

@@ -2,7 +2,9 @@
     "routing": {
         "strategy": "map",
         "map": {
-            "spec/index.md": "/"
+            "spec/index.md": "/",
+            "spec/workspace/pkg-a/index.html": "/workspace/pkg-a",
+            "spec/workspace/pkg-b/index.html": "/workspace/pkg-b"
         },
         "fallback": "/"
     },
