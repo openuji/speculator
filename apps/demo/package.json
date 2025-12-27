@@ -10,13 +10,15 @@
     "vocab:core": "vocab-build build -i vocab/ujm-core.jsonld -o public/vocab -m core --mode ED",
     "vocab:ui": "vocab-build build -i vocab/ujm-ui.jsonld -o public/vocab -m ui --mode ED",
     "vocab:build": "pnpm vocab:core && pnpm vocab:ui",
-    "predev": "pnpm vocab:build",
-    "prebuild": "pnpm vocab:build"
+    "search:build": "node scripts/build-search-index.js",
+    "predev": "pnpm vocab:build && pnpm search:build",
+    "prebuild": "pnpm vocab:build && pnpm search:build"
   },
   "dependencies": {
     "@openuji/render-respec": "workspace:*",
     "@openuji/speculator": "workspace:*",
     "@openuji/speculator-lint": "workspace:*",
+    "@openuji/speculator-search": "workspace:*",
     "@openuji/vocab-build": "workspace:*",
     "astro": "^5.16.4"
   }

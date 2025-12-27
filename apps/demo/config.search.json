@@ -1,0 +1,20 @@
+{
+    "routing": {
+        "strategy": "map",
+        "map": {
+            "spec/index.md": "/"
+        },
+        "fallback": "/"
+    },
+    "search": {
+        "mode": "raw",
+        "outputPath": "public/search-index.json",
+        "filters": {
+            "enabled": true,
+            "fields": [
+                "documentType",
+                "sectionType"
+            ]
+        }
+    }
+}

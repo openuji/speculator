@@ -1,0 +1,1011 @@
+{
+  "version": "1.0.0",
+  "documents": [
+    {
+      "documentId": "/Users/zavalit/Projects/openuji/speculator/apps/demo/spec/index.md",
+      "route": "/",
+      "title": "",
+      "entries": [
+        {
+          "searchId": "introduction.p-0.text-0",
+          "text": "This is a demonstration of the Speculator parsing system.",
+          "plainText": "this is a demonstration of the speculator parsing system",
+          "context": {
+            "sectionTitle": "Introduction",
+            "headingPath": [
+              "Introduction"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "introduction",
+          "anchor": "#introduction",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Introduction"
+          }
+        },
+        {
+          "searchId": "introduction.p-1.text-0",
+          "text": "It covers various markdown features.",
+          "plainText": "it covers various markdown features",
+          "context": {
+            "sectionTitle": "Introduction",
+            "headingPath": [
+              "Introduction"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "introduction",
+          "anchor": "#introduction",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Introduction"
+          }
+        },
+        {
+          "searchId": "introduction.s-0.text-formatting.p-0.text-0",
+          "text": "We support emphasis, strong text, inline code, and links.",
+          "plainText": "we support emphasis strong text inline code and links",
+          "context": {
+            "sectionTitle": "Text Formatting",
+            "headingPath": [
+              "Introduction",
+              "Text Formatting"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "text-formatting",
+          "anchor": "#text-formatting",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Text Formatting"
+          }
+        },
+        {
+          "searchId": "introduction.s-0.text-formatting.p-1.text-0",
+          "text": "You can also use images: Example Image",
+          "plainText": "you can also use images example image",
+          "context": {
+            "sectionTitle": "Text Formatting",
+            "headingPath": [
+              "Introduction",
+              "Text Formatting"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "text-formatting",
+          "anchor": "#text-formatting",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Text Formatting"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-0.unordered.list-0.li-0.p-0.text-0",
+          "text": "Item 1",
+          "plainText": "item 1",
+          "context": {
+            "sectionTitle": "Unordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Unordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "unordered",
+          "anchor": "#unordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Unordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-0.unordered.list-0.li-1.p-0.text-0",
+          "text": "Item 2",
+          "plainText": "item 2",
+          "context": {
+            "sectionTitle": "Unordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Unordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "unordered",
+          "anchor": "#unordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Unordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-0.unordered.list-0.li-1.list-1.li-0.p-0.text-0",
+          "text": "Nested Item 2.1",
+          "plainText": "nested item 21",
+          "context": {
+            "sectionTitle": "Unordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Unordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "unordered",
+          "anchor": "#unordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Unordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-0.unordered.list-0.li-1.list-1.li-1.p-0.text-0",
+          "text": "Nested Item 2.2",
+          "plainText": "nested item 22",
+          "context": {
+            "sectionTitle": "Unordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Unordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "unordered",
+          "anchor": "#unordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Unordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-0.unordered.list-0.li-2.p-0.text-0",
+          "text": "Item 3",
+          "plainText": "item 3",
+          "context": {
+            "sectionTitle": "Unordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Unordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "unordered",
+          "anchor": "#unordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Unordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-1.ordered.list-0.li-0.p-0.text-0",
+          "text": "First",
+          "plainText": "first",
+          "context": {
+            "sectionTitle": "Ordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Ordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "ordered",
+          "anchor": "#ordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Ordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-1.ordered.list-0.li-1.p-0.text-0",
+          "text": "Second",
+          "plainText": "second",
+          "context": {
+            "sectionTitle": "Ordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Ordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "ordered",
+          "anchor": "#ordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Ordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-1.ordered.list-0.li-2.p-0.text-0",
+          "text": "Third",
+          "plainText": "third",
+          "context": {
+            "sectionTitle": "Ordered",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Ordered"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "ordered",
+          "anchor": "#ordered",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Ordered"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-2.task-list.list-0.li-0.p-0.text-0",
+          "text": "Completed task",
+          "plainText": "completed task",
+          "context": {
+            "sectionTitle": "Task List",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Task List"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "task-list",
+          "anchor": "#task-list",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Task List"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-2.task-list.list-0.li-1.p-0.text-0",
+          "text": "Pending task",
+          "plainText": "pending task",
+          "context": {
+            "sectionTitle": "Task List",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Task List"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "task-list",
+          "anchor": "#task-list",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Task List"
+          }
+        },
+        {
+          "searchId": "introduction.s-1.lists.s-2.task-list.list-0.li-2.p-0.text-0",
+          "text": "Another task",
+          "plainText": "another task",
+          "context": {
+            "sectionTitle": "Task List",
+            "headingPath": [
+              "Introduction",
+              "Lists",
+              "Task List"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "task-list",
+          "anchor": "#task-list",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Task List"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-0.cell-0.text-0",
+          "text": "Feature",
+          "plainText": "feature",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-0.cell-1.text-0",
+          "text": "Status",
+          "plainText": "status",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-0.cell-2.text-0",
+          "text": "Notes",
+          "plainText": "notes",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-1.cell-0.text-0",
+          "text": "Headings",
+          "plainText": "headings",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-1.cell-1.text-0",
+          "text": "✅",
+          "plainText": "",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-1.cell-2.text-0",
+          "text": "h1-h6 supported",
+          "plainText": "h1-h6 supported",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-2.cell-0.text-0",
+          "text": "Paragraphs",
+          "plainText": "paragraphs",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-2.cell-1.text-0",
+          "text": "✅",
+          "plainText": "",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-2.cell-2.text-0",
+          "text": "Basic blocks",
+          "plainText": "basic blocks",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-3.cell-0.text-0",
+          "text": "Lists",
+          "plainText": "lists",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-3.cell-1.text-0",
+          "text": "✅",
+          "plainText": "",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-3.cell-2.text-0",
+          "text": "Ordered, unordered, nested",
+          "plainText": "ordered unordered nested",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-4.cell-0.text-0",
+          "text": "Tables",
+          "plainText": "tables",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-4.cell-1.text-0",
+          "text": "✅",
+          "plainText": "",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-4.cell-2.text-0",
+          "text": "GFM tables",
+          "plainText": "gfm tables",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-5.cell-0.text-0",
+          "text": "Code",
+          "plainText": "code",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-5.cell-1.text-0",
+          "text": "✅",
+          "plainText": "",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-5.cell-2.text-0",
+          "text": "Fenced blocks",
+          "plainText": "fenced blocks",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-6.cell-0.text-0",
+          "text": "Blockquotes",
+          "plainText": "blockquotes",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-6.cell-1.text-0",
+          "text": "✅",
+          "plainText": "",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-2.tables.table-0.row-6.cell-2.text-0",
+          "text": "Nested support",
+          "plainText": "nested support",
+          "context": {
+            "sectionTitle": "Tables",
+            "headingPath": [
+              "Introduction",
+              "Tables"
+            ],
+            "nodeType": "tableCell"
+          },
+          "sectionId": "tables",
+          "anchor": "#tables",
+          "filters": {
+            "nodeType": "tableCell",
+            "sectionTitle": "Tables"
+          }
+        },
+        {
+          "searchId": "introduction.s-3.code-blocks.p-0.text-0",
+          "text": "Inline code: const x = 42;",
+          "plainText": "inline code const x  42",
+          "context": {
+            "sectionTitle": "Code Blocks",
+            "headingPath": [
+              "Introduction",
+              "Code Blocks"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "code-blocks",
+          "anchor": "#code-blocks",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Code Blocks"
+          }
+        },
+        {
+          "searchId": "introduction.s-3.code-blocks.p-1.text-0",
+          "text": "Fenced code block:",
+          "plainText": "fenced code block",
+          "context": {
+            "sectionTitle": "Code Blocks",
+            "headingPath": [
+              "Introduction",
+              "Code Blocks"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "code-blocks",
+          "anchor": "#code-blocks",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Code Blocks"
+          }
+        },
+        {
+          "searchId": "introduction.s-3.code-blocks.code-2",
+          "text": "function hello(): void {\n    console.log(\"Hello World\");\n}",
+          "plainText": "function hello void  consoleloghello world ",
+          "context": {
+            "sectionTitle": "Code Blocks",
+            "headingPath": [
+              "Introduction",
+              "Code Blocks"
+            ],
+            "nodeType": "codeBlock"
+          },
+          "sectionId": "code-blocks",
+          "anchor": "#code-blocks",
+          "filters": {
+            "nodeType": "codeBlock",
+            "sectionTitle": "Code Blocks"
+          }
+        },
+        {
+          "searchId": "introduction.s-3.code-blocks.code-3",
+          "text": "{\n    \"name\": \"speculator\",\n    \"version\": \"0.1.0\"\n}",
+          "plainText": " name speculator version 010 ",
+          "context": {
+            "sectionTitle": "Code Blocks",
+            "headingPath": [
+              "Introduction",
+              "Code Blocks"
+            ],
+            "nodeType": "codeBlock"
+          },
+          "sectionId": "code-blocks",
+          "anchor": "#code-blocks",
+          "filters": {
+            "nodeType": "codeBlock",
+            "sectionTitle": "Code Blocks"
+          }
+        },
+        {
+          "searchId": "introduction.s-4.blockquotes.bq-0.p-0.text-0",
+          "text": "This is a blockquote.\nIt can span multiple lines.",
+          "plainText": "this is a blockquote it can span multiple lines",
+          "context": {
+            "sectionTitle": "Blockquotes",
+            "headingPath": [
+              "Introduction",
+              "Blockquotes"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "blockquotes",
+          "anchor": "#blockquotes",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Blockquotes"
+          }
+        },
+        {
+          "searchId": "introduction.s-4.blockquotes.p-1.text-0",
+          "text": "Nested blockquotes:",
+          "plainText": "nested blockquotes",
+          "context": {
+            "sectionTitle": "Blockquotes",
+            "headingPath": [
+              "Introduction",
+              "Blockquotes"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "blockquotes",
+          "anchor": "#blockquotes",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Blockquotes"
+          }
+        },
+        {
+          "searchId": "introduction.s-4.blockquotes.bq-2.p-0.text-0",
+          "text": "First level quote",
+          "plainText": "first level quote",
+          "context": {
+            "sectionTitle": "Blockquotes",
+            "headingPath": [
+              "Introduction",
+              "Blockquotes"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "blockquotes",
+          "anchor": "#blockquotes",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Blockquotes"
+          }
+        },
+        {
+          "searchId": "introduction.s-4.blockquotes.bq-2.bq-1.p-0.text-0",
+          "text": "Nested quote",
+          "plainText": "nested quote",
+          "context": {
+            "sectionTitle": "Blockquotes",
+            "headingPath": [
+              "Introduction",
+              "Blockquotes"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "blockquotes",
+          "anchor": "#blockquotes",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Blockquotes"
+          }
+        },
+        {
+          "searchId": "introduction.s-4.blockquotes.bq-2.bq-1.bq-1.p-0.text-0",
+          "text": "Deeply nested",
+          "plainText": "deeply nested",
+          "context": {
+            "sectionTitle": "Blockquotes",
+            "headingPath": [
+              "Introduction",
+              "Blockquotes"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "blockquotes",
+          "anchor": "#blockquotes",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Blockquotes"
+          }
+        },
+        {
+          "searchId": "introduction.s-5.horizontal-rules.p-0.text-0",
+          "text": "Above is a horizontal rule (thematic break).",
+          "plainText": "above is a horizontal rule thematic break",
+          "context": {
+            "sectionTitle": "Horizontal Rules",
+            "headingPath": [
+              "Introduction",
+              "Horizontal Rules"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "horizontal-rules",
+          "anchor": "#horizontal-rules",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Horizontal Rules"
+          }
+        },
+        {
+          "searchId": "introduction.s-6.includes.s-0.included-content.p-0.text-0",
+          "text": "This content comes from an included file (included.md).",
+          "plainText": "this content comes from an included file includedmd",
+          "context": {
+            "sectionTitle": "Included Content",
+            "headingPath": [
+              "Introduction",
+              "Includes",
+              "Included Content"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "included-content",
+          "anchor": "#included-content",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Included Content"
+          }
+        },
+        {
+          "searchId": "introduction.s-6.includes.s-0.included-content.p-1.text-0",
+          "text": "It should appear seamlessly in the document structure.",
+          "plainText": "it should appear seamlessly in the document structure",
+          "context": {
+            "sectionTitle": "Included Content",
+            "headingPath": [
+              "Introduction",
+              "Includes",
+              "Included Content"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "included-content",
+          "anchor": "#included-content",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Included Content"
+          }
+        },
+        {
+          "searchId": "introduction.s-7.definitions.p-0.text-0",
+          "text": "This spec defines {{Term}} as a concept. One can refer to term.",
+          "plainText": "this spec defines term as a concept one can refer to term",
+          "context": {
+            "sectionTitle": "Definitions",
+            "headingPath": [
+              "Introduction",
+              "Definitions"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "definitions",
+          "anchor": "#definitions",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Definitions"
+          }
+        },
+        {
+          "searchId": "introduction.s-8.requirements.p-0.text-0",
+          "text": "The implementation MUST support this requirement.",
+          "plainText": "the implementation must support this requirement",
+          "context": {
+            "sectionTitle": "Requirements",
+            "headingPath": [
+              "Introduction",
+              "Requirements"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "requirements",
+          "anchor": "#requirements",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Requirements"
+          }
+        },
+        {
+          "searchId": "introduction.s-8.requirements.p-1.text-0",
+          "text": "The implementation SHOULD follow best practices.",
+          "plainText": "the implementation should follow best practices",
+          "context": {
+            "sectionTitle": "Requirements",
+            "headingPath": [
+              "Introduction",
+              "Requirements"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "requirements",
+          "anchor": "#requirements",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Requirements"
+          }
+        },
+        {
+          "searchId": "introduction.s-9.issues.p-0.text-0",
+          "text": "This is an open issue: {{?issue-id Open Issue regarding semantics}}.",
+          "plainText": "this is an open issue issue-id open issue regarding semantics",
+          "context": {
+            "sectionTitle": "Issues",
+            "headingPath": [
+              "Introduction",
+              "Issues"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "issues",
+          "anchor": "#issues",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Issues"
+          }
+        }
+      ]
+    }
+  ]
+}
