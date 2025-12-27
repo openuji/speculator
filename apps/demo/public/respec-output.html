@@ -269,7 +269,7 @@
 
         <dl>
             <dt>This version:</dt>
-            <dd>2025-12-25</dd>
+            <dd>2025-12-27</dd>
 
             
 
@@ -308,7 +308,7 @@
         <ol class="toc">
             
             <li class="tocline">
-                <a href="#section-0" class="tocxref">
+                <a href="#sample-specification" class="tocxref">
                     <span class="secno"></span> Untitled Section
                 </a>
                 
@@ -322,42 +322,42 @@
     <div class="diagnostics-panel"><p>✅ No issues found</p></div>
 
     <!-- Main Content -->
-    <section>
+    <section id="sample-specification">
 
-<section>
+<section id="abstract">
 
 <p>This is a sample specification demonstrating the render-respec package. It showcases how spec data is transformed into ReSpec-compatible HTML using the Speculator AST pipeline.</p><p>The specification includes definitions, references, and various structural elements that are processed and indexed by Speculator.</p>
-</section><section>
+</section><section id="introduction">
 
-<p>This specification defines several key concepts:</p><ul><li><p>Widget: A fundamental building block</p></li><li><p>Component: A reusable element composed of one or more widgets</p></li><li><p>System: A collection of components working together</p></li></ul><section>
+<p>This specification defines several key concepts:</p><ul><li><p>Widget: A fundamental building block</p></li><li><p>Component: A reusable element composed of one or more widgets</p></li><li><p>System: A collection of components working together</p></li></ul><section id="use-cases">
 
 <p>The primary use case for this specification is to demonstrate:</p><ol><li><p>How Speculator builds an AST from Markdown</p></li><li><p>How definitions are indexed globally</p></li><li><p>How references are resolved to their targets</p></li><li><p>How diagnostics from speculator-lint are displayed</p></li></ol>
 </section>
-</section><section>
+</section><section id="core-concepts">
 
-<section>
+<section id="widgets">
 
 <p>A widget is the most basic unit in our system. Every widget has the following properties:</p><ul><li><p><strong>id</strong>: A unique identifier</p></li><li><p><strong>type</strong>: The widget type</p></li><li><p><strong>state</strong>: Current operational state</p></li></ul>
-</section><section>
+</section><section id="components">
 
 <p>A component encapsulates one or more widgets. Components provide:</p><ul><li><p>Composability: Components can contain other components</p></li><li><p>Reusability: Components can be instantiated multiple times</p></li><li><p>Abstraction: Components hide implementation details</p></li></ul>
-</section><section>
+</section><section id="systems">
 
 <p>The system represents the highest level of abstraction, coordinating multiple components to achieve complex functionality.</p>
 </section>
-</section><section>
+</section><section id="examples">
 
-<section>
+<section id="basic-widget-example">
 
 
-</section><section>
+</section><section id="component-composition">
 
 
 </section>
-</section><section>
+</section><section id="security-considerations">
 
 <p>When implementing a system, ensure that:</p><ol><li><p>All widgets are properly validated</p></li><li><p>Components enforce access controls</p></li><li><p>The system maintains audit logs</p></li></ol>
-</section><section>
+</section><section id="references">
 
 <p>This specification builds upon concepts from:</p><ul><li><p>HTML </p></li><li><p>DOM </p></li></ul>
 </section>
