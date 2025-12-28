@@ -46,5 +46,12 @@
         "eslint": "^8.57.0",
         "typescript": "^5.3.0",
         "vitest": "^1.0.0"
+    },
+    "lint-staged": {
+        "src/**/*.ts": [
+            "pnpm lint --fix",
+            "bash -c 'pnpm typecheck'",
+            "bash -c 'pnpm test --run'"
+        ]
     }
 }
