@@ -1,5 +1,5 @@
 import { SpeculatorPipeline, corePlugins, NodeFileProvider } from '@openuji/speculator';
-import { contentIdPlugin, searchIndexPlugin, buildSearchIndex, loadSearchConfig, applyRoutingConfig } from '@openuji/speculator-search';
+import { buildSearchIndex } from '@openuji/speculator-search';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
@@ -7,26 +7,26 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
+/**
+ * Route mapping for documents
+ * Maps relative document paths to their rendered routes
+ */
+const ROUTE_MAP = {
+    'spec/index.md': '/',
+    'spec/workspace/pkg-a/index.html': '/workspace/pkg-a',
+    'spec/workspace/pkg-b/index.html': '/workspace/pkg-b'
+};
+
 async function buildSearchIndexFile() {
     console.log('🔍 Building search index...');
 
     const specDir = path.join(rootDir, 'spec');
-    const searchConfigFile = path.join(rootDir, 'config.search.json');
     const outputFile = path.join(rootDir, 'public', 'search-index.json');
 
-    // Load search configuration
-    const config = await loadSearchConfig(searchConfigFile);
+    // Setup pipeline with core plugins only (no search plugins needed)
+    const pipeline = new SpeculatorPipeline(corePlugins);
 
-    // Setup pipeline with search plugins
-    const pipeline = new SpeculatorPipeline([
-        ...corePlugins,
-        contentIdPlugin,
-        searchIndexPlugin({
-            configPath: searchConfigFile
-        })
-    ]);
-
-    // Run pipeline on all documents (main + workspace)
+    // Run pipeline on all documents
     const result = await pipeline.runWorkspace({
         entries: [
             { entry: path.join(specDir, 'index.md') },
@@ -36,14 +36,20 @@ async function buildSearchIndexFile() {
         fileProvider: new NodeFileProvider(),
     });
 
-    // Build search index (raw mode for client-side search)
-    const searchIndex = buildSearchIndex(result, {
-        mode: 'raw',
+    if (!result.workspace) {
+        throw new Error('Pipeline did not produce a workspace');
+    }
+
+    // Build search index using standalone builder
+    const { data: searchIndex } = await buildSearchIndex(result.workspace, {
         includeSourcePos: false  // Reduce file size for production
     });
 
-    // Apply routing configuration
-    applyRoutingConfig(searchIndex, config, rootDir);
+    // Apply route mapping (app-specific logic)
+    for (const doc of searchIndex.documents) {
+        const relativePath = getRelativePath(doc.documentId, rootDir);
+        doc.route = ROUTE_MAP[relativePath] || '/';
+    }
 
     // Ensure output directory exists
     await fs.mkdir(path.dirname(outputFile), { recursive: true });
@@ -61,6 +67,23 @@ async function buildSearchIndexFile() {
 
     const stats = await fs.stat(outputFile);
     console.log(`   File size: ${(stats.size / 1024).toFixed(2)} KB`);
+}
+
+/**
+ * Get relative path from absolute documentId
+ */
+function getRelativePath(absolutePath, baseDir) {
+    const normalizedPath = absolutePath.split(/[/\\]/).join('/');
+    const normalizedBase = baseDir.split(/[/\\]/).join('/');
+
+    if (normalizedPath.startsWith(normalizedBase)) {
+        let relative = normalizedPath.substring(normalizedBase.length);
+        if (relative.startsWith('/')) {
+            relative = relative.substring(1);
+        }
+        return relative;
+    }
+    return absolutePath;
 }
 
 // Run build

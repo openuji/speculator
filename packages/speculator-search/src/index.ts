@@ -1,27 +1,46 @@
 /**
  * Speculator Search - Main Entry Point
  * 
- * Search index builder for Speculator with content mapping and navigation support.
+ * Pure post-processor for building search indexes from Speculator Workspace AST.
+ * 
+ * @example
+ * ```typescript
+ * import { SpeculatorPipeline, corePlugins } from '@openuji/speculator';
+ * import { buildSearchIndex } from '@openuji/speculator-search';
+ * 
+ * const pipeline = new SpeculatorPipeline(corePlugins);
+ * const result = await pipeline.runWorkspace({ entries, fileProvider });
+ * 
+ * const { data } = await buildSearchIndex(result.workspace);
+ * // data.documents contains search entries with documentId, title, entries
+ * // Client handles routing: documentId → route
+ * ```
  */
 
-// Plugins
-export { contentIdPlugin, getContentIdMapFromContext, getContentIdMapFromDocument } from './plugins/content-id.js';
-export { searchIndexPlugin, getSearchEntriesFromContext } from './plugins/search-index.js';
+// Main API - standalone builder
+export { buildSearchIndex, type BuildSearchIndexOptions } from './standalone.js';
 
-// Builders
-export { buildSearchIndex, loadSearchConfig, applyRoutingConfig } from './builders/search-index-builder.js';
+// Index Engines
+export {
+    type IndexEngine,
+    type IndexEngineResult,
+    type IndexEngineContext,
+    createRawEngine,
+    type RawIndexData,
+    type RawEngineOptions
+} from './engines/index.js';
 
 // Types
 export type {
-    SearchIndex,
     DocumentSearchData,
     SearchEntry,
-    SearchContext,
-    BuildSearchIndexOptions,
-    SearchIndexPluginConfig,
-    ContentIdMapping,
-    SearchConfig
+    SearchContext
 } from './types.js';
 
 // Utilities
-export { extractTextFromInlines, extractTextFromInline, normalizeTextForSearch } from './utils/extract-text.js';
+export {
+    extractTextFromInlines,
+    extractTextFromInline,
+    normalizeTextForSearch
+} from './utils/extract-text.js';
+
