@@ -1,0 +1,50 @@
+{
+    "name": "@openuji/speculator-search",
+    "version": "0.1.0",
+    "description": "Search index builder for Speculator with content mapping and navigation support",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "imports": {
+        "#src/*": "./dist/*.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "lint": "eslint src --ext .ts",
+        "lint:fix": "eslint src --ext .ts --fix",
+        "typecheck": "tsc --noEmit"
+    },
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "keywords": [
+        "search",
+        "index",
+        "specification",
+        "ast",
+        "speculator",
+        "full-text-search"
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "@openuji/speculator": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.0",
+        "@typescript-eslint/eslint-plugin": "^7.0.0",
+        "@typescript-eslint/parser": "^7.0.0",
+        "eslint": "^8.57.0",
+        "typescript": "^5.3.0",
+        "vitest": "^1.0.0"
+    }
+}
