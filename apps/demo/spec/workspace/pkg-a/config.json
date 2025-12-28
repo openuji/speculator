@@ -1,0 +1,9 @@
+{
+    "id": "pkg-a",
+    "deps": [],
+    "respec": {
+        "title": "Package A Specification",
+        "shortName": "pkg-a",
+        "specStatus": "ED"
+    }
+}

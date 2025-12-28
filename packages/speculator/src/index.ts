@@ -30,3 +30,6 @@ export {
     coreMarkdownParsers,
 } from './parse/parsers.js';
 
+// Workspace Utilities
+export { sortEntriesByDeps } from './workspace/index.js';
+export type { EntryWithConfig } from './workspace/index.js';

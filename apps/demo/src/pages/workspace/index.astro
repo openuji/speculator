@@ -3,6 +3,7 @@ import {
     SpeculatorPipeline,
     corePlugins,
     NodeFileProvider,
+    sortEntriesByDeps,
     type Document,
 } from "@openuji/speculator";
 
@@ -21,14 +22,19 @@ import path from "path";
 const specDir = path.resolve("spec/workspace");
 const fileProvider = new NodeFileProvider();
 
-const pipeline = new SpeculatorPipeline(corePlugins);
-
-const result = await pipeline.runWorkspace({
-    entries: [
+// Sort entries by their dependencies (reads config.json sibling files)
+const sortResult = await sortEntriesByDeps(
+    [
         { entry: path.join(specDir, "pkg-a/index.html") },
         { entry: path.join(specDir, "pkg-b/index.html") },
     ],
+    fileProvider,
+);
 
+const pipeline = new SpeculatorPipeline(corePlugins);
+
+const result = await pipeline.runWorkspace({
+    entries: sortResult.entries,
     fileProvider,
 });
 
