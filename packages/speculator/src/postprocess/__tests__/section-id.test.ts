@@ -6,8 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { sectionIdPlugin } from '#src/postprocess/plugins/section-id';
 import type {
     Document,
-    Section,
-    BlockHeading,
+    Section
 } from '#src/types/ast.generated';
 
 function createSectionWithHeading(headingText: string, explicitId?: string): Section {

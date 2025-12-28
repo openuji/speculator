@@ -5,4 +5,4 @@
  */
 
 export { sortEntriesByDeps } from './sort.js';
-export type { EntryWithConfig } from './sort.js';
+export type { EntryWithConfig, SortResult } from './sort.js';

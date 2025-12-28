@@ -44,6 +44,13 @@
         "respec",
         "markdown"
     ],
+    "lint-staged": {
+        "src/**/*.ts": [
+            "pnpm lint --fix",
+            "bash -c 'pnpm typecheck'",
+            "bash -c 'pnpm test --run'"
+        ]
+    },
     "license": "MIT",
     "dependencies": {
         "rehype-parse": "^9.0.1",

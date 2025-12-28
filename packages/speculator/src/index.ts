@@ -7,8 +7,8 @@ export type { ParsedSpec } from './parse/types.js';
 // File Providers
 export { NodeFileProvider } from './file-provider/node.js';
 export { MemoryFileProvider } from './file-provider/memory.js';
-export type { FileProvider } from './file-provider/types.js';
 
+export type { FileProvider } from './file-provider/types.js';
 // AST Types
 export * from './types/ast.generated.js';
 
@@ -32,4 +32,4 @@ export {
 
 // Workspace Utilities
 export { sortEntriesByDeps } from './workspace/index.js';
-export type { EntryWithConfig } from './workspace/index.js';
+export type { EntryWithConfig, SortResult } from './workspace/index.js';

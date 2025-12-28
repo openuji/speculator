@@ -22,7 +22,7 @@ export interface EntryWithConfig {
  */
 export interface SortResult {
     /** Sorted entries (dependencies first) */
-    entries: { entry: string; configPath?: string }[];
+    entries: EntryWithConfig[];
     /** Any errors encountered */
     errors: string[];
 }
@@ -154,7 +154,7 @@ export async function sortEntriesByDeps(
     }
 
     return {
-        entries: sorted.map(e => ({ entry: e.entry, configPath: e.configPath })),
+        entries: sorted.map(e => ({ entry: e.entry, config: e.config, configPath: e.configPath })),
         errors,
     };
 }
