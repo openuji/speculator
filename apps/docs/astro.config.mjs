@@ -23,6 +23,9 @@ export default defineConfig({
 					entryPoints: [entry('speculator')],
 					output: 'api/speculator',
 					tsconfig: tsconfig('speculator'),
+					sidebar: {
+						collapsed: true,
+					},
 					typeDoc: {
 						flattenOutputFiles: true,
 						entryFileName: 'index.md',
@@ -34,6 +37,9 @@ export default defineConfig({
 					entryPoints: [entry('speculator-lint')],
 					output: 'api/speculator-lint',
 					tsconfig: tsconfig('speculator-lint'),
+					sidebar: {
+						collapsed: true,
+					},
 					typeDoc: {
 						flattenOutputFiles: true,
 						entryFileName: 'index.md',
@@ -45,6 +51,9 @@ export default defineConfig({
 					entryPoints: [entry('speculator-search')],
 					output: 'api/speculator-search',
 					tsconfig: tsconfig('speculator-search'),
+					sidebar: {
+						collapsed: true,
+					},
 					typeDoc: {
 						flattenOutputFiles: true,
 						entryFileName: 'index.md',
@@ -56,6 +65,9 @@ export default defineConfig({
 					entryPoints: [entry('render-respec')],
 					output: 'api/render-respec',
 					tsconfig: tsconfig('render-respec'),
+					sidebar: {
+						collapsed: true,
+					},
 					typeDoc: {
 						flattenOutputFiles: true,
 						entryFileName: 'index.md',
@@ -67,11 +79,15 @@ export default defineConfig({
 					entryPoints: [entry('vocab-build')],
 					output: 'api/vocab-build',
 					tsconfig: tsconfig('vocab-build'),
+					sidebar: {
+						collapsed: true,
+					},
 					typeDoc: {
 						flattenOutputFiles: true,
 						entryFileName: 'index.md',
 						hideBreadcrumbs: true,
 						hidePageTitle: true,
+						
 					}
 				}),
 			],
