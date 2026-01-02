@@ -4,6 +4,8 @@
     "scripts": {
         "test": "pnpm -r test",
         "build": "pnpm -r build",
+        "build:packages": "pnpm -r --filter ./packages/** run build",
+        "ci:publish": "pnpm -r --filter ./packages/** publish --access public --provenance",
         "prepare": "husky"
     },
     "devDependencies": {
