@@ -1,16 +1,16 @@
 ---
 import {
-    SpeculatorPipeline,
-    corePlugins,
-    NodeFileProvider,
-    sortEntriesByDeps,
-    type Document,
+  SpeculatorPipeline,
+  corePlugins,
+  NodeFileProvider,
+  sortEntriesByDeps,
+  type Document,
 } from "@openuji/speculator";
 
 import {
-    SpeculatorLinter,
-    builtInRules,
-    recommendedConfig,
+  SpeculatorLinter,
+  builtInRules,
+  recommendedConfig,
 } from "@openuji/speculator-lint";
 
 import BlockRenderer from "../../components/BlockRenderer.astro";
@@ -25,18 +25,20 @@ const fileProvider = new NodeFileProvider();
 
 // Sort entries by their dependencies (reads config.json sibling files)
 const sortResult = await sortEntriesByDeps(
-    [
-        { entry: path.join(specDir, "pkg-a/index.html") },
-        { entry: path.join(specDir, "pkg-b/index.html") },
-    ],
-    fileProvider,
+  [
+    { entry: path.join(specDir, "pkg-a/index.html") },
+    { entry: path.join(specDir, "pkg-b/index.html") },
+    { entry: path.join(specDir, "pkg-c/index.html") },
+    { entry: path.join(specDir, "pkg-d/index.md") },
+  ],
+  fileProvider
 );
 
 const pipeline = new SpeculatorPipeline(corePlugins);
 
 const result = await pipeline.runWorkspace({
-    entries: sortResult.entries,
-    fileProvider,
+  entries: sortResult.entries,
+  fileProvider,
 });
 
 const workspace = result.workspace;
@@ -45,22 +47,22 @@ const docs: Document[] = workspace?.documents || [];
 // Run linter if workspace was successfully created
 let lintResult;
 if (workspace) {
-    // Build document levels map (order in entries determines level)
-    const documentLevels = new Map<string, number>();
-    workspace.documents.forEach((doc, index) => {
-        const path = doc.sourcePos?.file || "";
-        if (path) {
-            documentLevels.set(path, index);
-        }
-    });
+  // Build document levels map (order in entries determines level)
+  const documentLevels = new Map<string, number>();
+  workspace.documents.forEach((doc, index) => {
+    const path = doc.sourcePos?.file || "";
+    if (path) {
+      documentLevels.set(path, index);
+    }
+  });
 
-    // Create and run linter
-    const linter = new SpeculatorLinter(builtInRules);
-    lintResult = await linter.lint({
-        workspace,
-        documentLevels,
-        config: recommendedConfig,
-    });
+  // Create and run linter
+  const linter = new SpeculatorLinter(builtInRules);
+  lintResult = await linter.lint({
+    workspace,
+    documentLevels,
+    config: recommendedConfig,
+  });
 }
 
 // Combine pipeline and lint diagnostics
@@ -68,121 +70,114 @@ const allDiagnostics = lintResult?.diagnostics || [];
 ---
 
 <Layout title="Speculator Workspace Demo">
-    <header class="spec-header">
-        <h1>Multi-Spec Workspace Demo</h1>
-        <p class="subtitle">
-            Demonstrating cross-document reference resolution
-        </p>
-        <div class="workspace-summary">
-            <p>
-                Total Documents: <strong>{docs.length}</strong>
-            </p>
-        </div>
-
-        {
-            allDiagnostics.length > 0 && (
-                <section class="diagnostics">
-                    <h2>Workspace Diagnostics ({allDiagnostics.length})</h2>
-                    {lintResult && (
-                        <p class="lint-info">
-                            ✓ Lint validation completed in{" "}
-                            {lintResult.totalTime.toFixed(2)}ms
-                        </p>
-                    )}
-                    <ul class="diag-list">
-                        {allDiagnostics.map((d) => (
-                            <li class={d.severity}>
-                                <strong>[{d.code}]</strong> {d.message}
-                                {d.file && (
-                                    <span class="loc">
-                                        ({path.basename(d.file)})
-                                    </span>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )
-        }
-    </header>
-
-    <div class="workspace-landing">
-        <p>Select a specification to view:</p>
-        <ul class="spec-list">
-            {
-                docs.map((document) => {
-                    const docPath = document.sourcePos?.file || "";
-                    const pkg = path.basename(path.dirname(docPath));
-                    const title = document.metadata?.title || pkg;
-                    return (
-                        <li>
-                            <a href={`/workspace/${pkg}`}>
-                                <strong>{title}</strong>
-                                <span class="path">({pkg}/index.html)</span>
-                            </a>
-                        </li>
-                    );
-                })
-            }
-        </ul>
+  <header class="spec-header">
+    <h1>Multi-Spec Workspace Demo</h1>
+    <p class="subtitle">Demonstrating cross-document reference resolution</p>
+    <div class="workspace-summary">
+      <p>
+        Total Documents: <strong>{docs.length}</strong>
+      </p>
     </div>
+
+    {
+      allDiagnostics.length > 0 && (
+        <section class="diagnostics">
+          <h2>Workspace Diagnostics ({allDiagnostics.length})</h2>
+          {lintResult && (
+            <p class="lint-info">
+              ✓ Lint validation completed in {lintResult.totalTime.toFixed(2)}ms
+            </p>
+          )}
+          <ul class="diag-list">
+            {allDiagnostics.map((d) => (
+              <li class={d.severity}>
+                <strong>[{d.code}]</strong> {d.message}
+                {d.file && <span class="loc">({path.basename(d.file)})</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </header>
+
+  <div class="workspace-landing">
+    <p>Select a specification to view:</p>
+    <ul class="spec-list">
+      {
+        docs.map((document) => {
+          const docPath = document.sourcePos?.file || "";
+          const pkg = path.basename(path.dirname(docPath));
+          const title = document.metadata?.title || pkg;
+          return (
+            <li>
+              <a href={`/workspace/${pkg}`}>
+                <strong>{title}</strong>
+                <span class="path">({pkg}/index.html)</span>
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
 </Layout>
 
 <style>
-    .workspace-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 4rem;
-        margin-top: 2rem;
-    }
-    .document-section {
-        border-left: 4px solid var(--accent);
-        padding-left: 2rem;
-    }
-    .doc-path {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-    }
-    .spec-header {
-        margin-bottom: 2rem;
-    }
-    .diagnostics {
-        margin-top: 2rem;
-        padding: 1rem;
-        background: #fff5f5;
-        border: 1px solid #feb2b2;
-        border-radius: 4px;
-        max-width: 800px;
-    }
-    .diagnostics h2 {
-        font-size: 1rem;
-        margin-top: 0;
-        color: #c53030;
-    }
-    .diag-list {
-        margin: 0;
-        padding-left: 1.5rem;
-    }
-    .diag-list li {
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-    }
-    .diag-list li.error {
-        color: #c53030;
-    }
-    .diag-list li.warning {
-        color: #9b2c2c;
-    }
-    .loc {
-        font-family: monospace;
-        font-size: 0.8rem;
-        color: #718096;
-        margin-left: 0.5rem;
-    }
-    .lint-info {
-        font-size: 0.85rem;
-        color: #2d3748;
-        margin: 0.5rem 0;
-        font-style: italic;
-    }
+  .workspace-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    margin-top: 2rem;
+  }
+  .document-section {
+    border-left: 4px solid var(--accent);
+    padding-left: 2rem;
+  }
+  .doc-path {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .spec-header {
+    margin-bottom: 2rem;
+  }
+  .diagnostics {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 4px;
+    max-width: 800px;
+  }
+  .diagnostics h2 {
+    font-size: 1rem;
+    margin-top: 0;
+    color: #c53030;
+  }
+  .diag-list {
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+  .diag-list li {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  .diag-list li.error {
+    color: #c53030;
+  }
+  .diag-list li.warning {
+    color: #9b2c2c;
+  }
+  .loc {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #718096;
+    margin-left: 0.5rem;
+  }
+  .lint-info {
+    font-size: 0.85rem;
+    color: #2d3748;
+    margin: 0.5rem 0;
+    font-style: italic;
+  }
 </style>

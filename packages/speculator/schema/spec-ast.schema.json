@@ -590,6 +590,11 @@
                             "items": {
                                 "$ref": "#/definitions/Inline"
                             }
+                        },
+                        "unnumbered": {
+                            "type": "boolean",
+                            "description": "If true, the section created from this heading will be unnumbered.",
+                            "default": false
                         }
                     },
                     "required": [
@@ -1009,6 +1014,11 @@
                         "heading": {
                             "$ref": "#/definitions/BlockHeading",
                             "description": "Optional section heading"
+                        },
+                        "unnumbered": {
+                            "type": "boolean",
+                            "description": "If true, this section and its descendants do not increment the TOC counter at this level.",
+                            "default": false
                         },
                         "children": {
                             "type": "array",

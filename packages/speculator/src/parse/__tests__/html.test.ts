@@ -47,6 +47,24 @@ describe('HtmlUnitParser', () => {
             expect(parent.id).toBe('parent');
             expect(parent.children.some((c) => c.type === 'section' && 'id' in c && c.id === 'child')).toBe(true);
         });
+
+        it('sets unnumbered flag for class="unnumbered"', () => {
+            const unit = createUnit('<section id="abstract" class="unnumbered"><h1>Abstract</h1></section>');
+            const blocks = parser.parse(unit);
+
+            expect(blocks).toHaveLength(1);
+            const section = blocks[0] as Section;
+            expect(section.unnumbered).toBe(true);
+        });
+
+        it('sets unnumbered flag for class="informative"', () => {
+            const unit = createUnit('<section id="sotd" class="informative"><h1>Status</h1></section>');
+            const blocks = parser.parse(unit);
+
+            expect(blocks).toHaveLength(1);
+            const section = blocks[0] as Section;
+            expect(section.unnumbered).toBe(true);
+        });
     });
 
     describe('headings', () => {

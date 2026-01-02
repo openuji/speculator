@@ -34,6 +34,26 @@ describe('MarkdownUnitParser', () => {
             expect(heading.children).toHaveLength(1);
             expect(heading.children[0]).toMatchObject({ type: 'text', value: 'Hello World' });
         });
+
+        it('detects {.unnumbered} suffix and sets unnumbered flag', () => {
+            const unit = createUnit('# Abstract {.unnumbered}');
+            const blocks = parser.parse(unit);
+
+            expect(blocks[0].type).toBe('heading');
+            const heading = blocks[0] as BlockHeading;
+            expect(heading.unnumbered).toBe(true);
+            // The suffix should be stripped from the text
+            expect(heading.children).toHaveLength(1);
+            expect(heading.children[0]).toMatchObject({ type: 'text', value: 'Abstract' });
+        });
+
+        it('does not set unnumbered for regular headings', () => {
+            const unit = createUnit('# Regular Heading');
+            const blocks = parser.parse(unit);
+
+            const heading = blocks[0] as BlockHeading;
+            expect(heading.unnumbered).toBeUndefined();
+        });
     });
 
     describe('paragraphs', () => {

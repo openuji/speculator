@@ -80,19 +80,23 @@ function buildTocFromSections(
             counters.push(0);
         }
 
-        // Increment counter at current depth
-        counters[depthIndex]++;
+        // Determine numbering
+        let number = '';
+        if (!section.unnumbered) {
+            // Increment counter at current depth
+            counters[depthIndex]++;
 
-        // Reset all deeper counters
-        for (let i = depthIndex + 1; i < counters.length; i++) {
-            counters[i] = 0;
+            // Reset all deeper counters
+            for (let i = depthIndex + 1; i < counters.length; i++) {
+                counters[i] = 0;
+            }
+
+            // Build number string from counters (only up to current depth)
+            const numberParts = counters.slice(0, depthIndex + 1).filter(n => n > 0);
+            number = numberParts.join('.');
         }
 
-        // Build number string from counters (only up to current depth)
-        const numberParts = counters.slice(0, depthIndex + 1).filter(n => n > 0);
-        const number = numberParts.join('.');
-
-        // Store heading number if section has an ID
+        // Store heading number if section has an ID and numbering is enabled
         if (section.id && number) {
             headingNumbers.set(section.id, number);
         }

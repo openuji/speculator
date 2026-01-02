@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2025-12-21T12:59:57.547Z
+ * Generated at: 2026-01-02T15:58:42.008Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -24,7 +24,15 @@ export type Section = BaseNode & {
      */
     id?: string;
     children: Inline[];
+    /**
+     * If true, the section created from this heading will be unnumbered.
+     */
+    unnumbered?: boolean;
   };
+  /**
+   * If true, this section and its descendants do not increment the TOC counter at this level.
+   */
+  unnumbered?: boolean;
   children: (Section | Block)[];
 };
 export type Inline =
@@ -214,6 +222,10 @@ export type BlockHeading = BaseNode & {
    */
   id?: string;
   children: Inline[];
+  /**
+   * If true, the section created from this heading will be unnumbered.
+   */
+  unnumbered?: boolean;
 };
 export type BlockCodeBlock = BaseNode & {
   type: 'codeBlock';

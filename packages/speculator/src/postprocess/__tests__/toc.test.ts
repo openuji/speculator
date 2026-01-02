@@ -306,4 +306,134 @@ describe('TocPlugin', () => {
 
         expect(doc.computed!.toc![0].text).toBe('Understanding task queue');
     });
+
+    describe('unnumbered sections', () => {
+        it('skips numbering for top-level unnumbered sections (Abstract, SOTD pattern)', async () => {
+            const abstract = createSectionWithHeading('Abstract', 1, 'abstract');
+            abstract.unnumbered = true;
+
+            const sotd = createSectionWithHeading('Status of This Document', 1, 'sotd');
+            sotd.unnumbered = true;
+
+            const intro = createSectionWithHeading('Introduction', 1, 'intro');
+            const methods = createSectionWithHeading('Methods', 1, 'methods');
+
+            const doc = createDocWithSections([abstract, sotd, intro, methods]);
+
+            await tocPlugin.compute!({ document: doc, level: 0 });
+
+            expect(doc.computed!.toc).toHaveLength(4);
+            // Unnumbered sections should have empty number string
+            expect(doc.computed!.toc![0]).toMatchObject({
+                id: 'abstract',
+                text: 'Abstract',
+                number: '',
+            });
+            expect(doc.computed!.toc![1]).toMatchObject({
+                id: 'sotd',
+                text: 'Status of This Document',
+                number: '',
+            });
+            // Numbered sections should start from 1
+            expect(doc.computed!.toc![2]).toMatchObject({
+                id: 'intro',
+                text: 'Introduction',
+                number: '1',
+            });
+            expect(doc.computed!.toc![3]).toMatchObject({
+                id: 'methods',
+                text: 'Methods',
+                number: '2',
+            });
+        });
+
+        it('does not store headingNumbers for unnumbered sections', async () => {
+            const abstract = createSectionWithHeading('Abstract', 1, 'abstract');
+            abstract.unnumbered = true;
+
+            const intro = createSectionWithHeading('Introduction', 1, 'intro');
+
+            const doc = createDocWithSections([abstract, intro]);
+
+            await tocPlugin.compute!({ document: doc, level: 0 });
+
+            // Abstract should not be in headingNumbers
+            expect(doc.computed!.headingNumbers).toEqual({
+                'intro': '1',
+            });
+        });
+
+        it('handles nested unnumbered subsection', async () => {
+            const parent = createSectionWithHeading('Main Section', 1, 'main');
+            
+            const unnumberedSub = createSectionWithHeading('Informative Note', 2, 'note');
+            unnumberedSub.unnumbered = true;
+
+            const numberedSub = createSectionWithHeading('Details', 2, 'details');
+
+            parent.children = [unnumberedSub, numberedSub];
+
+            const doc = createDocWithSections([parent]);
+
+            await tocPlugin.compute!({ document: doc, level: 0 });
+
+            expect(doc.computed!.toc![0].children).toHaveLength(2);
+            
+            // Unnumbered subsection
+            expect(doc.computed!.toc![0].children![0]).toMatchObject({
+                id: 'note',
+                text: 'Informative Note',
+                number: '',
+            });
+            
+            // Numbered subsection should be 1.1 (not 1.2)
+            expect(doc.computed!.toc![0].children![1]).toMatchObject({
+                id: 'details',
+                text: 'Details',
+                number: '1.1',
+            });
+        });
+
+        it('continues proper numbering after unnumbered sections at same level', async () => {
+            const section1 = createSectionWithHeading('First', 1, 'first');
+            
+            const unnumbered = createSectionWithHeading('Interlude', 1, 'interlude');
+            unnumbered.unnumbered = true;
+            
+            const section2 = createSectionWithHeading('Second', 1, 'second');
+
+            const doc = createDocWithSections([section1, unnumbered, section2]);
+
+            await tocPlugin.compute!({ document: doc, level: 0 });
+
+            expect(doc.computed!.toc![0].number).toBe('1');
+            expect(doc.computed!.toc![1].number).toBe('');
+            expect(doc.computed!.toc![2].number).toBe('2');
+        });
+
+        it('handles deeply nested mixed numbered/unnumbered sections', async () => {
+            const level1 = createSectionWithHeading('Level 1', 1, 'l1');
+            const level2 = createSectionWithHeading('Level 2', 2, 'l2');
+            
+            const level3Unnumbered = createSectionWithHeading('Unnumbered L3', 3, 'l3-un');
+            level3Unnumbered.unnumbered = true;
+            
+            const level3Numbered = createSectionWithHeading('Numbered L3', 3, 'l3-num');
+
+            level2.children = [level3Unnumbered, level3Numbered];
+            level1.children = [level2];
+
+            const doc = createDocWithSections([level1]);
+
+            await tocPlugin.compute!({ document: doc, level: 0 });
+
+            expect(doc.computed!.headingNumbers).toEqual({
+                'l1': '1',
+                'l2': '1.1',
+                'l3-num': '1.1.1',
+            });
+            // l3-un should not be in headingNumbers
+            expect(doc.computed!.headingNumbers!['l3-un']).toBeUndefined();
+        });
+    });
 });

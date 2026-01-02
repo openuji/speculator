@@ -20,6 +20,10 @@ export const SectionsHtmlParser: HtmlParserModule = {
     handleBlock(element: Element, ctx: ParseContext): BlockHandlerResult {
         const sourcePos = ctx.createSourcePos(element);
         const id = ctx.getAttr(element, 'id');
+        const className = ctx.getAttr(element, 'className') ?? '';
+        const unnumbered = className.split(/\s+/).some(c => 
+            ['unnumbered', 'informative', 'introductory'].includes(c)
+        );
 
         // Find heading and other children
         let heading: BlockHeading | undefined;
@@ -56,6 +60,7 @@ export const SectionsHtmlParser: HtmlParserModule = {
 
         if (id) result.id = id;
         if (heading) result.heading = heading;
+        if (unnumbered) result.unnumbered = true;
         if (sourcePos) result.sourcePos = sourcePos;
 
         return result;

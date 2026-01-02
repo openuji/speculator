@@ -20,12 +20,27 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
         const headingNode = node as Heading;
         const sourcePos = ctx.createSourcePos(node);
 
+        // Detect {.unnumbered} suffix in the last text node
+        let unnumbered = false;
+        const children = headingNode.children;
+        if (children.length > 0) {
+            const lastChild = children[children.length - 1];
+            if (lastChild.type === 'text') {
+                const unnumberedRegex = /\s*\{\.unnumbered\}\s*$/;
+                if (unnumberedRegex.test(lastChild.value)) {
+                    unnumbered = true;
+                    lastChild.value = lastChild.value.replace(unnumberedRegex, '');
+                }
+            }
+        }
+
         const result: BlockHeading = {
             type: 'heading',
             depth: headingNode.depth,
             children: ctx.transformInlineChildren(headingNode.children),
         };
 
+        if (unnumbered) result.unnumbered = true;
         if (sourcePos) result.sourcePos = sourcePos;
 
         return result;

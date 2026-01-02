@@ -51,6 +51,10 @@ function createSectionFromHeading(heading: BlockHeading): Section {
         section.sourcePos = heading.sourcePos;
         section.heading!.sourcePos = heading.sourcePos;
     }
+    if (heading.unnumbered) {
+        section.unnumbered = true;
+        section.heading!.unnumbered = true;
+    }
 
     return section;
 }
