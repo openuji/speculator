@@ -1,6 +1,6 @@
 {
     "name": "@openuji/speculator",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "description": "AST-first specification processor with schema-central architecture",
     "type": "module",
     "main": "dist/index.js",
