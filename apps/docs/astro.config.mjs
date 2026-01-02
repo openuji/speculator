@@ -24,7 +24,10 @@ export default defineConfig({
 					output: 'api/speculator',
 					tsconfig: tsconfig('speculator'),
 					typeDoc: {
-						name: 'Speculator Core'
+						flattenOutputFiles: true,
+						entryFileName: 'index.md',
+						hideBreadcrumbs: true,
+						hidePageTitle: true,
 					}
 				}),
 				starlightTypedoc({
@@ -32,7 +35,10 @@ export default defineConfig({
 					output: 'api/speculator-lint',
 					tsconfig: tsconfig('speculator-lint'),
 					typeDoc: {
-						name: 'Speculator Lint'
+						flattenOutputFiles: true,
+						entryFileName: 'index.md',
+						hideBreadcrumbs: true,
+						hidePageTitle: true,
 					}
 				}),
 				starlightTypedoc({
@@ -40,7 +46,10 @@ export default defineConfig({
 					output: 'api/speculator-search',
 					tsconfig: tsconfig('speculator-search'),
 					typeDoc: {
-						name: 'Speculator Search'
+						flattenOutputFiles: true,
+						entryFileName: 'index.md',
+						hideBreadcrumbs: true,
+						hidePageTitle: true,
 					}
 				}),
 				starlightTypedoc({
@@ -48,7 +57,10 @@ export default defineConfig({
 					output: 'api/render-respec',
 					tsconfig: tsconfig('render-respec'),
 					typeDoc: {
-						name: 'Render ReSpec'
+						flattenOutputFiles: true,
+						entryFileName: 'index.md',
+						hideBreadcrumbs: true,
+						hidePageTitle: true,
 					}
 				}),
 				starlightTypedoc({
@@ -56,7 +68,10 @@ export default defineConfig({
 					output: 'api/vocab-build',
 					tsconfig: tsconfig('vocab-build'),
 					typeDoc: {
-						name: 'Vocab Build'
+						flattenOutputFiles: true,
+						entryFileName: 'index.md',
+						hideBreadcrumbs: true,
+						hidePageTitle: true,
 					}
 				}),
 			],
@@ -71,11 +86,11 @@ export default defineConfig({
 				{
 					label: 'API Reference',
 					items: [
-						{ label: 'Speculator Core', autogenerate: { directory: 'api/speculator' } },
-						{ label: 'Speculator Lint', autogenerate: { directory: 'api/speculator-lint' } },
-						{ label: 'Speculator Search', autogenerate: { directory: 'api/speculator-search' } },
-						{ label: 'Render ReSpec', autogenerate: { directory: 'api/render-respec' } },
-						{ label: 'Vocab Build', autogenerate: { directory: 'api/vocab-build' } },
+						{ label: '@openuji/speculator', autogenerate: { directory: 'api/speculator', collapsed: true } },
+						{ label: '@openuji/speculator-lint', autogenerate: { directory: 'api/speculator-lint', collapsed: true } },
+						{ label: '@openuji/speculator-search', autogenerate: { directory: 'api/speculator-search', collapsed: true } },
+						{ label: '@openuji/render-respec', autogenerate: { directory: 'api/render-respec', collapsed: true } },
+						{ label: '@openuji/vocab-build', autogenerate: { directory: 'api/vocab-build', collapsed: true } },
 					],
 				},
 			],
