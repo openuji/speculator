@@ -1,100 +1,32 @@
 # @openuji/render-respec
 
-Generate ReSpec-compatible HTML from specification source files using the Speculator AST pipeline.
+**Generate high-performance, ReSpec-compatible HTML from Speculator AST.**
 
-## Features
+`render-respec` is the official rendering engine for the Speculator ecosystem. It takes the semantic content from the [Speculator core](../speculator) and weaves it into the classic, trusted W3C ReSpec aesthetic—without the browser-side performance penalty.
 
-- **Server-Side Rendering**: Produces static HTML similar to what ReSpec would generate
-- **Speculator Integration**: Uses Speculator pipeline to build AST with all indexes and resolutions
-- **Diagnostics**: Integrates speculator-lint for aggregating errors and warnings in-place
-- **ReSpec Compatible**: Generates HTML with 100% look and feel of classical ReSpec template
-- **Markdown & HTML**: Accepts both Markdown and HTML spec source files
-- **Complete Documents**: Ships complete `<html/>` documents, similar to vocab-build
+## ✨ Features
 
-## Installation
+- **Instant Static HTML**: Generates complete, SEO-friendly HTML documents at build time.
+- **Classic ReSpec Look**: 100% visual parity with the standard W3C ReSpec template.
+- **Integrated Diagnostics**: Automatically embeds errors and warnings from `speculator-lint` into the rendered document.
+- **Hyper-Resolution**: Handles complex cross-references, TOC generation, and bibliography resolution during the render phase.
 
-```bash
-pnpm add @openuji/render-respec
-```
-
-## Usage
-
-### Programmatic API
+## 🚀 Usage
 
 ```typescript
-import { renderRespec } from '@openuji/render-respec';
+import { renderRespec } from "@openuji/render-respec";
 
-const result = await renderRespec({
-    input: 'spec/index.md',
-    config: 'spec/config.respec.json',
-    output: 'dist/index.html',
-    strict: false,
+await renderRespec({
+  input: "spec/index.md",
+  config: "spec/config.respec.json",
+  output: "dist/index.html",
 });
-
-if (result.success) {
-    console.log('Generated:', result.outputPath);
-    console.log('Diagnostics:', result.diagnostics);
-} else {
-    console.error('Errors:', result.errors);
-}
 ```
 
-### CLI
+## 📖 Why use this instead of standard ReSpec?
 
-```bash
-# Render spec to HTML
-render-respec render -i spec/index.md -c spec/config.respec.json -o dist/index.html
+Traditional ReSpec runs in the reader's browser, which can be slow and brittle for large specifications. `render-respec` provides the same professional result but as a static asset, making your specs faster to load and easier to host anywhere.
 
-# Validate spec without rendering
-render-respec validate -i spec/index.md -c spec/config.respec.json
-```
+---
 
-## Configuration
-
-Create a `config.respec.json` file that mirrors standard ReSpec configuration:
-
-```json
-{
-  "specStatus": "ED",
-  "shortName": "my-spec",
-  "subtitle": "My Specification",
-  "editors": [
-    {
-      "name": "Editor Name",
-      "email": "editor@example.com",
-      "company": "Company",
-      "companyURL": "https://example.com"
-    }
-  ],
-  "publishDate": "2025-12-25",
-  "maxTocLevel": 3,
-  "github": "org/repo"
-}
-```
-
-### Supported Config Options
-
-- `specStatus`: Document status (ED, FPWD, WD, CR, PR, REC, etc.)
-- `shortName`: Short name for the spec
-- `subtitle`: Optional subtitle
-- `editors`: Array of editor objects
-- `authors`: Array of author objects
-- `publishDate`: Publication date (YYYY-MM-DD)
-- `previousPublishDate`: Previous publication date
-- `group`: Working group name
-- `github`: GitHub repository (org/repo format)
-- `maxTocLevel`: Maximum TOC depth (default: 3)
-- `copyrightStart`: Copyright start year
-- `logos`: Custom logo configurations
-
-## How It Works
-
-1. **Parse**: Loads spec source file (HTML or Markdown)
-2. **Build AST**: Runs Speculator pipeline with transform, index, and resolve phases
-3. **Lint**: Runs speculator-lint to collect diagnostics
-4. **Render**: Generates ReSpec-compatible HTML with diagnostics displayed inline
-5. **Output**: Writes complete HTML document
-
-## License
-
-MIT
+Part of the [Speculator](../../README.md) ecosystem.

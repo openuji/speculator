@@ -1,134 +1,72 @@
-# Speculator
+# @openuji/speculator
 
-AST-first specification parser and indexer with schema-central architecture.
+**AST-first specification parser and indexer with a schema-central architecture.**
 
-Speculator transforms specification documents (Markdown or HTML) into structured AST and semantic indexes. It does **not** render output - that responsibility belongs to separate tools. Speculator provides optional JSON serialization of the AST and indexes for consumption by renderers, linters, or other processors.
+Speculator is the core engine of the Speculator ecosystem. It transforms specification documents (Markdown or HTML) into a structured AST and semantic indexes. Unlike traditional tools, it does **not** render output directly—it provides the semantic foundation for renderers, linters, and other processors.
 
-## Schema Architecture
+## 🏗️ Architecture: The 3-Stage Pipeline
 
-The AST JSON Schema (`schema/spec-ast.schema.json`) is the single source of truth. All pipeline outputs validate against it.
+Speculator operates on a strict three-stage pipeline to ensure determinism and semantic accuracy:
+
+### 1. Preprocess (Composition)
+
+Handles configuration loading and spec composition. It resolves includes (both Markdown directives and HTML markers) into a deterministic `CompositeSource`.
+
+- **Isomorphic IO**: Uses `FileProvider` adapters for Node.js, Web, or Memory environments.
+- **Cycle Detection**: Prevents infinite include loops with actionable diagnostics.
+
+### 2. Parse (IR Reconstruction)
+
+Converts the `CompositeSource` into the Speculator AST. This stage is powered by dedicated parser modules that ensure Markdown and HTML parity.
+
+- **Unified AST**: Whether source is `## Heading` or `<h2>Heading</h2>`, the output is a `BlockHeading` node.
+- **Source Tracking**: Every node preserves its original `sourcePos.file`, even across multiple includes.
+
+### 3. Postprocess (Semantic Enrichment)
+
+A plugin-based pipeline that refines the AST:
+
+- **Transform**: Structural normalization.
+- **Resolve**: Semantic binding (connecting cross-references to definitions).
+- **Index**: Extracting derived data (definitions, requirements, issues, examples).
+- **Compute**: Optional generation of TOCs and heading numbering.
+
+## 💎 Schema-Central Design
+
+The **Speculator AST JSON Schema** is the single source of truth. All pipeline outputs are validated against this schema, ensuring that downstream tools (like `@openuji/render-respec`) can rely on a stable, typed data model.
 
 ### Core Node Types
 
-| Type | Description |
-|------|-------------|
-| `Document` | Root container with metadata, sections, and indexes |
-| `Section` | Grouping with optional heading, supports nesting |
-| `Block` | Block-level: paragraph, heading, codeBlock, example, blockquote, list, table, thematicBreak, html |
-| `Inline` | Inline: text, emphasis, strong, inlineCode, link, image, definition, reference, requirement, issue |
+- `Document`: Root container with metadata and indexes.
+- `Section`: Hierarchical grouping with nested sections.
+- `Block`: Paragraphs, headings, code blocks, lists, tables.
+- `Inline`: Text, emphasis, definitions (dfn), cross-references (xref).
 
-### Index Markers (Inline)
-
-Indexes are extracted from inline markers during the post-parse `index` phase:
-
-| Marker Type | Description | Extracted To |
-|-------------|-------------|--------------|
-| `definition` | Term definition (dfn) | `indexes.definitions[]` |
-| `reference` | Cross-reference | `indexes.references[]` |
-| `requirement` | RFC 2119 keyword | `indexes.requirements[]` |
-| `issue` | Open issue/TODO | `indexes.issues[]` |
-| `example` (block) | Code example | `indexes.examples[]` |
-
-### Semantic vs Computed Boundaries
-
-| Category | In AST | Computed | Notes |
-|----------|--------|----------|-------|
-| Semantic nodes | ✓ | ✗ | Core AST structure |
-| Indexes | ✓ | ✗ | Extracted, not computed |
-| `computed.toc` | ✓ optional | ✓ | Marked `x-computed: true` |
-| `computed.headingNumbers` | ✓ optional | ✓ | Marked `x-computed: true` |
-| `computed.wordCount` | ✓ optional | ✓ | Marked `x-computed: true` |
-
-**Key Distinction:**
-- **Semantic AST**: Node structure + indexes. Always valid. Use `SemanticDocument` type.
-- **Full AST**: Semantic + computed fields. Use `FullDocument` type.
-
-## TypeScript Types
-
-Generate types from schema:
-
-```bash
-npm run generate:types
-```
-
-This generates `src/types/ast.generated.ts` with:
-- All node types
-- `SemanticDocument` - AST without computed fields
-- `FullDocument` - AST with computed fields
-- Type guards: `isDocument()`, `isSection()`, `isBlock()`, `isInline()`, etc.
-
-## Runtime Validation
+## 🚀 Usage
 
 ```typescript
-import { validateAST, assertValidAST, ASTValidator } from './src/validation/validate';
+import { speculate, corePlugins, NodeFileProvider } from "@openuji/speculator";
 
-// Quick validation
-const result = validateAST(ast, 'semantic'); // or 'full'
-if (!result.valid) {
-  console.error(result.errors);
-}
+const result = await speculate({
+  entry: "spec/index.md",
+  plugins: [...corePlugins],
+  fileProvider: new NodeFileProvider(),
+});
 
-// Assertion-style (throws on failure)
-assertValidAST(ast, 'semantic');
-
-// Per-stage validation
-const validator = new ASTValidator();
-validator.validateAtStage(ast, 'parse');    // semantic mode
-validator.validateAtStage(ast, 'transform'); // semantic mode
-validator.validateAtStage(ast, 'resolve');   // semantic mode
-validator.validateAtStage(ast, 'index');     // semantic mode
-validator.validateAtStage(ast, 'compute');   // full mode
+console.log(result.workspace.documents[0].ast);
 ```
 
-## Development
+## 🛠️ Development & Playbook
 
-```bash
-# Install dependencies
-npm install
+### Parser Module Convention
 
-# Validate schema syntax
-npm run validate:schema
+Code that maps IR (hast/mdast) to SpecAST lives in `src/parse/` following the `<NodeTypes><Format>Parser` naming pattern (e.g., `HeadingsHtmlParser`).
 
-# Generate TypeScript types
-npm run generate:types
+### Plugin Contract
 
-# Build
-npm run build
+Postprocess plugins implement specific phase handlers (`transform`, `resolve`, `index`, `compute`) with deterministic ordering weights.
 
-# Test
-npm run test
-```
+## 📖 Further Reading
 
-## Pipeline Phases
-
-```
-loadConfig → loadEntry → preprocessIncludes → parse → transform → resolve → index → (compute?)
-                                                                              ↓
-                                                                    Extract indexes from
-                                                                    inline markers
-```
-
-The pipeline produces:
-- **AST**: Structured document tree with semantic nodes
-- **Indexes**: Extracted definitions, references, requirements, issues, examples
-- **JSON Output**: Optional serialization of AST and indexes for external tools
-
-## Source Position Tracking
-
-Every node can have a `sourcePos` with:
-- `file` - Canonical file path (preserves include origins)
-- `line`, `column` - 1-indexed position
-- `offset` - 0-indexed byte offset
-- `endLine`, `endColumn`, `endOffset` - End position (optional)
-
-```typescript
-interface SourcePos {
-  file: string;
-  line: number;    // 1-indexed
-  column: number;  // 1-indexed
-  offset?: number; // 0-indexed
-  endLine?: number;
-  endColumn?: number;
-  endOffset?: number;
-}
-```
+- [Root README](../../README.md)
+- [SpecAST Schema](schema/spec-ast.schema.json)
