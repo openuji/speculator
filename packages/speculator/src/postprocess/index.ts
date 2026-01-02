@@ -17,6 +17,9 @@ export { dfnIndexPlugin } from './plugins/dfn-index.js';
 // Resolve plugins
 export { referenceResolvePlugin } from './plugins/reference-resolve.js';
 
+// Compute plugins
+export { tocPlugin } from './plugins/toc.js';
+
 // Utilities
 export { walkDocument, type AstVisitor } from './walk-ast.js';
 
@@ -29,6 +32,7 @@ import { citationTransformPlugin } from './plugins/citation-transform.js';
 import { sectionIdPlugin } from './plugins/section-id.js';
 import { dfnIndexPlugin } from './plugins/dfn-index.js';
 import { referenceResolvePlugin } from './plugins/reference-resolve.js';
+import { tocPlugin } from './plugins/toc.js';
 
 export const corePlugins = [
     // Transform plugins
@@ -38,5 +42,7 @@ export const corePlugins = [
     dfnIndexPlugin,             // order: { index: 10 }
     // Resolve plugins
     referenceResolvePlugin,     // order: { resolve: 10 }
+    // Compute plugins
+    tocPlugin,                  // order: { compute: 10 }
 ];
 

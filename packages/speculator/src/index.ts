@@ -21,6 +21,7 @@ export {
     citationTransformPlugin,
     dfnIndexPlugin,
     referenceResolvePlugin,
+    tocPlugin,
     corePlugins,
 } from './postprocess/index.js';
 

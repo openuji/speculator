@@ -23,7 +23,9 @@ export async function renderRespec(config: RenderConfig): Promise<RenderResult> 
         if (parsedConfig.config) {
             const configContent = await readFile(parsedConfig.config, 'utf-8');
             const configData = JSON.parse(configContent);
-            respecConfig = ReSpecConfigSchema.parse(configData);
+            // Support both unified config (with 'respec' key) and standalone respec config
+            const respecData = configData.respec || configData;
+            respecConfig = ReSpecConfigSchema.parse(respecData);
         }
 
         // Run Speculator pipeline to build AST with indexes and resolution

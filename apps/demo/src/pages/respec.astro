@@ -5,7 +5,7 @@ import { join } from "path";
 import Layout from "../layouts/Layout.astro";
 
 const specPath = join(process.cwd(), "spec", "sample-respec.md");
-const configPath = join(process.cwd(), "spec", "config.respec.json");
+const configPath = join(process.cwd(), "spec", "config.json");
 const outputPath = join(process.cwd(), "public", "respec-output.html");
 
 // Render the spec
@@ -41,6 +41,12 @@ if (result.success && result.outputPath) {
 // Read source files for display
 const specSource = await readFile(specPath, "utf-8");
 const configSource = await readFile(configPath, "utf-8");
+const configData = JSON.parse(configSource);
+const respecConfigSource = JSON.stringify(
+    configData.respec || configData,
+    null,
+    2,
+);
 ---
 
 <Layout title="ReSpec Renderer Demo">
@@ -71,9 +77,11 @@ const configSource = await readFile(configPath, "utf-8");
             </div>
 
             <div class="panel">
-                <div class="panel-header">⚙️ Config: config.respec.json</div>
+                <div class="panel-header">
+                    ⚙️ Config: config.json (respec section)
+                </div>
                 <div class="panel-content">
-                    <pre>{configSource}</pre>
+                    <pre>{respecConfigSource}</pre>
                 </div>
             </div>
 

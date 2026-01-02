@@ -1,13 +1,14 @@
 ---
 import { speculate, corePlugins, NodeFileProvider } from "@openuji/speculator";
 import BlockRenderer from "../components/BlockRenderer.astro";
+import Toc from "../components/Toc.astro";
 import Layout from "../layouts/Layout.astro";
 import path from "path";
 
 // Setup Speculator
 const specDir = path.resolve("spec");
 const entryFile = path.join(specDir, "index.html");
-const configFile = path.join(specDir, "config.respec.json");
+const configFile = path.join(specDir, "config.json");
 
 // Run the full pipeline with plugins
 const result = await speculate({
@@ -17,59 +18,75 @@ const result = await speculate({
     fileProvider: new NodeFileProvider(),
 });
 
-if (result.hasErrors) {
-    console.error("Pipeline errors:", result.diagnostics);
-}
-
 const document = result.workspace?.documents[0];
 if (!document) {
-    throw new Error(
-        "Pipeline failed to produce a document: " +
-            JSON.stringify(result.diagnostics, null, 2),
-    );
+    throw new Error("Pipeline failed to produce a document");
 }
 
 const config = document.metadata || {};
+const toc = document.computed?.toc || [];
 ---
 
 <Layout title={config.title || "Speculator HTML Demo"}>
-    <header class="spec-header">
-        <h1>{config.title} (HTML Source)</h1>
-        {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
+    <div class="spec-layout">
+        {toc.length > 0 && <Toc toc={toc} />}
 
-        <div class="metadata">
-            <dl>
+        <article class="spec-main">
+            <header class="spec-header">
+                <h1>{config.title} (HTML Source)</h1>
+                {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
+
+                <div class="metadata">
+                    <dl>
+                        {
+                            config.status && (
+                                <>
+                                    <dt>Status:</dt>
+                                    <dd>{config.status}</dd>
+                                </>
+                            )
+                        }
+                        {
+                            config.abstract && (
+                                <>
+                                    <dt>Abstract:</dt>
+                                    <dd>{config.abstract}</dd>
+                                </>
+                            )
+                        }
+                    </dl>
+                </div>
+            </header>
+
+            <hr />
+
+            <div class="spec-content">
                 {
-                    config.status && (
-                        <>
-                            <dt>Status:</dt>
-                            <dd>{config.status}</dd>
-                        </>
-                    )
+                    document.children.map((child) => (
+                        <BlockRenderer node={child} />
+                    ))
                 }
-                {
-                    config.abstract && (
-                        <>
-                            <dt>Abstract:</dt>
-                            <dd>{config.abstract}</dd>
-                        </>
-                    )
-                }
-            </dl>
-        </div>
-    </header>
-
-    <hr />
-
-    <div class="spec-content">
-        {document.children.map((child) => <BlockRenderer node={child} />)}
+            </div>
+        </article>
     </div>
 </Layout>
 
 <style>
+    .spec-layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .spec-main {
+        min-width: 0;
+    }
+
     .spec-header {
         margin-bottom: 2rem;
     }
+
     .metadata dl {
         display: grid;
         grid-template-columns: max-content 1fr;
@@ -78,8 +95,19 @@ const config = document.metadata || {};
         font-size: 0.9rem;
         color: var(--text-secondary);
     }
+
     .metadata dt {
         font-weight: bold;
         color: var(--text-primary);
+    }
+
+    .spec-layout:not(:has(.toc-sidebar)) {
+        grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 1024px) {
+        .spec-layout {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
