@@ -1,0 +1,25 @@
+{
+  "name": "apps-docs",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.37.1",
+    "@openuji/render-respec": "workspace:*",
+    "@openuji/speculator": "workspace:*",
+    "@openuji/speculator-lint": "workspace:*",
+    "@openuji/speculator-search": "workspace:*",
+    "@openuji/vocab-build": "workspace:*",
+    "astro": "^5.6.1",
+    "sharp": "^0.34.2",
+    "starlight-typedoc": "^0.21.5",
+    "typedoc": "^0.28.15",
+    "typedoc-plugin-markdown": "^4.9.0"
+  }
+}
