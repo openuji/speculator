@@ -45,20 +45,20 @@ importers:
         specifier: ^0.37.1
         version: 0.37.1(astro@5.16.4(@types/node@20.19.25)(rollup@4.53.3)(typescript@5.9.3)(yaml@2.8.2))
       '@openuji/render-respec':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: workspace:*
+        version: link:../../packages/render-respec
       '@openuji/speculator':
-        specifier: 0.5.1
-        version: 0.5.1
+        specifier: workspace:*
+        version: link:../../packages/speculator
       '@openuji/speculator-lint':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: workspace:*
+        version: link:../../packages/speculator-lint
       '@openuji/speculator-search':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: workspace:*
+        version: link:../../packages/speculator-search
       '@openuji/vocab-build':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: workspace:*
+        version: link:../../packages/vocab-build
       astro:
         specifier: ^5.6.1
         version: 5.16.4(@types/node@20.19.25)(rollup@4.53.3)(typescript@5.9.3)(yaml@2.8.2)
@@ -925,24 +925,6 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
-
-  '@openuji/render-respec@0.1.0':
-    resolution: {integrity: sha512-cwibf0vetdqjethWaVuy6NTnliZuCxq9o5CqV6vh50hFKqi5pss2Aqr+qW3iz5ZKa1BkTSZp/AtLINBNsfEdNQ==}
-    hasBin: true
-
-  '@openuji/speculator-lint@0.1.0':
-    resolution: {integrity: sha512-yrnr58i0TRpi5ez+cSvUFU//x/YJCFSL3e2anFmKtMrMPwPXOYDIAEr4LHpdBXh6OOQctpypnJ4eTxwWAFVDbQ==}
-    hasBin: true
-
-  '@openuji/speculator-search@0.1.0':
-    resolution: {integrity: sha512-xCdtU97bp/SNaufVrHQhkBDIXw/pfXuavuSjY4InlicqPmCTZApOyuMjcZ5CQrme2EqY1/p/QR+qkQNjWdGeXw==}
-
-  '@openuji/speculator@0.5.1':
-    resolution: {integrity: sha512-6uyepR5X7keZQYyeKjj3CAc0uD43MvZLW2GregX4VSguHY3fANR5gBYacm+aBdbsbgx8wpxLu7oUXiMtzbXx9Q==}
-
-  '@openuji/vocab-build@0.1.0':
-    resolution: {integrity: sha512-pa8Pg85J8SzMTHEvuJ8vQRS6aqZWwHtSIxKFf/krsNvMvgwcFwQXegDddkEczdvcNpUddHM2xFaNhWqm8JLVOA==}
-    hasBin: true
 
   '@oslojs/encoding@1.1.0':
     resolution: {integrity: sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ==}
@@ -4311,50 +4293,6 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
-
-  '@openuji/render-respec@0.1.0':
-    dependencies:
-      '@openuji/speculator': 0.5.1
-      '@openuji/speculator-lint': 0.1.0
-      commander: 12.1.0
-      nunjucks: 3.2.4
-      prettier: 3.7.4
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - chokidar
-      - supports-color
-
-  '@openuji/speculator-lint@0.1.0':
-    dependencies:
-      '@openuji/speculator': 0.5.1
-    transitivePeerDependencies:
-      - supports-color
-
-  '@openuji/speculator-search@0.1.0':
-    dependencies:
-      '@openuji/speculator': 0.5.1
-    transitivePeerDependencies:
-      - supports-color
-
-  '@openuji/speculator@0.5.1':
-    dependencies:
-      rehype-parse: 9.0.1
-      remark-gfm: 4.0.1
-      remark-parse: 11.0.0
-      unified: 11.0.5
-      unist-util-visit: 5.0.0
-    transitivePeerDependencies:
-      - supports-color
-
-  '@openuji/vocab-build@0.1.0':
-    dependencies:
-      commander: 12.1.0
-      n3: 1.26.0
-      nunjucks: 3.2.4
-      prettier: 3.7.4
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - chokidar
 
   '@oslojs/encoding@1.1.0': {}
 

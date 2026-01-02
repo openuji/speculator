@@ -2,6 +2,15 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightTypedoc from 'starlight-typedoc';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/** @param {string} pkg */
+const entry = (pkg) => resolve(__dirname, `../../packages/${pkg}/src/index.ts`);
+/** @param {string} pkg */
+const tsconfig = (pkg) => resolve(__dirname, `../../packages/${pkg}/tsconfig.json`);
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,41 +20,41 @@ export default defineConfig({
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/openuji/speculator' }],
 			plugins: [
 				starlightTypedoc({
-					entryPoints: ['../../packages/speculator/src/index.ts'],
+					entryPoints: [entry('speculator')],
 					output: 'api/speculator',
-					tsconfig: '../../packages/speculator/tsconfig.json',
+					tsconfig: tsconfig('speculator'),
 					typeDoc: {
 						name: 'Speculator Core'
 					}
 				}),
 				starlightTypedoc({
-					entryPoints: ['../../packages/speculator-lint/src/index.ts'],
+					entryPoints: [entry('speculator-lint')],
 					output: 'api/speculator-lint',
-					tsconfig: '../../packages/speculator-lint/tsconfig.json',
+					tsconfig: tsconfig('speculator-lint'),
 					typeDoc: {
 						name: 'Speculator Lint'
 					}
 				}),
 				starlightTypedoc({
-					entryPoints: ['../../packages/speculator-search/src/index.ts'],
+					entryPoints: [entry('speculator-search')],
 					output: 'api/speculator-search',
-					tsconfig: '../../packages/speculator-search/tsconfig.json',
+					tsconfig: tsconfig('speculator-search'),
 					typeDoc: {
 						name: 'Speculator Search'
 					}
 				}),
 				starlightTypedoc({
-					entryPoints: ['../../packages/render-respec/src/index.ts'],
+					entryPoints: [entry('render-respec')],
 					output: 'api/render-respec',
-					tsconfig: '../../packages/render-respec/tsconfig.json',
+					tsconfig: tsconfig('render-respec'),
 					typeDoc: {
 						name: 'Render ReSpec'
 					}
 				}),
 				starlightTypedoc({
-					entryPoints: ['../../packages/vocab-build/src/index.ts'],
+					entryPoints: [entry('vocab-build')],
 					output: 'api/vocab-build',
-					tsconfig: '../../packages/vocab-build/tsconfig.json',
+					tsconfig: tsconfig('vocab-build'),
 					typeDoc: {
 						name: 'Vocab Build'
 					}
