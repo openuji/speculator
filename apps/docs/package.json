@@ -12,7 +12,7 @@
   "dependencies": {
     "@astrojs/starlight": "^0.37.1",
     "@openuji/render-respec": "workspace:*",
-    "@openuji/speculator": "workspace:*",
+    "@openuji/speculator": "^0.4.0",
     "@openuji/speculator-lint": "workspace:*",
     "@openuji/speculator-search": "workspace:*",
     "@openuji/vocab-build": "workspace:*",
