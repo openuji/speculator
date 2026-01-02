@@ -6,7 +6,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "bin": {
-        "speculator-lint": "./dist/cli.js"
+        "speculator-lint": "bin/speculator-lint.js"
     },
     "imports": {
         "#src/*": "./dist/*.js"
