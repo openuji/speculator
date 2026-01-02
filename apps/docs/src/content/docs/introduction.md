@@ -1,9 +1,9 @@
 ---
 title: Introduction
-description: Overview of the OpenUJI Speculator project.
+description: Overview of the Speculator project.
 ---
 
-OpenUJI Speculator is a comprehensive toolkit designed to streamline the process of creating, validating, and searching technical specifications. 
+Speculator is a comprehensive toolkit designed to streamline the process of creating, validating, and searching technical specifications.
 
 Built with the modern web in mind, it provides a set of modular packages that can be used independently or together to build robust specification ecosystems.
 

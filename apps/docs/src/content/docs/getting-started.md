@@ -1,9 +1,9 @@
 ---
 title: Getting Started
-description: How to install and use OpenUJI Speculator.
+description: How to install and use Speculator.
 ---
 
-Welcome to OpenUJI Speculator! This guide will help you get up and running with the core packages.
+Welcome to Speculator! This guide will help you get up and running with the core packages.
 
 ## Installation
 
@@ -18,10 +18,10 @@ pnpm add @openuji/speculator
 To start using Speculator, you'll typically initialize a pipeline and process some documents.
 
 ```typescript
-import { SpeculatorPipeline } from '@openuji/speculator';
+import { SpeculatorPipeline } from "@openuji/speculator";
 
 const pipeline = new SpeculatorPipeline();
-const result = await pipeline.process('path/to/spec.md');
+const result = await pipeline.process("path/to/spec.md");
 
 console.log(result.ast);
 ```

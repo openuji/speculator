@@ -16,7 +16,7 @@ const tsconfig = (pkg) => resolve(__dirname, `../../packages/${pkg}/tsconfig.jso
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'OpenUJI Speculator',
+			title: 'Speculator',
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/openuji/speculator' }],
 			plugins: [
 				starlightTypedoc({
