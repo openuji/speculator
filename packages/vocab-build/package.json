@@ -16,6 +16,7 @@
     },
     "scripts": {
         "build": "tsc && npm run postbuild",
+        "prepack": "pnpm build",
         "postbuild": "cp -r src/templates dist/",
         "dev": "tsc --watch",
         "test": "vitest run",
