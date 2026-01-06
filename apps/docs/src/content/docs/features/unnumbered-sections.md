@@ -117,6 +117,39 @@ The TOC for this structure:
 1.1    Implementation Details
 ```
 
+## Cascading to Children
+
+When a parent section is marked as unnumbered, **all child sections automatically inherit the unnumbered status**, even if they don't explicitly have the `unnumbered` class or `{.unnumbered}` suffix.
+
+```html
+<section id="appendix" class="unnumbered">
+  <h1>Appendix</h1>
+
+  <!-- These children are automatically unnumbered -->
+  <section id="appendix-a">
+    <h2>Appendix A</h2>
+  </section>
+
+  <section id="appendix-b">
+    <h2>Appendix B</h2>
+  </section>
+</section>
+
+<section id="intro">
+  <h1>Introduction</h1>
+  <!-- This is numbered as "1" -->
+</section>
+```
+
+The TOC displays:
+
+```
+       Appendix
+       Appendix A
+       Appendix B
+1.     Introduction
+```
+
 ## Schema Reference
 
 The `unnumbered` property is defined on both `Section` and `BlockHeading` nodes:

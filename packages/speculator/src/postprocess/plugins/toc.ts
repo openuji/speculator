@@ -52,11 +52,13 @@ function extractHeadingText(heading: BlockHeading): string {
 
 /**
  * Build TOC entries recursively from sections
+ * @param parentUnnumbered - If true, this section is inside an unnumbered parent and should also be unnumbered
  */
 function buildTocFromSections(
     children: (Section | import('#src/types/ast.generated').Block)[],
     counters: number[],
-    headingNumbers: Map<string, string>
+    headingNumbers: Map<string, string>,
+    parentUnnumbered: boolean = false
 ): TocEntry[] {
     const entries: TocEntry[] = [];
 
@@ -80,9 +82,12 @@ function buildTocFromSections(
             counters.push(0);
         }
 
+        // Section is unnumbered if explicitly marked OR if parent is unnumbered
+        const isUnnumbered = section.unnumbered || parentUnnumbered;
+
         // Determine numbering
         let number = '';
-        if (!section.unnumbered) {
+        if (!isUnnumbered) {
             // Increment counter at current depth
             counters[depthIndex]++;
 
@@ -102,10 +107,12 @@ function buildTocFromSections(
         }
 
         // Recursively process nested sections
+        // Pass isUnnumbered to children so they inherit unnumbered status
         const nestedChildren = buildTocFromSections(
             section.children,
             [...counters], // Pass a copy to avoid mutation issues
-            headingNumbers
+            headingNumbers,
+            isUnnumbered   // Cascade unnumbered status to children
         );
 
         const entry: TocEntry = {

@@ -435,5 +435,59 @@ describe('TocPlugin', () => {
             // l3-un should not be in headingNumbers
             expect(doc.computed!.headingNumbers!['l3-un']).toBeUndefined();
         });
+
+        it('cascades unnumbered to all child sections of an unnumbered parent', async () => {
+            // Parent is unnumbered, so all children should also be unnumbered
+            const parent = createSectionWithHeading('Appendix', 1, 'appendix');
+            parent.unnumbered = true;
+
+            // Children are NOT explicitly marked as unnumbered
+            const child1 = createSectionWithHeading('Sub A', 2, 'sub-a');
+            const child2 = createSectionWithHeading('Sub B', 2, 'sub-b');
+            const grandchild = createSectionWithHeading('Deep', 3, 'deep');
+            child2.children = [grandchild];
+            parent.children = [child1, child2];
+
+            // Normal numbered section after the unnumbered parent
+            const intro = createSectionWithHeading('Introduction', 1, 'intro');
+
+            const doc = createDocWithSections([parent, intro]);
+
+            await tocPlugin.compute!({ document: doc, level: 0 });
+
+            // All children of unnumbered parent should be unnumbered too
+            expect(doc.computed!.toc![0]).toMatchObject({
+                id: 'appendix',
+                text: 'Appendix',
+                number: '',
+            });
+            expect(doc.computed!.toc![0].children![0]).toMatchObject({
+                id: 'sub-a',
+                text: 'Sub A',
+                number: '',
+            });
+            expect(doc.computed!.toc![0].children![1]).toMatchObject({
+                id: 'sub-b',
+                text: 'Sub B',
+                number: '',
+            });
+            expect(doc.computed!.toc![0].children![1].children![0]).toMatchObject({
+                id: 'deep',
+                text: 'Deep',
+                number: '',
+            });
+
+            // Numbered section after should still be numbered correctly
+            expect(doc.computed!.toc![1]).toMatchObject({
+                id: 'intro',
+                text: 'Introduction',
+                number: '1',
+            });
+
+            // No children of the unnumbered section should be in headingNumbers
+            expect(doc.computed!.headingNumbers).toEqual({
+                'intro': '1',
+            });
+        });
     });
 });

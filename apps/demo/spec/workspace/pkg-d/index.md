@@ -10,6 +10,14 @@ This is unnumbered status.
 
 This should be 1.
 
+# Unnumbered Intro {.unnumbered}
+
+This should be unnumbered.
+
+## Sub Unnumber Intro
+
+This should be unnumbered.
+
 # Main
 
 This should be 2.
