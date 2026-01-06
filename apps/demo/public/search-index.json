@@ -738,7 +738,7 @@
         },
         {
           "searchId": "entry-38",
-          "text": "function hello(): void {\n    console.log(\"Hello World\");\n}",
+          "text": "function hello(): void {\n  console.log(\"Hello World\");\n}",
           "plainText": "function hello void  consoleloghello world ",
           "context": {
             "sectionTitle": "Code Blocks",
@@ -757,7 +757,7 @@
         },
         {
           "searchId": "entry-39",
-          "text": "{\n    \"name\": \"speculator\",\n    \"version\": \"0.1.0\"\n}",
+          "text": "{\n  \"name\": \"speculator\",\n  \"version\": \"0.1.0\"\n}",
           "plainText": " name speculator version 010 ",
           "context": {
             "sectionTitle": "Code Blocks",
@@ -776,6 +776,44 @@
         },
         {
           "searchId": "entry-40",
+          "text": "Mermaid diagrams are rendered automatically:",
+          "plainText": "mermaid diagrams are rendered automatically",
+          "context": {
+            "sectionTitle": "Diagrams",
+            "headingPath": [
+              "Introduction",
+              "Diagrams"
+            ],
+            "nodeType": "paragraph"
+          },
+          "sectionId": "diagrams",
+          "anchor": "#diagrams",
+          "filters": {
+            "nodeType": "paragraph",
+            "sectionTitle": "Diagrams"
+          }
+        },
+        {
+          "searchId": "entry-41",
+          "text": "graph TD\n    A[Markdown File] --> B[Parser]\n    B --> C[AST]\n    C --> D[Renderer]\n    D --> E[HTML]",
+          "plainText": "graph td amarkdown file -- bparser b -- cast c -- drenderer d -- ehtml",
+          "context": {
+            "sectionTitle": "Diagrams",
+            "headingPath": [
+              "Introduction",
+              "Diagrams"
+            ],
+            "nodeType": "codeBlock"
+          },
+          "sectionId": "diagrams",
+          "anchor": "#diagrams",
+          "filters": {
+            "nodeType": "codeBlock",
+            "sectionTitle": "Diagrams"
+          }
+        },
+        {
+          "searchId": "entry-42",
           "text": "This is a blockquote.\nIt can span multiple lines.",
           "plainText": "this is a blockquote it can span multiple lines",
           "context": {
@@ -794,7 +832,7 @@
           }
         },
         {
-          "searchId": "entry-41",
+          "searchId": "entry-43",
           "text": "Nested blockquotes:",
           "plainText": "nested blockquotes",
           "context": {
@@ -813,7 +851,7 @@
           }
         },
         {
-          "searchId": "entry-42",
+          "searchId": "entry-44",
           "text": "First level quote",
           "plainText": "first level quote",
           "context": {
@@ -832,7 +870,7 @@
           }
         },
         {
-          "searchId": "entry-43",
+          "searchId": "entry-45",
           "text": "Nested quote",
           "plainText": "nested quote",
           "context": {
@@ -851,7 +889,7 @@
           }
         },
         {
-          "searchId": "entry-44",
+          "searchId": "entry-46",
           "text": "Deeply nested",
           "plainText": "deeply nested",
           "context": {
@@ -870,7 +908,7 @@
           }
         },
         {
-          "searchId": "entry-45",
+          "searchId": "entry-47",
           "text": "Above is a horizontal rule (thematic break).",
           "plainText": "above is a horizontal rule thematic break",
           "context": {
@@ -889,7 +927,7 @@
           }
         },
         {
-          "searchId": "entry-46",
+          "searchId": "entry-48",
           "text": "This content comes from an included file (included.md).",
           "plainText": "this content comes from an included file includedmd",
           "context": {
@@ -909,7 +947,7 @@
           }
         },
         {
-          "searchId": "entry-47",
+          "searchId": "entry-49",
           "text": "It should appear seamlessly in the document structure.",
           "plainText": "it should appear seamlessly in the document structure",
           "context": {
@@ -929,7 +967,7 @@
           }
         },
         {
-          "searchId": "entry-48",
+          "searchId": "entry-50",
           "text": "This spec defines {{Term}} as a concept. One can refer to term.",
           "plainText": "this spec defines term as a concept one can refer to term",
           "context": {
@@ -948,7 +986,7 @@
           }
         },
         {
-          "searchId": "entry-49",
+          "searchId": "entry-51",
           "text": "The implementation MUST support this requirement.",
           "plainText": "the implementation must support this requirement",
           "context": {
@@ -967,7 +1005,7 @@
           }
         },
         {
-          "searchId": "entry-50",
+          "searchId": "entry-52",
           "text": "The implementation SHOULD follow best practices.",
           "plainText": "the implementation should follow best practices",
           "context": {
@@ -986,7 +1024,7 @@
           }
         },
         {
-          "searchId": "entry-51",
+          "searchId": "entry-53",
           "text": "This is an open issue: {{?issue-id Open Issue regarding semantics}}.",
           "plainText": "this is an open issue issue-id open issue regarding semantics",
           "context": {

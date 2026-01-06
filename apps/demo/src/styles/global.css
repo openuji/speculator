@@ -243,3 +243,18 @@ cite::after {
     color: #a3e635;
     margin-bottom: 0.5rem;
 }
+
+/* Mermaid diagrams */
+.mermaid {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
+}

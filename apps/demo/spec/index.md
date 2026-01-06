@@ -6,7 +6,7 @@ It covers various markdown features.
 
 ## Text Formatting
 
-We support *emphasis*, **strong text**, `inline code`, and [links](https://example.com).
+We support _emphasis_, **strong text**, `inline code`, and [links](https://example.com).
 
 You can also use images: ![Example Image](https://via.placeholder.com/150)
 
@@ -38,14 +38,14 @@ You can also use images: ![Example Image](https://via.placeholder.com/150)
 
 ## Tables
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Headings | ✅ | h1-h6 supported |
-| Paragraphs | ✅ | Basic blocks |
-| Lists | ✅ | Ordered, unordered, nested |
-| Tables | ✅ | GFM tables |
-| Code | ✅ | Fenced blocks |
-| Blockquotes | ✅ | Nested support |
+| Feature     | Status | Notes                      |
+| ----------- | ------ | -------------------------- |
+| Headings    | ✅     | h1-h6 supported            |
+| Paragraphs  | ✅     | Basic blocks               |
+| Lists       | ✅     | Ordered, unordered, nested |
+| Tables      | ✅     | GFM tables                 |
+| Code        | ✅     | Fenced blocks              |
+| Blockquotes | ✅     | Nested support             |
 
 ---
 
@@ -57,15 +57,29 @@ Fenced code block:
 
 ```typescript
 function hello(): void {
-    console.log("Hello World");
+  console.log("Hello World");
 }
 ```
 
 ```json
 {
-    "name": "speculator",
-    "version": "0.1.0"
+  "name": "speculator",
+  "version": "0.1.0"
 }
+```
+
+---
+
+## Diagrams
+
+Mermaid diagrams are rendered automatically:
+
+```mermaid
+graph TD
+    A[Markdown File] --> B[Parser]
+    B --> C[AST]
+    C --> D[Renderer]
+    D --> E[HTML]
 ```
 
 ---
@@ -78,7 +92,9 @@ function hello(): void {
 Nested blockquotes:
 
 > First level quote
+>
 > > Nested quote
+> >
 > > > Deeply nested
 
 ---

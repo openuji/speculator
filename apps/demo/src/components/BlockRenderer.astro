@@ -7,6 +7,7 @@ import type {
 } from "@openuji/speculator";
 import InlineRenderer from "./InlineRenderer.astro";
 import RecursiveBlockRenderer from "./BlockRenderer.astro";
+import Mermaid from "./Mermaid.astro";
 
 interface Props {
   node: Block | Section;
@@ -90,6 +91,11 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
         );
 
       case "codeBlock":
+        // Handle Mermaid diagrams
+        if (node.lang === "mermaid") {
+          return <Mermaid code={node.value} id={node.id} />;
+        }
+        // Regular code block
         return (
           <pre id={node.id}>
             <code class={node.lang || ""}>{node.value}</code>
