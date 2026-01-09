@@ -9,7 +9,6 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import type { Root, RootContent } from 'mdast';
-import type { Element } from 'hast';
 import type { SourceUnit } from '#src/preprocess/types';
 import type { UnitParser, ParseDiagnostic } from '#src/parse/types';
 import type {
@@ -90,13 +89,11 @@ export class MarkdownUnitParser implements UnitParser {
         // Create context for handlers
         const ctx = this.createContext(unit, diagnostics);
 
-        const blocks: Block[] = [];
+        const blocks: (Section | Block)[] = [];
 
         for (const child of tree.children) {
-            const block = this.transformBlock(child, ctx);
-            if (block) {
-                blocks.push(block);
-            }
+            const blocksResult = this.transformBlock(child, ctx);
+            blocks.push(...blocksResult);
         }
 
         return { blocks, diagnostics };
@@ -112,55 +109,85 @@ export class MarkdownUnitParser implements UnitParser {
         return {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            transformInlineChildren: (children: RootContent[]) => self.transformInlineChildren(children, unit, diagnostics),
-            transformBlockChildren: (children: RootContent[]) => {
-                const results: Block[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transformInlineChildren: (children) => self.transformInlineChildren(children as any, unit, diagnostics),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transformBlockChildren: (children) => {
+                const results: (Section | Block)[] = [];
                 const ctx = self.createContext(unit, diagnostics);
-                for (const child of children) {
-                    const block = self.transformBlock(child, ctx);
-                    if (block) {
-                        results.push(block);
-                    }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                for (const child of children as any[]) {
+                    const blocksResult = self.transformBlock(child, ctx);
+                    results.push(...blocksResult);
                 }
                 return results;
             },
             emitDiagnostic: (diagnostic) => {
-                diagnostics.push({ ...diagnostic, file: unit.file });
+                diagnostics.push({ 
+                    ...diagnostic, 
+                    file: unit.file,
+                    // If sourcePos not provided by handler, we might want to default it?
+                    // But usually handlers provide it.
+                } as any);
             },
-            // HTML-specific methods - no-op for markdown
-            getTextContent: (_element: Element) => '',
-            getAttr: (_element: Element, _name: string) => undefined,
+            getTextContent: (element) => {
+                // Return text content logic (duplicated or imported)
+                let text = '';
+                for (const child of element.children) {
+                    if (child.type === 'text') {
+                        text += (child as any).value;
+                    } else if (child.type === 'element') {
+                        text += self.createContext(unit, diagnostics).getTextContent(child as any);
+                    }
+                }
+                return text;
+            },
+            getAttr: (element, name) => {
+                const val = element.properties?.[name];
+                if (typeof val === 'string') return val;
+                if (Array.isArray(val)) return val.join(' ');
+                return undefined;
+            },
+            registry: self.registry,
         };
     }
 
     /**
-     * Transform mdast node to Speculator block
+     * Transform mdast node to Speculator block(s) or section(s)
      */
-    private transformBlock(node: RootContent, ctx: ParseContext): Block | null {
-        // Look up handler in registry
-        const handler = this.registry.getMdBlockHandler(node.type);
+    private transformBlock(node: RootContent, ctx: ParseContext): (Section | Block)[] {
+        // Look up handlers in registry
+        const handlers = this.registry.getMdBlockHandlers(node.type);
 
-        if (handler?.handleBlock) {
-            return handler.handleBlock(node, ctx);
+        for (const handler of handlers) {
+            if (handler.handleBlock) {
+                const result = handler.handleBlock(node, ctx);
+                if (result !== null) {
+                    if (Array.isArray(result)) return result;
+                    return [result];
+                }
+            }
         }
 
-        return null;
+        return [];
     }
 
     /**
-     * Transform mdast inline node to Speculator inline
+     * Transform mdast inline node to Speculator inline(s)
      */
-    private transformInline(node: RootContent, unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline | null {
+    private transformInline(node: RootContent, unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline | Inline[] | null {
         const ctx = this.createContext(unit, diagnostics);
 
-        // Look up handler in registry
-        const handler = this.registry.getMdInlineHandler(node.type);
+        // Look up handlers in registry
+        const handlers = this.registry.getMdInlineHandlers(node.type);
 
-        if (handler?.handleInline) {
-            const result = handler.handleInline(node, ctx);
-            if (result === null) return null;
-            if (Array.isArray(result)) return result.length === 1 ? result[0] : null;
-            return result;
+        for (const handler of handlers) {
+            if (handler.handleInline) {
+                const result = handler.handleInline(node, ctx);
+                if (result !== null) {
+                    return result;
+                }
+            }
         }
 
         return null;
@@ -170,8 +197,19 @@ export class MarkdownUnitParser implements UnitParser {
      * Transform array of inline children
      */
     private transformInlineChildren(children: RootContent[], unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline[] {
-        return children
-            .map(child => this.transformInline(child, unit, diagnostics))
-            .filter((n): n is Inline => n !== null);
+        const results: Inline[] = [];
+
+        for (const child of children) {
+            const result = this.transformInline(child, unit, diagnostics);
+            if (result === null) continue;
+
+            if (Array.isArray(result)) {
+                results.push(...result);
+            } else {
+                results.push(result);
+            }
+        }
+
+        return results;
     }
 }

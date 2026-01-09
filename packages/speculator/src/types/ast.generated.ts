@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-02T15:58:42.008Z
+ * Generated at: 2026-01-09T14:52:07.219Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -46,7 +46,8 @@ export type Inline =
   | InlineReference
   | InlineRequirement
   | InlineIssue
-  | InlineCite;
+  | InlineCite
+  | InlineVariable;
 export type InlineText = BaseNode & {
   type: 'text';
   value: string;
@@ -194,9 +195,24 @@ export type InlineCite = BaseNode & {
    */
   fragment?: string | null;
   /**
+   * Resolved ID of the bibliography entry. Filled during resolve phase.
+   */
+  targetId?: string;
+  /**
+   * Resolved URL of the citation. Filled during resolve phase.
+   */
+  url?: string;
+  /**
    * Optional inline content that represents the cite text.
    */
   children?: Inline[];
+};
+export type InlineVariable = BaseNode & {
+  type: 'variable';
+  /**
+   * The variable name or content.
+   */
+  value: string;
 };
 export type Block =
   | BlockParagraph

@@ -108,6 +108,11 @@ export function normalizeRespecConfig(raw: RawRespecConfig): SpecConfig {
         config.maxTocLevel = raw.maxTocLevel;
     }
 
+    // Bibliography
+    if (raw.localBiblio !== undefined) {
+        config.localBiblio = raw.localBiblio as any;
+    }
+
     return config;
 }
 

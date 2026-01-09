@@ -11,6 +11,16 @@
                 "url": "https://google.com"
             }
         ],
-        "abstract": "This specification demonstrates the capabilities of the Speculator parser and render pipeline."
+        "abstract": "This specification demonstrates the capabilities of the Speculator parser and render pipeline.",
+        "localBiblio": {
+            "RFC2119": {
+                "title": "Key words for use in RFCs to Indicate Requirement Levels",
+                "url": "https://www.rfc-editor.org/rfc/rfc2119"
+            },
+            "DOM": {
+                "title": "DOM Standard",
+                "url": "https://dom.spec.whatwg.org/"
+            }
+        }
     }
 }

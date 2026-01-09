@@ -105,8 +105,16 @@ export async function loadRespecConfig(
     }
 
     try {
-        const config = JSON.parse(content) as RawRespecConfig;
-        return { config, diagnostics };
+        let config = JSON.parse(content) as any;
+        
+        // Unwrap if it's the wrapper format
+        if (config.respec && typeof config.respec === 'object') {
+            config = config.respec;
+        } else if (config.respecConfig && typeof config.respecConfig === 'object') {
+            config = config.respecConfig;
+        }
+
+        return { config: config as RawRespecConfig, diagnostics };
     } catch (error) {
         diagnostics.push(createDiagnostic(
             'error',

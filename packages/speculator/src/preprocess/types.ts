@@ -204,6 +204,9 @@ export interface SpecConfig {
 
     /** Custom specification profile/variant */
     specProfile?: string;
+
+    /** Local bibliography entries for citation resolution */
+    localBiblio?: Record<string, { title: string; url?: string }>;
 }
 
 // ============================================================================

@@ -18,9 +18,9 @@ export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult
 
 // Postprocess Plugins
 export {
-    citationTransformPlugin,
     dfnIndexPlugin,
     referenceResolvePlugin,
+    citationResolvePlugin,
     tocPlugin,
     corePlugins,
 } from './postprocess/index.js';

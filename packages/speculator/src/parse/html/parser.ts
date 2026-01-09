@@ -134,8 +134,10 @@ export class HtmlUnitParser implements UnitParser {
         return {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            transformInlineChildren: (children: RootContent[]) => self.transformInlineChildren(children, unit, diagnostics),
-            transformBlockChildren: (children: RootContent[]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transformInlineChildren: (children: any[]) => self.transformInlineChildren(children, unit, diagnostics),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transformBlockChildren: (children: any[]) => {
                 const results: (Section | Block)[] = [];
                 const ctx = self.createContext(unit, diagnostics);
                 for (const child of children) {
@@ -148,6 +150,7 @@ export class HtmlUnitParser implements UnitParser {
             },
             getTextContent,
             getAttr,
+            registry: self.registry,
         };
     }
 

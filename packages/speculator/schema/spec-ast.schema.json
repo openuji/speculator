@@ -485,6 +485,14 @@
                             ],
                             "description": "Fragment identifier from data-cite (e.g., 'the-a-element')."
                         },
+                        "targetId": {
+                            "type": "string",
+                            "description": "Resolved ID of the bibliography entry. Filled during resolve phase."
+                        },
+                        "url": {
+                            "type": "string",
+                            "description": "Resolved URL of the citation. Filled during resolve phase."
+                        },
                         "children": {
                             "type": "array",
                             "items": {
@@ -496,6 +504,30 @@
                     "required": [
                         "type",
                         "key"
+                    ]
+                }
+            ]
+        },
+        "InlineVariable": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Algorithm variable marker (e.g., |x| in ReSpec). Rendered as <var> in HTML.",
+                    "properties": {
+                        "type": {
+                            "const": "variable"
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "The variable name or content."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value"
                     ]
                 }
             ]
@@ -534,6 +566,9 @@
                 },
                 {
                     "$ref": "#/definitions/InlineCite"
+                },
+                {
+                    "$ref": "#/definitions/InlineVariable"
                 }
             ]
         },

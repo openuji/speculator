@@ -26,6 +26,8 @@ export { CodeMarkdownParser } from './markdown/CodeMarkdownParser.js';
 export { BlockquoteMarkdownParser } from './markdown/BlockquoteMarkdownParser.js';
 export { TablesMarkdownParser } from './markdown/TablesMarkdownParser.js';
 export { InlinesMarkdownParser } from './markdown/InlinesMarkdownParser.js';
+export { ShorthandsMarkdownParser } from './markdown/ShorthandsMarkdownParser.js';
+export { HtmlInlinesMarkdownParser } from './markdown/HtmlInlinesMarkdownParser.js';
 export { MiscMarkdownParser } from './markdown/MiscMarkdownParser.js';
 
 // Import for aggregation
@@ -49,6 +51,8 @@ import { CodeMarkdownParser } from './markdown/CodeMarkdownParser.js';
 import { BlockquoteMarkdownParser } from './markdown/BlockquoteMarkdownParser.js';
 import { TablesMarkdownParser } from './markdown/TablesMarkdownParser.js';
 import { InlinesMarkdownParser } from './markdown/InlinesMarkdownParser.js';
+import { ShorthandsMarkdownParser } from './markdown/ShorthandsMarkdownParser.js';
+import { HtmlInlinesMarkdownParser } from './markdown/HtmlInlinesMarkdownParser.js';
 import { MiscMarkdownParser } from './markdown/MiscMarkdownParser.js';
 
 import type { HtmlParserModule, MarkdownParserModule } from './registry.js';
@@ -80,6 +84,9 @@ export const coreHtmlParsers: HtmlParserModule[] = [
  * Lower order numbers are registered first (higher priority).
  */
 export const coreMarkdownParsers: MarkdownParserModule[] = [
+    // Shorthands and HTML (highest priority)
+    ShorthandsMarkdownParser,  // order: 5
+    HtmlInlinesMarkdownParser, // order: 4
     // Standard parsers
     HeadingsMarkdownParser,  // order: 10
     ParagraphsMarkdownParser,// order: 10

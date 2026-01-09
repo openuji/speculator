@@ -8,7 +8,6 @@
  */
 
 // Transform plugins
-export { citationTransformPlugin } from './plugins/citation-transform.js';
 
 // Index plugins
 export { sectionIdPlugin } from './plugins/section-id.js';
@@ -16,6 +15,7 @@ export { dfnIndexPlugin } from './plugins/dfn-index.js';
 
 // Resolve plugins
 export { referenceResolvePlugin } from './plugins/reference-resolve.js';
+export { citationResolvePlugin } from './plugins/citation-resolve.js';
 
 // Compute plugins
 export { tocPlugin } from './plugins/toc.js';
@@ -28,20 +28,20 @@ export { walkDocument, type AstVisitor } from './walk-ast.js';
  * 
  * Phase execution order: transform → index → resolve → compute → render
  */
-import { citationTransformPlugin } from './plugins/citation-transform.js';
 import { sectionIdPlugin } from './plugins/section-id.js';
 import { dfnIndexPlugin } from './plugins/dfn-index.js';
 import { referenceResolvePlugin } from './plugins/reference-resolve.js';
+import { citationResolvePlugin } from './plugins/citation-resolve.js';
 import { tocPlugin } from './plugins/toc.js';
 
 export const corePlugins = [
     // Transform plugins
-    citationTransformPlugin,    // order: { transform: 10 }
     // Index plugins
     sectionIdPlugin,            // order: { index: 5 }
     dfnIndexPlugin,             // order: { index: 10 }
     // Resolve plugins
     referenceResolvePlugin,     // order: { resolve: 10 }
+    citationResolvePlugin,      // order: { resolve: 15 }
     // Compute plugins
     tocPlugin,                  // order: { compute: 10 }
 ];

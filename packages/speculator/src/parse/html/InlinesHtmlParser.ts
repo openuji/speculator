@@ -11,6 +11,7 @@ import type {
     InlineEmphasis,
     InlineStrong,
     InlineCode as InlineCodeType,
+    InlineVariable,
     InlineLink,
     InlineImage,
     InlineCite,
@@ -23,7 +24,7 @@ import { normalizeTerm, splitLinkTexts, splitForContexts, parseDataCite } from '
  */
 export const InlinesHtmlParser: HtmlParserModule = {
     name: 'InlinesHtmlParser',
-    handles: ['em', 'i', 'strong', 'b', 'code', 'a', 'img', 'span'],
+    handles: ['em', 'i', 'strong', 'b', 'code', 'var', 'a', 'img', 'span'],
     order: 10,
 
     handleInline(element: Element, ctx: ParseContext): InlineHandlerResult {
@@ -54,6 +55,16 @@ export const InlinesHtmlParser: HtmlParserModule = {
         if (tagName === 'code') {
             const result: InlineCodeType = {
                 type: 'inlineCode',
+                value: ctx.getTextContent(element),
+            };
+            if (sourcePos) result.sourcePos = sourcePos;
+            return result;
+        }
+
+        // Variables
+        if (tagName === 'var') {
+            const result: InlineVariable = {
+                type: 'variable',
                 value: ctx.getTextContent(element),
             };
             if (sourcePos) result.sourcePos = sourcePos;
