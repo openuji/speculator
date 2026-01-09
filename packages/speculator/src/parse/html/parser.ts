@@ -9,7 +9,7 @@ import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
 import type { Root, Element, Text as HastText, RootContent } from 'hast';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { UnitParser, ParseDiagnostic } from '#src/parse/types';
+import type { UnitParser } from '#src/parse/types';
 import type {
     Section,
     Block,
@@ -76,13 +76,6 @@ function getTextContent(element: Element): string {
     return text;
 }
 
-/**
- * Parser result including diagnostics
- */
-export interface HtmlParseResult {
-    blocks: (Section | Block)[];
-    diagnostics: ParseDiagnostic[];
-}
 
 /**
  * HTML unit parser implementation using handler registry
@@ -101,18 +94,10 @@ export class HtmlUnitParser implements UnitParser {
      * Parse HTML unit to AST blocks
      */
     parse(unit: SourceUnit): (Section | Block)[] {
-        return this.parseWithDiagnostics(unit).blocks;
-    }
-
-    /**
-     * Parse HTML unit to AST blocks with diagnostics
-     */
-    parseWithDiagnostics(unit: SourceUnit): HtmlParseResult {
         const tree = this.processor.parse(unit.content) as Root;
-        const diagnostics: ParseDiagnostic[] = [];
 
         // Create context for handlers
-        const ctx = this.createContext(unit, diagnostics);
+        const ctx = this.createContext(unit);
 
         const results: (Section | Block)[] = [];
 
@@ -121,13 +106,13 @@ export class HtmlUnitParser implements UnitParser {
             results.push(...blocks);
         }
 
-        return { blocks: results, diagnostics };
+        return results;
     }
 
     /**
      * Create parse context for handlers
      */
-    private createContext(unit: SourceUnit, diagnostics: ParseDiagnostic[]): ParseContext {
+    private createContext(unit: SourceUnit): ParseContext {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
@@ -135,18 +120,15 @@ export class HtmlUnitParser implements UnitParser {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            transformInlineChildren: (children: any[]) => self.transformInlineChildren(children, unit, diagnostics),
+            transformInlineChildren: (children: any[]) => self.transformInlineChildren(children, unit),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             transformBlockChildren: (children: any[]) => {
                 const results: (Section | Block)[] = [];
-                const ctx = self.createContext(unit, diagnostics);
+                const ctx = self.createContext(unit);
                 for (const child of children) {
                     results.push(...self.transformBlock(child, ctx));
                 }
                 return results;
-            },
-            emitDiagnostic: (diagnostic) => {
-                diagnostics.push({ ...diagnostic, file: unit.file });
             },
             getTextContent,
             getAttr,
@@ -174,7 +156,7 @@ export class HtmlUnitParser implements UnitParser {
         }
 
         // Fallback: try to handle as inline (e.g., <dfn> or <span> at top level)
-        const inline = this.transformInline(element, ctx.unit, []); // Empty diagnostics, we'll re-collect if needed
+        const inline = this.transformInline(element, ctx.unit);
         if (inline) {
             const sourcePos = ctx.createSourcePos(element);
             const result: BlockParagraph = {
@@ -204,7 +186,7 @@ export class HtmlUnitParser implements UnitParser {
     /**
      * Transform hast inline content to Speculator inline
      */
-    private transformInline(node: RootContent, unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline | null {
+    private transformInline(node: RootContent, unit: SourceUnit): Inline | null {
         if (node.type === 'text') {
             const textNode = node as HastText;
             // Skip whitespace-only text
@@ -220,7 +202,7 @@ export class HtmlUnitParser implements UnitParser {
 
         const element = node as Element;
         const tagName = element.tagName.toLowerCase();
-        const ctx = this.createContext(unit, diagnostics);
+        const ctx = this.createContext(unit);
 
         // Look up handler in registry
         const handler = this.registry.getHtmlInlineHandler(tagName);
@@ -244,14 +226,14 @@ export class HtmlUnitParser implements UnitParser {
     /**
      * Transform array of inline children
      */
-    private transformInlineChildren(children: RootContent[], unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline[] {
+    private transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
         const results: Inline[] = [];
 
         for (const child of children) {
             if (child.type === 'element') {
                 const element = child as Element;
                 const tagName = element.tagName.toLowerCase();
-                const ctx = this.createContext(unit, diagnostics);
+                const ctx = this.createContext(unit);
                 const handler = this.registry.getHtmlInlineHandler(tagName);
 
                 if (handler?.handleInline) {
@@ -267,7 +249,7 @@ export class HtmlUnitParser implements UnitParser {
                 }
             }
 
-            const inline = this.transformInline(child, unit, diagnostics);
+            const inline = this.transformInline(child, unit);
             if (inline) {
                 results.push(inline);
             }

@@ -8,13 +8,11 @@ import type { Element } from 'hast';
 import type { RootContent as MdastRootContent } from 'mdast';
 import type { Block, Inline, Section } from '#src/types/ast.generated';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { ParseDiagnostic } from './types.js';
 
 // ============================================================================
 // Types & Interfaces
 // ============================================================================
 
-export { type ParseDiagnostic };
 
 /** Node with position info from standard parsers */
 export interface NodeWithPosition {
@@ -50,9 +48,6 @@ export interface ParseContext {
     /** Transform an array of mdast/hast block children */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transformBlockChildren(children: any[]): (Section | Block)[];
-
-    /** Emit a diagnostic message */
-    emitDiagnostic(diagnostic: Omit<ParseDiagnostic, 'file'>): void;
 
     /** Get text content of element (HTML) */
     getTextContent(element: Element): string;

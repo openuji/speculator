@@ -34,7 +34,6 @@ describe('parse', () => {
 
             const result = parse(spec);
 
-            expect(result.hasErrors).toBe(false);
             expect(result.result?.document.type).toBe('document');
             expect(result.result?.document.children).toHaveLength(1);
         });
@@ -49,7 +48,6 @@ describe('parse', () => {
 
             const result = parse(spec);
 
-            expect(result.hasErrors).toBe(false);
             const rootSection = result.result?.document.children[0] as Section;
             expect(rootSection.type).toBe('section');
             expect(rootSection.heading?.depth).toBe(1);
@@ -68,7 +66,6 @@ describe('parse', () => {
 
             const result = parse(spec);
 
-            expect(result.hasErrors).toBe(false);
             const section = result.result?.document.children[0] as Section;
             expect(section.type).toBe('section');
             expect(section.id).toBe('abstract');
@@ -94,7 +91,6 @@ describe('parse', () => {
 
             const result = parse(spec);
 
-            expect(result.hasErrors).toBe(false);
             expect(result.result?.document.children.length).toBeGreaterThanOrEqual(1);
         });
 
@@ -115,7 +111,7 @@ describe('parse', () => {
             ]);
 
             const result = parse(spec);
-            expect(result.hasErrors).toBe(false);
+            expect(result.result).toBeDefined();
 
             // Find sections and check their sourcePos
             function collectSourceFiles(node: unknown): string[] {
@@ -201,7 +197,6 @@ describe('parse', () => {
 
             const result = parse(spec);
 
-            expect(result.hasErrors).toBe(false);
             expect(result.result?.document.children.length).toBeGreaterThan(0);
             expect(result.result?.document.metadata?.title).toBe('Design Tokens Format');
         });
@@ -223,8 +218,6 @@ describe('parse', () => {
             ]);
 
             const result = parse(spec);
-
-            expect(result.hasErrors).toBe(false);
 
             // Find nodes from each file
             const doc = result.result?.document;
@@ -252,7 +245,6 @@ describe('parseCompositeSource', () => {
 
         const result = parseCompositeSource(source);
 
-        expect(result.hasErrors).toBe(false);
         expect(result.result?.document.type).toBe('document');
     });
 });

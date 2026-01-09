@@ -47,45 +47,15 @@ export interface ParsedSpec {
 }
 
 // ============================================================================
-// Parse Diagnostics
+// Parse Result
 // ============================================================================
 
 /**
- * Parse diagnostic codes
- */
-export type ParseDiagnosticCode =
-    | 'parse-error'
-    | 'invalid-structure'
-    | 'unsupported-element';
-
-/**
- * Diagnostic severity levels
- */
-export type DiagnosticSeverity = 'error' | 'warning' | 'info';
-
-/**
- * Parse diagnostic message
- */
-export interface ParseDiagnostic {
-    severity: DiagnosticSeverity;
-    code: ParseDiagnosticCode;
-    message: string;
-    file?: string;
-    sourcePos?: SourcePos;
-}
-
-/**
- * Parse result with diagnostics
+ * Parse result
  */
 export interface ParseResult {
     /** Parsed spec (may be partial if errors) */
     result?: ParsedSpec;
-
-    /** Diagnostics from parsing */
-    diagnostics: ParseDiagnostic[];
-
-    /** Quick check for errors */
-    hasErrors: boolean;
 }
 
 // ============================================================================

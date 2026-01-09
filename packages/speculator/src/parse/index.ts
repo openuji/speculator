@@ -28,9 +28,6 @@ export type {
 export type {
     UnitParser,
     ParsedSpec,
-    ParseDiagnosticCode,
-    DiagnosticSeverity,
-    ParseDiagnostic,
     ParseResult,
 } from '#src/parse/types';
 

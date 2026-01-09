@@ -10,7 +10,7 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import type { Root, RootContent } from 'mdast';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { UnitParser, ParseDiagnostic } from '#src/parse/types';
+import type { UnitParser } from '#src/parse/types';
 import type {
     Section,
     Block,
@@ -51,13 +51,6 @@ function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos | 
     return result;
 }
 
-/**
- * Parser result including diagnostics
- */
-export interface MarkdownParseResult {
-    blocks: (Section | Block)[];
-    diagnostics: ParseDiagnostic[];
-}
 
 /**
  * Markdown unit parser implementation using handler registry
@@ -76,18 +69,10 @@ export class MarkdownUnitParser implements UnitParser {
      * Parse markdown unit to AST blocks
      */
     parse(unit: SourceUnit): (Section | Block)[] {
-        return this.parseWithDiagnostics(unit).blocks;
-    }
-
-    /**
-     * Parse markdown unit to AST blocks with diagnostics
-     */
-    parseWithDiagnostics(unit: SourceUnit): MarkdownParseResult {
         const tree = this.processor.parse(unit.content) as Root;
-        const diagnostics: ParseDiagnostic[] = [];
 
         // Create context for handlers
-        const ctx = this.createContext(unit, diagnostics);
+        const ctx = this.createContext(unit);
 
         const blocks: (Section | Block)[] = [];
 
@@ -96,13 +81,13 @@ export class MarkdownUnitParser implements UnitParser {
             blocks.push(...blocksResult);
         }
 
-        return { blocks, diagnostics };
+        return blocks;
     }
 
     /**
      * Create parse context for handlers
      */
-    private createContext(unit: SourceUnit, diagnostics: ParseDiagnostic[]): ParseContext {
+    private createContext(unit: SourceUnit): ParseContext {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
@@ -110,25 +95,17 @@ export class MarkdownUnitParser implements UnitParser {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            transformInlineChildren: (children) => self.transformInlineChildren(children as any, unit, diagnostics),
+            transformInlineChildren: (children) => self.transformInlineChildren(children as any, unit),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             transformBlockChildren: (children) => {
                 const results: (Section | Block)[] = [];
-                const ctx = self.createContext(unit, diagnostics);
+                const ctx = self.createContext(unit);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 for (const child of children as any[]) {
                     const blocksResult = self.transformBlock(child, ctx);
                     results.push(...blocksResult);
                 }
                 return results;
-            },
-            emitDiagnostic: (diagnostic) => {
-                diagnostics.push({ 
-                    ...diagnostic, 
-                    file: unit.file,
-                    // If sourcePos not provided by handler, we might want to default it?
-                    // But usually handlers provide it.
-                } as any);
             },
             getTextContent: (element) => {
                 // Return text content logic (duplicated or imported)
@@ -137,7 +114,7 @@ export class MarkdownUnitParser implements UnitParser {
                     if (child.type === 'text') {
                         text += (child as any).value;
                     } else if (child.type === 'element') {
-                        text += self.createContext(unit, diagnostics).getTextContent(child as any);
+                        text += self.createContext(unit).getTextContent(child as any);
                     }
                 }
                 return text;
@@ -175,8 +152,8 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Transform mdast inline node to Speculator inline(s)
      */
-    private transformInline(node: RootContent, unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline | Inline[] | null {
-        const ctx = this.createContext(unit, diagnostics);
+    private transformInline(node: RootContent, unit: SourceUnit): Inline | Inline[] | null {
+        const ctx = this.createContext(unit);
 
         // Look up handlers in registry
         const handlers = this.registry.getMdInlineHandlers(node.type);
@@ -196,11 +173,11 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Transform array of inline children
      */
-    private transformInlineChildren(children: RootContent[], unit: SourceUnit, diagnostics: ParseDiagnostic[]): Inline[] {
+    private transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
         const results: Inline[] = [];
 
         for (const child of children) {
-            const result = this.transformInline(child, unit, diagnostics);
+            const result = this.transformInline(child, unit);
             if (result === null) continue;
 
             if (Array.isArray(result)) {

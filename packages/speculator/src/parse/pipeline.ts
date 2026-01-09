@@ -7,7 +7,7 @@
 
 import type { PreprocessedSpec, SourceUnit, SourceFormat } from '#src/preprocess/types';
 import type { Section, Block } from '#src/types/ast.generated';
-import type { UnitParser, ParseResult, ParseDiagnostic } from '#src/parse/types';
+import type { UnitParser, ParseResult } from '#src/parse/types';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
@@ -44,21 +44,14 @@ function getParser(parsers: Map<SourceFormat, UnitParser>, format: SourceFormat)
 function parseUnit(
     unit: SourceUnit,
     parsers: Map<SourceFormat, UnitParser>
-): { blocks: (Section | Block)[]; diagnostics: ParseDiagnostic[] } {
-    const diagnostics: ParseDiagnostic[] = [];
-
+): (Section | Block)[] {
     try {
         const parser = getParser(parsers, unit.format);
-        const blocks = parser.parse(unit);
-        return { blocks, diagnostics };
+        return parser.parse(unit);
     } catch (error) {
-        diagnostics.push({
-            severity: 'error',
-            code: 'parse-error',
-            message: `Failed to parse ${unit.file}: ${error instanceof Error ? error.message : String(error)}`,
-            file: unit.file,
-        });
-        return { blocks: [], diagnostics };
+        // Fallback or error handling if needed, but for now just returning empty if parser fails
+        console.error(`Failed to parse ${unit.file}: ${error instanceof Error ? error.message : String(error)}`);
+        return [];
     }
 }
 
@@ -69,21 +62,16 @@ function parseInternal(
     preprocessed: PreprocessedSpec,
     parsers: Map<SourceFormat, UnitParser>
 ): ParseResult {
-    const diagnostics: ParseDiagnostic[] = [];
     const allBlocks: (Section | Block)[] = [];
 
     // Parse each unit in order
     for (const unit of preprocessed.source.units) {
-        const unitResult = parseUnit(unit, parsers);
-        diagnostics.push(...unitResult.diagnostics);
-        allBlocks.push(...unitResult.blocks);
+        const blocks = parseUnit(unit, parsers);
+        allBlocks.push(...blocks);
     }
 
-    // Check for errors
-    const hasErrors = diagnostics.some(d => d.severity === 'error');
-
-    if (hasErrors && allBlocks.length === 0) {
-        return { diagnostics, hasErrors };
+    if (allBlocks.length === 0) {
+        return {};
     }
 
     // Assemble document
@@ -98,8 +86,6 @@ function parseInternal(
             config: preprocessed.config,
             document,
         },
-        diagnostics,
-        hasErrors,
     };
 }
 
