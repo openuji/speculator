@@ -27,7 +27,8 @@ export { BlockquoteMarkdownParser } from './markdown/BlockquoteMarkdownParser.js
 export { TablesMarkdownParser } from './markdown/TablesMarkdownParser.js';
 export { InlinesMarkdownParser } from './markdown/InlinesMarkdownParser.js';
 export { ShorthandsMarkdownParser } from './markdown/ShorthandsMarkdownParser.js';
-export { HtmlInlinesMarkdownParser } from './markdown/HtmlInlinesMarkdownParser.js';
+export { HtmlParagraphMarkdownParser } from './markdown/HtmlParagraphMarkdownParser.js';
+export { HtmlBlockMarkdownParser } from './markdown/HtmlBlockMarkdownParser.js';
 export { MiscMarkdownParser } from './markdown/MiscMarkdownParser.js';
 
 // Import for aggregation
@@ -52,7 +53,8 @@ import { BlockquoteMarkdownParser } from './markdown/BlockquoteMarkdownParser.js
 import { TablesMarkdownParser } from './markdown/TablesMarkdownParser.js';
 import { InlinesMarkdownParser } from './markdown/InlinesMarkdownParser.js';
 import { ShorthandsMarkdownParser } from './markdown/ShorthandsMarkdownParser.js';
-import { HtmlInlinesMarkdownParser } from './markdown/HtmlInlinesMarkdownParser.js';
+import { HtmlParagraphMarkdownParser } from './markdown/HtmlParagraphMarkdownParser.js';
+import { HtmlBlockMarkdownParser } from './markdown/HtmlBlockMarkdownParser.js';
 import { MiscMarkdownParser } from './markdown/MiscMarkdownParser.js';
 
 import type { HtmlParserModule, MarkdownParserModule } from './registry.js';
@@ -85,8 +87,9 @@ export const coreHtmlParsers: HtmlParserModule[] = [
  */
 export const coreMarkdownParsers: MarkdownParserModule[] = [
     // Shorthands and HTML (highest priority)
-    ShorthandsMarkdownParser,  // order: 5
-    HtmlInlinesMarkdownParser, // order: 4
+    ShorthandsMarkdownParser,     // order: 5
+    HtmlParagraphMarkdownParser,  // order: 4
+    HtmlBlockMarkdownParser,      // order: 4
     // Standard parsers
     HeadingsMarkdownParser,  // order: 10
     ParagraphsMarkdownParser,// order: 10

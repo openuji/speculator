@@ -23,6 +23,7 @@ import {
     type ParseContext,
     type NodeWithPosition,
 } from '#src/parse/registry';
+import { getAttr, getTextContent } from '#src/parse/utils/hast-utils';
 
 /**
  * Create source position from hast node position
@@ -49,31 +50,6 @@ function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos | 
     }
 
     return result;
-}
-
-/**
- * Get element attribute value
- */
-function getAttr(element: Element, name: string): string | undefined {
-    const val = element.properties?.[name];
-    if (typeof val === 'string') return val;
-    if (Array.isArray(val)) return val.join(' ');
-    return undefined;
-}
-
-/**
- * Get text content of element recursively
- */
-function getTextContent(element: Element): string {
-    let text = '';
-    for (const child of element.children) {
-        if (child.type === 'text') {
-            text += (child as HastText).value;
-        } else if (child.type === 'element') {
-            text += getTextContent(child as Element);
-        }
-    }
-    return text;
 }
 
 

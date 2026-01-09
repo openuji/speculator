@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/parser';
 import { ParseHandlerRegistry } from '#src/parse/registry';
 import { ShorthandsMarkdownParser } from '#src/parse/markdown/ShorthandsMarkdownParser';
-import { HtmlInlinesMarkdownParser } from '#src/parse/markdown/HtmlInlinesMarkdownParser';
+import { HtmlParagraphMarkdownParser } from '#src/parse/markdown/HtmlParagraphMarkdownParser';
+import { HtmlBlockMarkdownParser } from '#src/parse/markdown/HtmlBlockMarkdownParser';
 import { ParagraphsMarkdownParser } from '#src/parse/markdown/ParagraphsMarkdownParser';
 import { DfnHtmlParser } from '#src/parse/html/DfnHtmlParser';
 import { XrefHtmlParser } from '#src/parse/html/XrefHtmlParser';
@@ -14,7 +15,8 @@ describe('HtmlInlinesMarkdownParser', () => {
     // but our parsers have internal 'order' property.
     registry.registerMarkdownParser(ParagraphsMarkdownParser);
     registry.registerMarkdownParser(ShorthandsMarkdownParser);
-    registry.registerMarkdownParser(HtmlInlinesMarkdownParser);
+    registry.registerMarkdownParser(HtmlParagraphMarkdownParser);
+    registry.registerMarkdownParser(HtmlBlockMarkdownParser);
     registry.registerHtmlParser(DfnHtmlParser);
     registry.registerHtmlParser(XrefHtmlParser);
 
