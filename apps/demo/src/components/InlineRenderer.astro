@@ -84,7 +84,25 @@ const { nodes, workspace, documentPath } = Astro.props;
 
       case "reference":
         // Render cross-reference
-        const targetId = (node as any).targetId;
+        const ref = node as any;
+        const targetId = ref.targetId;
+        const preferredType = ref.preferredType;
+
+        // Element and IDL references render as <code> tags, not links
+        if (preferredType === "element" || preferredType === "idl") {
+          const codeClass = preferredType === "element" ? "element" : "idl";
+          return (
+            <code class={codeClass} data-link-type={preferredType}>
+              <RecursiveInlineRenderer
+                nodes={ref.children}
+                workspace={workspace}
+                documentPath={documentPath}
+              />
+            </code>
+          );
+        }
+
+        // Standard cross-references render as links
         let href = `#${targetId || ""}`;
 
         if (workspace && targetId) {
@@ -102,16 +120,16 @@ const { nodes, workspace, documentPath } = Astro.props;
           }
         }
 
-        const xrefFor = (node as any).forContexts?.filter(Boolean).join(", ");
+        const xrefFor = ref.forContexts?.filter(Boolean).join(", ");
         return (
           <a
             href={href}
             class="xref"
             data-xref-for={xrefFor || undefined}
-            title={(node as any).targetTerm}
+            title={ref.targetTerm}
           >
             <RecursiveInlineRenderer
-              nodes={node.children}
+              nodes={ref.children}
               workspace={workspace}
               documentPath={documentPath}
             />
