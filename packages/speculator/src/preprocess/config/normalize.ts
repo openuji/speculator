@@ -29,9 +29,10 @@ function normalizePerson(raw: RawPersonEntry): PersonEntry | null {
  * Normalize raw ReSpec config to internal SpecConfig
  * 
  * @param raw - Raw config from file
+ * @param rootLastUpdateDate - Optional root-level lastUpdateDate (takes priority over respec.modificationDate)
  * @returns Normalized SpecConfig with defaults applied
  */
-export function normalizeRespecConfig(raw: RawRespecConfig): SpecConfig {
+export function normalizeRespecConfig(raw: RawRespecConfig, rootLastUpdateDate?: string): SpecConfig {
     const config: SpecConfig = {};
 
     // Document metadata
@@ -52,6 +53,14 @@ export function normalizeRespecConfig(raw: RawRespecConfig): SpecConfig {
     if (raw.publishDate !== undefined) {
         config.publishDate = raw.publishDate;
     }
+    
+    // Priority: root lastUpdateDate > respec.modificationDate
+    if (rootLastUpdateDate !== undefined) {
+        config.lastUpdateDate = rootLastUpdateDate;
+    } else if (raw.modificationDate !== undefined) {
+        config.lastUpdateDate = raw.modificationDate;
+    }
+    
     if (raw.thisVersion !== undefined) {
         config.thisVersion = raw.thisVersion;
     }

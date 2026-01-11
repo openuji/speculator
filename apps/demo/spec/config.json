@@ -1,10 +1,12 @@
 {
     "id": "spec-demo",
     "deps": [],
+    "lastUpdateDate": "2026-01-11",
     "respec": {
         "title": "Speculator Demo Specification",
         "shortName": "spec-demo",
         "specStatus": "ED",
+        "lastUpdated": "2026-01-11",
         "editors": [
             {
                 "name": "Antigravity",

@@ -24,6 +24,7 @@ export interface RawRespecConfig {
     // Status and versioning
     specStatus?: string;
     publishDate?: string;
+    modificationDate?: string;  // ReSpec field name
     thisVersion?: string;
     latestVersion?: string;
     prevVersion?: string;

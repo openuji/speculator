@@ -169,6 +169,9 @@ export interface SpecConfig {
     /** Publication date (ISO 8601: YYYY-MM-DD) */
     publishDate?: string;
 
+    /** Last update date (ISO 8601: YYYY-MM-DD) */
+    lastUpdateDate?: string;
+
     /** This version URL */
     thisVersion?: string;
 

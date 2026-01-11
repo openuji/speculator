@@ -157,6 +157,10 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
         meta.publishDate = config.publishDate;
         hasContent = true;
     }
+    if (config.lastUpdateDate) {
+        meta.lastUpdateDate = config.lastUpdateDate;
+        hasContent = true;
+    }
     if (config.editors && config.editors.length > 0) {
         meta.editors = config.editors.map(e => ({
             name: e.name,

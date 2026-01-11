@@ -1411,6 +1411,11 @@
                     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
                     "description": "ISO 8601 date format (YYYY-MM-DD)"
                 },
+                "lastUpdateDate": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "Last update date (YYYY-MM-DD)"
+                },
                 "abstract": {
                     "type": "string"
                 }

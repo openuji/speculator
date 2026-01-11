@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-09T14:52:07.219Z
+ * Generated at: 2026-01-11T09:07:38.620Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -366,6 +366,10 @@ export interface DocumentMetadata {
    * ISO 8601 date format (YYYY-MM-DD)
    */
   publishDate?: string;
+  /**
+   * Last update date (YYYY-MM-DD)
+   */
+  lastUpdateDate?: string;
   abstract?: string;
 }
 export interface BaseNode {
