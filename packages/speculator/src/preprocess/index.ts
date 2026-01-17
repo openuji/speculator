@@ -8,7 +8,7 @@
  */
 
 // Main orchestrator
-export { preprocess, validateEntry } from '#src/preprocess/pipeline';
+export { preprocess, validateEntry, PreprocessError } from '#src/preprocess/pipeline';
 export type { PreprocessOptions } from '#src/preprocess/pipeline';
 
 // Core types
@@ -22,19 +22,16 @@ export type {
     PersonEntry,
     SpecConfig,
     PreprocessedSpec,
-    DiagnosticSeverity,
-    PreprocessDiagnosticCode,
-    Diagnostic,
-    PreprocessResult,
 } from '#src/preprocess/types';
 
-export { inferFormat, createDiagnostic } from '#src/preprocess/types';
+export { inferFormat } from '#src/preprocess/types';
 
 // Config submodule (for advanced use)
 export {
     loadRespecConfig,
     normalizeRespecConfig,
     createDefaultConfig,
+    ConfigLoadError,
 } from '#src/preprocess/config/index';
 export type { RawRespecConfig, RawPersonEntry } from '#src/preprocess/config/index';
 
@@ -43,4 +40,5 @@ export {
     scanMarkdownIncludes,
     scanHtmlIncludes,
     resolveIncludes,
+    IncludeResolveError,
 } from '#src/preprocess/include/index';

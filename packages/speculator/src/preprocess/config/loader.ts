@@ -5,8 +5,6 @@
  */
 
 import type { FileProvider } from '#src/file-provider/types';
-import type { Diagnostic } from '#src/preprocess/types';
-import { createDiagnostic } from '#src/preprocess/types';
 import { isFileNotFoundError } from '#src/file-provider/types';
 
 /**
@@ -70,17 +68,31 @@ export interface RawPersonEntry {
 }
 
 /**
+ * Error thrown when config loading fails
+ */
+export class ConfigLoadError extends Error {
+    constructor(
+        message: string,
+        public readonly code: 'config-not-found' | 'config-parse-error',
+        public readonly path: string
+    ) {
+        super(message);
+        this.name = 'ConfigLoadError';
+    }
+}
+
+/**
  * Load a ReSpec configuration file
  * 
  * @param fileProvider - File provider to read from
  * @param configPath - Path to config file
- * @returns Parsed config and any diagnostics
+ * @returns Parsed config and optional lastUpdateDate
+ * @throws ConfigLoadError if loading or parsing fails
  */
 export async function loadRespecConfig(
     fileProvider: FileProvider,
     configPath: string
-): Promise<{ config?: RawRespecConfig; diagnostics: Diagnostic[] }> {
-    const diagnostics: Diagnostic[] = [];
+): Promise<{ config: RawRespecConfig; lastUpdateDate?: string }> {
     const canonicalPath = fileProvider.canonicalize(configPath);
 
     let content: string;
@@ -88,41 +100,38 @@ export async function loadRespecConfig(
         content = await fileProvider.readText(canonicalPath);
     } catch (error) {
         if (isFileNotFoundError(error)) {
-            diagnostics.push(createDiagnostic(
-                'error',
-                'config-not-found',
+            throw new ConfigLoadError(
                 `Configuration file not found: ${canonicalPath}`,
+                'config-not-found',
                 canonicalPath
-            ));
+            );
         } else {
-            diagnostics.push(createDiagnostic(
-                'error',
-                'config-parse-error',
+            throw new ConfigLoadError(
                 `Failed to read configuration: ${error instanceof Error ? error.message : String(error)}`,
+                'config-parse-error',
                 canonicalPath
-            ));
+            );
         }
-        return { diagnostics };
     }
 
     try {
-        let config = JSON.parse(content) as any;
+        const fullConfig = JSON.parse(content) as Record<string, unknown>;
+        let config = fullConfig;
+        const lastUpdateDate = fullConfig.lastUpdateDate as string | undefined;
         
         // Unwrap if it's the wrapper format
-        if (config.respec && typeof config.respec === 'object') {
-            config = config.respec;
-        } else if (config.respecConfig && typeof config.respecConfig === 'object') {
-            config = config.respecConfig;
+        if (fullConfig.respec && typeof fullConfig.respec === 'object') {
+            config = fullConfig.respec as Record<string, unknown>;
+        } else if (fullConfig.respecConfig && typeof fullConfig.respecConfig === 'object') {
+            config = fullConfig.respecConfig as Record<string, unknown>;
         }
 
-        return { config: config as RawRespecConfig, diagnostics };
+        return { config: config as RawRespecConfig, lastUpdateDate };
     } catch (error) {
-        diagnostics.push(createDiagnostic(
-            'error',
-            'config-parse-error',
+        throw new ConfigLoadError(
             `Invalid JSON in configuration file: ${error instanceof Error ? error.message : String(error)}`,
+            'config-parse-error',
             canonicalPath
-        ));
-        return { diagnostics };
+        );
     }
 }

@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { MemoryFileProvider } from '#src/file-provider/memory';
-import { preprocess } from '#src/preprocess/pipeline';
+import { preprocess, PreprocessError } from '#src/preprocess/pipeline';
 
 describe('preprocess', () => {
     describe('basic preprocessing', () => {
@@ -18,11 +18,9 @@ describe('preprocess', () => {
                 fileProvider: fp,
             });
 
-            expect(result.hasErrors).toBe(false);
-            expect(result.result).toBeDefined();
-            expect(result.result?.source.entryFile).toBe('/spec/format.md');
-            expect(result.result?.source.entryFormat).toBe('markdown');
-            expect(result.result?.config).toBeDefined();
+            expect(result.source.entryFile).toBe('/spec/format.md');
+            expect(result.source.entryFormat).toBe('markdown');
+            expect(result.config).toBeDefined();
         });
 
         it('preprocesses HTML entry', async () => {
@@ -35,8 +33,7 @@ describe('preprocess', () => {
                 fileProvider: fp,
             });
 
-            expect(result.hasErrors).toBe(false);
-            expect(result.result?.source.entryFormat).toBe('html');
+            expect(result.source.entryFormat).toBe('html');
         });
     });
 
@@ -58,43 +55,36 @@ describe('preprocess', () => {
                 fileProvider: fp,
             });
 
-            expect(result.hasErrors).toBe(false);
-            expect(result.result?.config.title).toBe('My Specification');
-            expect(result.result?.config.shortName).toBe('my-spec');
-            expect(result.result?.config.status).toBe('ED');
-            expect(result.result?.config.editors).toHaveLength(1);
-            expect(result.result?.config.editors?.[0].name).toBe('Jane Doe');
+            expect(result.config.title).toBe('My Specification');
+            expect(result.config.shortName).toBe('my-spec');
+            expect(result.config.status).toBe('ED');
+            expect(result.config.editors).toHaveLength(1);
+            expect(result.config.editors?.[0].name).toBe('Jane Doe');
         });
 
-        it('handles missing config gracefully', async () => {
+        it('throws on missing config', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/format.md': '# Title',
             });
 
-            const result = await preprocess({
+            await expect(preprocess({
                 entry: '/spec/format.md',
                 configPath: '/spec/missing.json',
                 fileProvider: fp,
-            });
-
-            // Should have error diagnostic but still produce result
-            expect(result.diagnostics.some(d => d.code === 'config-not-found')).toBe(true);
-            expect(result.result).toBeDefined();
+            })).rejects.toThrow(PreprocessError);
         });
 
-        it('handles invalid JSON config', async () => {
+        it('throws on invalid JSON config', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/format.md': '# Title',
                 '/spec/config.json': 'not valid json {{{',
             });
 
-            const result = await preprocess({
+            await expect(preprocess({
                 entry: '/spec/format.md',
                 configPath: '/spec/config.json',
                 fileProvider: fp,
-            });
-
-            expect(result.diagnostics.some(d => d.code === 'config-parse-error')).toBe(true);
+            })).rejects.toThrow(PreprocessError);
         });
     });
 
@@ -115,10 +105,9 @@ describe('preprocess', () => {
                 fileProvider: fp,
             });
 
-            expect(result.hasErrors).toBe(false);
-            expect(result.result?.source.units.length).toBeGreaterThanOrEqual(3);
+            expect(result.source.units.length).toBeGreaterThanOrEqual(3);
 
-            const files = result.result?.source.units.map(u => u.file) ?? [];
+            const files = result.source.units.map((u) => u.file);
             expect(files).toContain('/spec/intro.md');
             expect(files).toContain('/spec/conformance.md');
         });
@@ -137,24 +126,20 @@ describe('preprocess', () => {
                 fileProvider: fp,
             });
 
-            expect(result.hasErrors).toBe(false);
-            const files = result.result?.source.units.map(u => u.file) ?? [];
+            const files = result.source.units.map((u) => u.file);
             expect(files).toContain('/spec/intro.md');
         });
 
-        it('reports include cycle as error', async () => {
+        it('throws on include cycle', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/a.md': ':::include ./b.md :::',
                 '/spec/b.md': ':::include ./a.md :::',
             });
 
-            const result = await preprocess({
+            await expect(preprocess({
                 entry: '/spec/a.md',
                 fileProvider: fp,
-            });
-
-            expect(result.hasErrors).toBe(true);
-            expect(result.diagnostics.some(d => d.code === 'include-cycle')).toBe(true);
+            })).rejects.toThrow(PreprocessError);
         });
     });
 
@@ -183,9 +168,8 @@ Text here
                 fileProvider: fp,
             });
 
-            expect(result.hasErrors).toBe(false);
-            expect(result.result?.config.title).toBe('Test Specification');
-            expect(result.result?.source.units.length).toBeGreaterThanOrEqual(4);
+            expect(result.config.title).toBe('Test Specification');
+            expect(result.source.units.length).toBeGreaterThanOrEqual(4);
         });
 
         it('processes HTML spec with includes', async () => {
@@ -210,8 +194,7 @@ Text here
                 fileProvider: fp,
             });
 
-            expect(result.hasErrors).toBe(false);
-            const files = result.result?.source.units.map(u => u.file) ?? [];
+            const files = result.source.units.map((u) => u.file);
             expect(files).toContain('/spec/intro.md');
             expect(files).toContain('/spec/conformance.md');
         });

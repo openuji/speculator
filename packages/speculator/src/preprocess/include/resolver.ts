@@ -6,7 +6,7 @@
  * 
  * Key behaviors:
  * - Deterministic order: includes are processed in encounter order
- * - Cycle detection: prevents infinite loops with clear diagnostics
+ * - Cycle detection: prevents infinite loops with clear errors
  * - Content splitting: preserves sourcePos.file for each fragment
  */
 
@@ -19,11 +19,24 @@ import type {
     IncludeGraph,
     IncludeEdge,
     CompositeSource,
-    Diagnostic,
 } from '#src/preprocess/types';
-import { inferFormat, createDiagnostic } from '#src/preprocess/types';
+import { inferFormat } from '#src/preprocess/types';
 import { scanMarkdownIncludes } from '#src/preprocess/include/scan-markdown';
 import { scanHtmlIncludes } from '#src/preprocess/include/scan-html';
+
+/**
+ * Error thrown when include resolution fails
+ */
+export class IncludeResolveError extends Error {
+    constructor(
+        message: string,
+        public readonly code: 'include-cycle' | 'include-not-found',
+        public readonly path: string
+    ) {
+        super(message);
+        this.name = 'IncludeResolveError';
+    }
+}
 
 /**
  * Count lines up to an offset
@@ -53,7 +66,6 @@ function scanIncludes(content: string, file: string, format: SourceFormat): Incl
 interface ResolveContext {
     fileProvider: FileProvider;
     includeGraph: IncludeGraph;
-    diagnostics: Diagnostic[];
     /** Currently active path for cycle detection */
     activePath: Set<string>;
     /** All visited files (to avoid re-processing) */
@@ -64,24 +76,23 @@ interface ResolveContext {
  * Split content at include points and recursively resolve
  * 
  * Returns SourceUnits in document order (includes expanded in-place)
+ * @throws IncludeResolveError on cycle detection or file not found
  */
 async function resolveFile(
     file: string,
     format: SourceFormat,
     ctx: ResolveContext
 ): Promise<SourceUnit[]> {
-    const { fileProvider, includeGraph, diagnostics, activePath, visited } = ctx;
+    const { fileProvider, includeGraph, activePath, visited } = ctx;
 
     // Cycle detection
     if (activePath.has(file)) {
         const cycle = [...activePath, file];
-        diagnostics.push(createDiagnostic(
-            'error',
-            'include-cycle',
+        throw new IncludeResolveError(
             `Include cycle detected: ${cycle.join(' → ')}`,
+            'include-cycle',
             file
-        ));
-        return [];
+        );
     }
 
     // Check if already processed (for diamond includes - A includes B and C, both include D)
@@ -102,21 +113,18 @@ async function resolveFile(
         content = await fileProvider.readText(file);
     } catch (error) {
         if (isFileNotFoundError(error)) {
-            diagnostics.push(createDiagnostic(
-                'error',
-                'include-not-found',
+            throw new IncludeResolveError(
                 `Included file not found: ${file}`,
-                file
-            ));
-        } else {
-            diagnostics.push(createDiagnostic(
-                'error',
                 'include-not-found',
-                `Failed to read included file: ${file} - ${error instanceof Error ? error.message : String(error)}`,
                 file
-            ));
+            );
+        } else {
+            throw new IncludeResolveError(
+                `Failed to read included file: ${file} - ${error instanceof Error ? error.message : String(error)}`,
+                'include-not-found',
+                file
+            );
         }
-        return [];
     }
 
     // Cache for diamond include handling
@@ -207,11 +215,12 @@ async function resolveFile(
  * @param entry - Canonical path to entry file
  * @param entryFormat - Format of entry file (inferred if not provided)
  * @param fileProvider - File provider for reading files
- * @returns CompositeSource with resolved includes and diagnostics
+ * @returns CompositeSource with resolved includes
+ * @throws IncludeResolveError on cycle detection or file not found
  * 
  * @example
  * ```typescript
- * const { source, diagnostics } = await resolveIncludes(
+ * const source = await resolveIncludes(
  *   '/spec/format.md',
  *   'markdown',
  *   fileProvider
@@ -227,14 +236,13 @@ export async function resolveIncludes(
     entry: string,
     entryFormat: SourceFormat | undefined,
     fileProvider: FileProvider
-): Promise<{ source: CompositeSource; diagnostics: Diagnostic[] }> {
+): Promise<CompositeSource> {
     const canonicalEntry = fileProvider.canonicalize(entry);
     const format = entryFormat ?? inferFormat(canonicalEntry);
 
     const ctx: ResolveContext = {
         fileProvider,
         includeGraph: new Map(),
-        diagnostics: [],
         activePath: new Set(),
         visited: new Map(),
     };
@@ -242,12 +250,9 @@ export async function resolveIncludes(
     const units = await resolveFile(canonicalEntry, format, ctx);
 
     return {
-        source: {
-            entryFile: canonicalEntry,
-            entryFormat: format,
-            units,
-            includeGraph: ctx.includeGraph,
-        },
-        diagnostics: ctx.diagnostics,
+        entryFile: canonicalEntry,
+        entryFormat: format,
+        units,
+        includeGraph: ctx.includeGraph,
     };
 }

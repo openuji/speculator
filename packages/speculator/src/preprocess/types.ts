@@ -128,7 +128,7 @@ export interface CompositeSource {
      */
     units: SourceUnit[];
 
-    /** Include relationship graph for diagnostics */
+    /** Include relationship graph */
     includeGraph: IncludeGraph;
 }
 
@@ -225,82 +225,4 @@ export interface PreprocessedSpec {
 
     /** Composed source with includes resolved */
     source: CompositeSource;
-}
-
-// ============================================================================
-// Diagnostics
-// ============================================================================
-
-/**
- * Diagnostic severity levels
- */
-export type DiagnosticSeverity = 'error' | 'warning' | 'info';
-
-/**
- * Preprocess diagnostic codes
- */
-export type PreprocessDiagnosticCode =
-    | 'include-cycle'
-    | 'include-not-found'
-    | 'config-parse-error'
-    | 'config-not-found'
-    | 'invalid-include-directive'
-    | 'unknown-format';
-
-/**
- * Diagnostic message from preprocessing
- */
-export interface Diagnostic {
-    /** Severity level */
-    severity: DiagnosticSeverity;
-
-    /** Machine-readable error code */
-    code: PreprocessDiagnosticCode;
-
-    /** Human-readable message */
-    message: string;
-
-    /** File where issue occurred */
-    file?: string;
-
-    /** Position in file (if applicable) */
-    sourcePos?: SourcePos;
-
-    /** Related information (e.g., cycle path) */
-    related?: Array<{
-        file: string;
-        message: string;
-        sourcePos?: SourcePos;
-    }>;
-}
-
-/**
- * Create a diagnostic helper
- */
-export function createDiagnostic(
-    severity: DiagnosticSeverity,
-    code: PreprocessDiagnosticCode,
-    message: string,
-    file?: string,
-    sourcePos?: SourcePos
-): Diagnostic {
-    return { severity, code, message, file, sourcePos };
-}
-
-// ============================================================================
-// Preprocess Result
-// ============================================================================
-
-/**
- * Result of preprocessing with diagnostics
- */
-export interface PreprocessResult {
-    /** Preprocessed spec (may be partial if errors occurred) */
-    result?: PreprocessedSpec;
-
-    /** Diagnostics collected during preprocessing */
-    diagnostics: Diagnostic[];
-
-    /** Quick check for any errors */
-    hasErrors: boolean;
 }

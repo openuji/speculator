@@ -4,7 +4,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { MemoryFileProvider } from '#src/file-provider/memory';
-import { resolveIncludes } from '#src/preprocess/include/resolver';
+import { resolveIncludes, IncludeResolveError } from '#src/preprocess/include/resolver';
+import type { SourceUnit } from '#src/preprocess/types';
 
 describe('resolveIncludes', () => {
     describe('basic resolution', () => {
@@ -13,9 +14,8 @@ describe('resolveIncludes', () => {
                 '/spec/format.md': '# Title\n\nSome content.',
             });
 
-            const { source, diagnostics } = await resolveIncludes('/spec/format.md', 'markdown', fp);
+            const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
-            expect(diagnostics).toHaveLength(0);
             expect(source.entryFile).toBe('/spec/format.md');
             expect(source.entryFormat).toBe('markdown');
             expect(source.units).toHaveLength(1);
@@ -29,13 +29,12 @@ describe('resolveIncludes', () => {
                 '/spec/intro.md': 'Intro content',
             });
 
-            const { source, diagnostics } = await resolveIncludes('/spec/format.md', 'markdown', fp);
+            const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
-            expect(diagnostics).toHaveLength(0);
             expect(source.units.length).toBeGreaterThanOrEqual(2);
 
             // Should have content before include, included content, and content after
-            const files = source.units.map(u => u.file);
+            const files = source.units.map((u: SourceUnit) => u.file);
             expect(files).toContain('/spec/format.md');
             expect(files).toContain('/spec/intro.md');
         });
@@ -51,13 +50,11 @@ describe('resolveIncludes', () => {
                 '/spec/conformance.md': 'Conformance text',
             });
 
-            const { source, diagnostics } = await resolveIncludes('/spec/format.md', 'markdown', fp);
-
-            expect(diagnostics).toHaveLength(0);
+            const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
             // Find intro and conformance indices
-            const introIdx = source.units.findIndex(u => u.file === '/spec/intro.md');
-            const confIdx = source.units.findIndex(u => u.file === '/spec/conformance.md');
+            const introIdx = source.units.findIndex((u: SourceUnit) => u.file === '/spec/intro.md');
+            const confIdx = source.units.findIndex((u: SourceUnit) => u.file === '/spec/conformance.md');
 
             expect(introIdx).toBeGreaterThan(-1);
             expect(confIdx).toBeGreaterThan(-1);
@@ -73,11 +70,9 @@ describe('resolveIncludes', () => {
                 '/spec/b.md': '### B content',
             });
 
-            const { source, diagnostics } = await resolveIncludes('/spec/format.md', 'markdown', fp);
+            const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
-            expect(diagnostics).toHaveLength(0);
-
-            const files = source.units.map(u => u.file);
+            const files = source.units.map((u: SourceUnit) => u.file);
             expect(files).toContain('/spec/format.md');
             expect(files).toContain('/spec/a.md');
             expect(files).toContain('/spec/b.md');
@@ -85,57 +80,54 @@ describe('resolveIncludes', () => {
     });
 
     describe('cycle detection', () => {
-        it('detects direct cycle (A includes A)', async () => {
+        it('throws on direct cycle (A includes A)', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/a.md': '# A\n:::include ./a.md :::',
             });
 
-            const { diagnostics } = await resolveIncludes('/spec/a.md', 'markdown', fp);
-
-            expect(diagnostics.length).toBeGreaterThan(0);
-            const cycleError = diagnostics.find(d => d.code === 'include-cycle');
-            expect(cycleError).toBeDefined();
+            await expect(resolveIncludes('/spec/a.md', 'markdown', fp)).rejects.toThrow(IncludeResolveError);
         });
 
-        it('detects indirect cycle (A → B → A)', async () => {
+        it('throws on indirect cycle (A → B → A)', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/a.md': '# A\n:::include ./b.md :::',
                 '/spec/b.md': '# B\n:::include ./a.md :::',
             });
 
-            const { diagnostics } = await resolveIncludes('/spec/a.md', 'markdown', fp);
-
-            expect(diagnostics.length).toBeGreaterThan(0);
-            const cycleError = diagnostics.find(d => d.code === 'include-cycle');
-            expect(cycleError).toBeDefined();
-            expect(cycleError?.message).toContain('cycle');
+            try {
+                await resolveIncludes('/spec/a.md', 'markdown', fp);
+                expect.fail('should have thrown');
+            } catch (error) {
+                expect(error).toBeInstanceOf(IncludeResolveError);
+                expect((error as IncludeResolveError).code).toBe('include-cycle');
+                expect((error as IncludeResolveError).message).toContain('cycle');
+            }
         });
 
-        it('detects three-way cycle (A → B → C → A)', async () => {
+        it('throws on three-way cycle (A → B → C → A)', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/a.md': ':::include ./b.md :::',
                 '/spec/b.md': ':::include ./c.md :::',
                 '/spec/c.md': ':::include ./a.md :::',
             });
 
-            const { diagnostics } = await resolveIncludes('/spec/a.md', 'markdown', fp);
-
-            const cycleError = diagnostics.find(d => d.code === 'include-cycle');
-            expect(cycleError).toBeDefined();
+            await expect(resolveIncludes('/spec/a.md', 'markdown', fp)).rejects.toThrow(IncludeResolveError);
         });
     });
 
     describe('error handling', () => {
-        it('reports missing include file', async () => {
+        it('throws on missing include file', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/format.md': '# Title\n:::include ./missing.md :::',
             });
 
-            const { diagnostics } = await resolveIncludes('/spec/format.md', 'markdown', fp);
-
-            expect(diagnostics.length).toBeGreaterThan(0);
-            const notFoundError = diagnostics.find(d => d.code === 'include-not-found');
-            expect(notFoundError).toBeDefined();
+            try {
+                await resolveIncludes('/spec/format.md', 'markdown', fp);
+                expect.fail('should have thrown');
+            } catch (error) {
+                expect(error).toBeInstanceOf(IncludeResolveError);
+                expect((error as IncludeResolveError).code).toBe('include-not-found');
+            }
         });
     });
 
@@ -147,12 +139,12 @@ describe('resolveIncludes', () => {
                 '/spec/b.md': 'B content',
             });
 
-            const { source } = await resolveIncludes('/spec/format.md', 'markdown', fp);
+            const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
             expect(source.includeGraph.has('/spec/format.md')).toBe(true);
             const edges = source.includeGraph.get('/spec/format.md');
             expect(edges).toHaveLength(2);
-            expect(edges?.map(e => e.target)).toEqual(['/spec/a.md', '/spec/b.md']);
+            expect(edges?.map((e) => e.target)).toEqual(['/spec/a.md', '/spec/b.md']);
         });
     });
 
@@ -165,10 +157,9 @@ describe('resolveIncludes', () => {
                 '/spec/intro.md': 'Intro content',
             });
 
-            const { source, diagnostics } = await resolveIncludes('/spec/format.html', 'html', fp);
+            const source = await resolveIncludes('/spec/format.html', 'html', fp);
 
-            expect(diagnostics).toHaveLength(0);
-            const files = source.units.map(u => u.file);
+            const files = source.units.map((u: SourceUnit) => u.file);
             expect(files).toContain('/spec/intro.md');
         });
     });
@@ -190,8 +181,8 @@ describe('determinism', () => {
         const results: string[][] = [];
 
         for (let i = 0; i < 10; i++) {
-            const { source } = await resolveIncludes('/spec/format.md', 'markdown', fp);
-            results.push(source.units.map(u => `${u.file}:${u.content.trim()}`));
+            const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
+            results.push(source.units.map((u: SourceUnit) => `${u.file}:${u.content.trim()}`));
         }
 
         // All runs should produce identical order

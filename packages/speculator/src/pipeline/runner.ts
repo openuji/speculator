@@ -87,20 +87,23 @@ export class SpeculatorPipeline {
 
         // 1. Initial run: Preprocess + Parse
         for (const entryConfig of options.entries) {
-            const preprocessResult = await preprocess({
-                entry: entryConfig.entry,
-                configPath: entryConfig.configPath,
-                fileProvider: options.fileProvider,
-            });
+            try {
+                const preprocessedSpec = await preprocess({
+                    entry: entryConfig.entry,
+                    configPath: entryConfig.configPath,
+                    fileProvider: options.fileProvider,
+                });
 
-            if (!preprocessResult.result) continue;
+                const registry = new ParseHandlerRegistry();
+                registerCoreParsers(registry);
+                const parseResult = parseWithRegistry(preprocessedSpec, registry);
 
-            const registry = new ParseHandlerRegistry();
-            registerCoreParsers(registry);
-            const parseResult = parseWithRegistry(preprocessResult.result, registry);
-
-            if (!parseResult.result) continue;
-            results.push({ doc: parseResult.result.document, entry: entryConfig.entry });
+                if (!parseResult.result) continue;
+                results.push({ doc: parseResult.result.document, entry: entryConfig.entry });
+            } catch {
+                // Preprocess errors are now thrown, skip this entry
+                continue;
+            }
         }
 
         if (results.length === 0) {

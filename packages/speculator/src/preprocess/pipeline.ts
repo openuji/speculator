@@ -9,12 +9,11 @@ import type { FileProvider } from '#src/file-provider/types';
 import type {
     SourceFormat,
     SpecConfig,
-    PreprocessResult,
-    Diagnostic,
+    PreprocessedSpec,
 } from '#src/preprocess/types';
 import { inferFormat } from '#src/preprocess/types';
-import { loadRespecConfig, normalizeRespecConfig, createDefaultConfig } from '#src/preprocess/config/index';
-import { resolveIncludes } from '#src/preprocess/include/index';
+import { loadRespecConfig, normalizeRespecConfig, createDefaultConfig, ConfigLoadError } from '#src/preprocess/config/index';
+import { resolveIncludes, IncludeResolveError } from '#src/preprocess/include/index';
 
 /**
  * Options for preprocessing a specification
@@ -34,35 +33,45 @@ export interface PreprocessOptions {
 }
 
 /**
+ * Error thrown when preprocessing fails
+ */
+export class PreprocessError extends Error {
+    constructor(
+        message: string,
+        public readonly code: string,
+        public readonly path?: string
+    ) {
+        super(message);
+        this.name = 'PreprocessError';
+    }
+}
+
+/**
  * Preprocess a specification document
  * 
  * Loads configuration (if provided) and resolves all includes
  * to produce a PreprocessedSpec ready for parsing.
  * 
  * @param options - Preprocess options
- * @returns PreprocessResult with spec and diagnostics
+ * @returns PreprocessedSpec with config and source
+ * @throws PreprocessError on failure
  * 
  * @example
  * ```typescript
- * const result = await preprocess({
+ * const spec = await preprocess({
  *   entry: '/specs/my-spec/format.md',
  *   configPath: '/specs/my-spec/config.respec.json',
  *   fileProvider: new NodeFileProvider(),
  * });
  * 
- * if (result.hasErrors) {
- *   console.error('Preprocess errors:', result.diagnostics);
- * } else {
- *   // result.result contains PreprocessedSpec
- *   for (const unit of result.result.source.units) {
- *     console.log(`Processing: ${unit.file}`);
- *   }
+ * // spec contains PreprocessedSpec
+ * for (const unit of spec.source.units) {
+ *   console.log(`Processing: ${unit.file}`);
  * }
  * ```
  */
-export async function preprocess(options: PreprocessOptions): Promise<PreprocessResult> {
+export async function preprocess(options: PreprocessOptions): Promise<PreprocessedSpec> {
     const { entry, entryFormat, configPath, fileProvider } = options;
-    const diagnostics: Diagnostic[] = [];
 
     // Canonicalize entry path
     const canonicalEntry = fileProvider.canonicalize(entry);
@@ -71,64 +80,53 @@ export async function preprocess(options: PreprocessOptions): Promise<Preprocess
     // Load config if provided
     let config: SpecConfig;
     if (configPath) {
-        const configResult = await loadRespecConfig(fileProvider, configPath);
-        diagnostics.push(...configResult.diagnostics);
-
-        if (configResult.config) {
-            config = normalizeRespecConfig(configResult.config);
-        } else {
-            // Config load failed, use defaults but continue
-            config = createDefaultConfig();
+        try {
+            const configResult = await loadRespecConfig(fileProvider, configPath);
+            config = normalizeRespecConfig(configResult.config, configResult.lastUpdateDate);
+        } catch (error) {
+            if (error instanceof ConfigLoadError) {
+                throw new PreprocessError(error.message, error.code, error.path);
+            }
+            throw error;
         }
     } else {
         config = createDefaultConfig();
     }
 
     // Resolve includes
-    const includeResult = await resolveIncludes(canonicalEntry, format, fileProvider);
-    diagnostics.push(...includeResult.diagnostics);
-
-    // Check for errors
-    const hasErrors = diagnostics.some(d => d.severity === 'error');
-
-    // Even with errors, return partial result if we have units
-    if (includeResult.source.units.length === 0 && hasErrors) {
-        return {
-            diagnostics,
-            hasErrors,
-        };
+    let source;
+    try {
+        source = await resolveIncludes(canonicalEntry, format, fileProvider);
+    } catch (error) {
+        if (error instanceof IncludeResolveError) {
+            throw new PreprocessError(error.message, error.code, error.path);
+        }
+        throw error;
     }
 
     return {
-        result: {
-            config,
-            source: includeResult.source,
-        },
-        diagnostics,
-        hasErrors,
+        config,
+        source,
     };
 }
 
 /**
  * Quick check if an entry file exists and is readable
+ * @throws PreprocessError if entry file not found
  */
 export async function validateEntry(
     entry: string,
     fileProvider: FileProvider
-): Promise<{ valid: boolean; diagnostics: Diagnostic[] }> {
-    const diagnostics: Diagnostic[] = [];
+): Promise<void> {
     const canonicalEntry = fileProvider.canonicalize(entry);
 
     try {
         await fileProvider.readText(canonicalEntry);
-        return { valid: true, diagnostics };
     } catch {
-        diagnostics.push({
-            severity: 'error',
-            code: 'include-not-found',
-            message: `Entry file not found: ${canonicalEntry}`,
-            file: canonicalEntry,
-        });
-        return { valid: false, diagnostics };
+        throw new PreprocessError(
+            `Entry file not found: ${canonicalEntry}`,
+            'entry-not-found',
+            canonicalEntry
+        );
     }
 }
