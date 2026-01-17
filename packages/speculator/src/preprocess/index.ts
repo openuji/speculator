@@ -22,6 +22,7 @@ export type {
     PersonEntry,
     SpecConfig,
     PreprocessedSpec,
+    MaturityLevel,
 } from '#src/preprocess/types';
 
 export { inferFormat } from '#src/preprocess/types';

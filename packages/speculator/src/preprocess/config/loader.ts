@@ -92,7 +92,7 @@ export class ConfigLoadError extends Error {
 export async function loadRespecConfig(
     fileProvider: FileProvider,
     configPath: string
-): Promise<{ config: RawRespecConfig; lastUpdateDate?: string }> {
+): Promise<{ config: RawRespecConfig; lastUpdateDate?: string; maturityLevel?: string }> {
     const canonicalPath = fileProvider.canonicalize(configPath);
 
     let content: string;
@@ -118,6 +118,7 @@ export async function loadRespecConfig(
         const fullConfig = JSON.parse(content) as Record<string, unknown>;
         let config = fullConfig;
         const lastUpdateDate = fullConfig.lastUpdateDate as string | undefined;
+        const maturityLevel = fullConfig.maturityLevel as string | undefined;
         
         // Unwrap if it's the wrapper format
         if (fullConfig.respec && typeof fullConfig.respec === 'object') {
@@ -126,7 +127,7 @@ export async function loadRespecConfig(
             config = fullConfig.respecConfig as Record<string, unknown>;
         }
 
-        return { config: config as RawRespecConfig, lastUpdateDate };
+        return { config: config as RawRespecConfig, lastUpdateDate, maturityLevel };
     } catch (error) {
         throw new ConfigLoadError(
             `Invalid JSON in configuration file: ${error instanceof Error ? error.message : String(error)}`,

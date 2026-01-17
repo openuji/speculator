@@ -13,10 +13,12 @@ The configuration follows a dual-layered structure: **Core Settings** at the roo
 {
   "id": "my-specification",
   "lastUpdateDate": "2026-01-11",
+  "maturityLevel": "stable",
   "deps": ["core-spec"],
   "respec": {
     "title": "My Awesome Specification",
     "shortName": "my-spec",
+    "specStatus": "ED",
     "modificationDate": "2026-01-10"
   }
 }
@@ -39,16 +41,30 @@ The `lastUpdateDate` field follows this priority:
 
 In the example above, the resulting AST will have `lastUpdateDate: "2026-01-11"`, completely ignoring the older `modificationDate` in the `respec` block.
 
+### Example: Maturity Level
+
+The `maturityLevel` field follows the same priority pattern:
+
+1. **Root `maturityLevel`**: Highest priority. Accepts values: `incubating`, `draft`, `prerelease`, `stable`.
+2. **Mapped `respec.specStatus`**: Fallback. ReSpec status codes are automatically mapped:
+   - `ED`, `WD`, `FPWD` → `draft`
+   - `CR`, `PR`, `LCWD` → `prerelease`
+   - `REC`, `NOTE`, `CG-FINAL` → `stable`
+   - `unofficial`, `CG-DRAFT` → `incubating`
+
+In the example above, `maturityLevel: "stable"` overrides the implied `draft` from `specStatus: "ED"`.
+
 ---
 
 ## Core Settings
 
-| Setting          | Type       | Description                                                                                                  |
-| :--------------- | :--------- | :----------------------------------------------------------------------------------------------------------- |
-| `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the file path. |
-| `deps`           | `string[]` | List of document IDs that this document depends on. They will be processed first.                            |
-| `lastUpdateDate` | `string`   | **Priority** last update date (ISO 8601: `YYYY-MM-DD`). Overwrites `respec.modificationDate`.                |
-| `respec`         | `object`   | ReSpec-compatible configuration (see below).                                                                 |
+| Setting          | Type       | Description                                                                                                                |
+| :--------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the file path.               |
+| `deps`           | `string[]` | List of document IDs that this document depends on. They will be processed first.                                          |
+| `lastUpdateDate` | `string`   | **Priority** last update date (ISO 8601: `YYYY-MM-DD`). Overwrites `respec.modificationDate`.                              |
+| `maturityLevel`  | `string`   | **Priority** maturity level. One of: `incubating`, `draft`, `prerelease`, `stable`. Overwrites mapped `respec.specStatus`. |
+| `respec`         | `object`   | ReSpec-compatible configuration (see below).                                                                               |
 
 ---
 
@@ -66,14 +82,14 @@ These settings reside within the `respec` object and closely mirror the [ReSpec 
 
 ### Versioning & Status
 
-| Setting            | Type     | Description                                                         |
-| :----------------- | :------- | :------------------------------------------------------------------ |
-| `specStatus`       | `string` | Status code (e.g., `ED`, `WD`, `CR`, `REC`).                        |
-| `publishDate`      | `string` | Formal publication date (ISO 8601: `YYYY-MM-DD`).                   |
-| `modificationDate` | `string` | **Fallback** last update date. Overridden by root `lastUpdateDate`. |
-| `thisVersion`      | `string` | URL for this version of the spec.                                   |
-| `latestVersion`    | `string` | URL for the latest version.                                         |
-| `prevVersion`      | `string` | URL for the previous version.                                       |
+| Setting            | Type     | Description                                                                            |
+| :----------------- | :------- | :------------------------------------------------------------------------------------- |
+| `specStatus`       | `string` | Status code (e.g., `ED`, `WD`, `CR`, `REC`). **Fallback** for `maturityLevel` mapping. |
+| `publishDate`      | `string` | Formal publication date (ISO 8601: `YYYY-MM-DD`).                                      |
+| `modificationDate` | `string` | **Fallback** last update date. Overridden by root `lastUpdateDate`.                    |
+| `thisVersion`      | `string` | URL for this version of the spec.                                                      |
+| `latestVersion`    | `string` | URL for the latest version.                                                            |
+| `prevVersion`      | `string` | URL for the previous version.                                                          |
 
 ### Contributors
 

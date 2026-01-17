@@ -102,4 +102,96 @@ describe('Config Priority Rules', () => {
             expect(result.config.lastUpdateDate).toBe('2026-01-10');
         });
     });
+
+    describe('maturityLevel priority', () => {
+        it('uses root-level maturityLevel when both are present', () => {
+            const raw: RawRespecConfig = {
+                title: 'Test Spec',
+                specStatus: 'ED', // ReSpec fallback maps to 'draft'
+            };
+            const rootMaturityLevel = 'stable'; // Root priority
+
+            const config = normalizeRespecConfig(raw, undefined, rootMaturityLevel);
+
+            expect(config.maturityLevel).toBe('stable');
+            expect(config.status).toBe('ED'); // status is still preserved
+        });
+
+        it('falls back to mapped respec.specStatus when root is missing', () => {
+            const raw: RawRespecConfig = {
+                title: 'Test Spec',
+                specStatus: 'CR', // Maps to 'prerelease'
+            };
+
+            const config = normalizeRespecConfig(raw);
+
+            expect(config.maturityLevel).toBe('prerelease');
+            expect(config.status).toBe('CR');
+        });
+
+        it('maps common specStatus values correctly', () => {
+            const mappings: Array<[string, string]> = [
+                ['ED', 'draft'],
+                ['WD', 'draft'],
+                ['CR', 'prerelease'],
+                ['REC', 'stable'],
+                ['unofficial', 'incubating'],
+            ];
+
+            for (const [specStatus, expected] of mappings) {
+                const raw: RawRespecConfig = { specStatus };
+                const config = normalizeRespecConfig(raw);
+                expect(config.maturityLevel).toBe(expected);
+            }
+        });
+
+        it('is undefined if neither are present', () => {
+            const raw: RawRespecConfig = {
+                title: 'Test Spec',
+            };
+
+            const config = normalizeRespecConfig(raw);
+
+            expect(config.maturityLevel).toBeUndefined();
+        });
+
+        it('prioritizes root maturityLevel in the full preprocess pipeline', async () => {
+            const fp = new MemoryFileProvider({
+                '/spec/index.md': '# Title',
+                '/spec/config.json': JSON.stringify({
+                    maturityLevel: 'stable', // Root
+                    respec: {
+                        specStatus: 'ED', // Fallback would map to 'draft'
+                    },
+                }),
+            });
+
+            const result = await preprocess({
+                entry: '/spec/index.md',
+                configPath: '/spec/config.json',
+                fileProvider: fp,
+            });
+
+            expect(result.config.maturityLevel).toBe('stable');
+        });
+
+        it('falls back to mapped respec.specStatus in the full preprocess pipeline', async () => {
+            const fp = new MemoryFileProvider({
+                '/spec/index.md': '# Title',
+                '/spec/config.json': JSON.stringify({
+                    respec: {
+                        specStatus: 'REC',
+                    },
+                }),
+            });
+
+            const result = await preprocess({
+                entry: '/spec/index.md',
+                configPath: '/spec/config.json',
+                fileProvider: fp,
+            });
+
+            expect(result.config.maturityLevel).toBe('stable');
+        });
+    });
 });

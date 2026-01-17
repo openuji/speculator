@@ -137,6 +137,12 @@ export interface CompositeSource {
 // ============================================================================
 
 /**
+ * Maturity level for specifications
+ * Takes priority over respec.specStatus when set at root level
+ */
+export type MaturityLevel = 'incubating' | 'draft' | 'prerelease' | 'stable';
+
+/**
  * Person entry for editors/authors
  */
 export interface PersonEntry {
@@ -163,8 +169,11 @@ export interface SpecConfig {
     /** Subtitle or tagline */
     subtitle?: string;
 
-    /** Spec status (e.g., "ED", "WD", "CR", "REC", "NOTE") */
+    /** Spec status (e.g., "ED", "WD", "CR", "REC", "NOTE") - fallback if maturityLevel not set */
     status?: string;
+
+    /** Maturity level (priority: root maturityLevel > respec.specStatus) */
+    maturityLevel?: MaturityLevel;
 
     /** Publication date (ISO 8601: YYYY-MM-DD) */
     publishDate?: string;

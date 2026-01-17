@@ -4,7 +4,7 @@
  * Converts raw ReSpec configuration to normalized internal format.
  */
 
-import type { SpecConfig, PersonEntry } from '#src/preprocess/types';
+import type { SpecConfig, PersonEntry, MaturityLevel } from '#src/preprocess/types';
 import type { RawRespecConfig, RawPersonEntry } from '#src/preprocess/config/loader';
 
 /**
@@ -26,13 +26,38 @@ function normalizePerson(raw: RawPersonEntry): PersonEntry | null {
 }
 
 /**
+ * Map respec specStatus to maturity level
+ */
+function mapSpecStatusToMaturity(specStatus: string): MaturityLevel | undefined {
+    const mapping: Record<string, MaturityLevel> = {
+        'ED': 'draft',
+        'WD': 'draft',
+        'FPWD': 'draft',
+        'LCWD': 'prerelease',
+        'CR': 'prerelease',
+        'PR': 'prerelease',
+        'REC': 'stable',
+        'NOTE': 'stable',
+        'unofficial': 'incubating',
+        'CG-DRAFT': 'incubating',
+        'CG-FINAL': 'stable',
+    };
+    return mapping[specStatus];
+}
+
+/**
  * Normalize raw ReSpec config to internal SpecConfig
  * 
  * @param raw - Raw config from file
  * @param rootLastUpdateDate - Optional root-level lastUpdateDate (takes priority over respec.modificationDate)
+ * @param rootMaturityLevel - Optional root-level maturityLevel (takes priority over respec.specStatus)
  * @returns Normalized SpecConfig with defaults applied
  */
-export function normalizeRespecConfig(raw: RawRespecConfig, rootLastUpdateDate?: string): SpecConfig {
+export function normalizeRespecConfig(
+    raw: RawRespecConfig,
+    rootLastUpdateDate?: string,
+    rootMaturityLevel?: string
+): SpecConfig {
     const config: SpecConfig = {};
 
     // Document metadata
@@ -46,9 +71,16 @@ export function normalizeRespecConfig(raw: RawRespecConfig, rootLastUpdateDate?:
         config.subtitle = raw.subtitle;
     }
 
-    // Status and versioning
+    // Status and versioning - specStatus is preserved as fallback
     if (raw.specStatus !== undefined) {
         config.status = raw.specStatus;
+    }
+
+    // Priority: root maturityLevel > mapped respec.specStatus
+    if (rootMaturityLevel !== undefined) {
+        config.maturityLevel = rootMaturityLevel as MaturityLevel;
+    } else if (raw.specStatus !== undefined) {
+        config.maturityLevel = mapSpecStatusToMaturity(raw.specStatus);
     }
     if (raw.publishDate !== undefined) {
         config.publishDate = raw.publishDate;

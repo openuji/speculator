@@ -82,7 +82,7 @@ export async function preprocess(options: PreprocessOptions): Promise<Preprocess
     if (configPath) {
         try {
             const configResult = await loadRespecConfig(fileProvider, configPath);
-            config = normalizeRespecConfig(configResult.config, configResult.lastUpdateDate);
+            config = normalizeRespecConfig(configResult.config, configResult.lastUpdateDate, configResult.maturityLevel);
         } catch (error) {
             if (error instanceof ConfigLoadError) {
                 throw new PreprocessError(error.message, error.code, error.path);
