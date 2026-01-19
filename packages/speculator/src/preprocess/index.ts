@@ -29,12 +29,12 @@ export { inferFormat } from '#src/preprocess/types';
 
 // Config submodule (for advanced use)
 export {
-    loadRespecConfig,
-    normalizeRespecConfig,
+    loadConfig,
+    normalizeConfig,
     createDefaultConfig,
     ConfigLoadError,
 } from '#src/preprocess/config/index';
-export type { RawRespecConfig, RawPersonEntry } from '#src/preprocess/config/index';
+export type { RawRespecConfig, RawPersonEntry, DocumentConfig, ResolvedDocumentConfig } from '#src/preprocess/config/index';
 
 // Include submodule (for advanced use)
 export {

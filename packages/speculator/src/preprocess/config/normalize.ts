@@ -1,11 +1,11 @@
 /**
- * ReSpec Config Normalizer
+ * Config Normalizer
  * 
- * Converts raw ReSpec configuration to normalized internal format.
+ * Converts raw document configuration to normalized internal format.
  */
 
 import type { SpecConfig, PersonEntry, MaturityLevel } from '#src/preprocess/types';
-import type { RawRespecConfig, RawPersonEntry } from '#src/preprocess/config/loader';
+import type { DocumentConfig, RawPersonEntry } from './types.js';
 
 /**
  * Normalize a raw person entry to internal format
@@ -46,22 +46,24 @@ function mapSpecStatusToMaturity(specStatus: string): MaturityLevel | undefined 
 }
 
 /**
- * Normalize raw ReSpec config to internal SpecConfig
+ * Normalize a DocumentConfig to internal SpecConfig
  * 
- * @param raw - Raw config from file
- * @param rootLastUpdateDate - Optional root-level lastUpdateDate (takes priority over respec.modificationDate)
- * @param rootMaturityLevel - Optional root-level maturityLevel (takes priority over respec.specStatus)
+ * Priority order (lowest to highest):
+ * 1. respec.* - ReSpec-compatible fallback settings
+ * 2. Root-level properties (title, lastUpdateDate, maturityLevel)
+ * 3. custom.* - Highest priority, overwrites everything
+ * 
+ * @param docConfig - Document config from config.json
  * @returns Normalized SpecConfig with defaults applied
  */
-export function normalizeRespecConfig(
-    raw: RawRespecConfig,
-    rootLastUpdateDate?: string,
-    rootMaturityLevel?: string
-): SpecConfig {
+export function normalizeConfig(docConfig: DocumentConfig): SpecConfig {
     const config: SpecConfig = {};
+    const raw = docConfig.respec ?? {};
 
-    // Document metadata
-    if (raw.title !== undefined) {
+    // Document metadata - Priority: root title > respec.title
+    if (docConfig.title !== undefined) {
+        config.title = docConfig.title;
+    } else if (raw.title !== undefined) {
         config.title = raw.title;
     }
     if (raw.shortName !== undefined) {
@@ -77,8 +79,8 @@ export function normalizeRespecConfig(
     }
 
     // Priority: root maturityLevel > mapped respec.specStatus
-    if (rootMaturityLevel !== undefined) {
-        config.maturityLevel = rootMaturityLevel as MaturityLevel;
+    if (docConfig.maturityLevel !== undefined) {
+        config.maturityLevel = docConfig.maturityLevel;
     } else if (raw.specStatus !== undefined) {
         config.maturityLevel = mapSpecStatusToMaturity(raw.specStatus);
     }
@@ -87,8 +89,8 @@ export function normalizeRespecConfig(
     }
     
     // Priority: root lastUpdateDate > respec.modificationDate
-    if (rootLastUpdateDate !== undefined) {
-        config.lastUpdateDate = rootLastUpdateDate;
+    if (docConfig.lastUpdateDate !== undefined) {
+        config.lastUpdateDate = docConfig.lastUpdateDate;
     } else if (raw.modificationDate !== undefined) {
         config.lastUpdateDate = raw.modificationDate;
     }
@@ -151,7 +153,12 @@ export function normalizeRespecConfig(
 
     // Bibliography
     if (raw.localBiblio !== undefined) {
-        config.localBiblio = raw.localBiblio as any;
+        config.localBiblio = raw.localBiblio as Record<string, { title: string; url?: string }>;
+    }
+
+    // Custom overrides - highest priority, applied last
+    if (docConfig.custom !== undefined) {
+        config.custom = docConfig.custom;
     }
 
     return config;

@@ -41,17 +41,19 @@ describe('preprocess', () => {
         it('loads and normalizes ReSpec config', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/format.md': '# Title',
-                '/spec/config.respec.json': JSON.stringify({
-                    title: 'My Specification',
-                    shortName: 'my-spec',
-                    specStatus: 'ED',
-                    editors: [{ name: 'Jane Doe', url: 'https://example.com' }],
+                '/spec/config.json': JSON.stringify({
+                    respec: {
+                        title: 'My Specification',
+                        shortName: 'my-spec',
+                        specStatus: 'ED',
+                        editors: [{ name: 'Jane Doe', url: 'https://example.com' }],
+                    },
                 }),
             });
 
             const result = await preprocess({
                 entry: '/spec/format.md',
-                configPath: '/spec/config.respec.json',
+                configPath: '/spec/config.json',
                 fileProvider: fp,
             });
 

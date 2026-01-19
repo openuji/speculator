@@ -12,7 +12,7 @@ import type {
     PreprocessedSpec,
 } from '#src/preprocess/types';
 import { inferFormat } from '#src/preprocess/types';
-import { loadRespecConfig, normalizeRespecConfig, createDefaultConfig, ConfigLoadError } from '#src/preprocess/config/index';
+import { loadConfig, normalizeConfig, createDefaultConfig, ConfigLoadError } from '#src/preprocess/config/index';
 import { resolveIncludes, IncludeResolveError } from '#src/preprocess/include/index';
 
 /**
@@ -60,7 +60,7 @@ export class PreprocessError extends Error {
  * ```typescript
  * const spec = await preprocess({
  *   entry: '/specs/my-spec/format.md',
- *   configPath: '/specs/my-spec/config.respec.json',
+ *   configPath: '/specs/my-spec/config.json',
  *   fileProvider: new NodeFileProvider(),
  * });
  * 
@@ -81,8 +81,8 @@ export async function preprocess(options: PreprocessOptions): Promise<Preprocess
     let config: SpecConfig;
     if (configPath) {
         try {
-            const configResult = await loadRespecConfig(fileProvider, configPath);
-            config = normalizeRespecConfig(configResult.config, configResult.lastUpdateDate, configResult.maturityLevel);
+            const docConfig = await loadConfig(fileProvider, configPath);
+            config = normalizeConfig(docConfig);
         } catch (error) {
             if (error instanceof ConfigLoadError) {
                 throw new PreprocessError(error.message, error.code, error.path);

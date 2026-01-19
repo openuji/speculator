@@ -1,40 +1,46 @@
 import { describe, it, expect } from 'vitest';
 import { MemoryFileProvider } from '#src/file-provider/memory';
 import { preprocess } from '#src/preprocess/pipeline';
-import { normalizeRespecConfig } from '../normalize.js';
-import type { RawRespecConfig } from '../loader.js';
+import { normalizeConfig } from '../normalize.js';
+import type { DocumentConfig } from '../types.js';
 
 describe('Config Priority Rules', () => {
     describe('lastUpdateDate priority', () => {
         it('uses root-level lastUpdateDate when both are present', () => {
-            const raw: RawRespecConfig = {
+            const docConfig: DocumentConfig = {
                 title: 'Test Spec',
-                modificationDate: '2026-01-10', // ReSpec fallback
+                lastUpdateDate: '2026-01-11', // Root priority
+                respec: {
+                    modificationDate: '2026-01-10', // ReSpec fallback
+                },
             };
-            const rootLastUpdateDate = '2026-01-11'; // Root priority
 
-            const config = normalizeRespecConfig(raw, rootLastUpdateDate);
+            const config = normalizeConfig(docConfig);
 
             expect(config.lastUpdateDate).toBe('2026-01-11');
         });
 
         it('falls back to respec.modificationDate when root is missing', () => {
-            const raw: RawRespecConfig = {
-                title: 'Test Spec',
-                modificationDate: '2026-01-10',
+            const docConfig: DocumentConfig = {
+                respec: {
+                    title: 'Test Spec',
+                    modificationDate: '2026-01-10',
+                },
             };
 
-            const config = normalizeRespecConfig(raw);
+            const config = normalizeConfig(docConfig);
 
             expect(config.lastUpdateDate).toBe('2026-01-10');
         });
 
         it('is undefined if neither are present', () => {
-            const raw: RawRespecConfig = {
-                title: 'Test Spec',
+            const docConfig: DocumentConfig = {
+                respec: {
+                    title: 'Test Spec',
+                },
             };
 
-            const config = normalizeRespecConfig(raw);
+            const config = normalizeConfig(docConfig);
 
             expect(config.lastUpdateDate).toBeUndefined();
         });
@@ -42,16 +48,18 @@ describe('Config Priority Rules', () => {
 
     describe('ReSpec field mapping', () => {
         it('correctly maps various ReSpec fields to normalized config', () => {
-            const raw: RawRespecConfig = {
-                title: 'Test Spec',
-                shortName: 'test',
-                specStatus: 'ED',
-                publishDate: '2026-01-01',
-                abstract: 'Abstract content',
-                noTOC: true,
+            const docConfig: DocumentConfig = {
+                respec: {
+                    title: 'Test Spec',
+                    shortName: 'test',
+                    specStatus: 'ED',
+                    publishDate: '2026-01-01',
+                    abstract: 'Abstract content',
+                    noTOC: true,
+                },
             };
 
-            const config = normalizeRespecConfig(raw);
+            const config = normalizeConfig(docConfig);
 
             expect(config.title).toBe('Test Spec');
             expect(config.shortName).toBe('test');
@@ -105,25 +113,29 @@ describe('Config Priority Rules', () => {
 
     describe('maturityLevel priority', () => {
         it('uses root-level maturityLevel when both are present', () => {
-            const raw: RawRespecConfig = {
-                title: 'Test Spec',
-                specStatus: 'ED', // ReSpec fallback maps to 'draft'
+            const docConfig: DocumentConfig = {
+                maturityLevel: 'stable', // Root priority
+                respec: {
+                    title: 'Test Spec',
+                    specStatus: 'ED', // ReSpec fallback maps to 'draft'
+                },
             };
-            const rootMaturityLevel = 'stable'; // Root priority
 
-            const config = normalizeRespecConfig(raw, undefined, rootMaturityLevel);
+            const config = normalizeConfig(docConfig);
 
             expect(config.maturityLevel).toBe('stable');
             expect(config.status).toBe('ED'); // status is still preserved
         });
 
         it('falls back to mapped respec.specStatus when root is missing', () => {
-            const raw: RawRespecConfig = {
-                title: 'Test Spec',
-                specStatus: 'CR', // Maps to 'prerelease'
+            const docConfig: DocumentConfig = {
+                respec: {
+                    title: 'Test Spec',
+                    specStatus: 'CR', // Maps to 'prerelease'
+                },
             };
 
-            const config = normalizeRespecConfig(raw);
+            const config = normalizeConfig(docConfig);
 
             expect(config.maturityLevel).toBe('prerelease');
             expect(config.status).toBe('CR');
@@ -139,18 +151,20 @@ describe('Config Priority Rules', () => {
             ];
 
             for (const [specStatus, expected] of mappings) {
-                const raw: RawRespecConfig = { specStatus };
-                const config = normalizeRespecConfig(raw);
+                const docConfig: DocumentConfig = { respec: { specStatus } };
+                const config = normalizeConfig(docConfig);
                 expect(config.maturityLevel).toBe(expected);
             }
         });
 
         it('is undefined if neither are present', () => {
-            const raw: RawRespecConfig = {
-                title: 'Test Spec',
+            const docConfig: DocumentConfig = {
+                respec: {
+                    title: 'Test Spec',
+                },
             };
 
-            const config = normalizeRespecConfig(raw);
+            const config = normalizeConfig(docConfig);
 
             expect(config.maturityLevel).toBeUndefined();
         });
@@ -192,6 +206,51 @@ describe('Config Priority Rules', () => {
             });
 
             expect(result.config.maturityLevel).toBe('stable');
+        });
+    });
+
+    describe('title priority', () => {
+        it('uses root-level title when both are present', () => {
+            const docConfig: DocumentConfig = {
+                title: 'Root Title', // Root priority
+                respec: {
+                    title: 'ReSpec Title', // Fallback
+                },
+            };
+
+            const config = normalizeConfig(docConfig);
+
+            expect(config.title).toBe('Root Title');
+        });
+
+        it('falls back to respec.title when root is missing', () => {
+            const docConfig: DocumentConfig = {
+                respec: {
+                    title: 'ReSpec Title',
+                },
+            };
+
+            const config = normalizeConfig(docConfig);
+
+            expect(config.title).toBe('ReSpec Title');
+        });
+    });
+
+    describe('custom overrides', () => {
+        it('passes through custom properties', () => {
+            const docConfig: DocumentConfig = {
+                custom: {
+                    myCustomField: 'value',
+                    analytics: { enabled: true },
+                },
+            };
+
+            const config = normalizeConfig(docConfig);
+
+            expect(config.custom).toEqual({
+                myCustomField: 'value',
+                analytics: { enabled: true },
+            });
         });
     });
 });

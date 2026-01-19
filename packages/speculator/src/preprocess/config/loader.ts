@@ -1,71 +1,12 @@
 /**
- * ReSpec Config Loader
+ * Config Loader
  * 
- * Loads ReSpec-compatible configuration files.
+ * Loads config.json files for specifications.
  */
 
 import type { FileProvider } from '#src/file-provider/types';
 import { isFileNotFoundError } from '#src/file-provider/types';
-
-/**
- * Raw ReSpec configuration as read from JSON
- * 
- * This mirrors the ReSpec config format closely.
- * See: https://respec.org/docs/#configuration-options
- */
-export interface RawRespecConfig {
-    // Document metadata
-    title?: string;
-    shortName?: string;
-    subtitle?: string;
-
-    // Status and versioning
-    specStatus?: string;
-    publishDate?: string;
-    modificationDate?: string;  // ReSpec field name
-    thisVersion?: string;
-    latestVersion?: string;
-    prevVersion?: string;
-
-    // People
-    editors?: RawPersonEntry[];
-    authors?: RawPersonEntry[];
-
-    // Content
-    abstract?: string;
-
-    // Legal
-    copyrightStart?: string | number;
-    license?: string;
-
-    // Branding
-    logos?: Array<{
-        src: string;
-        alt?: string;
-        url?: string;
-        href?: string;
-    }>;
-
-    // Structure
-    noTOC?: boolean;
-    maxTocLevel?: number;
-
-    // Additional fields (passthrough)
-    [key: string]: unknown;
-}
-
-/**
- * Raw person entry from ReSpec config
- */
-export interface RawPersonEntry {
-    name?: string;
-    url?: string;
-    w3cid?: number;
-    company?: string;
-    companyURL?: string;
-    mailto?: string;
-    email?: string;
-}
+import type { DocumentConfig } from './types.js';
 
 /**
  * Error thrown when config loading fails
@@ -82,17 +23,17 @@ export class ConfigLoadError extends Error {
 }
 
 /**
- * Load a ReSpec configuration file
+ * Load a document configuration file (config.json)
  * 
  * @param fileProvider - File provider to read from
  * @param configPath - Path to config file
- * @returns Parsed config and optional lastUpdateDate
+ * @returns Parsed DocumentConfig
  * @throws ConfigLoadError if loading or parsing fails
  */
-export async function loadRespecConfig(
+export async function loadConfig(
     fileProvider: FileProvider,
     configPath: string
-): Promise<{ config: RawRespecConfig; lastUpdateDate?: string; maturityLevel?: string }> {
+): Promise<DocumentConfig> {
     const canonicalPath = fileProvider.canonicalize(configPath);
 
     let content: string;
@@ -115,19 +56,8 @@ export async function loadRespecConfig(
     }
 
     try {
-        const fullConfig = JSON.parse(content) as Record<string, unknown>;
-        let config = fullConfig;
-        const lastUpdateDate = fullConfig.lastUpdateDate as string | undefined;
-        const maturityLevel = fullConfig.maturityLevel as string | undefined;
-        
-        // Unwrap if it's the wrapper format
-        if (fullConfig.respec && typeof fullConfig.respec === 'object') {
-            config = fullConfig.respec as Record<string, unknown>;
-        } else if (fullConfig.respecConfig && typeof fullConfig.respecConfig === 'object') {
-            config = fullConfig.respecConfig as Record<string, unknown>;
-        }
-
-        return { config: config as RawRespecConfig, lastUpdateDate, maturityLevel };
+        const config = JSON.parse(content) as DocumentConfig;
+        return config;
     } catch (error) {
         throw new ConfigLoadError(
             `Invalid JSON in configuration file: ${error instanceof Error ? error.message : String(error)}`,

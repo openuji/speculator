@@ -968,7 +968,7 @@
         },
         {
           "searchId": "entry-50",
-          "text": "This spec defines {{Term}} as a concept. One can refer to term.",
+          "text": "This spec defines Term as a concept. One can refer to Term.",
           "plainText": "this spec defines term as a concept one can refer to term",
           "context": {
             "sectionTitle": "Definitions",
@@ -987,6 +987,26 @@
         },
         {
           "searchId": "entry-51",
+          "text": "Term",
+          "plainText": "term",
+          "context": {
+            "sectionTitle": "Definitions",
+            "headingPath": [
+              "Introduction",
+              "Definitions"
+            ],
+            "nodeType": "reference",
+            "inlineType": "reference"
+          },
+          "sectionId": "definitions",
+          "anchor": "#definitions",
+          "filters": {
+            "nodeType": "reference",
+            "sectionTitle": "Definitions"
+          }
+        },
+        {
+          "searchId": "entry-52",
           "text": "The implementation MUST support this requirement.",
           "plainText": "the implementation must support this requirement",
           "context": {
@@ -1005,7 +1025,7 @@
           }
         },
         {
-          "searchId": "entry-52",
+          "searchId": "entry-53",
           "text": "The implementation SHOULD follow best practices.",
           "plainText": "the implementation should follow best practices",
           "context": {
@@ -1024,8 +1044,8 @@
           }
         },
         {
-          "searchId": "entry-53",
-          "text": "This is an open issue: {{?issue-id Open Issue regarding semantics}}.",
+          "searchId": "entry-54",
+          "text": "This is an open issue: ?issue-id Open Issue regarding semantics.",
           "plainText": "this is an open issue issue-id open issue regarding semantics",
           "context": {
             "sectionTitle": "Issues",
@@ -1039,6 +1059,26 @@
           "anchor": "#issues",
           "filters": {
             "nodeType": "paragraph",
+            "sectionTitle": "Issues"
+          }
+        },
+        {
+          "searchId": "entry-55",
+          "text": "?issue-id Open Issue regarding semantics",
+          "plainText": "issue-id open issue regarding semantics",
+          "context": {
+            "sectionTitle": "Issues",
+            "headingPath": [
+              "Introduction",
+              "Issues"
+            ],
+            "nodeType": "reference",
+            "inlineType": "reference"
+          },
+          "sectionId": "issues",
+          "anchor": "#issues",
+          "filters": {
+            "nodeType": "reference",
             "sectionTitle": "Issues"
           }
         }

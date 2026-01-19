@@ -12,25 +12,35 @@ The configuration follows a dual-layered structure: **Core Settings** at the roo
 ```json
 {
   "id": "my-specification",
+  "title": "My Awesome Specification",
   "lastUpdateDate": "2026-01-11",
   "maturityLevel": "stable",
   "deps": ["core-spec"],
   "respec": {
-    "title": "My Awesome Specification",
+    "title": "Fallback Title",
     "shortName": "my-spec",
     "specStatus": "ED",
     "modificationDate": "2026-01-10"
+  },
+  "custom": {
+    "myCustomField": "value",
+    "analytics": { "enabled": true }
   }
 }
 ```
 
 ## Principle of Priority
 
-Speculator enforces a strict **Priority Override** rule:
+Speculator enforces a strict **Priority Override** rule with three layers:
 
-> [!IMPORTANT] > **Core settings at the root level always overwrite corresponding settings within the `respec` object.**
+> [!IMPORTANT]
+> **Priority Order (lowest → highest):**
+>
+> 1. `respec.*` - ReSpec-compatible fallback settings
+> 2. Root-level properties (`title`, `lastUpdateDate`, `maturityLevel`) - Override respec
+> 3. `custom.*` - **Highest priority**, overwrites everything
 
-This allows you to maintain ReSpec compatibility for traditional spec metadata while using the root level for Speculator-specific overrides or programmatic updates.
+This allows you to maintain ReSpec compatibility for traditional spec metadata while using the root level for Speculator-specific overrides, and `custom` for any user-defined properties that must take precedence.
 
 ### Example: Update Dates
 
@@ -54,6 +64,15 @@ The `maturityLevel` field follows the same priority pattern:
 
 In the example above, `maturityLevel: "stable"` overrides the implied `draft` from `specStatus: "ED"`.
 
+### Example: Title
+
+The `title` field also follows the priority pattern:
+
+1. **Root `title`**: Highest priority. If set, this becomes the document title.
+2. **`respec.title`**: Fallback. Used only if root `title` is missing.
+
+In the example above, the document will use `"My Awesome Specification"` from the root, ignoring `"Fallback Title"` in the respec block.
+
 ---
 
 ## Core Settings
@@ -61,9 +80,11 @@ In the example above, `maturityLevel: "stable"` overrides the implied `draft` fr
 | Setting          | Type       | Description                                                                                                                |
 | :--------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------- |
 | `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the file path.               |
+| `title`          | `string`   | **Priority** document title. Overwrites `respec.title`.                                                                    |
 | `deps`           | `string[]` | List of document IDs that this document depends on. They will be processed first.                                          |
 | `lastUpdateDate` | `string`   | **Priority** last update date (ISO 8601: `YYYY-MM-DD`). Overwrites `respec.modificationDate`.                              |
 | `maturityLevel`  | `string`   | **Priority** maturity level. One of: `incubating`, `draft`, `prerelease`, `stable`. Overwrites mapped `respec.specStatus`. |
+| `custom`         | `object`   | **Highest priority** user-defined properties. Passed through as-is, overwrites any conflicting root or respec values.      |
 | `respec`         | `object`   | ReSpec-compatible configuration (see below).                                                                               |
 
 ---
@@ -74,11 +95,11 @@ These settings reside within the `respec` object and closely mirror the [ReSpec 
 
 ### Document Metadata
 
-| Setting     | Type     | Description                             |
-| :---------- | :------- | :-------------------------------------- |
-| `title`     | `string` | The title of the specification.         |
-| `shortName` | `string` | A URL-friendly short name for the spec. |
-| `subtitle`  | `string` | An optional subtitle or tagline.        |
+| Setting     | Type     | Description                                                           |
+| :---------- | :------- | :-------------------------------------------------------------------- |
+| `title`     | `string` | **Fallback** title for the specification. Overridden by root `title`. |
+| `shortName` | `string` | A URL-friendly short name for the spec.                               |
+| `subtitle`  | `string` | An optional subtitle or tagline.                                      |
 
 ### Versioning & Status
 

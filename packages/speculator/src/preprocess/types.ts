@@ -219,6 +219,12 @@ export interface SpecConfig {
 
     /** Local bibliography entries for citation resolution */
     localBiblio?: Record<string, { title: string; url?: string }>;
+
+    /** 
+     * Custom user-defined properties. 
+     * Highest priority - overwrites both root and respec values.
+     */
+    custom?: Record<string, unknown>;
 }
 
 // ============================================================================
