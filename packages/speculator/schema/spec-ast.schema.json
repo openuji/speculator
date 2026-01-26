@@ -1086,6 +1086,10 @@
                 "term": {
                     "type": "string"
                 },
+                "documentId": {
+                    "type": "string",
+                    "description": "ID of the document containing this definition"
+                },
                 "linkTexts": {
                     "type": "array",
                     "items": {
@@ -1428,6 +1432,10 @@
                 "type": {
                     "const": "document"
                 },
+                "id": {
+                    "type": "string",
+                    "description": "Document identifier, used as slug for internal link resolution. Synced from config.id"
+                },
                 "metadata": {
                     "$ref": "#/definitions/DocumentMetadata"
                 },
@@ -1458,6 +1466,7 @@
             },
             "required": [
                 "type",
+                "id",
                 "children"
             ]
         }

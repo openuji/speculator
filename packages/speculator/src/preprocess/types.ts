@@ -160,6 +160,9 @@ export interface PersonEntry {
  * All optional fields have sensible defaults applied.
  */
 export interface SpecConfig {
+    /** Document ID (from config.json or auto-generated) */
+    id: string;
+
     /** Document title */
     title?: string;
 

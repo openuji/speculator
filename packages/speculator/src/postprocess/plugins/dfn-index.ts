@@ -55,6 +55,7 @@ function buildDefinitionIndex(document: Document): void {
                 const entry: IndexDefinitionEntry = {
                     id,
                     term: dfn.term,
+                    documentId: document.id,
                     linkTexts: dfn.linkTexts,
                     forContexts: dfn.forContexts,
                     dfnType: dfn.dfnType,

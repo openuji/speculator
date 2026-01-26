@@ -3,7 +3,7 @@
  */
 
 export { loadConfig, ConfigLoadError } from '#src/preprocess/config/loader';
-export { normalizeConfig, createDefaultConfig } from '#src/preprocess/config/normalize';
+export { normalizeConfig } from '#src/preprocess/config/normalize';
 
 export { loadDocConfig, generateIdFromPath, getConfigPath } from '#src/preprocess/config/doc-config';
 export type { 

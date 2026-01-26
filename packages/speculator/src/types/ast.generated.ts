@@ -337,6 +337,7 @@ export interface SpeculatorASTSchema {
  */
 export interface Document {
   type: 'document';
+  id: string;
   metadata?: DocumentMetadata;
   children: (Section | Block)[];
   indexes?: Indexes;
@@ -417,6 +418,10 @@ export interface Indexes {
 export interface IndexDefinitionEntry {
   id: string;
   term: string;
+  /**
+   * ID of the document containing this definition
+   */
+  documentId: string;
   /**
    * Alternative link texts (aliases)
    */

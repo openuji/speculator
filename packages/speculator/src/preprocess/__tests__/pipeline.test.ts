@@ -64,29 +64,34 @@ describe('preprocess', () => {
             expect(result.config.editors?.[0].name).toBe('Jane Doe');
         });
 
-        it('throws on missing config', async () => {
+        it('auto-generates config when config.json is missing', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/format.md': '# Title',
             });
 
-            await expect(preprocess({
+            const result = await preprocess({
                 entry: '/spec/format.md',
-                configPath: '/spec/missing.json',
                 fileProvider: fp,
-            })).rejects.toThrow(PreprocessError);
+            });
+
+            // Should have auto-generated ID based on path (parent folder only)
+            expect(result.config.id).toBe('spec');
+            expect(result.config.tocEnabled).toBe(true);
         });
 
-        it('throws on invalid JSON config', async () => {
+        it('auto-generates config when config.json has invalid JSON', async () => {
             const fp = new MemoryFileProvider({
                 '/spec/format.md': '# Title',
                 '/spec/config.json': 'not valid json {{{',
             });
 
-            await expect(preprocess({
+            const result = await preprocess({
                 entry: '/spec/format.md',
-                configPath: '/spec/config.json',
                 fileProvider: fp,
-            })).rejects.toThrow(PreprocessError);
+            });
+
+            // Should fall back to auto-generated ID (parent folder only)
+            expect(result.config.id).toBe('spec');
         });
     });
 
@@ -156,17 +161,18 @@ Text here
 `,
                 '/spec/intro.md': 'Some intro text',
                 '/spec/conformance.md': 'Implementations MUST conform to this spec.',
-                '/spec/config.respec.json': JSON.stringify({
+                '/spec/config.json': JSON.stringify({
                     title: 'Test Specification',
                     shortName: 'test-spec',
-                    specStatus: 'ED',
-                    editors: [{ name: 'Editor One' }],
+                    respec: {
+                        specStatus: 'ED',
+                        editors: [{ name: 'Editor One' }],
+                    },
                 }),
             });
 
             const result = await preprocess({
                 entry: '/spec/format.md',
-                configPath: '/spec/config.respec.json',
                 fileProvider: fp,
             });
 

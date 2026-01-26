@@ -18,15 +18,14 @@ import Layout from "@/layouts/Layout.astro";
 import path from "path";
 
 // Setup Speculator for Workspace
-const specDir = path.resolve("spec/workspace");
+const specDir = path.resolve("spec/workspace/md");
 const fileProvider = new NodeFileProvider();
 
 // Sort entries by their dependencies (reads config.json sibling files)
 const sortResult = await sortEntriesByDeps(
   [
-    { entry: path.join(specDir, "pkg-a/index.html") },
-    { entry: path.join(specDir, "pkg-b/index.html") },
-    { entry: path.join(specDir, "pkg-c/index.html") },
+    { entry: path.join(specDir, "pkg-a/index.md") },
+    { entry: path.join(specDir, "pkg-b/index.md") },
   ],
   fileProvider,
 );
@@ -108,7 +107,7 @@ const allDiagnostics = lintResult?.diagnostics || [];
           const title = document.metadata?.title || pkg;
           return (
             <li>
-              <a href={`/workspace/${pkg}`}>
+              <a href={`/workspace/md/${pkg}`}>
                 <strong>{title}</strong>
                 <span class="path">({pkg})</span>
               </a>

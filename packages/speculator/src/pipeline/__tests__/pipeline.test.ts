@@ -27,7 +27,7 @@ describe('speculate', () => {
     it('processes markdown with config', async () => {
         const fileProvider = new MemoryFileProvider({
             '/spec/index.md': '# Title\n\nContent',
-            '/spec/config.respec.json': JSON.stringify({
+            '/spec/config.json': JSON.stringify({
                 title: 'Test Spec',
                 shortName: 'test',
             }),
@@ -35,7 +35,6 @@ describe('speculate', () => {
 
         const result = await speculate({
             entry: '/spec/index.md',
-            configPath: '/spec/config.respec.json',
             plugins: corePlugins,
             fileProvider,
         });

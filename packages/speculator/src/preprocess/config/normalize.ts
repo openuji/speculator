@@ -5,7 +5,7 @@
  */
 
 import type { SpecConfig, PersonEntry, MaturityLevel } from '#src/preprocess/types';
-import type { DocumentConfig, RawPersonEntry } from './types.js';
+import type { ResolvedDocumentConfig, RawPersonEntry } from './types.js';
 
 /**
  * Normalize a raw person entry to internal format
@@ -46,18 +46,20 @@ function mapSpecStatusToMaturity(specStatus: string): MaturityLevel | undefined 
 }
 
 /**
- * Normalize a DocumentConfig to internal SpecConfig
+ * Normalize a ResolvedDocumentConfig to internal SpecConfig
  * 
  * Priority order (lowest to highest):
  * 1. respec.* - ReSpec-compatible fallback settings
  * 2. Root-level properties (title, lastUpdateDate, maturityLevel)
  * 3. custom.* - Highest priority, overwrites everything
  * 
- * @param docConfig - Document config from config.json
+ * @param docConfig - Resolved document config with ID
  * @returns Normalized SpecConfig with defaults applied
  */
-export function normalizeConfig(docConfig: DocumentConfig): SpecConfig {
-    const config: SpecConfig = {};
+export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
+    const config: SpecConfig = {
+        id: docConfig.id,
+    };
     const raw = docConfig.respec ?? {};
 
     // Document metadata - Priority: root title > respec.title
@@ -162,14 +164,4 @@ export function normalizeConfig(docConfig: DocumentConfig): SpecConfig {
     }
 
     return config;
-}
-
-/**
- * Create a default empty config
- */
-export function createDefaultConfig(): SpecConfig {
-    return {
-        tocEnabled: true,
-        maxTocLevel: 4,
-    };
 }

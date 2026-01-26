@@ -30,6 +30,7 @@ function createSectionWithHeading(headingText: string, explicitId?: string): Sec
 function createDocWithSections(sections: Section[]): Document {
     return {
         type: 'document',
+        id: 'test-doc',
         children: sections,
     };
 }

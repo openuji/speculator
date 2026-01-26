@@ -1,15 +1,14 @@
 ---
 import type { Inline, Workspace } from "@openuji/speculator";
 import RecursiveInlineRenderer from "./InlineRenderer.astro";
-import path from "path";
 
 interface Props {
   nodes: Inline[];
   workspace?: Workspace;
-  documentPath?: string;
+  basePath?: string;
 }
 
-const { nodes, workspace, documentPath } = Astro.props;
+const { nodes, workspace, basePath } = Astro.props;
 ---
 
 {
@@ -24,7 +23,7 @@ const { nodes, workspace, documentPath } = Astro.props;
             <RecursiveInlineRenderer
               nodes={node.children}
               workspace={workspace}
-              documentPath={documentPath}
+              basePath={basePath}
             />
           </em>
         );
@@ -35,7 +34,7 @@ const { nodes, workspace, documentPath } = Astro.props;
             <RecursiveInlineRenderer
               nodes={node.children}
               workspace={workspace}
-              documentPath={documentPath}
+              basePath={basePath}
             />
           </strong>
         );
@@ -52,7 +51,7 @@ const { nodes, workspace, documentPath } = Astro.props;
             <RecursiveInlineRenderer
               nodes={node.children}
               workspace={workspace}
-              documentPath={documentPath}
+              basePath={basePath}
             />
           </a>
         );
@@ -77,7 +76,7 @@ const { nodes, workspace, documentPath } = Astro.props;
             <RecursiveInlineRenderer
               nodes={node.children}
               workspace={workspace}
-              documentPath={documentPath}
+              basePath={basePath}
             />
           </dfn>
         );
@@ -96,7 +95,7 @@ const { nodes, workspace, documentPath } = Astro.props;
               <RecursiveInlineRenderer
                 nodes={ref.children}
                 workspace={workspace}
-                documentPath={documentPath}
+                basePath={basePath}
               />
             </code>
           );
@@ -105,19 +104,11 @@ const { nodes, workspace, documentPath } = Astro.props;
         // Standard cross-references render as links
         let href = `#${targetId || ""}`;
 
-        if (workspace && targetId) {
+        const dfns = workspace?.globalIndex?.definitions;
+        if (dfns && targetId) {
           // Find which document contains this definition
-          const targetDoc = workspace.documents.find((d) =>
-            (d.indexes?.definitions || []).some((def) => def.id === targetId)
-          );
-
-          if (targetDoc) {
-            const targetFilePath = targetDoc.sourcePos?.file;
-            if (targetFilePath && targetFilePath !== documentPath) {
-              const pkg = path.basename(path.dirname(targetFilePath));
-              href = `/workspace/${pkg}#${targetId}`;
-            }
-          }
+          const targetDef = dfns.find((d) => d.id === targetId);
+          href = `${basePath}#${targetId}`;
         }
 
         const xrefFor = ref.forContexts?.filter(Boolean).join(", ");
@@ -131,7 +122,7 @@ const { nodes, workspace, documentPath } = Astro.props;
             <RecursiveInlineRenderer
               nodes={ref.children}
               workspace={workspace}
-              documentPath={documentPath}
+              basePath={basePath}
             />
           </a>
         );
@@ -152,7 +143,7 @@ const { nodes, workspace, documentPath } = Astro.props;
             <RecursiveInlineRenderer
               nodes={cite.children}
               workspace={workspace}
-              documentPath={documentPath}
+              basePath={basePath}
             />
           ) : (
             <>[{cite.key}]</>
@@ -186,7 +177,7 @@ const { nodes, workspace, documentPath } = Astro.props;
             <RecursiveInlineRenderer
               nodes={node.children}
               workspace={workspace}
-              documentPath={documentPath}
+              basePath={basePath}
             />
           </span>
         );

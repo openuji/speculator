@@ -140,7 +140,7 @@ describe('assembleDocument', () => {
             para('Content'),
         ];
 
-        const doc = assembleDocument(blocks, {}, '/spec/format.md');
+        const doc = assembleDocument(blocks, { id: 'test-doc' }, '/spec/format.md');
 
         expect(doc.type).toBe('document');
         expect(doc.children).toHaveLength(1);
@@ -148,14 +148,14 @@ describe('assembleDocument', () => {
     });
 
     it('includes metadata from config', () => {
-        const doc = assembleDocument([], { title: 'My Spec', shortName: 'myspec' }, '/spec/format.md');
+        const doc = assembleDocument([], { id: 'test-doc', title: 'My Spec', shortName: 'myspec' }, '/spec/format.md');
 
         expect(doc.metadata?.title).toBe('My Spec');
         expect(doc.metadata?.shortName).toBe('myspec');
     });
 
     it('omits metadata if config is empty', () => {
-        const doc = assembleDocument([], {}, '/spec/format.md');
+        const doc = assembleDocument([], { id: 'test-doc' }, '/spec/format.md');
 
         expect(doc.metadata).toBeUndefined();
     });

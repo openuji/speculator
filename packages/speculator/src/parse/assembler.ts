@@ -199,6 +199,7 @@ export function assembleDocument(
     // Create document
     const doc: Document = {
         type: 'document',
+        id: config.id,
         children,
     };
 

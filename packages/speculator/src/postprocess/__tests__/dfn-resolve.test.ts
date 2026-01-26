@@ -17,6 +17,7 @@ import type {
 function createDocWithDfnAndRef(dfnTerm: string, refTerm: string): Document {
     return {
         type: 'document',
+        id: 'test-doc',
         children: [{
             type: 'section',
             children: [
@@ -58,6 +59,7 @@ describe('DfnIndexPlugin', () => {
     it('preserves explicitId on definition', async () => {
         const doc: Document = {
             type: 'document',
+            id: 'test-doc',
             children: [{
                 type: 'section',
                 children: [{
@@ -112,6 +114,7 @@ describe('ReferenceResolvePlugin', () => {
     it('resolves reference using candidateTerms', async () => {
         const doc: Document = {
             type: 'document',
+            id: 'test-doc',
             children: [{
                 type: 'section',
                 children: [
@@ -151,6 +154,7 @@ describe('ReferenceResolvePlugin', () => {
     it('resolves with forContext matching', async () => {
         const doc: Document = {
             type: 'document',
+            id: 'test-doc',
             children: [{
                 type: 'section',
                 children: [

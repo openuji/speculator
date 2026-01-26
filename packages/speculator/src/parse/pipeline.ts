@@ -134,7 +134,7 @@ export function registerParser(parser: UnitParser): void {
  */
 export function parseCompositeSource(
     source: PreprocessedSpec['source'],
-    config: PreprocessedSpec['config'] = {}
+    config: PreprocessedSpec['config'] = { id: 'anonymous' }
 ): ParseResult {
     return parse({ config, source });
 }

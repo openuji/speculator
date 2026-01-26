@@ -10,37 +10,34 @@ import {
   builtInRules,
   recommendedConfig,
 } from "@openuji/speculator-lint";
-import BlockRenderer from "../../components/BlockRenderer.astro";
-import Toc from "../../components/Toc.astro";
-import "../../styles/global.css";
-import Layout from "../../layouts/Layout.astro";
+import BlockRenderer from "@/components/BlockRenderer.astro";
+import Toc from "@/components/Toc.astro";
+import "@/styles/global.css";
+import Layout from "@/layouts/Layout.astro";
 import path from "path";
 
 export async function getStaticPaths() {
-  return [
-    { params: { pkg: "pkg-a" } },
-    { params: { pkg: "pkg-b" } },
-    { params: { pkg: "pkg-c" } },
-  ];
+  const pkgs = ["pkg-a", "pkg-b"];
+  return pkgs.map((pkg) => ({ params: { pkg } }));
 }
 
 const { pkg } = Astro.params;
 
 // Setup Speculator for Workspace
-const specRoot = path.resolve("spec/workspace");
+const specRoot = path.resolve("spec/workspace/md");
 const fileProvider = new NodeFileProvider();
 
 const pipeline = new SpeculatorPipeline(corePlugins);
 
 const result = await pipeline.runWorkspace({
   entries: [
-    { entry: path.join(specRoot, "pkg-a/index.html") },
-    { entry: path.join(specRoot, "pkg-b/index.html") },
-    { entry: path.join(specRoot, "pkg-c/index.html") },
-    { entry: path.join(specRoot, "pkg-d/index.md") },
+    { entry: path.join(specRoot, "pkg-a/index.md") },
+    { entry: path.join(specRoot, "pkg-b/index.md") },
   ],
   fileProvider,
 });
+
+console.log("result", JSON.stringify(result, null, 2));
 
 const workspace = result.workspace;
 const docs = workspace?.documents || [];
@@ -84,7 +81,7 @@ const allDiagnostics = lintResult?.diagnostics || [];
 const toc = document.computed?.toc || [];
 ---
 
-<Layout title={`${config.title || pkg} - Speculator Workspace`}>
+<Layout title={`${config.title || pkg} - Speculator Workspace (md)`}>
   <div class="spec-layout">
     {toc.length > 0 && <Toc toc={toc} />}
 
@@ -93,10 +90,11 @@ const toc = document.computed?.toc || [];
         <nav class="nav breadcrumb">
           <a href="/">Home</a>
           <span class="sep">/</span>
-          <a href="/workspace">Workspace Index</a>
+          <a href="/workspace/md">Workspace Index (md)</a>
           <span class="sep">/</span>
           <span class="current">{pkg}</span>
         </nav>
+
         <h1>{config.title}</h1>
         {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
 
@@ -137,6 +135,7 @@ const toc = document.computed?.toc || [];
           document.children.map((child) => (
             <BlockRenderer
               node={child}
+              basePath="/workspace/md"
               workspace={workspace}
               documentPath={document.sourcePos?.file}
               headingNumbers={document.computed?.headingNumbers}

@@ -30,6 +30,7 @@ function createSectionWithHeading(headingText: string, depth: number, explicitId
 function createDocWithSections(sections: Section[]): Document {
     return {
         type: 'document',
+        id: 'test-doc',
         children: sections,
     };
 }
@@ -109,6 +110,7 @@ describe('TocPlugin', () => {
     it('empty document produces empty TOC', async () => {
         const doc: Document = {
             type: 'document',
+            id: 'test-doc',
             children: [],
         };
 

@@ -9,7 +9,7 @@ import type { Section, Block } from '#src/types/ast.generated';
 
 function createPreprocessedSpec(
     units: SourceUnit[],
-    config: PreprocessedSpec['config'] = {}
+    config: PreprocessedSpec['config'] = { id: 'test-doc' }
 ): PreprocessedSpec {
     return {
         config,
@@ -148,7 +148,7 @@ describe('parse', () => {
                     content: '# Title',
                     startLine: 1,
                 }],
-                { title: 'My Spec', status: 'ED' }
+                { id: 'test-doc', title: 'My Spec', status: 'ED' }
             );
 
             const result = parse(spec);
@@ -165,7 +165,7 @@ describe('parse', () => {
                     content: '# Title',
                     startLine: 1,
                 }],
-                { title: 'Test Spec', shortName: 'test' }
+                { id: 'test-doc', title: 'Test Spec', shortName: 'test' }
             );
 
             const result = parse(spec);
@@ -191,6 +191,7 @@ describe('parse', () => {
                     startLine: 1,
                 },
             ], {
+                id: 'design-tokens',
                 title: 'Design Tokens Format',
                 shortName: 'design-tokens',
             });

@@ -65,7 +65,3 @@ Shorthands can be mixed freely:
 | Element       | `[^tag^]`         | `[^div^]`             | `reference` |
 
 ---
-
-## Definitions for Testing
-
-<dfn id="dfn-algorithm">Algorithm</dfn>
