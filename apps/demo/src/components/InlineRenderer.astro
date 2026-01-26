@@ -1,5 +1,16 @@
 ---
-import type { Inline, Workspace } from "@openuji/speculator";
+import type {
+  Inline,
+  Workspace,
+  InlineWorkspaceDfnReference,
+  InlineWorkspaceIdlReference,
+  InlineWorkspaceElementReference,
+  InlineExternalDfnReference,
+  InlineExternalIdlReference,
+  InlineExternalElementReference,
+  InlineDefinition,
+  InlineCite,
+} from "@openuji/speculator";
 import RecursiveInlineRenderer from "./InlineRenderer.astro";
 
 interface Props {
@@ -63,9 +74,10 @@ const { nodes, workspace, basePath } = Astro.props;
 
       case "definition":
         // Render <dfn> with ReSpec attributes
-        const dfnId = (node as any).explicitId || (node as any).id;
-        const dfnFor = (node as any).forContexts?.filter(Boolean).join(", ");
-        const dfnType = (node as any).dfnType;
+        const def = node;
+        const dfnId = def.explicitId || def.id;
+        const dfnFor = def.forContexts?.filter(Boolean).join(", ");
+        const dfnType = def.dfnType;
         return (
           <dfn
             id={dfnId}
@@ -81,43 +93,69 @@ const { nodes, workspace, basePath } = Astro.props;
           </dfn>
         );
 
-      case "reference":
-        // Render cross-reference
-        const ref = node as any;
-        const targetId = ref.targetId;
-        const preferredType = ref.preferredType;
+      case "workspaceDfnReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        console.log("workspaceDfnReference", ref);
+        return (
+          <a href={href} class="xref" title={ref.targetTerm}>
+            <RecursiveInlineRenderer
+              nodes={ref.children}
+              workspace={workspace}
+              basePath={basePath}
+            />
+          </a>
+        );
+      }
 
-        // Element and IDL references render as <code> tags, not links
-        if (preferredType === "element" || preferredType === "idl") {
-          const codeClass = preferredType === "element" ? "element" : "idl";
-          return (
-            <code class={codeClass} data-link-type={preferredType}>
+      case "workspaceIdlReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        return (
+          <code class="idl" data-link-type="idl">
+            <a href={href} class="xref" title={ref.targetTerm}>
               <RecursiveInlineRenderer
                 nodes={ref.children}
                 workspace={workspace}
                 basePath={basePath}
               />
-            </code>
-          );
-        }
+            </a>
+          </code>
+        );
+      }
 
-        // Standard cross-references render as links
-        let href = `#${targetId || ""}`;
+      case "workspaceElementReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        return (
+          <code class="element" data-link-type="element">
+            <a href={href} class="xref" title={ref.targetTerm}>
+              <RecursiveInlineRenderer
+                nodes={ref.children}
+                workspace={workspace}
+                basePath={basePath}
+              />
+            </a>
+          </code>
+        );
+      }
 
-        const dfns = workspace?.globalIndex?.definitions;
-        if (dfns && targetId) {
-          // Find which document contains this definition
-          const targetDef = dfns.find((d) => d.id === targetId);
-          href = `${basePath}#${targetId}`;
-        }
-
-        const xrefFor = ref.forContexts?.filter(Boolean).join(", ");
+      case "externalDfnReference": {
+        const ref = node;
         return (
           <a
-            href={href}
-            class="xref"
-            data-xref-for={xrefFor || undefined}
-            title={ref.targetTerm}
+            href={ref.url || "#"}
+            class="xref external"
+            title={`${ref.targetTerm} in ${ref.xrefSpec}`}
           >
             <RecursiveInlineRenderer
               nodes={ref.children}
@@ -126,10 +164,49 @@ const { nodes, workspace, basePath } = Astro.props;
             />
           </a>
         );
+      }
+
+      case "externalIdlReference": {
+        const ref = node;
+        return (
+          <code class="idl" data-link-type="idl">
+            <a
+              href={ref.url || "#"}
+              class="xref external"
+              title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+            >
+              <RecursiveInlineRenderer
+                nodes={ref.children}
+                workspace={workspace}
+                basePath={basePath}
+              />
+            </a>
+          </code>
+        );
+      }
+
+      case "externalElementReference": {
+        const ref = node;
+        return (
+          <code class="element" data-link-type="element">
+            <a
+              href={ref.url || "#"}
+              class="xref external"
+              title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+            >
+              <RecursiveInlineRenderer
+                nodes={ref.children}
+                workspace={workspace}
+                basePath={basePath}
+              />
+            </a>
+          </code>
+        );
+      }
 
       case "cite":
         // Render citation
-        const cite = node as any;
+        const cite = node;
         const citeClass = cite.forcedNormative
           ? "cite normative"
           : cite.forcedInformative
@@ -185,7 +262,7 @@ const { nodes, workspace, basePath } = Astro.props;
       default:
         return (
           <span style="color: red; border: 1px solid red;">
-            [Unknown Inline: {(node as any).type}]
+            [Unknown Inline: {(node as Inline).type}]
           </span>
         );
     }

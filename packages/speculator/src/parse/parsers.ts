@@ -14,7 +14,7 @@ export { TablesHtmlParser } from './html/TablesHtmlParser.js';
 export { SectionsHtmlParser } from './html/SectionsHtmlParser.js';
 export { InlinesHtmlParser } from './html/InlinesHtmlParser.js';
 export { DfnHtmlParser } from './html/DfnHtmlParser.js';
-export { XrefHtmlParser } from './html/XrefHtmlParser.js';
+export { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 export { AsideHtmlParser } from './html/AsideHtmlParser.js';
 export { MiscHtmlParser } from './html/MiscHtmlParser.js';
 
@@ -41,7 +41,7 @@ import { TablesHtmlParser } from './html/TablesHtmlParser.js';
 import { SectionsHtmlParser } from './html/SectionsHtmlParser.js';
 import { InlinesHtmlParser } from './html/InlinesHtmlParser.js';
 import { DfnHtmlParser } from './html/DfnHtmlParser.js';
-import { XrefHtmlParser } from './html/XrefHtmlParser.js';
+import { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 import { AsideHtmlParser } from './html/AsideHtmlParser.js';
 import { MiscHtmlParser } from './html/MiscHtmlParser.js';
 
@@ -66,7 +66,7 @@ import type { HtmlParserModule, MarkdownParserModule } from './registry.js';
 export const coreHtmlParsers: HtmlParserModule[] = [
     // ReSpec-specific parsers (higher priority)
     DfnHtmlParser,       // order: 5
-    XrefHtmlParser,      // order: 5
+    ReferenceHtmlParser,      // order: 5
     AsideHtmlParser,     // order: 8
     // Standard parsers
     SectionsHtmlParser,  // order: 10

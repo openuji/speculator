@@ -3,7 +3,6 @@ import {
   SpeculatorPipeline,
   corePlugins,
   NodeFileProvider,
-  type Document,
 } from "@openuji/speculator";
 import {
   SpeculatorLinter,
@@ -37,7 +36,6 @@ const result = await pipeline.runWorkspace({
     { entry: path.join(specRoot, "pkg-a/index.html") },
     { entry: path.join(specRoot, "pkg-b/index.html") },
     { entry: path.join(specRoot, "pkg-c/index.html") },
-    { entry: path.join(specRoot, "pkg-d/index.md") },
   ],
   fileProvider,
 });
@@ -138,6 +136,7 @@ const toc = document.computed?.toc || [];
             <BlockRenderer
               node={child}
               workspace={workspace}
+              basePath="/workspace"
               documentPath={document.sourcePos?.file}
               headingNumbers={document.computed?.headingNumbers}
             />

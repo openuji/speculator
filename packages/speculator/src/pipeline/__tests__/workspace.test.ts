@@ -55,8 +55,9 @@ describe('Workspace processing', () => {
         // Deep walk docB to find the reference
         const findRef = (node: unknown): void => {
             if (typeof node === 'object' && node !== null && 'type' in node) {
-                if (node.type === 'reference' && 'targetTerm' in node && node.targetTerm === 'term a') {
+                if (node.type === 'workspaceDfnReference' && 'targetTerm' in node && node.targetTerm === 'term a') {
                     expect('targetId' in node ? node.targetId : undefined).toBe('term-a');
+                    expect('targetDocumentId' in node ? node.targetDocumentId : undefined).toBe('spec-a');
                     resolved = true;
                 }
                 if ('children' in node && Array.isArray(node.children)) {

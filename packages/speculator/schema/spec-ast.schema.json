@@ -280,75 +280,71 @@
                 }
             ]
         },
-        "InlineReference": {
+        "WorkspaceReferenceBase": {
+            "type": "object",
+            "properties": {
+                "targetTerm": { "type": "string" },
+                "candidateTerms": { "type": "array", "items": { "type": "string" } },
+                "forContexts": { "type": "array", "items": { "type": ["string", "null"] } },
+                "targetId": { "type": "string" },
+                "targetDocumentId": { "type": "string" },
+                "children": { "type": "array", "items": { "$ref": "#/definitions/Inline" } }
+            },
+            "required": ["targetTerm", "children"]
+        },
+        "ExternalReferenceBase": {
+            "type": "object",
+            "properties": {
+                "targetTerm": { "type": "string" },
+                "candidateTerms": { "type": "array", "items": { "type": "string" } },
+                "forContexts": { "type": "array", "items": { "type": ["string", "null"] } },
+                "xrefSpec": { "type": "string" },
+                "targetId": { "type": "string" },
+                "url": { "type": "string" },
+                "children": { "type": "array", "items": { "$ref": "#/definitions/Inline" } }
+            },
+            "required": ["targetTerm", "xrefSpec", "children"]
+        },
+        "InlineWorkspaceDfnReference": {
             "allOf": [
-                {
-                    "$ref": "#/definitions/BaseNode"
-                },
-                {
-                    "type": "object",
-                    "description": "Cross-reference marker. Parse requires targetTerm and children. Resolve may bind targetId after global dfn collection. Indexed during the indexing phase.",
-                    "properties": {
-                        "type": {
-                            "const": "reference"
-                        },
-                        "targetTerm": {
-                            "type": "string",
-                            "description": "Primary reference term used to resolve a target definition."
-                        },
-                        "candidateTerms": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            },
-                            "description": "Alternative term candidates from data-lt. Parse fills from data-lt or [targetTerm]."
-                        },
-                        "forContexts": {
-                            "type": "array",
-                            "items": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            },
-                            "description": "For-contexts from data-xref-for (e.g., owning interface). Parse fills from data-xref-for or [null]."
-                        },
-                        "preferredType": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "description": "Preferred definition type from data-link-type."
-                        },
-                        "xrefSpec": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "description": "Explicit spec to search from data-xref-spec. Restricts external search."
-                        },
-                        "allowExternal": {
-                            "type": "boolean",
-                            "description": "Whether external lookup is allowed. False if data-allow-external='no'.",
-                            "default": true
-                        },
-                        "targetId": {
-                            "type": "string",
-                            "description": "Resolved ID of the referenced definition. Filled during resolve phase."
-                        },
-                        "children": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Inline"
-                            }
-                        }
-                    },
-                    "required": [
-                        "type",
-                        "targetTerm",
-                        "children"
-                    ]
-                }
+                { "$ref": "#/definitions/BaseNode" },
+                { "$ref": "#/definitions/WorkspaceReferenceBase" },
+                { "type": "object", "properties": { "type": { "const": "workspaceDfnReference" } }, "required": ["type"] }
+            ]
+        },
+        "InlineWorkspaceIdlReference": {
+            "allOf": [
+                { "$ref": "#/definitions/BaseNode" },
+                { "$ref": "#/definitions/WorkspaceReferenceBase" },
+                { "type": "object", "properties": { "type": { "const": "workspaceIdlReference" } }, "required": ["type"] }
+            ]
+        },
+        "InlineWorkspaceElementReference": {
+            "allOf": [
+                { "$ref": "#/definitions/BaseNode" },
+                { "$ref": "#/definitions/WorkspaceReferenceBase" },
+                { "type": "object", "properties": { "type": { "const": "workspaceElementReference" } }, "required": ["type"] }
+            ]
+        },
+        "InlineExternalDfnReference": {
+            "allOf": [
+                { "$ref": "#/definitions/BaseNode" },
+                { "$ref": "#/definitions/ExternalReferenceBase" },
+                { "type": "object", "properties": { "type": { "const": "externalDfnReference" } }, "required": ["type"] }
+            ]
+        },
+        "InlineExternalIdlReference": {
+            "allOf": [
+                { "$ref": "#/definitions/BaseNode" },
+                { "$ref": "#/definitions/ExternalReferenceBase" },
+                { "type": "object", "properties": { "type": { "const": "externalIdlReference" } }, "required": ["type"] }
+            ]
+        },
+        "InlineExternalElementReference": {
+            "allOf": [
+                { "$ref": "#/definitions/BaseNode" },
+                { "$ref": "#/definitions/ExternalReferenceBase" },
+                { "type": "object", "properties": { "type": { "const": "externalElementReference" } }, "required": ["type"] }
             ]
         },
         "InlineRequirement": {
@@ -556,7 +552,22 @@
                     "$ref": "#/definitions/InlineDefinition"
                 },
                 {
-                    "$ref": "#/definitions/InlineReference"
+                    "$ref": "#/definitions/InlineWorkspaceDfnReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineWorkspaceIdlReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineWorkspaceElementReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineExternalDfnReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineExternalIdlReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineExternalElementReference"
                 },
                 {
                     "$ref": "#/definitions/InlineRequirement"
@@ -1125,10 +1136,20 @@
             "type": "object",
             "description": "Entry in the references index, extracted from InlineReference nodes",
             "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Concrete reference type (e.g., workspaceDfnReference, externalIdlReference)"
+                },
                 "targetId": {
                     "type": "string"
                 },
                 "targetTerm": {
+                    "type": "string"
+                },
+                "targetDocumentId": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 },
                 "sourcePos": {

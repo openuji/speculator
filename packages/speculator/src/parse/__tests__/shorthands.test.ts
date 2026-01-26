@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { BlockParagraph, InlineReference } from '#src/types/ast.generated';
+import type { BlockParagraph, InlineWorkspaceDfnReference } from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.md'): SourceUnit {
     return { file, format: 'markdown', content, startLine: 1 };
@@ -52,16 +52,16 @@ describe('ShorthandsMarkdownParser', () => {
     });
 
     describe('concepts [=concept=]', () => {
-        it('parses basic concept as InlineReference', () => {
+        it('parses basic concept as InlineWorkspaceReference', () => {
             const unit = createUnit('Let [=queue a task=] be...');
             const blocks = parser.parse(unit);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({
-                type: 'reference',
+                type: 'workspaceDfnReference',
                 targetTerm: 'queue a task',
             });
-            const ref = para.children[1] as InlineReference;
+            const ref = para.children[1] as InlineWorkspaceDfnReference;
             expect(ref.children[0]).toMatchObject({ type: 'text', value: 'queue a task' });
         });
 
@@ -71,10 +71,10 @@ describe('ShorthandsMarkdownParser', () => {
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({
-                type: 'reference',
+                type: 'workspaceDfnReference',
                 targetTerm: 'convoluted',
             });
-            const ref = para.children[1] as InlineReference;
+            const ref = para.children[1] as InlineWorkspaceDfnReference;
             expect(ref.children[0]).toMatchObject({ type: 'text', value: 'simple' });
         });
     });
@@ -101,7 +101,7 @@ describe('ShorthandsMarkdownParser', () => {
             // In (text) [[HTML]] (cite) , people (text) [=fire an event=] (ref) with (text) |data| (variable) . (text)
             expect(para.children).toHaveLength(7);
             expect(para.children[1].type).toBe('cite');
-            expect(para.children[3].type).toBe('reference');
+            expect(para.children[3].type).toBe('workspaceDfnReference');
             expect(para.children[5].type).toBe('variable');
         });
 
@@ -111,8 +111,8 @@ describe('ShorthandsMarkdownParser', () => {
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children).toHaveLength(5);
-            expect(para.children[1]).toMatchObject({ type: 'reference', preferredType: 'idl' });
-            expect(para.children[3]).toMatchObject({ type: 'reference', preferredType: 'element' });
+            expect(para.children[1]).toMatchObject({ type: 'workspaceIdlReference' });
+            expect(para.children[3]).toMatchObject({ type: 'workspaceElementReference' });
         });
     });
 });

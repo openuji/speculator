@@ -184,7 +184,7 @@ describe('SectionIdPlugin', () => {
                 children: [
                     { type: 'text', value: 'Understanding ' },
                     {
-                        type: 'reference',
+                        type: 'workspaceDfnReference',
                         targetTerm: 'task queue',
                         children: [{ type: 'text', value: 'Task Queue' }]
                     },

@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { InlineDefinition, InlineReference, InlineCite, BlockNote, BlockParagraph } from '#src/types/ast.generated';
+import type { InlineDefinition, InlineWorkspaceDfnReference, InlineExternalDfnReference, InlineCite, BlockNote, BlockParagraph } from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.html'): SourceUnit {
     return { file, format: 'html', content, startLine: 1 };
@@ -80,13 +80,12 @@ describe('XrefPlugin', () => {
         const blocks = parser.parse(unit);
 
         const para = blocks[0] as BlockParagraph;
-        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
+        const xref = para.children.find((c) => c.type === 'workspaceDfnReference') as InlineWorkspaceDfnReference;
 
         expect(xref).toBeDefined();
-        expect(xref.type).toBe('reference');
+        expect(xref.type).toBe('workspaceDfnReference');
         expect(xref.targetTerm).toBe('event loop');
         expect(xref.candidateTerms).toEqual(['event loop']);
-        expect(xref.allowExternal).toBe(true);
     });
 
     it('parses xref with data-xref-for', () => {
@@ -94,19 +93,20 @@ describe('XrefPlugin', () => {
         const blocks = parser.parse(unit);
 
         const para = blocks[0] as BlockParagraph;
-        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
+        const xref = para.children.find((c) => c.type === 'workspaceDfnReference') as InlineWorkspaceDfnReference;
 
         expect(xref.forContexts).toEqual(['window']);
     });
 
-    it('parses xref with data-allow-external="no"', () => {
-        const unit = createUnit('<p><xref data-allow-external="no">event loop</xref></p>');
+    it('parses external xref with data-xref-spec', () => {
+        const unit = createUnit('<p><xref data-xref-spec="html">event loop</xref></p>');
         const blocks = parser.parse(unit);
 
         const para = blocks[0] as BlockParagraph;
-        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
+        const xref = para.children.find((c) => c.type === 'externalDfnReference') as InlineExternalDfnReference;
 
-        expect(xref.allowExternal).toBe(false);
+        expect(xref.type).toBe('externalDfnReference');
+        expect(xref.xrefSpec).toBe('html');
     });
 
     it('handles anchor with xref attributes', () => {
@@ -114,7 +114,7 @@ describe('XrefPlugin', () => {
         const blocks = parser.parse(unit);
 
         const para = blocks[0] as BlockParagraph;
-        const xref = para.children.find((c) => c.type === 'reference') as InlineReference;
+        const xref = para.children.find((c) => c.type === 'workspaceDfnReference') as InlineWorkspaceDfnReference;
 
         expect(xref).toBeDefined();
         expect(xref.candidateTerms).toEqual(['loop']);
