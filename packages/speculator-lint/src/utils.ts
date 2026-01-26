@@ -10,5 +10,6 @@ export function normalizeTerm(term: string): string {
     return term
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, ' ');
+        .replace(/\s+/g, ' ')
+        .normalize('NFKC');
 }

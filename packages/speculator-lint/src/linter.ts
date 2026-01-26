@@ -68,7 +68,7 @@ export class SpeculatorLinter {
         return {
             diagnostics: allDiagnostics,
             hasErrors: allDiagnostics.some(d => d.severity === 'error'),
-            ruleResults,
+            ruleResults: Array.from(ruleResults.values()),
             totalTime: endTime - startTime
         };
     }

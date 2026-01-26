@@ -79,7 +79,7 @@ In the example above, the document will use `"My Awesome Specification"` from th
 
 | Setting          | Type       | Description                                                                                                                |
 | :--------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------- |
-| `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the file path.               |
+| `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the parent folder name.      |
 | `title`          | `string`   | **Priority** document title. Overwrites `respec.title`.                                                                    |
 | `deps`           | `string[]` | List of document IDs that this document depends on. They will be processed first.                                          |
 | `lastUpdateDate` | `string`   | **Priority** last update date (ISO 8601: `YYYY-MM-DD`). Overwrites `respec.modificationDate`.                              |

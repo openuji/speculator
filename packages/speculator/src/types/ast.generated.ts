@@ -35,6 +35,14 @@ export type Section = BaseNode & {
   unnumbered?: boolean;
   children: (Section | Block)[];
 };
+export type InlineReference =
+  | InlineWorkspaceDfnReference
+  | InlineWorkspaceIdlReference
+  | InlineWorkspaceElementReference
+  | InlineExternalDfnReference
+  | InlineExternalIdlReference
+  | InlineExternalElementReference;
+
 export type Inline =
   | InlineText
   | InlineEmphasis
@@ -43,16 +51,12 @@ export type Inline =
   | InlineLink
   | InlineImage
   | InlineDefinition
-  | InlineWorkspaceDfnReference
-  | InlineWorkspaceIdlReference
-  | InlineWorkspaceElementReference
-  | InlineExternalDfnReference
-  | InlineExternalIdlReference
-  | InlineExternalElementReference
+  | InlineReference
   | InlineRequirement
   | InlineIssue
   | InlineCite
   | InlineVariable;
+
 export type InlineText = BaseNode & {
   type: 'text';
   value: string;

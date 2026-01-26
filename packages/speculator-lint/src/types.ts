@@ -1,52 +1,94 @@
-/**
- * Core types for @openuji/speculator-lint
- * 
- * Defines the rule-based linting architecture for Speculator workspace AST.
- */
-
-import type {
-    Workspace,
-    Document,
-    IndexDefinitionEntry,
-    InlineReference,
-    SourcePos
-} from '@openuji/speculator';
+import type { Workspace, Document, SourcePos } from '@openuji/speculator';
 
 /**
- * Diagnostic severity levels
+ * Severity level of a lint rule
  */
 export type Severity = 'error' | 'warning' | 'info';
+export type LintSeverity = Severity;
 
 /**
- * Rule category for organization
- */
-export type RuleCategory = 'workspace' | 'document' | 'reference' | 'custom';
-
-/**
- * Diagnostic produced by a lint rule
+ * Diagnostic result from a lint rule
  */
 export interface LintDiagnostic {
-    /** Rule code (e.g., 'no-redefinition') */
+    /** Rule code (e.g., 'no-duplicate-definition') */
     code: string;
     /** Severity level */
     severity: Severity;
     /** Diagnostic message */
     message: string;
-    /** File where the issue was found */
+    /** File path where the issue was found */
     file?: string;
-    /** Source position in the file */
+    /** Position in the source file */
     sourcePos?: SourcePos;
 }
 
 /**
- * Context provided to lint rules
+ * Result of running a SINGLE rule against a workspace
+ */
+export interface RuleResult {
+    ruleName: string;
+    diagnostics: LintDiagnostic[];
+    executionTime: number;
+    hasErrors?: boolean;
+}
+
+/**
+ * Result of the entire linting process
+ */
+export interface LintResult {
+    diagnostics: LintDiagnostic[];
+    ruleResults: RuleResult[];
+    totalTime: number;
+    hasErrors: boolean;
+}
+
+/**
+ * Options for the linter
+ */
+export interface LintOptions {
+    config?: LinterConfig;
+    workspace: Workspace;
+    documentLevels: Map<string, number>;
+}
+
+/**
+ * Configuration for the linter
+ */
+export type RuleConfigValue = Severity | 'off' | {
+    enabled: boolean;
+    severity?: Severity;
+};
+
+export interface LinterConfig {
+    extends?: string[];
+    rules: {
+        [ruleCode: string]: RuleConfigValue;
+    };
+}
+export type LintConfig = LinterConfig;
+
+/**
+ * Metadata for a rule
+ */
+export type RuleCategory = 'document' | 'reference' | 'workspace';
+
+export interface RuleMetadata {
+    name: string;
+    code: string;
+    severity: Severity;
+    description: string;
+    category: RuleCategory;
+}
+
+/**
+ * Context provided to rules during execution
  */
 export interface LintContext {
-    /** Current workspace being linted */
+    /** The entire workspace object */
     readonly workspace: Workspace;
-    /** Map of document path -> level (0 is highest) */
+    /** Map of document file paths to their defined levels */
     readonly documentLevels: Map<string, number>;
-    /** Current document being processed */
+    /** Current document being linted */
     readonly document: Document;
     /** Current document's level */
     readonly level: number;
@@ -58,24 +100,9 @@ export interface LintContext {
 }
 
 /**
- * Visitor pattern for AST traversal
- * Rules implement the hooks they're interested in
+ * Visitor implementation for a rule
  */
 export interface LintVisitor {
-    /**
-     * Called for each definition in the document
-     * @param entry The definition entry
-     * @param allEntriesForTerm All entries for this normalized term across the workspace
-     */
-    onDefinition?(entry: IndexDefinitionEntry, allEntriesForTerm: IndexDefinitionEntry[]): void;
-
-    /**
-     * Called for each reference in the document
-     * @param ref The reference node
-     * @param target The resolved target definition (null if unresolved)
-     */
-    onReference?(ref: InlineReference, target: IndexDefinitionEntry | null): void;
-
     /**
      * Called once per document before visiting nodes
      * @param doc The document
@@ -84,90 +111,13 @@ export interface LintVisitor {
 }
 
 /**
- * Rule metadata
- */
-export interface RuleMetadata {
-    /** Unique rule name (e.g., 'no-redefinition') */
-    name: string;
-    /** Diagnostic code used in reports */
-    code: string;
-    /** Default severity */
-    severity: Severity;
-    /** Human-readable description */
-    description: string;
-    /** Rule category */
-    category: RuleCategory;
-}
-
-/**
- * Lint rule interface
+ * Interface for a lint rule
  */
 export interface LintRule {
-    /** Rule metadata */
     meta: RuleMetadata;
 
     /**
-     * Create a visitor for this rule
-     * @param context Lint context
-     * @returns Visitor implementation
+     * Create the rule visitor
      */
     create(context: LintContext): LintVisitor;
-}
-
-/**
- * Configuration for a single rule
- */
-export type RuleConfigValue =
-    | 'off'
-    | 'error'
-    | 'warning'
-    | 'info'
-    | [Severity, Record<string, unknown>?]; // For future rule options
-
-/**
- * Linter configuration
- */
-export interface LintConfig {
-    /** Rule configurations by rule name */
-    rules?: Record<string, RuleConfigValue>;
-    /** Configurations to extend */
-    extends?: string[];
-}
-
-/**
- * Result from a single rule execution
- */
-export interface RuleResult {
-    /** Rule name */
-    ruleName: string;
-    /** Diagnostics produced by this rule */
-    diagnostics: LintDiagnostic[];
-    /** Execution time in milliseconds */
-    executionTime: number;
-}
-
-/**
- * Overall lint result
- */
-export interface LintResult {
-    /** All diagnostics from all rules */
-    diagnostics: LintDiagnostic[];
-    /** Quick check for errors */
-    hasErrors: boolean;
-    /** Results per rule */
-    ruleResults: Map<string, RuleResult>;
-    /** Total execution time */
-    totalTime: number;
-}
-
-/**
- * Options for running the linter
- */
-export interface LintOptions {
-    /** Workspace to lint */
-    workspace: Workspace;
-    /** Document level mapping */
-    documentLevels: Map<string, number>;
-    /** Optional configuration override */
-    config?: LintConfig;
 }

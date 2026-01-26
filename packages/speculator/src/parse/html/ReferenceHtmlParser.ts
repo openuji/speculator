@@ -36,6 +36,7 @@ function hasXrefAttributes(element: Element, ctx: ParseContext): boolean {
         ctx.getAttr(element, 'dataXref') !== undefined ||
         ctx.getAttr(element, 'dataLt') !== undefined ||
         ctx.getAttr(element, 'dataXrefFor') !== undefined ||
+        ctx.getAttr(element, 'dataLinkFor') !== undefined ||
         ctx.getAttr(element, 'dataLinkType') !== undefined
     );
 }
@@ -58,7 +59,7 @@ function extractXrefData(element: Element, ctx: ParseContext): XrefData | null {
     if (!targetTerm) return null;
 
     const dataLt = ctx.getAttr(element, 'dataLt') ?? ctx.getAttr(element, 'dataXref');
-    const dataXrefFor = ctx.getAttr(element, 'dataXrefFor');
+    const dataXrefFor = ctx.getAttr(element, 'dataXrefFor') ?? ctx.getAttr(element, 'dataLinkFor');
     const preferredType = ctx.getAttr(element, 'dataLinkType') ?? null;
     const xrefSpec = ctx.getAttr(element, 'dataXrefSpec') ?? null;
 

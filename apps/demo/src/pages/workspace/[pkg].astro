@@ -135,7 +135,6 @@ const toc = document.computed?.toc || [];
           document.children.map((child) => (
             <BlockRenderer
               node={child}
-              workspace={workspace}
               basePath="/workspace"
               documentPath={document.sourcePos?.file}
               headingNumbers={document.computed?.headingNumbers}

@@ -15,7 +15,14 @@ import type { Inline } from '#src/types/ast.generated';
  * Handles various types: strings, arrays (joins with space), numbers, and booleans.
  */
 export function getAttr(element: Element, name: string): string | undefined {
-    const val = element.properties?.[name];
+    let val = element.properties?.[name];
+
+    // Fallback: if camelCase name not found, try kebab-case for data- attributes
+    if (val === undefined && name.startsWith('data')) {
+        const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+        val = element.properties?.[kebab];
+    }
+
     if (typeof val === 'string') return val;
     if (Array.isArray(val)) return val.join(' ');
     if (typeof val === 'number') return String(val);

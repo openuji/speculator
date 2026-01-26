@@ -1,23 +1,23 @@
 ---
-import type {
-  Block,
-  Section,
-  BlockHeading,
-  Workspace,
-} from "@openuji/speculator";
+import type { Block, Section, BlockHeading } from "@openuji/speculator";
 import InlineRenderer from "./InlineRenderer.astro";
 import RecursiveBlockRenderer from "./BlockRenderer.astro";
 import Mermaid from "./Mermaid.astro";
 
 interface Props {
   node: Block | Section;
-  workspace?: Workspace;
   basePath?: string;
   documentPath?: string;
   headingNumbers?: { [k: string]: string | undefined };
 }
 
-const { node, workspace, basePath, documentPath, headingNumbers } = Astro.props;
+const { node, basePath, documentPath, headingNumbers } = Astro.props;
+
+// Shared props for InlineRenderer
+const inlineProps = { basePath };
+
+// Shared props for recursive BlockRenderer calls
+const blockProps = { basePath, documentPath, headingNumbers };
 
 // Helper to determine heading level for section
 type HeadingTagName = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -52,19 +52,12 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
                 )}
                 <InlineRenderer
                   nodes={node.heading.children}
-                  basePath={basePath}
-                  workspace={workspace}
+                  {...inlineProps}
                 />
               </HeadingTag>
             )}
             {node.children.map((child) => (
-              <RecursiveBlockRenderer
-                node={child}
-                workspace={workspace}
-                documentPath={documentPath}
-                headingNumbers={headingNumbers}
-                basePath={basePath}
-              />
+              <RecursiveBlockRenderer node={child} {...blockProps} />
             ))}
           </section>
         );
@@ -72,11 +65,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
       case "paragraph":
         return (
           <p id={node.id}>
-            <InlineRenderer
-              nodes={node.children}
-              workspace={workspace}
-              basePath={basePath}
-            />
+            <InlineRenderer nodes={node.children} {...inlineProps} />
           </p>
         );
 
@@ -84,11 +73,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
         const H = getHeadingTag(node);
         return (
           <H id={node.id}>
-            <InlineRenderer
-              nodes={node.children}
-              workspace={workspace}
-              basePath={basePath}
-            />
+            <InlineRenderer nodes={node.children} {...inlineProps} />
           </H>
         );
 
@@ -108,13 +93,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
         return (
           <blockquote id={node.id}>
             {node.children.map((child) => (
-              <RecursiveBlockRenderer
-                node={child}
-                workspace={workspace}
-                documentPath={documentPath}
-                headingNumbers={headingNumbers}
-                basePath={basePath}
-              />
+              <RecursiveBlockRenderer node={child} {...blockProps} />
             ))}
           </blockquote>
         );
@@ -128,13 +107,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
               <li>
                 {/* ListItem children are Blocks */}
                 {item.children.map((child) => (
-                  <RecursiveBlockRenderer
-                    node={child}
-                    workspace={workspace}
-                    documentPath={documentPath}
-                    headingNumbers={headingNumbers}
-                    basePath={basePath}
-                  />
+                  <RecursiveBlockRenderer node={child} {...blockProps} />
                 ))}
               </li>
             ))}
@@ -158,8 +131,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
                       >
                         <InlineRenderer
                           nodes={cell.children}
-                          workspace={workspace}
-                          basePath={basePath}
+                          {...inlineProps}
                         />
                       </CellTag>
                     );
@@ -182,13 +154,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
             {node.title && <div class="example-title">{node.title}</div>}
             <div class="example-content">
               {node.children.map((child) => (
-                <RecursiveBlockRenderer
-                  node={child}
-                  workspace={workspace}
-                  documentPath={documentPath}
-                  headingNumbers={headingNumbers}
-                  basePath={basePath}
-                />
+                <RecursiveBlockRenderer node={child} {...blockProps} />
               ))}
             </div>
           </div>
@@ -203,13 +169,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
             <div class="note-header">{noteType.toUpperCase()}</div>
             <div class="note-content">
               {node.children.map((child) => (
-                <RecursiveBlockRenderer
-                  node={child}
-                  workspace={workspace}
-                  documentPath={documentPath}
-                  headingNumbers={headingNumbers}
-                  basePath={basePath}
-                />
+                <RecursiveBlockRenderer node={child} {...blockProps} />
               ))}
             </div>
           </aside>

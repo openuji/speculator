@@ -10,6 +10,8 @@
  */
 
 import type { LintRule, LintContext } from '../../types.js';
+import { normalizeTerm } from '../../utils.js';
+import { buildDefinitionIndex } from '../speculator-helpers.js';
 
 export const noRedefinitionRule: LintRule = {
     meta: {
@@ -21,47 +23,46 @@ export const noRedefinitionRule: LintRule = {
     },
 
     create(context: LintContext) {
+        const index = buildDefinitionIndex(context.workspace);
+
         return {
-            onDefinition(entry, allEntriesForTerm) {
-                // If this is the first definition of this term, no issue
-                if (allEntriesForTerm.length === 0) {
-                    return;
-                }
-
-                // Find the highest-level (lowest number) definition
-                let highestEntry = allEntriesForTerm[0];
-                let highestLevel = Infinity;
-
-                for (const existingEntry of allEntriesForTerm) {
-                    const docPath = existingEntry.sourcePos?.file;
-                    if (!docPath) continue;
-
-                    const level = context.documentLevels.get(docPath) ?? 0;
-                    if (level < highestLevel) {
-                        highestLevel = level;
-                        highestEntry = existingEntry;
-                    }
-                }
-
-                // Check if current entry is from a lower level
-                const currentDocPath = entry.sourcePos?.file;
+            onDocument(doc) {
+                const currentDocPath = doc.sourcePos?.file;
                 if (!currentDocPath) return;
 
-                const currentLevel = context.documentLevels.get(currentDocPath) ?? 0;
-                const higherDocPath = highestEntry.sourcePos?.file;
+                const definitions = doc.indexes?.definitions || [];
+                for (const entry of definitions) {
+                    const allEntriesForTerm = index.get(normalizeTerm(entry.term)) || [];
+                    
+                    if (allEntriesForTerm.length <= 1) continue;
 
-                // If current level is lower (higher number) than the highest definition
-                if (currentLevel > highestLevel && higherDocPath) {
-                    // Skip if this is the same document (shouldn't happen, but just in case)
-                    if (currentDocPath === higherDocPath) {
-                        return;
+                    // Find the highest-level (lowest number) definition
+                    let highestEntry = allEntriesForTerm[0];
+                    let highestLevel = Infinity;
+
+                    for (const existingEntry of allEntriesForTerm) {
+                        const docPath = existingEntry.sourcePos?.file;
+                        if (!docPath) continue;
+
+                        const level = context.documentLevels.get(docPath) ?? 0;
+                        if (level < highestLevel) {
+                            highestLevel = level;
+                            highestEntry = existingEntry;
+                        }
                     }
 
-                    context.report({
-                        message: `Lower-level spec "${currentDocPath}" redefines concept "${entry.term}" already defined in higher-level spec "${higherDocPath}"`,
-                        file: currentDocPath,
-                        sourcePos: entry.sourcePos
-                    });
+                    const currentLevel = context.documentLevels.get(currentDocPath) ?? 0;
+                    const higherDocPath = highestEntry.sourcePos?.file;
+
+                    if (currentLevel > highestLevel && higherDocPath) {
+                        if (currentDocPath === higherDocPath) continue;
+
+                        context.report({
+                            message: `Lower-level spec "${currentDocPath}" redefines concept "${entry.term}" already defined in higher-level spec "${higherDocPath}"`,
+                            file: currentDocPath,
+                            sourcePos: entry.sourcePos
+                        });
+                    }
                 }
             }
         };
