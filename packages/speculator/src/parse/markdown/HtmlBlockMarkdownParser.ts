@@ -37,7 +37,8 @@ export const HtmlBlockMarkdownParser: MarkdownParserModule = {
 
         if (tree.children.length === 0) return null;
 
-        const hastCtx = createHastContext(ctx);
+        const sourcePos = ctx.createSourcePos(node);
+        const hastCtx = createHastContext(ctx, sourcePos);
 
         // Look for the first top-level element
         const firstElement = tree.children.find((c): c is Element => c.type === 'element');
@@ -67,7 +68,7 @@ export const HtmlBlockMarkdownParser: MarkdownParserModule = {
         return {
             type: 'paragraph',
             children,
-            sourcePos: ctx.createSourcePos(node),
+            sourcePos,
         };
     }
 };

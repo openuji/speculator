@@ -44,6 +44,24 @@ export function buildDefinitionIndex(workspace: Workspace): Map<string, IndexDef
 }
 
 /**
+ * Build a global ID index from workspace
+ */
+export function buildIdIndex(workspace: Workspace): Map<string, IndexDefinitionEntry> {
+    const index = new Map<string, IndexDefinitionEntry>();
+
+    for (const doc of workspace.documents) {
+        const definitions = doc.indexes?.definitions || [];
+        for (const entry of definitions) {
+            if (entry.id) {
+                index.set(entry.id, entry);
+            }
+        }
+    }
+
+    return index;
+}
+
+/**
  * Collect all references from a document
  */
 export function collectReferences(document: Document): InlineReference[] {

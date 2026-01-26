@@ -77,11 +77,36 @@ export function transformHastInline(node: HastRootContent, ctx: ParseContext): I
 /**
  * Create a hast-aware ParseContext from a base (markdown) context.
  * This allows hast nodes to be transformed using the same handler infrastructure.
+ * 
+ * If parentSourcePos is provided, it will be used as the base for all child nodes
+ * created from the hast tree (correcting offsets for HTML inside Markdown).
  */
-export function createHastContext(ctx: ParseContext): ParseContext {
+export function createHastContext(ctx: ParseContext, parentSourcePos?: any): ParseContext {
     const originalTransform = ctx.transformInlineChildren;
+    
+    // Create an overridden createSourcePos if we have a parent offset
+    const createSourcePos = parentSourcePos 
+        ? (hastNode: any) => {
+            const localPos = hastNode.position;
+            if (!localPos) return parentSourcePos;
+            
+            return {
+                ...parentSourcePos,
+                line: parentSourcePos.line + localPos.start.line - 1,
+                // Column is only relative if on the first line of the fragment
+                column: localPos.start.line === 1 
+                    ? parentSourcePos.column + localPos.start.column - 1 
+                    : localPos.start.column,
+                offset: parentSourcePos.offset !== undefined 
+                    ? parentSourcePos.offset + (localPos.start.offset || 0) 
+                    : undefined
+            };
+        }
+        : ctx.createSourcePos;
+
     const hastCtx: ParseContext = {
         ...ctx,
+        createSourcePos,
         transformInlineChildren: (children) => {
             const results: Inline[] = [];
             for (const child of children as HastRootContent[]) {

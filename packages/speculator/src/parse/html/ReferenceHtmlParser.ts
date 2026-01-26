@@ -33,7 +33,6 @@ const IDL_TYPES = new Set(['idl', 'attribute', 'method', 'dict-member', 'const',
 
 function hasXrefAttributes(element: Element, ctx: ParseContext): boolean {
     return (
-        ctx.getAttr(element, 'dataXref') !== undefined ||
         ctx.getAttr(element, 'dataLt') !== undefined ||
         ctx.getAttr(element, 'dataXrefFor') !== undefined ||
         ctx.getAttr(element, 'dataLinkFor') !== undefined ||
@@ -58,7 +57,7 @@ function extractXrefData(element: Element, ctx: ParseContext): XrefData | null {
     const targetTerm = normalizeTerm(rawText);
     if (!targetTerm) return null;
 
-    const dataLt = ctx.getAttr(element, 'dataLt') ?? ctx.getAttr(element, 'dataXref');
+    const dataLt = ctx.getAttr(element, 'dataLt');
     const dataXrefFor = ctx.getAttr(element, 'dataXrefFor') ?? ctx.getAttr(element, 'dataLinkFor');
     const preferredType = ctx.getAttr(element, 'dataLinkType') ?? null;
     const xrefSpec = ctx.getAttr(element, 'dataXrefSpec') ?? null;

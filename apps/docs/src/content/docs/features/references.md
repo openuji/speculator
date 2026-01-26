@@ -7,19 +7,22 @@ Speculator provides a powerful system for cross-referencing definitions across y
 
 ## Cross-References (`<xref>`)
 
-The `<xref>` custom element is used to create links to terms defined within your workspace or in external specifications.
+The `<xref>` custom element is used to create links to terms defined within your workspace or in external specifications. Speculator uses **Semantic Resolution**: it matches terms based on their normalized names and logical context, rather than hardcoded IDs.
 
 ### Internal Workspace References
 
 When you use `<xref>` without a `data-xref-spec` attribute, Speculator attempts to find a definition for the term within the current workspace.
 
 ```html
-<xref data-lt="my term">link text</xref>
+<xref data-lt="my term" data-link-for="MyInterface">link text</xref>
 ```
 
 - **`data-lt`**: (Optional) The term to link to. If omitted, the text content of the element is used. Can be a pipe-separated list of aliases.
-- **`data-xref-for`**: (Optional) The context (e.g., interface name) the term belongs to.
+- **`data-link-for` / `data-xref-for`**: (Primary Disambiguation) Specifying the context (e.g., interface name) allows Speculator to resolve ambiguous terms to the correct definition.
 - **`data-link-type`**: (Optional) The type of the target (e.g., `dfn`, `idl`, `element`).
+
+> [!IMPORTANT]
+> **ID-Based resolution is NOT supported.** Hardcoding `href="#id"` for cross-references is brittle and bypasses the semantic validation engine. Always use the term name and, if necessary, the context attribute to disambiguate.
 
 ### External References
 
@@ -51,7 +54,7 @@ You can also use the `data-cite` attribute on `<a>` tags to create citations.
 
 ### Advanced `data-cite`
 
-The `data-cite` attribute supports fragments and paths:
+The `data-cite` attribute supports fragments and paths for external specs:
 
 ```html
 <a data-cite="html#the-a-element">the a element</a>
@@ -59,11 +62,12 @@ The `data-cite` attribute supports fragments and paths:
 
 ## Behavior of `<a>` Elements
 
-Speculator also intercepts standard `<a>` tags if they contain ReSpec-compatible attributes like `data-lt` or `data-cite`. If these attributes are present, the `<a>` tag is treated as a reference or citation rather than a regular external link.
+Speculator intercepts standard `<a>` tags if they contain attributes like `data-lt`, `data-link-for`, or `data-cite`. If these attributes are present, the `<a>` tag is treated as a semantic reference or citation.
 
-| Attribute        | Behavior                                                        |
-| :--------------- | :-------------------------------------------------------------- |
-| `href`           | Regular link (unless `data-cite` or `data-lt` is present).      |
-| `data-cite`      | Becomes an `InlineCite` node.                                   |
-| `data-lt`        | Becomes a workspace or external reference node.                 |
-| `data-link-type` | Guides the resolution to IDL, elements, or general definitions. |
+| Attribute        | Behavior                                                                  |
+| :--------------- | :------------------------------------------------------------------------ |
+| `href`           | Handled as a regular external link. Internal `#id` links are discouraged. |
+| `data-cite`      | Becomes an `InlineCite` node.                                             |
+| `data-lt`        | Becomes a workspace or external reference node.                           |
+| `data-link-for`  | Disambiguates terms by specifying their logical owner/context.            |
+| `data-link-type` | Guides the resolution to IDL, elements, or general definitions.           |

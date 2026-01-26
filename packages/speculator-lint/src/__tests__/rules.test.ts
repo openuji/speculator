@@ -101,6 +101,45 @@ describe('Speculator Lint Rules', () => {
     });
 
 
+    describe('reference/no-id-reference', () => {
+        it('reports warning for internal fragment links and ID-based references', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'pkg-a',
+                sourcePos: { file: 'pkg-a/index.md', line: 1, column: 1 },
+                children: [
+                    {
+                        type: 'paragraph',
+                        children: [
+                            { type: 'link', url: '#some-id', children: [{ type: 'text', value: 'internal link' }] },
+                            { 
+                                type: 'workspaceDfnReference', 
+                                targetTerm: 'Term', 
+                                targetId: 'pre-resolved-id', // Simulate ID-based resolution trigger
+                                children: [] 
+                            }
+                        ]
+                    } as any
+                ]
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['pkg-a/index.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'no-id-reference');
+            expect(diagnostics).toHaveLength(2);
+            // references are collected first in the rule
+            expect(diagnostics[0].message).toContain('Reference to ID');
+            expect(diagnostics[1].message).toContain('Internal link to ID');
+        });
+    });
+
     describe('workspace/no-redefinition', () => {
         it('reports error when lower level spec redefines term from higher level spec', async () => {
             const docA: Document = {
