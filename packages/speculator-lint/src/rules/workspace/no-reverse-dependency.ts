@@ -35,8 +35,10 @@ export const noReverseDependencyRule: LintRule = {
                     if (candidates.length === 0) continue;
 
                     let target = candidates[0];
-                    if ('targetId' in ref && ref.targetId) {
-                        const match = candidates.find(c => c.id === (ref as any).targetId && c.documentId === (ref as any).targetDocumentId);
+                    if (ref.targetId) {
+                        const targetId = ref.targetId;
+                        const targetDocId = 'targetDocumentId' in ref ? ref.targetDocumentId : undefined;
+                        const match = candidates.find(c => c.id === targetId && c.documentId === targetDocId);
                         if (match) target = match;
                     }
 

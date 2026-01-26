@@ -67,15 +67,16 @@ export function buildIdIndex(workspace: Workspace): Map<string, IndexDefinitionE
 export function collectReferences(document: Document): InlineReference[] {
     const references: InlineReference[] = [];
 
-    function walkNode(node: any): void {
+    function walkNode(node: unknown): void {
         if (!node || typeof node !== 'object') return;
+        const n = node as { type?: string; children?: unknown[] };
 
-        if (node.type && REFERENCE_TYPES.has(node.type)) {
+        if (n.type && REFERENCE_TYPES.has(n.type)) {
             references.push(node as InlineReference);
         }
 
-        if (node.children && Array.isArray(node.children)) {
-            for (const child of node.children) {
+        if (n.children && Array.isArray(n.children)) {
+            for (const child of n.children) {
                 walkNode(child);
             }
         }

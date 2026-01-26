@@ -17,8 +17,10 @@ export const noIdReferenceRule: LintRule = {
             onDocument(doc) {
                 const references = collectReferences(doc);
                 for (const ref of references) {
-                    const targetId = (ref as any).targetId;
-                    if (targetId && !(ref as any).targetDocumentId) {
+                    const targetId = ref.targetId;
+                    const isWorkspaceRef = 'targetDocumentId' in ref;
+                    
+                    if (targetId && !isWorkspaceRef) {
                         const target = idIndex.get(targetId);
                         const loc = target ? ` (defined at ${target.sourcePos?.file}:${target.sourcePos?.line})` : '';
                         context.report({

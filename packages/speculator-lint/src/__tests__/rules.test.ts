@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { SpeculatorLinter } from '../linter.js';
 import { builtInRules } from '../rules/index.js';
 import { recommendedConfig } from '../config.js';
-import type { Workspace, Document } from '@openuji/speculator';
+import type { Workspace, Document, BlockParagraph, InlineWorkspaceDfnReference, InlineLink } from '@openuji/speculator';
 
 function createMockWorkspace(docs: Document[]): Workspace {
     return {
@@ -101,8 +101,56 @@ describe('Speculator Lint Rules', () => {
     });
 
 
-    describe('reference/no-id-reference', () => {
-        it('reports warning for internal fragment links and ID-based references', async () => {
+    describe('reference/no-ambiguous-reference', () => {
+        it('reports warning when a reference matches multiple definitions in different documents', async () => {
+            const docA: Document = {
+                type: 'document',
+                id: 'pkg-a',
+                sourcePos: { file: 'pkg-a/index.md', line: 1, column: 1 },
+                children: [
+                    {
+                        type: 'paragraph',
+                        children: [
+                            { type: 'workspaceDfnReference', targetTerm: 'Ambiguous', children: [] } as InlineWorkspaceDfnReference
+                        ]
+                    } as BlockParagraph
+                ],
+                indexes: {
+                    definitions: [
+                        { term: 'Ambiguous', id: 'dfn-1', documentId: 'pkg-a', sourcePos: { file: 'pkg-a/index.md', line: 10, column: 1 } }
+                    ]
+                }
+            };
+
+            const docB: Document = {
+                type: 'document',
+                id: 'pkg-b',
+                sourcePos: { file: 'pkg-b/index.md', line: 1, column: 1 },
+                children: [],
+                indexes: {
+                    definitions: [
+                        { term: 'Ambiguous', id: 'dfn-2', documentId: 'pkg-b', sourcePos: { file: 'pkg-b/index.md', line: 20, column: 1 } }
+                    ]
+                }
+            };
+
+            const workspace = createMockWorkspace([docA, docB]);
+            const documentLevels = new Map([['pkg-a/index.md', 0], ['pkg-b/index.md', 1]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'no-ambiguous-reference');
+            expect(diagnostics).toHaveLength(1);
+            expect(diagnostics[0].message).toContain('Ambiguous reference to "Ambiguous" matches 2 definitions');
+            expect(diagnostics[0].message).toContain('pkg-a/index.md:10');
+            expect(diagnostics[0].message).toContain('pkg-b/index.md:20');
+        });
+
+        it('does NOT report warning when disambiguated by forContexts', async () => {
             const doc: Document = {
                 type: 'document',
                 id: 'pkg-a',
@@ -111,16 +159,57 @@ describe('Speculator Lint Rules', () => {
                     {
                         type: 'paragraph',
                         children: [
-                            { type: 'link', url: '#some-id', children: [{ type: 'text', value: 'internal link' }] },
+                            { type: 'workspaceDfnReference', targetTerm: 'Ambiguous', forContexts: ['ContextA'], children: [] } as InlineWorkspaceDfnReference
+                        ]
+                    } as BlockParagraph
+                ],
+                indexes: {
+                    definitions: [
+                        { term: 'Ambiguous', id: 'dfn-1', documentId: 'pkg-a', forContexts: ['ContextA'], sourcePos: { file: 'pkg-a/index.md', line: 10, column: 1 } },
+                        { term: 'Ambiguous', id: 'dfn-2', documentId: 'pkg-a', forContexts: ['ContextB'], sourcePos: { file: 'pkg-a/index.md', line: 20, column: 1 } }
+                    ]
+                }
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['pkg-a/index.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'no-ambiguous-reference');
+            expect(diagnostics).toHaveLength(0);
+        });
+    });
+
+    describe('reference/no-id-reference', () => {
+        it('reports warning for internal fragment links and ID-based references with target locations', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'pkg-a',
+                sourcePos: { file: 'pkg-a/index.md', line: 1, column: 1 },
+                children: [
+                    {
+                        type: 'paragraph',
+                        children: [
+                            { type: 'link', url: '#target-id', children: [{ type: 'text', value: 'internal link' }] } as InlineLink,
                             { 
                                 type: 'workspaceDfnReference', 
                                 targetTerm: 'Term', 
-                                targetId: 'pre-resolved-id', // Simulate ID-based resolution trigger
+                                targetId: 'target-id', 
                                 children: [] 
-                            }
+                            } as InlineWorkspaceDfnReference
                         ]
-                    } as any
-                ]
+                    } as BlockParagraph
+                ],
+                indexes: {
+                    definitions: [
+                        { term: 'Term', id: 'target-id', documentId: 'pkg-a', sourcePos: { file: 'pkg-a/index.md', line: 50, column: 1 } }
+                    ]
+                }
             };
 
             const workspace = createMockWorkspace([doc]);
@@ -134,9 +223,8 @@ describe('Speculator Lint Rules', () => {
 
             const diagnostics = result.diagnostics.filter(d => d.code === 'no-id-reference');
             expect(diagnostics).toHaveLength(2);
-            // references are collected first in the rule
-            expect(diagnostics[0].message).toContain('Reference to ID');
-            expect(diagnostics[1].message).toContain('Internal link to ID');
+            expect(diagnostics[0].message).toContain('Reference to ID "target-id" is discouraged (defined at pkg-a/index.md:50)');
+            expect(diagnostics[1].message).toContain('Internal link to ID "#target-id" found (defined at pkg-a/index.md:50)');
         });
     });
 
@@ -191,9 +279,9 @@ describe('Speculator Lint Rules', () => {
                     {
                         type: 'paragraph',
                         children: [
-                            { type: 'workspaceDfnReference', targetTerm: 'LowerTerm', targetId: 'dfn-lower', children: [] }
+                            { type: 'workspaceDfnReference', targetTerm: 'LowerTerm', targetId: 'dfn-lower', children: [] } as InlineWorkspaceDfnReference
                         ]
-                    } as any
+                    } as BlockParagraph
                 ],
                 indexes: {
                     definitions: []
