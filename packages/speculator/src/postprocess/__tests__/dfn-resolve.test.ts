@@ -1,204 +1,199 @@
-/**
- * DFN Index and Reference Resolve Plugin Tests
- */
-
+import type { Document, InlineWorkspaceDfnReference, BlockParagraph } from '#src/types/ast.generated';
+import type { ResolveContext, RuntimeWorkspace } from '#src/pipeline/types';
+import { referenceResolvePlugin } from '../plugins/reference-resolve.js';
 import { describe, it, expect } from 'vitest';
-import { dfnIndexPlugin } from '#src/postprocess/plugins/dfn-index';
-import { referenceResolvePlugin } from '#src/postprocess/plugins/reference-resolve';
-import type {
-    Document,
-    Section,
-    BlockParagraph,
-    InlineDefinition,
-    InlineReference,
-} from '#src/types/ast.generated';
 
-
-function createDocWithDfnAndRef(dfnTerm: string, refTerm: string): Document {
+/**
+ * Mock ResolveContext
+ */
+function createCtx(doc: Document): ResolveContext {
     return {
-        type: 'document',
-        children: [{
-            type: 'section',
-            children: [
-                {
-                    type: 'paragraph',
-                    children: [{
-                        type: 'definition',
-                        term: dfnTerm,
-                        children: [{ type: 'text', value: dfnTerm }],
-                    } as InlineDefinition],
-                } as BlockParagraph,
-                {
-                    type: 'paragraph',
-                    children: [{
-                        type: 'reference',
-                        targetTerm: refTerm,
-                        children: [{ type: 'text', value: refTerm }],
-                    } as InlineReference],
-                } as BlockParagraph,
-            ],
-        } as Section],
+        document: doc,
+        level: 0,
     };
 }
 
-describe('DfnIndexPlugin', () => {
-    it('assigns ID to definition', async () => {
-        const doc = createDocWithDfnAndRef('task queue', 'task queue');
-
-        await dfnIndexPlugin.index!({ document: doc, level: 0 });
-
-
-        const section = doc.children[0] as Section;
-        const dfnPara = section.children[0] as BlockParagraph;
-        const dfn = dfnPara.children[0] as InlineDefinition & { id?: string };
-
-        expect(dfn.id).toBe('dfn-task-queue');
-    });
-
-    it('preserves explicitId on definition', async () => {
-        const doc: Document = {
-            type: 'document',
-            children: [{
-                type: 'section',
-                children: [{
-                    type: 'paragraph',
-                    children: [{
-                        type: 'definition',
-                        term: 'focus',
-                        explicitId: 'dom-focus',
-                        children: [{ type: 'text', value: 'focus' }],
-                    } as InlineDefinition],
-                } as BlockParagraph],
-            } as Section],
-        };
-
-        await dfnIndexPlugin.index!({ document: doc, level: 0 });
-
-
-        const section = doc.children[0] as Section;
-        const dfnPara = section.children[0] as BlockParagraph;
-        const dfn = dfnPara.children[0] as InlineDefinition & { id?: string };
-
-        expect(dfn.id).toBe('dom-focus');
-    });
-
-    it('builds definition index', async () => {
-        const doc = createDocWithDfnAndRef('event loop', 'event loop');
-
-        await dfnIndexPlugin.index!({ document: doc, level: 0 });
-
-
-        expect(doc.indexes?.definitions).toHaveLength(1);
-        expect(doc.indexes?.definitions?.[0].term).toBe('event loop');
-        expect(doc.indexes?.definitions?.[0].id).toBe('dfn-event-loop');
-    });
-});
-
 describe('ReferenceResolvePlugin', () => {
-    it('resolves reference to definition with same term', async () => {
-        const doc = createDocWithDfnAndRef('event loop', 'event loop');
-
-        await dfnIndexPlugin.index!({ document: doc, level: 0 });
-        await referenceResolvePlugin.resolve!({ document: doc, level: 0 });
-
-
-        const section = doc.children[0] as Section;
-        const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as InlineReference & { targetId?: string };
-
-        expect(ref.targetId).toBe('dfn-event-loop');
-    });
-
-    it('resolves reference using candidateTerms', async () => {
+    it('resolves basic internal references', async () => {
         const doc: Document = {
+            id: 'doc-1',
             type: 'document',
-            children: [{
-                type: 'section',
-                children: [
+            children: [
+                {
+                    type: 'paragraph',
+                    children: [
+                        { type: 'text', value: 'See ' },
+                        {
+                            type: 'workspaceDfnReference',
+                            targetTerm: 'term a',
+                            children: [{ type: 'text', value: 'Term A' }],
+                        } as InlineWorkspaceDfnReference,
+                    ],
+                } as BlockParagraph,
+            ],
+            indexes: {
+                definitions: [
                     {
-                        type: 'paragraph',
-                        children: [{
-                            type: 'definition',
-                            term: 'event loop',
-                            linkTexts: ['event loop', 'loop'],
-                            children: [{ type: 'text', value: 'event loop' }],
-                        } as InlineDefinition],
-                    } as BlockParagraph,
-                    {
-                        type: 'paragraph',
-                        children: [{
-                            type: 'reference',
-                            targetTerm: 'loop',
-                            candidateTerms: ['loop'],
-                            children: [{ type: 'text', value: 'loop' }],
-                        } as InlineReference],
-                    } as BlockParagraph,
+                        id: 'dfn-term-a',
+                        term: 'term a',
+                        documentId: 'doc-1',
+                        sourcePos: { file: 'test.md', line: 10, column: 1 },
+                    },
                 ],
-            } as Section],
+            },
         };
 
-        await dfnIndexPlugin.index!({ document: doc, level: 0 });
-        await referenceResolvePlugin.resolve!({ document: doc, level: 0 });
+        await referenceResolvePlugin.resolve!(createCtx(doc));
 
-
-        const section = doc.children[0] as Section;
-        const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as InlineReference & { targetId?: string };
-
-        expect(ref.targetId).toBe('dfn-event-loop');
+        const ref = (doc.children[0] as BlockParagraph).children[1] as InlineWorkspaceDfnReference;
+        expect(ref.targetId).toBe('dfn-term-a');
+        expect(ref.targetDocumentId).toBe('doc-1');
     });
 
-    it('resolves with forContext matching', async () => {
+    it('resolves using candidateTerms', async () => {
         const doc: Document = {
+            id: 'doc-1',
             type: 'document',
-            children: [{
-                type: 'section',
-                children: [
+            children: [
+                {
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'workspaceDfnReference',
+                            targetTerm: 'alias',
+                            candidateTerms: ['primary'],
+                            children: [{ type: 'text', value: 'Alias' }],
+                        } as InlineWorkspaceDfnReference,
+                    ],
+                } as BlockParagraph,
+            ],
+            indexes: {
+                definitions: [
                     {
-                        type: 'paragraph',
-                        children: [{
-                            type: 'definition',
-                            term: 'postMessage',
-                            forContexts: ['Window'],
-                            children: [{ type: 'text', value: 'postMessage' }],
-                        } as InlineDefinition],
-                    } as BlockParagraph,
-                    {
-                        type: 'paragraph',
-                        children: [{
-                            type: 'reference',
-                            targetTerm: 'postMessage',
-                            forContexts: ['Window'],
-                            children: [{ type: 'text', value: 'postMessage' }],
-                        } as InlineReference],
-                    } as BlockParagraph,
+                        id: 'dfn-primary',
+                        term: 'primary',
+                        documentId: 'doc-1',
+                        sourcePos: { file: 'test.md', line: 10, column: 1 },
+                    },
                 ],
-            } as Section],
+            },
         };
 
-        await dfnIndexPlugin.index!({ document: doc, level: 0 });
-        await referenceResolvePlugin.resolve!({ document: doc, level: 0 });
+        await referenceResolvePlugin.resolve!(createCtx(doc));
 
-
-        const section = doc.children[0] as Section;
-        const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as InlineReference & { targetId?: string };
-
-        expect(ref.targetId).toBe('dfn-window-postmessage');
+        const ref = (doc.children[0] as BlockParagraph).children[0] as InlineWorkspaceDfnReference;
+        expect(ref.targetId).toBe('dfn-primary');
     });
 
-    it('leaves targetId undefined for unresolved reference', async () => {
-        const doc = createDocWithDfnAndRef('foo', 'bar');
+    it('handles unresolved references gracefully', async () => {
+        const doc: Document = {
+            id: 'doc-1',
+            type: 'document',
+            children: [
+                {
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'workspaceDfnReference',
+                            targetTerm: 'unknown',
+                            children: [{ type: 'text', value: 'Unknown' }],
+                        } as InlineWorkspaceDfnReference,
+                    ],
+                } as BlockParagraph,
+            ],
+            indexes: { definitions: [] },
+        };
 
-        await dfnIndexPlugin.index!({ document: doc, level: 0 });
-        await referenceResolvePlugin.resolve!({ document: doc, level: 0 });
+        await referenceResolvePlugin.resolve!(createCtx(doc));
 
-
-        const section = doc.children[0] as Section;
-        const refPara = section.children[1] as BlockParagraph;
-        const ref = refPara.children[0] as InlineReference & { targetId?: string };
-
+        const ref = (doc.children[0] as BlockParagraph).children[0] as InlineWorkspaceDfnReference;
         expect(ref.targetId).toBeUndefined();
     });
-});
 
+    it('resolves in workspace mode using targetDocumentId', async () => {
+        const doc: Document = {
+            id: 'doc-1',
+            type: 'document',
+            children: [
+                {
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'workspaceDfnReference',
+                            targetTerm: 'term a',
+                            children: [{ type: 'text', value: 'Term A' }],
+                        } as InlineWorkspaceDfnReference,
+                    ],
+                } as BlockParagraph,
+            ],
+        };
+
+        const globalIndex = {
+            definitions: new Map([
+                [
+                    'term a',
+                    [
+                        {
+                            id: 'dfn-term-a',
+                            term: 'term a',
+                            documentId: 'other-doc',
+                            sourcePos: { file: 'other.md', line: 5, column: 1 },
+                        },
+                    ],
+                ],
+            ]),
+        };
+
+        const ctx = createCtx(doc);
+        (ctx as { workspace: Partial<RuntimeWorkspace> }).workspace = { globalIndex } as unknown as RuntimeWorkspace;
+
+        await referenceResolvePlugin.resolve!(ctx);
+
+        const ref = (doc.children[0] as BlockParagraph).children[0] as InlineWorkspaceDfnReference;
+        expect(ref.targetId).toBe('dfn-term-a');
+        expect(ref.targetDocumentId).toBe('other-doc');
+    });
+
+    it('respects forContext when resolving', async () => {
+        const doc: Document = {
+            id: 'doc-1',
+            type: 'document',
+            children: [
+                {
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'workspaceDfnReference',
+                            targetTerm: 'term a',
+                            forContexts: ['context-b'],
+                            children: [{ type: 'text', value: 'Term A' }],
+                        } as InlineWorkspaceDfnReference,
+                    ],
+                } as BlockParagraph,
+            ],
+            indexes: {
+                definitions: [
+                    {
+                        id: 'dfn-term-a-1',
+                        term: 'term a',
+                        documentId: 'doc-1',
+                        forContexts: ['context-a'],
+                        sourcePos: { file: 'test.md', line: 10, column: 1 },
+                    },
+                    {
+                        id: 'dfn-term-a-2',
+                        term: 'term a',
+                        documentId: 'doc-1',
+                        forContexts: ['context-b'],
+                        sourcePos: { file: 'test.md', line: 20, column: 1 },
+                    },
+                ],
+            },
+        };
+
+        await referenceResolvePlugin.resolve!(createCtx(doc));
+
+        const ref = (doc.children[0] as BlockParagraph).children[0] as InlineWorkspaceDfnReference;
+        expect(ref.targetId).toBe('dfn-term-a-2');
+    });
+});

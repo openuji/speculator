@@ -14,15 +14,15 @@ console.log(`Loading spec from: ${entryFile}`);
 
 // Run the full pipeline with plugins
 const result = await speculate({
-    entry: entryFile,
-    configPath: configFile,
-    plugins: corePlugins,
-    fileProvider: new NodeFileProvider(),
+  entry: entryFile,
+  configPath: configFile,
+  plugins: corePlugins,
+  fileProvider: new NodeFileProvider(),
 });
 
 const document = result.workspace?.documents[0];
 if (!document) {
-    throw new Error("Pipeline failed to produce a document");
+  throw new Error("Pipeline failed to produce a document");
 }
 
 console.log(document);
@@ -31,110 +31,102 @@ const toc = document.computed?.toc || [];
 ---
 
 <Layout title={config.title || "Speculator Demo"}>
-    <div class="spec-layout">
-        {toc.length > 0 && <Toc toc={toc} />}
+  <div class="spec-layout">
+    {toc.length > 0 && <Toc toc={toc} />}
 
-        <article class="spec-main">
-            <header class="spec-header">
-                <h1>{config.title}</h1>
-                {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
+    <article class="spec-main">
+      <header class="spec-header">
+        <h1>{config.title}</h1>
+        {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
 
-                <div class="metadata">
-                    <dl>
-                        {
-                            config.status && (
-                                <>
-                                    <dt>Status:</dt>
-                                    <dd>{config.status}</dd>
-                                </>
-                            )
-                        }
-                        {
-                            config.editors && config.editors.length > 0 && (
-                                <>
-                                    <dt>Editors:</dt>
-                                    <dd>
-                                        {config.editors.map((editor, i) => (
-                                            <span>
-                                                {editor.url ? (
-                                                    <a href={editor.url}>
-                                                        {editor.name}
-                                                    </a>
-                                                ) : (
-                                                    editor.name
-                                                )}
-                                                {i < config.editors!.length - 1
-                                                    ? ", "
-                                                    : ""}
-                                            </span>
-                                        ))}
-                                    </dd>
-                                </>
-                            )
-                        }
-                        {
-                            config.abstract && (
-                                <>
-                                    <dt>Abstract:</dt>
-                                    <dd>{config.abstract}</dd>
-                                </>
-                            )
-                        }
-                    </dl>
-                </div>
-            </header>
+        <div class="metadata">
+          <dl>
+            {
+              config.status && (
+                <>
+                  <dt>Status:</dt>
+                  <dd>{config.status}</dd>
+                </>
+              )
+            }
+            {
+              config.editors && config.editors.length > 0 && (
+                <>
+                  <dt>Editors:</dt>
+                  <dd>
+                    {config.editors.map((editor, i) => (
+                      <span>
+                        {editor.url ? (
+                          <a href={editor.url}>{editor.name}</a>
+                        ) : (
+                          editor.name
+                        )}
+                        {i < config.editors!.length - 1 ? ", " : ""}
+                      </span>
+                    ))}
+                  </dd>
+                </>
+              )
+            }
+            {
+              config.abstract && (
+                <>
+                  <dt>Abstract:</dt>
+                  <dd>{config.abstract}</dd>
+                </>
+              )
+            }
+          </dl>
+        </div>
+      </header>
 
-            <hr />
+      <hr />
 
-            <div class="spec-content">
-                {
-                    document.children.map((child) => (
-                        <BlockRenderer node={child} />
-                    ))
-                }
-            </div>
-        </article>
-    </div>
+      <div class="spec-content">
+        {document.children.map((child) => <BlockRenderer node={child} />)}
+      </div>
+    </article>
+  </div>
 </Layout>
 
 <style>
+  .spec-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .spec-main {
+    min-width: 0;
+  }
+
+  .spec-header {
+    margin-bottom: 2rem;
+  }
+
+  .metadata dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .metadata dt {
+    font-weight: bold;
+    color: var(--text-primary);
+  }
+
+  /* For pages without TOC, fill the full width */
+  .spec-layout:not(:has(.toc-sidebar)) {
+    grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 1024px) {
     .spec-layout {
-        display: grid;
-        grid-template-columns: 250px 1fr;
-        gap: 2rem;
-        align-items: start;
+      grid-template-columns: 1fr;
     }
-
-    .spec-main {
-        min-width: 0;
-    }
-
-    .spec-header {
-        margin-bottom: 2rem;
-    }
-
-    .metadata dl {
-        display: grid;
-        grid-template-columns: max-content 1fr;
-        gap: 0.5rem 1rem;
-        margin-top: 1rem;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-
-    .metadata dt {
-        font-weight: bold;
-        color: var(--text-primary);
-    }
-
-    /* For pages without TOC, fill the full width */
-    .spec-layout:not(:has(.toc-sidebar)) {
-        grid-template-columns: 1fr;
-    }
-
-    @media (max-width: 1024px) {
-        .spec-layout {
-            grid-template-columns: 1fr;
-        }
-    }
+  }
 </style>

@@ -15,6 +15,7 @@ function createTestDocument(options: {
 
     return {
         type: 'document',
+        id: title.toLowerCase().replace(/\s+/g, '-'),
         children: sections,
         metadata: { title, shortName },
         sourcePos: { file: '/test/doc.md', line: 1, column: 1 },

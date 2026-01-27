@@ -4,9 +4,15 @@
 
 export { noRedefinitionRule } from './workspace/no-redefinition.js';
 export { noReverseDependencyRule } from './workspace/no-reverse-dependency.js';
+export { noDuplicateDefinitionRule } from './document/no-duplicate-definition.js';
+export { noAmbiguousReferenceRule } from './reference/no-ambiguous-reference.js';
+export { noIdReferenceRule } from './reference/no-id-reference.js';
 
 import { noRedefinitionRule } from './workspace/no-redefinition.js';
 import { noReverseDependencyRule } from './workspace/no-reverse-dependency.js';
+import { noDuplicateDefinitionRule } from './document/no-duplicate-definition.js';
+import { noAmbiguousReferenceRule } from './reference/no-ambiguous-reference.js';
+import { noIdReferenceRule } from './reference/no-id-reference.js';
 import type { LintRule } from '../types.js';
 
 /**
@@ -14,7 +20,10 @@ import type { LintRule } from '../types.js';
  */
 export const builtInRules: LintRule[] = [
     noRedefinitionRule,
-    noReverseDependencyRule
+    noReverseDependencyRule,
+    noDuplicateDefinitionRule,
+    noAmbiguousReferenceRule,
+    noIdReferenceRule
 ];
 
 /**

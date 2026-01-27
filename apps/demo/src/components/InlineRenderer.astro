@@ -1,15 +1,16 @@
 ---
-import type { Inline, Workspace } from "@openuji/speculator";
+import type { Inline } from "@openuji/speculator";
 import RecursiveInlineRenderer from "./InlineRenderer.astro";
-import path from "path";
 
 interface Props {
   nodes: Inline[];
-  workspace?: Workspace;
-  documentPath?: string;
+  basePath?: string;
 }
 
-const { nodes, workspace, documentPath } = Astro.props;
+const { nodes, basePath } = Astro.props;
+
+// Shared props to pass to all recursive calls - update here when adding new props
+const sharedProps = { basePath };
 ---
 
 {
@@ -21,22 +22,14 @@ const { nodes, workspace, documentPath } = Astro.props;
       case "emphasis":
         return (
           <em>
-            <RecursiveInlineRenderer
-              nodes={node.children}
-              workspace={workspace}
-              documentPath={documentPath}
-            />
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
           </em>
         );
 
       case "strong":
         return (
           <strong>
-            <RecursiveInlineRenderer
-              nodes={node.children}
-              workspace={workspace}
-              documentPath={documentPath}
-            />
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
           </strong>
         );
 
@@ -49,11 +42,7 @@ const { nodes, workspace, documentPath } = Astro.props;
       case "link":
         return (
           <a href={node.url} title={node.title || undefined}>
-            <RecursiveInlineRenderer
-              nodes={node.children}
-              workspace={workspace}
-              documentPath={documentPath}
-            />
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
           </a>
         );
 
@@ -64,9 +53,10 @@ const { nodes, workspace, documentPath } = Astro.props;
 
       case "definition":
         // Render <dfn> with ReSpec attributes
-        const dfnId = (node as any).explicitId || (node as any).id;
-        const dfnFor = (node as any).forContexts?.filter(Boolean).join(", ");
-        const dfnType = (node as any).dfnType;
+        const def = node;
+        const dfnId = def.explicitId || def.id;
+        const dfnFor = def.forContexts?.filter(Boolean).join(", ");
+        const dfnType = def.dfnType;
         return (
           <dfn
             id={dfnId}
@@ -74,71 +64,99 @@ const { nodes, workspace, documentPath } = Astro.props;
             data-dfn-for={dfnFor || undefined}
             data-dfn-type={dfnType !== "dfn" ? dfnType : undefined}
           >
-            <RecursiveInlineRenderer
-              nodes={node.children}
-              workspace={workspace}
-              documentPath={documentPath}
-            />
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
           </dfn>
         );
 
-      case "reference":
-        // Render cross-reference
-        const ref = node as any;
-        const targetId = ref.targetId;
-        const preferredType = ref.preferredType;
-
-        // Element and IDL references render as <code> tags, not links
-        if (preferredType === "element" || preferredType === "idl") {
-          const codeClass = preferredType === "element" ? "element" : "idl";
-          return (
-            <code class={codeClass} data-link-type={preferredType}>
-              <RecursiveInlineRenderer
-                nodes={ref.children}
-                workspace={workspace}
-                documentPath={documentPath}
-              />
-            </code>
-          );
-        }
-
-        // Standard cross-references render as links
-        let href = `#${targetId || ""}`;
-
-        if (workspace && targetId) {
-          // Find which document contains this definition
-          const targetDoc = workspace.documents.find((d) =>
-            (d.indexes?.definitions || []).some((def) => def.id === targetId)
-          );
-
-          if (targetDoc) {
-            const targetFilePath = targetDoc.sourcePos?.file;
-            if (targetFilePath && targetFilePath !== documentPath) {
-              const pkg = path.basename(path.dirname(targetFilePath));
-              href = `/workspace/${pkg}#${targetId}`;
-            }
-          }
-        }
-
-        const xrefFor = ref.forContexts?.filter(Boolean).join(", ");
+      case "workspaceDfnReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
         return (
-          <a
-            href={href}
-            class="xref"
-            data-xref-for={xrefFor || undefined}
-            title={ref.targetTerm}
-          >
-            <RecursiveInlineRenderer
-              nodes={ref.children}
-              workspace={workspace}
-              documentPath={documentPath}
-            />
+          <a href={href} class="xref" title={ref.targetTerm}>
+            <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
           </a>
         );
+      }
+
+      case "workspaceIdlReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        return (
+          <code class="idl" data-link-type="idl">
+            <a href={href} class="xref" title={ref.targetTerm}>
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
+
+      case "workspaceElementReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        return (
+          <code class="element" data-link-type="element">
+            <a href={href} class="xref" title={ref.targetTerm}>
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
+
+      case "externalDfnReference": {
+        const ref = node;
+        return (
+          <a
+            href={ref.url || "#"}
+            class="xref external"
+            title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+          >
+            <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+          </a>
+        );
+      }
+
+      case "externalIdlReference": {
+        const ref = node;
+        return (
+          <code class="idl" data-link-type="idl">
+            <a
+              href={ref.url || "#"}
+              class="xref external"
+              title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+            >
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
+
+      case "externalElementReference": {
+        const ref = node;
+        return (
+          <code class="element" data-link-type="element">
+            <a
+              href={ref.url || "#"}
+              class="xref external"
+              title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+            >
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
 
       case "cite":
         // Render citation
-        const cite = node as any;
+        const cite = node;
         const citeClass = cite.forcedNormative
           ? "cite normative"
           : cite.forcedInformative
@@ -149,11 +167,7 @@ const { nodes, workspace, documentPath } = Astro.props;
 
         const citeContent =
           cite.children && cite.children.length > 0 ? (
-            <RecursiveInlineRenderer
-              nodes={cite.children}
-              workspace={workspace}
-              documentPath={documentPath}
-            />
+            <RecursiveInlineRenderer nodes={cite.children} {...sharedProps} />
           ) : (
             <>[{cite.key}]</>
           );
@@ -183,18 +197,14 @@ const { nodes, workspace, documentPath } = Astro.props;
             style="color: orange; border: 1px solid orange; padding: 2px; border-radius: 4px;"
           >
             Issue {node.id && `#${node.id}`}:{" "}
-            <RecursiveInlineRenderer
-              nodes={node.children}
-              workspace={workspace}
-              documentPath={documentPath}
-            />
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
           </span>
         );
 
       default:
         return (
           <span style="color: red; border: 1px solid red;">
-            [Unknown Inline: {(node as any).type}]
+            [Unknown Inline: {(node as Inline).type}]
           </span>
         );
     }

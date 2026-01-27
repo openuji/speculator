@@ -28,8 +28,14 @@ import { getAttr, getTextContent } from '#src/parse/utils/hast-utils';
 /**
  * Create source position from hast node position
  */
-function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos | undefined {
-    if (!node.position) return undefined;
+function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos {
+    if (!node.position) {
+        return {
+            file: unit.file,
+            line: unit.startLine,
+            column: 1,
+        };
+    }
 
     const pos = node.position;
     const result: SourcePos = {
@@ -95,13 +101,11 @@ export class HtmlUnitParser implements UnitParser {
         return {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            transformInlineChildren: (children: any[]) => self.transformInlineChildren(children, unit),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            transformBlockChildren: (children: any[]) => {
+            transformInlineChildren: (children) => self.transformInlineChildren(children as RootContent[], unit),
+            transformBlockChildren: (children) => {
                 const results: (Section | Block)[] = [];
                 const ctx = self.createContext(unit);
-                for (const child of children) {
+                for (const child of children as RootContent[]) {
                     results.push(...self.transformBlock(child, ctx));
                 }
                 return results;

@@ -1,0 +1,243 @@
+---
+import {
+  SpeculatorPipeline,
+  corePlugins,
+  NodeFileProvider,
+  type Document,
+} from "@openuji/speculator";
+import {
+  SpeculatorLinter,
+  builtInRules,
+  recommendedConfig,
+} from "@openuji/speculator-lint";
+import BlockRenderer from "@/components/BlockRenderer.astro";
+import Toc from "@/components/Toc.astro";
+import "@/styles/global.css";
+import Layout from "@/layouts/Layout.astro";
+import path from "path";
+
+export async function getStaticPaths() {
+  const pkgs = ["pkg-a", "pkg-b"];
+  return pkgs.map((pkg) => ({ params: { pkg } }));
+}
+
+const { pkg } = Astro.params;
+
+// Setup Speculator for Workspace
+const specRoot = path.resolve("spec/workspace/md");
+const fileProvider = new NodeFileProvider();
+
+const pipeline = new SpeculatorPipeline(corePlugins);
+
+const result = await pipeline.runWorkspace({
+  entries: [
+    { entry: path.join(specRoot, "pkg-a/index.md") },
+    { entry: path.join(specRoot, "pkg-b/index.md") },
+  ],
+  fileProvider,
+});
+
+console.log("result", JSON.stringify(result, null, 2));
+
+const workspace = result.workspace;
+const docs = workspace?.documents || [];
+
+// Find the doc matching the pkg
+const document = docs.find((d) => {
+  const docPath = d.sourcePos?.file || "";
+  // pkg is the name of the directory
+  return path.basename(path.dirname(docPath)) === pkg;
+});
+
+if (!document) {
+  return Astro.redirect("/404");
+}
+
+const config = document.metadata || {};
+
+// Run linter if workspace was successfully created
+let lintResult;
+if (workspace) {
+  // Build document levels map
+  const documentLevels = new Map<string, number>();
+  workspace.documents.forEach((doc, index) => {
+    const path = doc.sourcePos?.file || "";
+    if (path) {
+      documentLevels.set(path, index);
+    }
+  });
+
+  // Create and run linter
+  const linter = new SpeculatorLinter(builtInRules);
+  lintResult = await linter.lint({
+    workspace,
+    documentLevels,
+    config: recommendedConfig,
+  });
+}
+
+// Combine pipeline and lint diagnostics
+const allDiagnostics = lintResult?.diagnostics || [];
+const toc = document.computed?.toc || [];
+---
+
+<Layout title={`${config.title || pkg} - Speculator Workspace (md)`}>
+  <div class="spec-layout">
+    {toc.length > 0 && <Toc toc={toc} />}
+
+    <article class="spec-main">
+      <header class="spec-header">
+        <nav class="nav breadcrumb">
+          <a href="/">Home</a>
+          <span class="sep">/</span>
+          <a href="/workspace/md">Workspace Index (md)</a>
+          <span class="sep">/</span>
+          <span class="current">{pkg}</span>
+        </nav>
+
+        <h1>{config.title}</h1>
+        {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
+
+        <div class="metadata">
+          <p>
+            <strong>Path:</strong>
+            <code>{document.sourcePos?.file}</code>
+          </p>
+        </div>
+
+        {
+          allDiagnostics.length > 0 && (
+            <section class="diagnostics">
+              <h2>Diagnostics ({allDiagnostics.length})</h2>
+              {lintResult && (
+                <p class="lint-info">
+                  ✓ Lint validation: {lintResult.totalTime.toFixed(2)}
+                  ms
+                </p>
+              )}
+              <ul>
+                {allDiagnostics.map((d) => (
+                  <li class={d.severity}>
+                    <strong>[{d.code}]</strong> {d.message}
+                    {d.file && <span class="loc">({d.file})</span>}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+      </header>
+
+      <hr />
+
+      <div class="spec-content">
+        {
+          document.children.map((child) => (
+            <BlockRenderer
+              node={child}
+              basePath="/workspace/md"
+              workspace={workspace}
+              documentPath={document.sourcePos?.file}
+              headingNumbers={document.computed?.headingNumbers}
+            />
+          ))
+        }
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .spec-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .spec-main {
+    min-width: 0;
+  }
+
+  .spec-layout:not(:has(.toc-sidebar)) {
+    grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 1024px) {
+    .spec-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .nav.breadcrumb {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+  }
+  .nav.breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .nav.breadcrumb a:hover {
+    text-decoration: underline;
+  }
+  .sep {
+    color: var(--text-secondary);
+  }
+  .current {
+    font-weight: bold;
+    color: var(--text-primary);
+  }
+  .metadata {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+  }
+  .diagnostics {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(255, 100, 100, 0.1);
+    border: 1px solid rgba(255, 100, 100, 0.3);
+    border-radius: 4px;
+  }
+  .diagnostics h2 {
+    font-size: 1rem;
+    margin-top: 0;
+    color: #ff6b6b;
+  }
+  .diagnostics ul {
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+  .diagnostics li {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  .diagnostics li.error {
+    color: #ff6b6b;
+  }
+  .diagnostics li.warning {
+    color: #ffa94d;
+  }
+  .loc {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+  }
+
+  /* Section heading numbers */
+  .spec-content :global(.section-heading) {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+
+  .spec-content :global(.section-number) {
+    color: var(--accent, #38bdf8);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+</style>

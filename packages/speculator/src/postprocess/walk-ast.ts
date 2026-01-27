@@ -29,7 +29,10 @@ export interface AstVisitor {
 /** Inline type names for detection */
 const INLINE_TYPES = new Set([
     'text', 'emphasis', 'strong', 'inlineCode', 'link', 'image',
-    'definition', 'reference', 'requirement', 'issue', 'cite'
+    'definition', 
+    'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference',
+    'requirement', 'issue', 'cite', 'variable'
 ]);
 
 /**

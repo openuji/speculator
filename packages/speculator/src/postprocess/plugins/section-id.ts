@@ -27,15 +27,19 @@ function extractHeadingText(heading: BlockHeading): string {
                     case 'emphasis':
                     case 'strong':
                     case 'link':
+                    case 'issue':
                         return extractFromInlines(inline.children);
+                    case 'workspaceDfnReference':
+                    case 'workspaceIdlReference':
+                    case 'workspaceElementReference':
+                    case 'externalDfnReference':
+                    case 'externalIdlReference':
+                    case 'externalElementReference':
+                        return inline.targetTerm;
                     case 'inlineCode':
                         return inline.value;
                     case 'definition':
                         return inline.term;
-                    case 'reference':
-                        return inline.targetTerm;
-                    case 'issue':
-                        return extractFromInlines(inline.children);
                     case 'cite':
                         return inline.children ? extractFromInlines(inline.children) : inline.key;
                     default:

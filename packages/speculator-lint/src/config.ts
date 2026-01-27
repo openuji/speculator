@@ -19,7 +19,10 @@ export const defaultConfig: LintConfig = {
 export const recommendedConfig: LintConfig = {
     rules: {
         'workspace/no-redefinition': 'error',
-        'workspace/no-reverse-dependency': 'error'
+        'workspace/no-reverse-dependency': 'error',
+        'document/no-duplicate-definition': 'error',
+        'reference/no-ambiguous-reference': 'warning',
+        'reference/no-id-reference': 'warning'
     }
 };
 
@@ -66,7 +69,7 @@ export function loadConfigFromDefaults(cwd: string = process.cwd()): LintConfig 
 /**
  * Normalize configuration to ensure consistency
  */
-function normalizeConfig(config: LintConfig): LintConfig {
+export function normalizeConfig(config: LintConfig): LintConfig {
     const normalized: LintConfig = {
         ...config,
         rules: { ...config.rules }
@@ -97,8 +100,8 @@ export function getRuleSeverity(ruleConfig: RuleConfigValue | undefined): 'error
         return null;
     }
 
-    if (Array.isArray(ruleConfig)) {
-        return ruleConfig[0];
+    if (typeof ruleConfig === 'object' && ruleConfig !== null) {
+        return ruleConfig.severity || 'error';
     }
 
     return ruleConfig;

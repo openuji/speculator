@@ -52,7 +52,8 @@ export const HtmlParagraphMarkdownParser: MarkdownParserModule = {
         // Re-parse as HTML to get proper element structure
         const processor = unified().use(rehypeParse, { fragment: true });
         const tree = processor.parse(rawHtml) as Root;
-        const hastCtx = createHastContext(ctx);
+        const sourcePos = ctx.createSourcePos(node);
+        const hastCtx = createHastContext(ctx, sourcePos);
 
         // Transform hast children to Speculator inlines
         const children: Inline[] = [];
@@ -68,7 +69,6 @@ export const HtmlParagraphMarkdownParser: MarkdownParserModule = {
             type: 'paragraph',
             children,
         };
-        const sourcePos = ctx.createSourcePos(node);
         if (sourcePos) result.sourcePos = sourcePos;
         return result;
     }

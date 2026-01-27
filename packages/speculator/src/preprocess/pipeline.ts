@@ -12,7 +12,7 @@ import type {
     PreprocessedSpec,
 } from '#src/preprocess/types';
 import { inferFormat } from '#src/preprocess/types';
-import { loadConfig, normalizeConfig, createDefaultConfig, ConfigLoadError } from '#src/preprocess/config/index';
+import { normalizeConfig, ConfigLoadError, loadDocConfig } from '#src/preprocess/config/index';
 import { resolveIncludes, IncludeResolveError } from '#src/preprocess/include/index';
 
 /**
@@ -25,7 +25,7 @@ export interface PreprocessOptions {
     /** Optional explicit format (inferred from extension if not provided) */
     entryFormat?: SourceFormat;
 
-    /** Path to config file (optional) */
+    /** Path to config file (optional, defaults to sibling config.json) */
     configPath?: string;
 
     /** File provider for reading files */
@@ -71,26 +71,22 @@ export class PreprocessError extends Error {
  * ```
  */
 export async function preprocess(options: PreprocessOptions): Promise<PreprocessedSpec> {
-    const { entry, entryFormat, configPath, fileProvider } = options;
+    const { entry, entryFormat, fileProvider } = options;
 
     // Canonicalize entry path
     const canonicalEntry = fileProvider.canonicalize(entry);
     const format = entryFormat ?? inferFormat(canonicalEntry);
 
-    // Load config if provided
+    // Load document config (includes ID resolution)
     let config: SpecConfig;
-    if (configPath) {
-        try {
-            const docConfig = await loadConfig(fileProvider, configPath);
-            config = normalizeConfig(docConfig);
-        } catch (error) {
-            if (error instanceof ConfigLoadError) {
-                throw new PreprocessError(error.message, error.code, error.path);
-            }
-            throw error;
+    try {
+        const docConfig = await loadDocConfig(fileProvider, canonicalEntry);
+        config = normalizeConfig(docConfig);
+    } catch (error) {
+        if (error instanceof ConfigLoadError) {
+            throw new PreprocessError(error.message, error.code, error.path);
         }
-    } else {
-        config = createDefaultConfig();
+        throw error;
     }
 
     // Resolve includes

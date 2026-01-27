@@ -108,17 +108,23 @@ export function isInline(node: unknown): node is Inline {
   const type = (node as any).type;
   return [
     'text', 'emphasis', 'strong', 'inlineCode', 'link',
-    'image', 'definition', 'reference', 'requirement', 'issue'
+    'image', 'definition', 'requirement', 'issue', 'cite', 'variable',
+    'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
   ].includes(type);
 }
 
 /**
  * Type guard for indexable inline nodes (definitions, references, requirements, issues)
  */
-export function isIndexableInline(node: unknown): node is InlineDefinition | InlineReference | InlineRequirement | InlineIssue {
+export function isIndexableInline(node: unknown): node is InlineDefinition | InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference | InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference | InlineRequirement | InlineIssue {
   if (typeof node !== 'object' || node === null) return false;
   const type = (node as any).type;
-  return ['definition', 'reference', 'requirement', 'issue'].includes(type);
+  return [
+    'definition', 'requirement', 'issue',
+    'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
+  ].includes(type);
 }
 
 /**

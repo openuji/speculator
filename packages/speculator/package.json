@@ -1,6 +1,6 @@
 {
     "name": "@openuji/speculator",
-    "version": "0.5.4",
+    "version": "0.6.0",
     "description": "AST-first specification processor with schema-central architecture",
     "type": "module",
     "main": "dist/index.js",
@@ -20,7 +20,6 @@
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.29.8",
         "@types/hast": "^3.0.4",
         "@types/mdast": "^4.0.4",
         "@types/node": "^20.10.0",

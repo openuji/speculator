@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@changesets/cli':
+        specifier: ^2.29.8
+        version: 2.29.8(@types/node@20.19.25)
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -139,9 +142,6 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
     devDependencies:
-      '@changesets/cli':
-        specifier: ^2.29.8
-        version: 2.29.8(@types/node@20.19.25)
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.4

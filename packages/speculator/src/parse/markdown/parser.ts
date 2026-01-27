@@ -27,8 +27,14 @@ import {
 /**
  * Create source position from mdast node position
  */
-function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos | undefined {
-    if (!node.position) return undefined;
+function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos {
+    if (!node.position) {
+        return {
+            file: unit.file,
+            line: unit.startLine,
+            column: 1,
+        }
+    }
 
     const pos = node.position;
     const result: SourcePos = {
@@ -94,14 +100,11 @@ export class MarkdownUnitParser implements UnitParser {
         return {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            transformInlineChildren: (children) => self.transformInlineChildren(children as any, unit),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transformInlineChildren: (children) => self.transformInlineChildren(children as RootContent[], unit),
             transformBlockChildren: (children) => {
                 const results: (Section | Block)[] = [];
                 const ctx = self.createContext(unit);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                for (const child of children as any[]) {
+                for (const child of children as RootContent[]) {
                     const blocksResult = self.transformBlock(child, ctx);
                     results.push(...blocksResult);
                 }
@@ -110,11 +113,11 @@ export class MarkdownUnitParser implements UnitParser {
             getTextContent: (element) => {
                 // Return text content logic (duplicated or imported)
                 let text = '';
-                for (const child of element.children) {
+                for (const child of element.children || []) {
                     if (child.type === 'text') {
-                        text += (child as any).value;
+                        text += child.value;
                     } else if (child.type === 'element') {
-                        text += self.createContext(unit).getTextContent(child as any);
+                        text += self.createContext(unit).getTextContent(child);
                     }
                 }
                 return text;

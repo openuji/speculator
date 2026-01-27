@@ -6,10 +6,10 @@ import { HtmlParagraphMarkdownParser } from '#src/parse/markdown/HtmlParagraphMa
 import { HtmlBlockMarkdownParser } from '#src/parse/markdown/HtmlBlockMarkdownParser';
 import { ParagraphsMarkdownParser } from '#src/parse/markdown/ParagraphsMarkdownParser';
 import { DfnHtmlParser } from '#src/parse/html/DfnHtmlParser';
-import { XrefHtmlParser } from '#src/parse/html/XrefHtmlParser';
-import type { InlineDefinition, InlineCite, InlineVariable } from '#src/types/ast.generated';
+import { ReferenceHtmlParser } from '#src/parse/html/ReferenceHtmlParser';
+import type { InlineDefinition, InlineCite, InlineVariable, BlockParagraph, InlineText } from '#src/types/ast.generated';
 
-describe('HtmlInlinesMarkdownParser', () => {
+describe('HTML in Markdown Parsing', () => {
     const registry = new ParseHandlerRegistry();
     // Order matters in registration if they handle same node types, 
     // but our parsers have internal 'order' property.
@@ -18,7 +18,7 @@ describe('HtmlInlinesMarkdownParser', () => {
     registry.registerMarkdownParser(HtmlParagraphMarkdownParser);
     registry.registerMarkdownParser(HtmlBlockMarkdownParser);
     registry.registerHtmlParser(DfnHtmlParser);
-    registry.registerHtmlParser(XrefHtmlParser);
+    registry.registerHtmlParser(ReferenceHtmlParser);
 
     const parser = new MarkdownUnitParser(registry);
 
@@ -31,13 +31,13 @@ describe('HtmlInlinesMarkdownParser', () => {
         };
         const blocks = parser.parse(unit);
         
-        const para = blocks[0] as any;
+        const para = blocks[0] as BlockParagraph;
         expect(para.type).toBe('paragraph');
         
         const dfn = para.children[0] as InlineDefinition;
         expect(dfn.type).toBe('definition');
         expect(dfn.term).toBe('algorithm');
-        expect((dfn.children[0] as any).value).toBe('Algorithm');
+        expect((dfn.children[0] as InlineText).value).toBe('Algorithm');
     });
 
     it('parses mixed HTML and shorthands', () => {
@@ -48,14 +48,14 @@ describe('HtmlInlinesMarkdownParser', () => {
             startLine: 1,
         };
         const blocks = parser.parse(unit);
-        const para = blocks[0] as any;
+        const para = blocks[0] as BlockParagraph;
         
         const dfn = para.children[1] as InlineDefinition;
         expect(dfn.type).toBe('definition');
         
         // Inside dfn, we should have "the " and an InlineVariable
         expect(dfn.children[0].type).toBe('text');
-        expect((dfn.children[0] as any).value).toBe('the ');
+        expect((dfn.children[0] as InlineText).value).toBe('the ');
         
         const variable = dfn.children[1] as InlineVariable;
         expect(variable.type).toBe('variable');
@@ -70,12 +70,12 @@ describe('HtmlInlinesMarkdownParser', () => {
             startLine: 1,
         };
         const blocks = parser.parse(unit);
-        const para = blocks[0] as any;
+        const para = blocks[0] as BlockParagraph;
         
         const cite = para.children[1] as InlineCite;
         expect(cite.type).toBe('cite');
         expect(cite.key).toBe('rfc2119'); // normalized
-        expect((cite.children![0] as any).value).toBe('the spec');
+        expect((cite.children![0] as InlineText).value).toBe('the spec');
     });
 
     it('handles nested HTML in Markdown', () => {
@@ -86,7 +86,7 @@ describe('HtmlInlinesMarkdownParser', () => {
             startLine: 1,
         };
         const blocks = parser.parse(unit);
-        const para = blocks[0] as any;
+        const para = blocks[0] as BlockParagraph;
         
         // <span> should be transparent (fell back to its children)
         const dfn = para.children[1] as InlineDefinition;

@@ -10,6 +10,7 @@
  */
 
 import type { LintRule, LintContext } from '../../types.js';
+import { resolveReference, buildDefinitionIndex, collectReferences } from '../speculator-helpers.js';
 
 export const noReverseDependencyRule: LintRule = {
     meta: {
@@ -21,31 +22,39 @@ export const noReverseDependencyRule: LintRule = {
     },
 
     create(context: LintContext) {
+        const index = buildDefinitionIndex(context.workspace);
+
         return {
-            onReference(ref, target) {
-                // If reference is not resolved, nothing to check
-                if (!target) {
-                    return;
-                }
+            onDocument(doc) {
+                const sourceDocPath = doc.sourcePos?.file;
+                if (!sourceDocPath) return;
 
-                const sourceDocPath = context.document.sourcePos?.file;
-                const targetDocPath = target.sourcePos?.file;
+                const references = collectReferences(doc);
+                for (const ref of references) {
+                    const candidates = resolveReference(ref, index);
+                    if (candidates.length === 0) continue;
 
-                if (!sourceDocPath || !targetDocPath) {
-                    return;
-                }
+                    let target = candidates[0];
+                    if (ref.targetId) {
+                        const targetId = ref.targetId;
+                        const targetDocId = 'targetDocumentId' in ref ? ref.targetDocumentId : undefined;
+                        const match = candidates.find(c => c.id === targetId && c.documentId === targetDocId);
+                        if (match) target = match;
+                    }
 
-                // Get levels
-                const sourceLevel = context.level;
-                const targetLevel = context.documentLevels.get(targetDocPath) ?? 0;
+                    const targetDocPath = target.sourcePos?.file;
+                    if (!targetDocPath) continue;
 
-                // If source is higher level (lower number) than target, that's a violation
-                if (sourceLevel < targetLevel) {
-                    context.report({
-                        message: `Higher-level spec "${sourceDocPath}" (level ${sourceLevel}) depends on lower-level spec "${targetDocPath}" (level ${targetLevel}) via term "${target.term}"`,
-                        file: sourceDocPath,
-                        sourcePos: ref.sourcePos
-                    });
+                    const sourceLevel = context.level;
+                    const targetLevel = context.documentLevels.get(targetDocPath) ?? 0;
+
+                    if (sourceLevel < targetLevel) {
+                        context.report({
+                            message: `Higher-level spec "${sourceDocPath}" (level ${sourceLevel}) depends on lower-level spec "${targetDocPath}" (level ${targetLevel}) via term "${target.term}"`,
+                            file: sourceDocPath,
+                            sourcePos: ref.sourcePos
+                        });
+                    }
                 }
             }
         };

@@ -1,0 +1,11 @@
+{
+  "specWorkspace": [
+    { "entry": "spec/workspace/pkg-a/index.html" },
+    { "entry": "spec/workspace/pkg-b/index.html" },
+    { "entry": "spec/workspace/pkg-c/index.html" }
+  ],
+  "mdWorkspace": [
+    { "entry": "spec/workspace/md/pkg-a/index.md" },
+    { "entry": "spec/workspace/md/pkg-b/index.md" }
+  ]
+}

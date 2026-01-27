@@ -1,7 +1,7 @@
 export * as Preprocess from './preprocess/index.js';
 export * as Parse from './parse/index.js';
 // Export types that might be needed at root
-export type { SpecConfig, PreprocessedSpec } from './preprocess/types.js';
+export type { SpecConfig, PreprocessedSpec, WorkspaceConfig } from './preprocess/index.js';
 export type { ParsedSpec } from './parse/types.js';
 
 // File Providers
@@ -32,5 +32,4 @@ export {
 } from './parse/parsers.js';
 
 // Workspace Utilities
-export { sortEntriesByDeps } from './workspace/index.js';
-export type { EntryWithConfig, SortResult } from './workspace/index.js';
+export * from './workspace/index.js';

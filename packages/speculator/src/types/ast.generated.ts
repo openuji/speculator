@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-11T09:07:38.620Z
+ * Generated at: 2026-01-27T16:58:52.776Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -104,38 +104,40 @@ export type InlineDefinition = BaseNode & {
   dfnType?: string;
   children: Inline[];
 };
-export type InlineReference = BaseNode & {
-  type: 'reference';
-  /**
-   * Primary reference term used to resolve a target definition.
-   */
-  targetTerm: string;
-  /**
-   * Alternative term candidates from data-lt. Parse fills from data-lt or [targetTerm].
-   */
-  candidateTerms?: string[];
-  /**
-   * For-contexts from data-xref-for (e.g., owning interface). Parse fills from data-xref-for or [null].
-   */
-  forContexts?: (string | null)[];
-  /**
-   * Preferred definition type from data-link-type.
-   */
-  preferredType?: string | null;
-  /**
-   * Explicit spec to search from data-xref-spec. Restricts external search.
-   */
-  xrefSpec?: string | null;
-  /**
-   * Whether external lookup is allowed. False if data-allow-external='no'.
-   */
-  allowExternal?: boolean;
-  /**
-   * Resolved ID of the referenced definition. Filled during resolve phase.
-   */
-  targetId?: string;
-  children: Inline[];
-};
+/**
+ * Union of all inline reference types
+ */
+export type InlineReference =
+  | InlineWorkspaceDfnReference
+  | InlineWorkspaceIdlReference
+  | InlineWorkspaceElementReference
+  | InlineExternalDfnReference
+  | InlineExternalIdlReference
+  | InlineExternalElementReference;
+export type InlineWorkspaceDfnReference = BaseNode &
+  WorkspaceReferenceBase & {
+    type: 'workspaceDfnReference';
+  };
+export type InlineWorkspaceIdlReference = BaseNode &
+  WorkspaceReferenceBase & {
+    type: 'workspaceIdlReference';
+  };
+export type InlineWorkspaceElementReference = BaseNode &
+  WorkspaceReferenceBase & {
+    type: 'workspaceElementReference';
+  };
+export type InlineExternalDfnReference = BaseNode &
+  ExternalReferenceBase & {
+    type: 'externalDfnReference';
+  };
+export type InlineExternalIdlReference = BaseNode &
+  ExternalReferenceBase & {
+    type: 'externalIdlReference';
+  };
+export type InlineExternalElementReference = BaseNode &
+  ExternalReferenceBase & {
+    type: 'externalElementReference';
+  };
 export type InlineRequirement = BaseNode & {
   type: 'requirement';
   keyword:
@@ -337,6 +339,10 @@ export interface SpeculatorASTSchema {
  */
 export interface Document {
   type: 'document';
+  /**
+   * Document identifier, used as slug for internal link resolution. Synced from config.id
+   */
+  id: string;
   metadata?: DocumentMetadata;
   children: (Section | Block)[];
   indexes?: Indexes;
@@ -371,6 +377,16 @@ export interface DocumentMetadata {
    */
   lastUpdateDate?: string;
   abstract?: string;
+  /**
+   * Normalized maturity level
+   */
+  maturityLevel?: 'incubating' | 'draft' | 'prerelease' | 'stable';
+  /**
+   * Highest priority user-defined properties
+   */
+  custom?: {
+    [k: string]: unknown | undefined;
+  };
 }
 export interface BaseNode {
   sourcePos?: SourcePos;
@@ -399,6 +415,23 @@ export interface SourcePos {
   endColumn?: number;
   endOffset?: number;
 }
+export interface WorkspaceReferenceBase {
+  targetTerm: string;
+  candidateTerms?: string[];
+  forContexts?: (string | null)[];
+  targetId?: string;
+  targetDocumentId?: string;
+  children: Inline[];
+}
+export interface ExternalReferenceBase {
+  targetTerm: string;
+  candidateTerms?: string[];
+  forContexts?: (string | null)[];
+  xrefSpec: string;
+  targetId?: string;
+  url?: string;
+  children: Inline[];
+}
 /**
  * Indexes extracted from marker nodes during indexing
  */
@@ -418,6 +451,10 @@ export interface IndexDefinitionEntry {
   id: string;
   term: string;
   /**
+   * ID of the document containing this definition
+   */
+  documentId?: string;
+  /**
    * Alternative link texts (aliases)
    */
   linkTexts?: string[];
@@ -435,8 +472,14 @@ export interface IndexDefinitionEntry {
  * Entry in the references index, extracted from InlineReference nodes
  */
 export interface IndexReferenceEntry {
+  /**
+   * Concrete reference type (e.g., workspaceDfnReference, externalIdlReference)
+   */
+  type?: string;
   targetId?: string;
   targetTerm: string;
+  targetDocumentId?: string;
+  url?: string;
   sourcePos: SourcePos;
 }
 /**
@@ -590,17 +633,23 @@ export function isInline(node: unknown): node is Inline {
   const type = (node as any).type;
   return [
     'text', 'emphasis', 'strong', 'inlineCode', 'link',
-    'image', 'definition', 'reference', 'requirement', 'issue'
+    'image', 'definition', 'requirement', 'issue', 'cite', 'variable',
+    'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
   ].includes(type);
 }
 
 /**
  * Type guard for indexable inline nodes (definitions, references, requirements, issues)
  */
-export function isIndexableInline(node: unknown): node is InlineDefinition | InlineReference | InlineRequirement | InlineIssue {
+export function isIndexableInline(node: unknown): node is InlineDefinition | InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference | InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference | InlineRequirement | InlineIssue {
   if (typeof node !== 'object' || node === null) return false;
   const type = (node as any).type;
-  return ['definition', 'reference', 'requirement', 'issue'].includes(type);
+  return [
+    'definition', 'requirement', 'issue',
+    'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
+  ].includes(type);
 }
 
 /**

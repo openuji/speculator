@@ -23,6 +23,7 @@ export type {
     SpecConfig,
     PreprocessedSpec,
     MaturityLevel,
+    WorkspaceConfig,
 } from '#src/preprocess/types';
 
 export { inferFormat } from '#src/preprocess/types';
@@ -31,7 +32,6 @@ export { inferFormat } from '#src/preprocess/types';
 export {
     loadConfig,
     normalizeConfig,
-    createDefaultConfig,
     ConfigLoadError,
 } from '#src/preprocess/config/index';
 export type { RawRespecConfig, RawPersonEntry, DocumentConfig, ResolvedDocumentConfig } from '#src/preprocess/config/index';

@@ -6,7 +6,7 @@
 
 import type { Text, RootContent as MdastRootContent } from 'mdast';
 import type { MarkdownParserModule, ParseContext, InlineHandlerResult, NodeWithPosition } from '#src/parse/registry';
-import type { Inline, InlineCite, InlineReference, InlineVariable } from '#src/types/ast.generated';
+import type { Inline, InlineCite, InlineWorkspaceDfnReference, InlineWorkspaceIdlReference, InlineWorkspaceElementReference, InlineVariable } from '#src/types/ast.generated';
 
 /**
  * Definition of a shorthand and its implementation status
@@ -72,8 +72,8 @@ export const SHORTHAND_REGISTRY: ShorthandDefinition[] = [
         handler: (match, ctx, node) => {
             const term = match[1];
             const alias = match[2];
-            const result: InlineReference = {
-                type: 'reference',
+            const result: InlineWorkspaceDfnReference = {
+                type: 'workspaceDfnReference',
                 targetTerm: term,
                 children: alias 
                     ? [{ type: 'text', value: alias }]
@@ -109,10 +109,9 @@ export const SHORTHAND_REGISTRY: ShorthandDefinition[] = [
         pattern: /\{\{([^}]+)\}\}/g,
         status: 'implemented',
         handler: (match, ctx, node) => {
-            const result: InlineReference = {
-                type: 'reference',
+            const result: InlineWorkspaceIdlReference = {
+                type: 'workspaceIdlReference',
                 targetTerm: match[1],
-                preferredType: 'idl',
                 children: [{ type: 'text', value: match[1] }],
             };
             const sourcePos = ctx.createSourcePos(node);
@@ -127,10 +126,9 @@ export const SHORTHAND_REGISTRY: ShorthandDefinition[] = [
         pattern: /\[\^([^\]]+)\^\]/g,
         status: 'implemented',
         handler: (match, ctx, node) => {
-            const result: InlineReference = {
-                type: 'reference',
+            const result: InlineWorkspaceElementReference = {
+                type: 'workspaceElementReference',
                 targetTerm: match[1],
-                preferredType: 'element',
                 children: [{ type: 'text', value: match[1] }],
             };
             const sourcePos = ctx.createSourcePos(node);

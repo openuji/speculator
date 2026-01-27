@@ -4,9 +4,9 @@
  * Manages the registration and lookup of HTML and Markdown parser modules.
  */
 
-import type { Element } from 'hast';
+import type { Element, RootContent as HastRootContent } from 'hast';
 import type { RootContent as MdastRootContent } from 'mdast';
-import type { Block, Inline, Section } from '#src/types/ast.generated';
+import type { Block, Inline, Section, SourcePos } from '#src/types/ast.generated';
 import type { SourceUnit } from '#src/preprocess/types';
 
 // ============================================================================
@@ -32,6 +32,11 @@ export type InlineHandlerResult = Inline | Inline[] | null;
 export type HandlerResult = BlockHandlerResult | InlineHandlerResult;
 
 /**
+ * Union of possible children arrays from different parsers
+ */
+export type ParseContextChildren = HastRootContent[] | MdastRootContent[];
+
+/**
  * Context provided to parser modules during transformation.
  */
 export interface ParseContext {
@@ -39,15 +44,13 @@ export interface ParseContext {
     readonly unit: SourceUnit;
 
     /** Create a source position for the AST node */
-    createSourcePos(node: NodeWithPosition): any;
+    createSourcePos(node: NodeWithPosition): SourcePos;
 
     /** Transform an array of mdast/hast inline children */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    transformInlineChildren(children: any[]): Inline[];
+    transformInlineChildren(children: ParseContextChildren): Inline[];
 
     /** Transform an array of mdast/hast block children */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    transformBlockChildren(children: any[]): (Section | Block)[];
+    transformBlockChildren(children: ParseContextChildren): (Section | Block)[];
 
     /** Get text content of element (HTML) */
     getTextContent(element: Element): string;

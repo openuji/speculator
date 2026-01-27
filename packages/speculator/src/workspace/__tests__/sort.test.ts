@@ -4,10 +4,10 @@ import { sortEntriesByDeps } from '../sort.js';
 import { generateIdFromPath, getConfigPath } from '#src/preprocess/config/doc-config';
 
 describe('generateIdFromPath', () => {
-    it('should generate id from parent folder and filename', () => {
-        expect(generateIdFromPath('/spec/workspace/pkg-a/index.html')).toBe('pkg-a-index');
-        expect(generateIdFromPath('/spec/overview/intro.md')).toBe('overview-intro');
-        expect(generateIdFromPath('/docs/api/reference.html')).toBe('api-reference');
+    it('should generate id from parent folder', () => {
+        expect(generateIdFromPath('/spec/workspace/pkg-a/index.html')).toBe('pkg-a');
+        expect(generateIdFromPath('/spec/overview/intro.md')).toBe('overview');
+        expect(generateIdFromPath('/docs/api/reference.html')).toBe('api');
     });
 
     it('should handle single-segment paths', () => {
@@ -16,7 +16,7 @@ describe('generateIdFromPath', () => {
     });
 
     it('should handle Windows-style paths', () => {
-        expect(generateIdFromPath('C:\\spec\\core\\index.html')).toBe('core-index');
+        expect(generateIdFromPath('C:\\spec\\core\\index.html')).toBe('core');
     });
 });
 
@@ -76,16 +76,16 @@ describe('sortEntriesByDeps', () => {
         // Only core has config, depends on auto-generated ID
         fileProvider.setFile('/spec/core/config.json', JSON.stringify({
             id: 'core',
-            deps: ['overview-index'] // auto-generated ID pattern
+            deps: ['overview'] // auto-generated ID is now just the parent folder
         }));
 
         const result = await sortEntriesByDeps([
             { entry: '/spec/core/index.html' },
-            { entry: '/spec/overview/index.html' }, // will get auto-generated ID
+            { entry: '/spec/overview/index.html' }, // will get auto-generated ID 'overview'
         ], fileProvider);
 
         expect(result.errors).toHaveLength(0);
-        // overview should come before core (core depends on overview-index)
+        // overview should come before core (core depends on overview)
         expect(result.entries[0].entry).toBe('/spec/overview/index.html');
         expect(result.entries[1].entry).toBe('/spec/core/index.html');
     });

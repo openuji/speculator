@@ -6,9 +6,12 @@
         "build": "pnpm -r build",
         "build:packages": "pnpm -r --filter ./packages/** run build",
         "ci:publish": "pnpm -r --filter ./packages/** publish --access public --provenance",
+        "changeset": "changeset",
+        "version-packages": "changeset version",
         "prepare": "husky"
     },
     "devDependencies": {
+        "@changesets/cli": "^2.29.8",
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
         "typescript": "^5.0.0"

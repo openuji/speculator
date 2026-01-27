@@ -2,39 +2,30 @@
 
 **Developer-grade linting for technical specifications.**
 
-`speculator-lint` brings the rigor of code quality tools to the world of technical authoring. It analyzes the [Speculator AST](../speculator) to catch conceptual errors that standard spellcheckers and Markdown linters miss.
+`speculator-lint` helps ensure conceptual consistency and semantic integrity in your technical specifications. It catches errors like redefinitions across spec levels, reverse dependencies, and ambiguous references.
 
-## 🎯 Key Rules
+## 📖 Documentation
 
-- **Workspace Consistency**: Ensures terms defined in high-level specs aren't accidentally redefined in lower-level "extension" specs.
-- **Dependency Integrity**: Prevents "reverse dependencies" (e.g., a core spec referencing concepts that only exist in a plugin).
-- **Semantic Validation**: Verifies that all cross-references (xref) point to valid definitions (dfn).
+For full documentation on available rules, configuration presets, and extensibility, please visit the [Speculator Documentation](https://speculator.pages.dev/qa/linter).
 
-## 🚀 Usage
-
-### CLI
+## 🚀 Quick Start
 
 ```bash
-# Lint your specification workspace
+# Install
+pnpm add -D @openuji/speculator-lint
+
+# Lint your workspace
 speculator-lint workspace.json
 ```
 
-### Config (`.speculatorlintrc.json`)
+### Basic Config (`.speculatorlintrc.json`)
 
 ```json
 {
-  "extends": ["recommended"],
-  "rules": {
-    "workspace/no-redefinition": "error",
-    "workspace/no-reverse-dependency": "warning"
-  }
+  "extends": ["recommended"]
 }
 ```
 
-## 🛠️ Extensibility
-
-You can create custom lint rules by implementing the `LintRule` interface, allowing you to enforce project-specific style guides or technical constraints across your entire spec suite.
-
 ---
 
-Part of the [Speculator](../../README.md) ecosystem.
+Part of the [Speculator](https://github.com/openuji/speculator) ecosystem.

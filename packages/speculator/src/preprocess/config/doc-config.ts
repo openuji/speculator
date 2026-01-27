@@ -31,7 +31,7 @@ export function generateIdFromPath(entryPath: string): string {
     // Get parent folder name (if exists)
     if (parts.length >= 2) {
         const parentFolder = parts[parts.length - 2];
-        return `${parentFolder}-${filenameWithoutExt}`;
+        return `${parentFolder}`;
     }
 
     return filenameWithoutExt;
