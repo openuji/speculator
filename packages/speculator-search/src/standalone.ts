@@ -182,11 +182,18 @@ function extractSearchEntries(document: Document): SearchEntry[] {
                     blockId,
                     sourcePos: inline.sourcePos
                 });
-            } else if (inline.type === 'reference') {
+            } else if (
+                inline.type === 'workspaceDfnReference' ||
+                inline.type === 'workspaceIdlReference' ||
+                inline.type === 'workspaceElementReference' ||
+                inline.type === 'externalDfnReference' ||
+                inline.type === 'externalIdlReference' ||
+                inline.type === 'externalElementReference'
+            ) {
                 addEntry({
                     text: inline.targetTerm,
                     nodeType: 'reference',
-                    inlineType: 'reference',
+                    inlineType: inline.type,
                     blockId,
                     sourcePos: inline.sourcePos
                 });

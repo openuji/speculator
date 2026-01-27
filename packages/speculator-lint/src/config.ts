@@ -69,7 +69,7 @@ export function loadConfigFromDefaults(cwd: string = process.cwd()): LintConfig 
 /**
  * Normalize configuration to ensure consistency
  */
-function normalizeConfig(config: LintConfig): LintConfig {
+export function normalizeConfig(config: LintConfig): LintConfig {
     const normalized: LintConfig = {
         ...config,
         rules: { ...config.rules }

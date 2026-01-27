@@ -32,7 +32,12 @@ export function extractTextFromInline(inline: Inline): string {
         case 'definition':
             return inline.term;
 
-        case 'reference':
+        case 'workspaceDfnReference':
+        case 'workspaceIdlReference':
+        case 'workspaceElementReference':
+        case 'externalDfnReference':
+        case 'externalIdlReference':
+        case 'externalElementReference':
             return inline.targetTerm;
 
         case 'requirement':

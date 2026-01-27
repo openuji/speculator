@@ -1,3 +1,4 @@
+import type { SourcePos } from '@openuji/speculator';
 import type { LintRule, LintContext } from '../../types.js';
 import { collectReferences, buildIdIndex } from '../speculator-helpers.js';
 
@@ -30,24 +31,26 @@ export const noIdReferenceRule: LintRule = {
                     }
                 }
 
-                function walk(node: any) {
+                function walk(node: unknown) {
                     if (!node || typeof node !== 'object') return;
                     
-                    if (node.type === 'link') {
-                        const url = node.url || '';
+                    const nodeRecord = node as Record<string, unknown>;
+                    if (nodeRecord.type === 'link') {
+                        const url = (nodeRecord.url as string) || '';
                         if (url.startsWith('#')) {
                             const id = url.slice(1);
                             const target = idIndex.get(id);
                             const loc = target ? ` (defined at ${target.sourcePos?.file}:${target.sourcePos?.line})` : '';
                             context.report({
                                 message: `Internal link to ID "${url}" found${loc}. Use semantic <xref> or <a> with data-link-type instead.`,
-                                sourcePos: node.sourcePos
+                                sourcePos: nodeRecord.sourcePos as SourcePos | undefined
                             });
                         }
                     }
 
-                    if (node.children && Array.isArray(node.children)) {
-                        for (const child of node.children) {
+                    const children = nodeRecord.children;
+                    if (children && Array.isArray(children)) {
+                        for (const child of children) {
                             walk(child);
                         }
                     }

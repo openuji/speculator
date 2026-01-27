@@ -105,6 +105,10 @@ export default defineConfig({
 					autogenerate: { directory: 'features' },
 				},
 				{
+					label: 'Quality Assurance',
+					autogenerate: { directory: 'qa' },
+				},
+				{
 					label: 'API Reference',
 					items: [
 						{ label: '@openuji/speculator', autogenerate: { directory: 'api/speculator', collapsed: true } },
