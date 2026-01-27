@@ -5,7 +5,7 @@
  * Duplicate definitions cause ambiguity during reference resolution.
  */
 
-import type { IndexDefinitionEntry } from '@openuji/speculator';
+
 import type { LintRule, LintContext } from '../../types.js';
 import { normalizeTerm } from '../../utils.js';
 import { buildDefinitionIndex } from '../speculator-helpers.js';

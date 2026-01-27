@@ -8,14 +8,12 @@
  */
 
 import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { resolve } from 'path';
 import { 
-    SpeculatorPipeline, 
-    corePlugins, 
     NodeFileProvider, 
     buildWorkspaces 
 } from '@openuji/speculator';
-import type { Workspace, WorkspaceConfig, BuildWorkspacesResult } from '@openuji/speculator';
+import type { Workspace, WorkspaceConfig } from '@openuji/speculator';
 import { SpeculatorLinter } from './linter.js';
 import { builtInRules } from './rules/index.js';
 import { loadConfig, loadConfigFromDefaults, recommendedConfig } from './config.js';

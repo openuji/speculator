@@ -5,7 +5,7 @@
         "test": "pnpm -r test",
         "build": "pnpm -r build",
         "build:packages": "pnpm -r --filter ./packages/** run build",
-        "ci:publish": "pnpm -r --filter ./packages/** publish --access public --provenance",
+        "ci:publish": "pnpm -r --filter './packages/**' publish --access public --provenance",
         "changeset": "changeset",
         "version-packages": "changeset version",
         "prepare": "husky"
