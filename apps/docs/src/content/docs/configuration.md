@@ -136,6 +136,36 @@ These settings reside within the `respec` object and closely mirror the [ReSpec 
 
 ---
 
+## Workspace Configuration
+
+While individual specifications use `config.json`, larger projects can define a **Workspace Configuration** to manage multiple, isolated specification groups. This is used by the `buildWorkspaces` utility and the Speculator CLI.
+
+### Structure
+
+A workspace configuration is a mapping of workspace names to arrays of specification entry points.
+
+```json
+{
+  "core-specs": [{ "entry": "specs/core/index.md" }],
+  "extended-features": [
+    {
+      "entry": "specs/features/auth.md",
+      "configPath": "configs/auth-config.json"
+    },
+    { "entry": "specs/features/api.md" }
+  ]
+}
+```
+
+### Properties
+
+| Property     | Type     | Description                                                                                     |
+| :----------- | :------- | :---------------------------------------------------------------------------------------------- |
+| `entry`      | `string` | Path to the specification entry file (`.md` or `.html`) or a folder containing `index.md/html`. |
+| `configPath` | `string` | (Optional) Explicit path to a configuration file, overriding the default `config.json` lookup.  |
+
+---
+
 ## Technical Details
 
 After loading and normalization, these settings are exposed in the Document AST under `document.metadata`.
@@ -143,4 +173,5 @@ After loading and normalization, these settings are exposed in the Document AST 
 Generated TypeScript types can be found in:
 
 - `SpecConfig` ([types.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/preprocess/types.ts))
+- `WorkspaceConfig` ([types.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/preprocess/types.ts))
 - `DocumentMetadata` ([ast.generated.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/types/ast.generated.ts))

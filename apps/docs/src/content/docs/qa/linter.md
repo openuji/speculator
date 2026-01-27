@@ -64,7 +64,10 @@ For projects with multiple isolated specification groups (e.g., separate "core" 
 
 ```json
 {
-  "coreSpecs": [{ "entry": "spec/core.md" }, { "entry": "spec/api.html" }],
+  "coreSpecs": [
+    { "entry": "spec/core.md" }, 
+    { "entry": "spec/api.html" }
+  ],
   "addonSpecs": [
     { "entry": "addons/ui/index.md" },
     { "entry": "addons/storage/index.md" }
