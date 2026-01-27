@@ -244,3 +244,24 @@ export interface PreprocessedSpec {
     /** Composed source with includes resolved */
     source: CompositeSource;
 }
+
+// ============================================================================
+// Workspace Configuration
+// ============================================================================
+
+/**
+ * Workspace entry point definition.
+ */
+export interface WorkspaceEntry {
+    /** Path to spec file (.md or .html) or folder containing index.md/html */
+    entry: string;
+    /** Optional path to specific config file */
+    configPath?: string;
+}
+
+/**
+ * Workspace configuration mapping names to isolated specification entries.
+ * Used for dynamic workspace building in CLI and Astro.
+ * Each key represents a named, isolated workspace.
+ */
+export type WorkspaceConfig = Record<string, WorkspaceEntry[]>;

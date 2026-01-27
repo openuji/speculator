@@ -58,6 +58,44 @@ The `recommended` preset includes the following rules:
 | `reference/no-ambiguous-reference` | `warning` |
 | `reference/no-id-reference`        | `warning` |
 
+## 📁 Workspace Configuration
+
+For projects with multiple isolated specification groups (e.g., separate "core" and "addons" projects), you can use a `speculator.workspace.json` file as a named map. This ensures each group is built as its own isolated AST, preventing term or ID leakage between groups.
+
+```json
+{
+  "coreSpecs": [{ "entry": "spec/core.md" }, { "entry": "spec/api.html" }],
+  "addonSpecs": [
+    { "entry": "addons/ui/index.md" },
+    { "entry": "addons/storage/index.md" }
+  ]
+}
+```
+
+Usage with workspace config:
+
+```bash
+speculator-lint speculator.workspace.json
+```
+
+## ⚓ Husky / Lint-staged Integration
+
+To ensure your specifications remain valid before every commit, you can integrate `speculator-lint` with `husky` and `lint-staged`.
+
+Because Speculator uses a cross-document resolution engine, the linter **always checks the entire workspace** even if only a single file is being committed. This ensures that a change in one file doesn't break references in another.
+
+### Example `package.json` Setup
+
+```json
+{
+  "lint-staged": {
+    "spec/**/*.md": ["speculator-lint speculator.workspace.json"]
+  }
+}
+```
+
+When you attempt to commit a Markdown file, `lint-staged` will trigger the linter. The linter will build the full workspace context, perform high-level validation, and block the commit if any errors (like redefinitions or broken references) are found.
+
 ## 🛠️ Extensibility
 
 You can create custom lint rules by implementing the `LintRule` interface, allowing you to enforce project-specific style guides or technical constraints across your entire spec suite.

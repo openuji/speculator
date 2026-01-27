@@ -8,8 +8,14 @@
  */
 
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
-import type { Workspace } from '@openuji/speculator';
+import { resolve, dirname } from 'path';
+import { 
+    SpeculatorPipeline, 
+    corePlugins, 
+    NodeFileProvider, 
+    sortEntriesByDeps 
+} from '@openuji/speculator';
+import type { Workspace, WorkspaceConfig } from '@openuji/speculator';
 import { SpeculatorLinter } from './linter.js';
 import { builtInRules } from './rules/index.js';
 import { loadConfig, loadConfigFromDefaults, recommendedConfig } from './config.js';
@@ -19,12 +25,14 @@ interface CliArgs {
     workspacePath: string;
     configPath?: string;
     help?: boolean;
+    files: string[];
 }
 
 function parseArgs(): CliArgs {
     const args = process.argv.slice(2);
     const result: CliArgs = {
         workspacePath: '',
+        files: []
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -35,7 +43,11 @@ function parseArgs(): CliArgs {
         } else if (arg === '--config' || arg === '-c') {
             result.configPath = args[++i];
         } else if (!arg.startsWith('-')) {
-            result.workspacePath = arg;
+            if (!result.workspacePath) {
+                result.workspacePath = arg;
+            } else {
+                result.files.push(resolve(arg));
+            }
         }
     }
 
@@ -47,7 +59,7 @@ function showHelp() {
 speculator-lint - Lint Speculator workspace AST
 
 Usage:
-  speculator-lint <workspace.json> [options]
+  speculator-lint <workspace.json> [files...] [options]
 
 Options:
   --config, -c <path>    Path to configuration file
@@ -55,6 +67,7 @@ Options:
 
 Examples:
   speculator-lint workspace.json
+  speculator-lint workspace.json spec/index.md spec/other.html
   speculator-lint workspace.json --config .speculatorlintrc.json
 `);
 }
@@ -78,67 +91,120 @@ async function main() {
     }
 
     try {
-        // Load workspace
+        // Load workspace configuration
         const workspacePath = resolve(args.workspacePath);
-        const workspaceJson = readFileSync(workspacePath, 'utf-8');
-        const workspace = JSON.parse(workspaceJson) as Workspace;
+        const workspaceContent = readFileSync(workspacePath, 'utf-8');
+        const workspaceDir = dirname(workspacePath);
+        
+        let workspacesToLint: Record<string, Workspace> = {};
 
-        // Build document levels map
-        const documentLevels = new Map<string, number>();
-        workspace.documents.forEach((doc, index) => {
-            const path = doc.sourcePos?.file || '';
-            if (path) {
-                documentLevels.set(path, index);
+        if (args.workspacePath.endsWith('.workspace.json')) {
+            console.log(`Loading workspace configuration: ${args.workspacePath}`);
+            const workspaceConfig = JSON.parse(workspaceContent) as WorkspaceConfig;
+            
+            const fileProvider = new NodeFileProvider();
+            const pipeline = new SpeculatorPipeline(corePlugins);
+
+            for (const [name, entries] of Object.entries(workspaceConfig)) {
+                console.log(`Building workspace [${name}]...`);
+                
+                // Resolve entry paths relative to the config file
+                const resolvedEntries = entries.map(e => ({
+                    ...e,
+                    entry: resolve(workspaceDir, e.entry)
+                }));
+
+                const sortResult = await sortEntriesByDeps(resolvedEntries, fileProvider);
+                if (sortResult.errors.length > 0) {
+                    for (const error of sortResult.errors) {
+                        console.error(`Workspace [${name}] Sort Error: ${error}`);
+                    }
+                    process.exit(1);
+                }
+
+                const pipelineResult = await pipeline.runWorkspace({
+                    entries: sortResult.entries,
+                    fileProvider,
+                });
+
+                if (!pipelineResult.workspace) {
+                    throw new Error(`Failed to build workspace [${name}] AST.`);
+                }
+                workspacesToLint[name] = pipelineResult.workspace;
             }
-        });
+        } else {
+            // Legacy/Direct AST JSON loading (single anonymous workspace)
+            workspacesToLint['default'] = JSON.parse(workspaceContent) as Workspace;
+        }
 
-        // Load configuration
+        // Load linter configuration
         let config: LintConfig;
         if (args.configPath) {
             config = loadConfig(args.configPath);
-            console.log(`Using configuration from: ${args.configPath}`);
+            console.log(`Using linter configuration from: ${args.configPath}`);
         } else {
             const defaultConfigLoaded = loadConfigFromDefaults();
             if (defaultConfigLoaded) {
                 config = defaultConfigLoaded;
-                console.log('Using configuration from default location');
+                console.log('Using linter configuration from default location');
             } else {
                 config = recommendedConfig;
-                console.log('Using recommended configuration (no config file found)');
+                console.log('Using recommended linter configuration (no config file found)');
             }
         }
 
         // Create linter
         const linter = new SpeculatorLinter(builtInRules);
+        const allDiagnostics: LintDiagnostic[] = [];
+        let totalTime = 0;
 
-        // Run linter
-        console.log('\nLinting workspace...\n');
-        const result = await linter.lint({
-            workspace,
-            documentLevels,
-            config
-        });
+        // Lint each workspace separately
+        console.log('\nLinting workspaces...\n');
+        for (const [name, workspace] of Object.entries(workspacesToLint)) {
+            if (Object.keys(workspacesToLint).length > 1) {
+                console.log(`- [${name}]`);
+            }
+
+            // Build document levels map
+            const documentLevels = new Map<string, number>();
+            workspace.documents.forEach((doc, index) => {
+                const path = doc.sourcePos?.file || '';
+                if (path) {
+                    documentLevels.set(path, index);
+                }
+            });
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config
+            });
+
+            allDiagnostics.push(...result.diagnostics);
+            totalTime += result.totalTime;
+        }
 
         // Output diagnostics
-        if (result.diagnostics.length === 0) {
+        if (allDiagnostics.length === 0) {
             console.log('✓ No issues found');
         } else {
-            for (const diagnostic of result.diagnostics) {
+            for (const diagnostic of allDiagnostics) {
                 console.log(formatDiagnostic(diagnostic));
                 console.log('');
             }
 
-            const errorCount = result.diagnostics.filter(d => d.severity === 'error').length;
-            const warningCount = result.diagnostics.filter(d => d.severity === 'warning').length;
+            const errorCount = allDiagnostics.filter(d => d.severity === 'error').length;
+            const warningCount = allDiagnostics.filter(d => d.severity === 'warning').length;
 
-            console.log(`Found ${errorCount} error(s), ${warningCount} warning(s)`);
+            console.log(`Found ${errorCount} error(s), ${warningCount} warning(s) across ${Object.keys(workspacesToLint).length} workspace(s)`);
         }
 
         // Show timing
-        console.log(`\nCompleted in ${result.totalTime.toFixed(2)}ms`);
+        console.log(`\nCompleted in ${totalTime.toFixed(2)}ms`);
 
-        // Exit with error code if errors found
-        process.exit(result.hasErrors ? 1 : 0);
+        // Exit with error code if any errors found
+        const hasErrors = allDiagnostics.some(d => d.severity === 'error');
+        process.exit(hasErrors ? 1 : 0);
 
     } catch (error) {
         console.error('Error:', error instanceof Error ? error.message : String(error));

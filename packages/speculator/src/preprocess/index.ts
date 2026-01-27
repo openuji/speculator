@@ -23,6 +23,7 @@ export type {
     SpecConfig,
     PreprocessedSpec,
     MaturityLevel,
+    WorkspaceConfig,
 } from '#src/preprocess/types';
 
 export { inferFormat } from '#src/preprocess/types';

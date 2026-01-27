@@ -30,7 +30,7 @@
         "vitest": "^1.0.0"
     },
     "dependencies": {
-        "@openuji/speculator": "workspace:*"
+        "@openuji/speculator": "file:../speculator"
     },
     "files": [
         "dist",
