@@ -114,11 +114,11 @@ export function resolveReference(
     }
 
     // Filter by forContext if specified in the reference
-    const refForContexts = (ref.forContexts || []).filter((fc): fc is string => fc !== null);
+    const refForContexts = (ref.forContexts || []).filter((fc: string | null): fc is string => fc !== null);
     if (refForContexts.length > 0) {
         const filtered = allCandidates.filter(c => 
             (c.forContexts || [null]).some(cfc => 
-                cfc !== null && refForContexts.some(rfc => normalizeTerm(cfc) === normalizeTerm(rfc))
+                cfc !== null && refForContexts.some((rfc: string) => normalizeTerm(cfc) === normalizeTerm(rfc))
             )
         );
         // Only narrow if we found matches for the context

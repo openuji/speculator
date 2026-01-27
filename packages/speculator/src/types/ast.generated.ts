@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-27T16:42:53.738Z
+ * Generated at: 2026-01-27T16:58:52.776Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -43,12 +43,7 @@ export type Inline =
   | InlineLink
   | InlineImage
   | InlineDefinition
-  | InlineWorkspaceDfnReference
-  | InlineWorkspaceIdlReference
-  | InlineWorkspaceElementReference
-  | InlineExternalDfnReference
-  | InlineExternalIdlReference
-  | InlineExternalElementReference
+  | InlineReference
   | InlineRequirement
   | InlineIssue
   | InlineCite
@@ -109,6 +104,16 @@ export type InlineDefinition = BaseNode & {
   dfnType?: string;
   children: Inline[];
 };
+/**
+ * Union of all inline reference types
+ */
+export type InlineReference =
+  | InlineWorkspaceDfnReference
+  | InlineWorkspaceIdlReference
+  | InlineWorkspaceElementReference
+  | InlineExternalDfnReference
+  | InlineExternalIdlReference
+  | InlineExternalElementReference;
 export type InlineWorkspaceDfnReference = BaseNode &
   WorkspaceReferenceBase & {
     type: 'workspaceDfnReference';

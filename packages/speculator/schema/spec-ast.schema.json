@@ -552,22 +552,7 @@
                     "$ref": "#/definitions/InlineDefinition"
                 },
                 {
-                    "$ref": "#/definitions/InlineWorkspaceDfnReference"
-                },
-                {
-                    "$ref": "#/definitions/InlineWorkspaceIdlReference"
-                },
-                {
-                    "$ref": "#/definitions/InlineWorkspaceElementReference"
-                },
-                {
-                    "$ref": "#/definitions/InlineExternalDfnReference"
-                },
-                {
-                    "$ref": "#/definitions/InlineExternalIdlReference"
-                },
-                {
-                    "$ref": "#/definitions/InlineExternalElementReference"
+                    "$ref": "#/definitions/InlineReference"
                 },
                 {
                     "$ref": "#/definitions/InlineRequirement"
@@ -1377,6 +1362,29 @@
                     "x-computed": true
                 }
             }
+        },
+        "InlineReference": {
+            "description": "Union of all inline reference types",
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/InlineWorkspaceDfnReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineWorkspaceIdlReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineWorkspaceElementReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineExternalDfnReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineExternalIdlReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineExternalElementReference"
+                }
+            ]
         },
         "DocumentMetadata": {
             "type": "object",
