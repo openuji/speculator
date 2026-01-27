@@ -57,6 +57,7 @@ export const noAmbiguousReferenceRule: LintRule = {
 
                         context.report({
                             message: `Ambiguous reference to "${ref.targetTerm}" matches ${uniqueCandidates.length} definitions at: ${locations}${suffix}`,
+                            file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
                             sourcePos: ref.sourcePos
                         });
                     }

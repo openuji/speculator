@@ -16,8 +16,8 @@ export interface LintDiagnostic {
     severity: Severity;
     /** Diagnostic message */
     message: string;
-    /** File path where the issue was found */
-    file?: string;
+    /** File path where the issue was found (Mandatory in the final diagnostic) */
+    file: string;
     /** Position in the source file */
     sourcePos?: SourcePos;
 }

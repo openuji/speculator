@@ -32,5 +32,4 @@ export {
 } from './parse/parsers.js';
 
 // Workspace Utilities
-export { sortEntriesByDeps } from './workspace/index.js';
-export type { EntryWithConfig, SortResult } from './workspace/index.js';
+export * from './workspace/index.js';

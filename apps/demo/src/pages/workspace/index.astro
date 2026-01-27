@@ -3,9 +3,8 @@ import {
   SpeculatorPipeline,
   corePlugins,
   NodeFileProvider,
-  sortEntriesByDeps,
+  buildWorkspaces,
   type Document,
-  type Workspace,
   type WorkspaceConfig,
 } from "@openuji/speculator";
 
@@ -31,42 +30,35 @@ const workspaceConfig = JSON.parse(readFileSync(configPath, "utf-8"));
 const pipeline = new SpeculatorPipeline(corePlugins);
 const linter = new SpeculatorLinter(builtInRules);
 
+// Build all isolated workspaces from config
+const buildResult = await buildWorkspaces(
+  workspaceConfig as WorkspaceConfig,
+  fileProvider,
+  configPath,
+  pipeline,
+);
+
 const processedWorkspaces = await Promise.all(
-  Object.entries(workspaceConfig as WorkspaceConfig).map(
-    async ([name, entries]) => {
-      // Sort and Build
-      const sortResult = await sortEntriesByDeps(entries, fileProvider);
-      const buildResult = await pipeline.runWorkspace({
-        entries: sortResult.entries,
-        fileProvider,
-      });
+  Object.entries(buildResult.workspaces).map(async ([name, workspace]) => {
+    const documentLevels = new Map<string, number>();
+    workspace.documents.forEach((doc, index) => {
+      const path = doc.sourcePos?.file || "";
+      if (path) documentLevels.set(path, index);
+    });
 
-      const workspace = buildResult.workspace;
-      let diagnostics: LintDiagnostic[] = [];
+    const lintResult = await linter.lint({
+      workspace,
+      documentLevels,
+      config: recommendedConfig,
+    });
 
-      if (workspace) {
-        const documentLevels = new Map<string, number>();
-        workspace.documents.forEach((doc, index) => {
-          const path = doc.sourcePos?.file || "";
-          if (path) documentLevels.set(path, index);
-        });
-
-        const lintResult = await linter.lint({
-          workspace,
-          documentLevels,
-          config: recommendedConfig,
-        });
-        diagnostics = lintResult.diagnostics;
-      }
-
-      return {
-        name,
-        workspace,
-        docs: workspace?.documents || [],
-        diagnostics,
-      };
-    },
-  ),
+    return {
+      name,
+      workspace,
+      docs: workspace.documents,
+      diagnostics: lintResult.diagnostics,
+    };
+  }),
 );
 
 const allDiagnostics = processedWorkspaces.flatMap((w) => w.diagnostics);

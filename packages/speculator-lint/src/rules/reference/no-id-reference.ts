@@ -26,6 +26,7 @@ export const noIdReferenceRule: LintRule = {
                         const loc = target ? ` (defined at ${target.sourcePos?.file}:${target.sourcePos?.line})` : '';
                         context.report({
                             message: `Reference to ID "${targetId}" is discouraged${loc}. Use semantic term lookup with data-link-for instead.`,
+                            file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
                             sourcePos: ref.sourcePos
                         });
                     }
@@ -43,6 +44,7 @@ export const noIdReferenceRule: LintRule = {
                             const loc = target ? ` (defined at ${target.sourcePos?.file}:${target.sourcePos?.line})` : '';
                             context.report({
                                 message: `Internal link to ID "${url}" found${loc}. Use semantic <xref> or <a> with data-link-type instead.`,
+                                file: target?.sourcePos?.file || '<unknown>',
                                 sourcePos: nodeRecord.sourcePos as SourcePos | undefined
                             });
                         }

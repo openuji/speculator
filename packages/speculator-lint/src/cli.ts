@@ -13,9 +13,9 @@ import {
     SpeculatorPipeline, 
     corePlugins, 
     NodeFileProvider, 
-    sortEntriesByDeps 
+    buildWorkspaces 
 } from '@openuji/speculator';
-import type { Workspace, WorkspaceConfig } from '@openuji/speculator';
+import type { Workspace, WorkspaceConfig, BuildWorkspacesResult } from '@openuji/speculator';
 import { SpeculatorLinter } from './linter.js';
 import { builtInRules } from './rules/index.js';
 import { loadConfig, loadConfigFromDefaults, recommendedConfig } from './config.js';
@@ -75,7 +75,7 @@ Examples:
 function formatDiagnostic(diagnostic: LintDiagnostic): string {
     const severity = diagnostic.severity.toUpperCase();
     const code = diagnostic.code;
-    const file = diagnostic.file || '<unknown>';
+    const file = diagnostic.file;
     const line = diagnostic.sourcePos?.line || '?';
     const col = diagnostic.sourcePos?.column || '?';
 
@@ -94,44 +94,27 @@ async function main() {
         // Load workspace configuration
         const workspacePath = resolve(args.workspacePath);
         const workspaceContent = readFileSync(workspacePath, 'utf-8');
-        const workspaceDir = dirname(workspacePath);
         
         let workspacesToLint: Record<string, Workspace> = {};
 
         if (args.workspacePath.endsWith('.workspace.json')) {
-            console.log(`Loading workspace configuration: ${args.workspacePath}`);
             const workspaceConfig = JSON.parse(workspaceContent) as WorkspaceConfig;
-            
             const fileProvider = new NodeFileProvider();
-            const pipeline = new SpeculatorPipeline(corePlugins);
+            
+            const buildResult = await buildWorkspaces(
+                workspaceConfig,
+                fileProvider,
+                workspacePath
+            );
 
-            for (const [name, entries] of Object.entries(workspaceConfig)) {
-                console.log(`Building workspace [${name}]...`);
-                
-                // Resolve entry paths relative to the config file
-                const resolvedEntries = entries.map(e => ({
-                    ...e,
-                    entry: resolve(workspaceDir, e.entry)
-                }));
-
-                const sortResult = await sortEntriesByDeps(resolvedEntries, fileProvider);
-                if (sortResult.errors.length > 0) {
-                    for (const error of sortResult.errors) {
-                        console.error(`Workspace [${name}] Sort Error: ${error}`);
-                    }
-                    process.exit(1);
+            if (buildResult.errors.length > 0) {
+                for (const error of buildResult.errors) {
+                    console.error(`Workspace Error: ${error}`);
                 }
-
-                const pipelineResult = await pipeline.runWorkspace({
-                    entries: sortResult.entries,
-                    fileProvider,
-                });
-
-                if (!pipelineResult.workspace) {
-                    throw new Error(`Failed to build workspace [${name}] AST.`);
-                }
-                workspacesToLint[name] = pipelineResult.workspace;
+                process.exit(1);
             }
+
+            workspacesToLint = buildResult.workspaces;
         } else {
             // Legacy/Direct AST JSON loading (single anonymous workspace)
             workspacesToLint['default'] = JSON.parse(workspaceContent) as Workspace;
