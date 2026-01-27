@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-26T12:22:48.010Z
+ * Generated at: 2026-01-27T16:42:53.738Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -35,14 +35,6 @@ export type Section = BaseNode & {
   unnumbered?: boolean;
   children: (Section | Block)[];
 };
-export type InlineReference =
-  | InlineWorkspaceDfnReference
-  | InlineWorkspaceIdlReference
-  | InlineWorkspaceElementReference
-  | InlineExternalDfnReference
-  | InlineExternalIdlReference
-  | InlineExternalElementReference;
-
 export type Inline =
   | InlineText
   | InlineEmphasis
@@ -51,12 +43,16 @@ export type Inline =
   | InlineLink
   | InlineImage
   | InlineDefinition
-  | InlineReference
+  | InlineWorkspaceDfnReference
+  | InlineWorkspaceIdlReference
+  | InlineWorkspaceElementReference
+  | InlineExternalDfnReference
+  | InlineExternalIdlReference
+  | InlineExternalElementReference
   | InlineRequirement
   | InlineIssue
   | InlineCite
   | InlineVariable;
-
 export type InlineText = BaseNode & {
   type: 'text';
   value: string;
@@ -376,6 +372,16 @@ export interface DocumentMetadata {
    */
   lastUpdateDate?: string;
   abstract?: string;
+  /**
+   * Normalized maturity level
+   */
+  maturityLevel?: 'incubating' | 'draft' | 'prerelease' | 'stable';
+  /**
+   * Highest priority user-defined properties
+   */
+  custom?: {
+    [k: string]: unknown | undefined;
+  };
 }
 export interface BaseNode {
   sourcePos?: SourcePos;

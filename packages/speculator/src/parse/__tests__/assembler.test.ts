@@ -154,6 +154,34 @@ describe('assembleDocument', () => {
         expect(doc.metadata?.shortName).toBe('myspec');
     });
 
+    it('includes expanded metadata from config', () => {
+        const config = {
+            id: 'test-doc',
+            title: 'My Spec',
+            subtitle: 'A Great Spec',
+            shortName: 'myspec',
+            maturityLevel: 'stable' as const,
+            thisVersion: '1.0.0',
+            custom: {
+                priority: 'high',
+                tags: ['core', 'v1']
+            }
+        };
+        const doc = assembleDocument([], config, '/spec/format.md');
+
+        expect(doc.metadata).toMatchObject({
+            title: 'My Spec',
+            subtitle: 'A Great Spec',
+            shortName: 'myspec',
+            maturityLevel: 'stable',
+            version: '1.0.0',
+            custom: {
+                priority: 'high',
+                tags: ['core', 'v1']
+            }
+        });
+    });
+
     it('omits metadata if config is empty', () => {
         const doc = assembleDocument([], { id: 'test-doc' }, '/spec/format.md');
 

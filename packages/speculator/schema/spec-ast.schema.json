@@ -1443,6 +1443,21 @@
                 },
                 "abstract": {
                     "type": "string"
+                },
+                "maturityLevel": {
+                    "type": "string",
+                    "enum": [
+                        "incubating",
+                        "draft",
+                        "prerelease",
+                        "stable"
+                    ],
+                    "description": "Normalized maturity level"
+                },
+                "custom": {
+                    "type": "object",
+                    "description": "Highest priority user-defined properties",
+                    "additionalProperties": true
                 }
             }
         },

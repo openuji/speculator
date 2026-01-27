@@ -44,14 +44,14 @@ const workspacesConfig = {
   ],
 };
 
-const result = await buildWorkspaces(workspacesConfig, fileProvider);
+const result = await buildWorkspaces(workspacesConfig);
 
 if (result.errors.length > 0) {
   console.error("Errors encountered:", result.errors);
 }
 
-// Access built workspace ASTs
-console.log(result.workspaces["core"]);
+// Access built workspace coreSpecs ASTs
+console.log(result.workspaces.coreSpecs);
 ```
 
 ## Next Steps

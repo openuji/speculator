@@ -145,12 +145,24 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
         meta.title = config.title;
         hasContent = true;
     }
+    if (config.subtitle) {
+        meta.subtitle = config.subtitle;
+        hasContent = true;
+    }
     if (config.shortName) {
         meta.shortName = config.shortName;
         hasContent = true;
     }
     if (config.status) {
         meta.status = config.status;
+        hasContent = true;
+    }
+    if (config.maturityLevel) {
+        meta.maturityLevel = config.maturityLevel;
+        hasContent = true;
+    }
+    if (config.thisVersion) {
+        meta.version = config.thisVersion;
         hasContent = true;
     }
     if (config.publishDate) {
@@ -179,6 +191,10 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
     }
     if (config.abstract) {
         meta.abstract = config.abstract;
+        hasContent = true;
+    }
+    if (config.custom) {
+        meta.custom = config.custom;
         hasContent = true;
     }
 

@@ -5,6 +5,7 @@ import { sortEntriesByDeps } from '#src/workspace/sort';
 import type { FileProvider } from '#src/file-provider/types';
 import type { Workspace } from '#src/types/ast.generated';
 import type { WorkspaceConfig } from '#src/preprocess/types';
+import { NodeFileProvider } from '#src/file-provider/node';
 
 /**
  * Result of building workspaces
@@ -26,10 +27,11 @@ export interface BuildWorkspacesResult {
  */
 export async function buildWorkspaces(
     config: WorkspaceConfig,
-    fileProvider: FileProvider,
+    _fileProvider?: FileProvider,
     configPath?: string,
     pipeline?: SpeculatorPipeline
 ): Promise<BuildWorkspacesResult> {
+    const fileProvider = _fileProvider ?? new NodeFileProvider();
     const workspaces: Record<string, Workspace> = {};
     const errors: string[] = [];
     const p = pipeline ?? new SpeculatorPipeline(corePlugins);
