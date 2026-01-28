@@ -1418,6 +1418,12 @@
                             },
                             "company": {
                                 "type": "string"
+                            },
+                            "note": {
+                                "type": "string"
+                            },
+                            "w3cid": {
+                                "type": "string"
                             }
                         }
                     }
@@ -1434,6 +1440,12 @@
                                 "type": "string"
                             },
                             "company": {
+                                "type": "string"
+                            },
+                            "note": {
+                                "type": "string"
+                            },
+                            "w3cid": {
                                 "type": "string"
                             }
                         }
@@ -1461,6 +1473,82 @@
                         "stable"
                     ],
                     "description": "Normalized maturity level"
+                },
+                "repository": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "url": {
+                                    "type": "string"
+                                },
+                                "branch": {
+                                    "type": "string"
+                                },
+                                "repoType": {
+                                    "type": "string",
+                                    "enum": [
+                                        "github",
+                                        "gitlab",
+                                        "manual"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "url"
+                            ]
+                        }
+                    ]
+                },
+                "group": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "url": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "name"
+                            ]
+                        }
+                    ]
+                },
+                "copyright": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": "string"
+                },
+                "logos": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "src": {
+                                "type": "string"
+                            },
+                            "alt": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "src"
+                        ]
+                    }
                 },
                 "custom": {
                     "type": "object",

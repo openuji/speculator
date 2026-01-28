@@ -161,7 +161,10 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
         meta.maturityLevel = config.maturityLevel;
         hasContent = true;
     }
-    if (config.thisVersion) {
+    if (config.version) {
+        meta.version = config.version;
+        hasContent = true;
+    } else if (config.thisVersion) {
         meta.version = config.thisVersion;
         hasContent = true;
     }
@@ -178,6 +181,8 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
             name: e.name,
             url: e.url,
             company: e.company,
+            note: e.note,
+            w3cid: e.w3cid,
         }));
         hasContent = true;
     }
@@ -186,11 +191,44 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
             name: a.name,
             url: a.url,
             company: a.company,
+            note: a.note,
+            w3cid: a.w3cid,
         }));
         hasContent = true;
     }
     if (config.abstract) {
         meta.abstract = config.abstract;
+        hasContent = true;
+    }
+    if (config.repository) {
+        meta.repository = typeof config.repository === 'string'
+            ? config.repository
+            : {
+                url: config.repository.url,
+                branch: config.repository.branch,
+                repoType: config.repository.type,
+            };
+        hasContent = true;
+    }
+    if (config.group) {
+        meta.group = typeof config.group === 'string'
+            ? config.group
+            : {
+                name: config.group.name,
+                url: config.group.url,
+            };
+        hasContent = true;
+    }
+    if (config.copyright) {
+        meta.copyright = config.copyright;
+        hasContent = true;
+    }
+    if (config.license) {
+        meta.license = config.license;
+        hasContent = true;
+    }
+    if (config.logos) {
+        meta.logos = config.logos;
         hasContent = true;
     }
     if (config.custom) {

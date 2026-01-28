@@ -22,6 +22,8 @@ function normalizePerson(raw: RawPersonEntry): PersonEntry | null {
         company: raw.company,
         companyURL: raw.companyURL,
         email: raw.mailto || raw.email,
+        note: raw.note,
+        w3cid: raw.w3cid,
     };
 }
 
@@ -97,6 +99,9 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         config.lastUpdateDate = raw.modificationDate;
     }
     
+    if (raw.version !== undefined) {
+        config.version = raw.version;
+    }
     if (raw.thisVersion !== undefined) {
         config.thisVersion = raw.thisVersion;
     }
@@ -135,6 +140,9 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     if (raw.license !== undefined) {
         config.license = raw.license;
     }
+    if (raw.copyright !== undefined) {
+        config.copyright = raw.copyright;
+    }
 
     // Branding - normalize logo format
     if (raw.logos && Array.isArray(raw.logos)) {
@@ -143,6 +151,14 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
             alt: logo.alt,
             href: logo.href || logo.url,
         }));
+    }
+
+    // Organization
+    if (raw.group !== undefined) {
+        config.group = raw.group;
+    }
+    if (raw.repository !== undefined) {
+        config.repository = raw.repository;
     }
 
     // Structure

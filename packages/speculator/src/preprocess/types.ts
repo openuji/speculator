@@ -151,6 +151,32 @@ export interface PersonEntry {
     company?: string;
     companyURL?: string;
     email?: string;
+    /** Optional note about the person's role (e.g., "Main Editor") */
+    note?: string;
+    /** W3C ID if applicable */
+    w3cid?: string;
+}
+
+/**
+ * Repository configuration
+ */
+export interface RepositoryConfig {
+    /** Repository URL (e.g., https://github.com/openuji/speculator) */
+    url: string;
+    /** Branch name (defaults to main) */
+    branch?: string;
+    /** Type of repository (auto-detected if omitted) */
+    type?: 'github' | 'gitlab' | 'manual';
+}
+
+/**
+ * Group configuration
+ */
+export interface GroupConfig {
+    /** Group name (e.g., "OpenUJI Working Group") */
+    name: string;
+    /** Group URL */
+    url?: string;
 }
 
 /**
@@ -184,6 +210,9 @@ export interface SpecConfig {
     /** Last update date (ISO 8601: YYYY-MM-DD) */
     lastUpdateDate?: string;
 
+    /** Version string (e.g., "1.0.0") */
+    version?: string;
+
     /** This version URL */
     thisVersion?: string;
 
@@ -192,6 +221,12 @@ export interface SpecConfig {
 
     /** Previous version URL */
     previousVersion?: string;
+
+    /** Repository information */
+    repository?: RepositoryConfig | string;
+
+    /** Group/organization information */
+    group?: GroupConfig | string;
 
     /** Editor list */
     editors?: PersonEntry[];
@@ -205,10 +240,10 @@ export interface SpecConfig {
     /** Copyright notice */
     copyright?: string;
 
-    /** License URL */
+    /** License URL or identifier */
     license?: string;
 
-    /** Additional logos */
+    /** Header logo configuration */
     logos?: Array<{ src: string; alt?: string; href?: string }>;
 
     /** Enable table of contents generation */

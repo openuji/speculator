@@ -10,6 +10,7 @@ import {
   builtInRules,
   recommendedConfig,
 } from "@openuji/speculator-lint";
+import Header from "@/components/Header.astro";
 import BlockRenderer from "@/components/BlockRenderer.astro";
 import Toc from "@/components/Toc.astro";
 import "@/styles/global.css";
@@ -37,8 +38,6 @@ const result = await pipeline.runWorkspace({
   fileProvider,
 });
 
-console.log("result", JSON.stringify(result, null, 2));
-
 const workspace = result.workspace;
 const docs = workspace?.documents || [];
 
@@ -53,7 +52,7 @@ if (!document) {
   return Astro.redirect("/404");
 }
 
-const config = document.metadata || {};
+const metadata = document.metadata || {};
 
 // Run linter if workspace was successfully created
 let lintResult;
@@ -81,52 +80,34 @@ const allDiagnostics = lintResult?.diagnostics || [];
 const toc = document.computed?.toc || [];
 ---
 
-<Layout title={`${config.title || pkg} - Speculator Workspace (md)`}>
+<Layout title={`${metadata.title || pkg} - Speculator Workspace (md)`}>
   <div class="spec-layout">
     {toc.length > 0 && <Toc toc={toc} />}
 
     <article class="spec-main">
-      <header class="spec-header">
-        <nav class="nav breadcrumb">
-          <a href="/">Home</a>
-          <span class="sep">/</span>
-          <a href="/workspace/md">Workspace Index (md)</a>
-          <span class="sep">/</span>
-          <span class="current">{pkg}</span>
-        </nav>
+      <Header metadata={metadata} pkgName={pkg!} />
 
-        <h1>{config.title}</h1>
-        {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
-
-        <div class="metadata">
-          <p>
-            <strong>Path:</strong>
-            <code>{document.sourcePos?.file}</code>
-          </p>
-        </div>
-
-        {
-          allDiagnostics.length > 0 && (
-            <section class="diagnostics">
-              <h2>Diagnostics ({allDiagnostics.length})</h2>
-              {lintResult && (
-                <p class="lint-info">
-                  ✓ Lint validation: {lintResult.totalTime.toFixed(2)}
-                  ms
-                </p>
-              )}
-              <ul>
-                {allDiagnostics.map((d) => (
-                  <li class={d.severity}>
-                    <strong>[{d.code}]</strong> {d.message}
-                    {d.file && <span class="loc">({d.file})</span>}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )
-        }
-      </header>
+      {
+        allDiagnostics.length > 0 && (
+          <section class="diagnostics">
+            <h2>Diagnostics ({allDiagnostics.length})</h2>
+            {lintResult && (
+              <p class="lint-info">
+                ✓ Lint validation: {lintResult.totalTime.toFixed(2)}
+                ms
+              </p>
+            )}
+            <ul>
+              {allDiagnostics.map((d) => (
+                <li class={d.severity}>
+                  <strong>[{d.code}]</strong> {d.message}
+                  {d.file && <span class="loc">({d.file})</span>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
 
       <hr />
 
@@ -136,7 +117,6 @@ const toc = document.computed?.toc || [];
             <BlockRenderer
               node={child}
               basePath="/workspace/md"
-              workspace={workspace}
               documentPath={document.sourcePos?.file}
               headingNumbers={document.computed?.headingNumbers}
             />

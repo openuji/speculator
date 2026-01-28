@@ -1,0 +1,23 @@
+{
+  "maturityLevel": "incubating",
+  "respec": {
+    "specStatus": "CG-DRAFT",
+    "shortName": "proto-b",
+    "group": {
+      "name": "OpenUJI Protocol Working Group",
+      "url": "https://openuji.org/groups/protocol"
+    },
+    "modificationDate": "2026-01-25",
+    "version": "0.2.0-alpha",
+    "repository": "https://github.com/openuji/speculator",
+    "editors": [
+      {
+        "name": "Jane Wilson",
+        "company": "Standardization Corp",
+        "w3cid": "12345"
+      }
+    ],
+    "license": "W3C-Software-and-Document",
+    "abstract": "Protocol B builds upon Protocol A by adding advanced reference mechanisms and cross-cutting requirements."
+  }
+}

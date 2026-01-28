@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-27T16:58:52.776Z
+ * Generated at: 2026-01-27T20:34:17.641Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -362,11 +362,15 @@ export interface DocumentMetadata {
     name?: string;
     url?: string;
     company?: string;
+    note?: string;
+    w3cid?: string;
   }[];
   authors?: {
     name?: string;
     url?: string;
     company?: string;
+    note?: string;
+    w3cid?: string;
   }[];
   /**
    * ISO 8601 date format (YYYY-MM-DD)
@@ -381,6 +385,26 @@ export interface DocumentMetadata {
    * Normalized maturity level
    */
   maturityLevel?: 'incubating' | 'draft' | 'prerelease' | 'stable';
+  repository?:
+    | string
+    | {
+        url: string;
+        branch?: string;
+        repoType?: 'github' | 'gitlab' | 'manual';
+      };
+  group?:
+    | string
+    | {
+        name: string;
+        url?: string;
+      };
+  copyright?: string;
+  license?: string;
+  logos?: {
+    src: string;
+    alt?: string;
+    href?: string;
+  }[];
   /**
    * Highest priority user-defined properties
    */

@@ -19,6 +19,8 @@ export interface RawPersonEntry {
     companyURL?: string;
     mailto?: string;
     email?: string;
+    note?: string;
+    w3cid?: string;
 }
 
 /**
@@ -32,6 +34,7 @@ export interface RawRespecConfig {
 
     // Status and versioning
     specStatus?: string;
+    version?: string;
     publishDate?: string;
     modificationDate?: string;
     thisVersion?: string;
@@ -47,9 +50,14 @@ export interface RawRespecConfig {
 
     // Legal
     license?: string;
+    copyright?: string;
 
     // Branding
     logos?: Array<{ src: string; alt?: string; href?: string; url?: string }>;
+
+    // Organization
+    group?: string | { name: string; url?: string };
+    repository?: string | { url: string; branch?: string; type?: 'github' | 'gitlab' | 'manual' };
 
     // Structure
     noTOC?: boolean;
