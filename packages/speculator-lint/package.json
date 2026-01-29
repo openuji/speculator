@@ -17,7 +17,7 @@
         "dev": "tsc --watch",
         "test": "vitest run",
         "test:watch": "vitest",
-        "lint": "eslint src --ext .ts",
+        "lint": "eslint src --ext .ts --max-warnings 0",
         "lint:fix": "eslint src --ext .ts --fix",
         "typecheck": "tsc --noEmit"
     },
@@ -43,5 +43,12 @@
         "validation",
         "speculator"
     ],
-    "license": "MIT"
+    "license": "MIT",
+    "lint-staged": {
+        "src/**/!(*.generated).ts": [
+            "eslint --fix --max-warnings 0",
+            "bash -c 'pnpm typecheck'",
+            "bash -c 'pnpm test --run'"
+        ]
+    }
 }

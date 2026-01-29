@@ -9,6 +9,7 @@ import { sectionIdPlugin } from '../plugins/section-id.js';
 import { tocPlugin } from '../plugins/toc.js';
 import { sectionResolvePlugin } from '../plugins/section-resolve.js';
 import type { BlockParagraph, InlineSectionReference } from '#src/types/ast.generated.js';
+import type { IndexContext, ComputeContext } from '#src/pipeline/types.js';
 
 describe('sectionResolvePlugin', () => {
     const parser = new MarkdownUnitParser();
@@ -26,13 +27,13 @@ Content.
 
         // Run plugins in order
         // 1. section-id (already has IDs but index phase)
-        await sectionIdPlugin.index!({ document } as any);
+        await sectionIdPlugin.index!({ document, level: 0 } as IndexContext);
         
         // 2. toc (compute headingNumbers and headingTitles)
-        await tocPlugin.compute!({ document } as any);
+        await tocPlugin.compute!({ document, level: 0 } as ComputeContext);
 
         // 3. section-resolve
-        await sectionResolvePlugin.compute!({ document } as any);
+        await sectionResolvePlugin.compute!({ document, level: 0 } as ComputeContext);
 
         const section = document.children[0] as import('#src/types/ast.generated').Section;
         const para = section.children[0] as BlockParagraph;
@@ -55,9 +56,9 @@ Content.
         const blocks = parser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
         const document = assembleDocument(blocks, { id: 'test-alias', title: 'Test' }, 'test.md');
 
-        await sectionIdPlugin.index!({ document } as any);
-        await tocPlugin.compute!({ document } as any);
-        await sectionResolvePlugin.compute!({ document } as any);
+        await sectionIdPlugin.index!({ document, level: 0 } as IndexContext);
+        await tocPlugin.compute!({ document, level: 0 } as ComputeContext);
+        await sectionResolvePlugin.compute!({ document, level: 0 } as ComputeContext);
 
         const section = document.children[0] as import('#src/types/ast.generated').Section;
         const para = section.children[0] as BlockParagraph;

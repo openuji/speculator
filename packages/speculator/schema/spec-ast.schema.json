@@ -1433,6 +1433,12 @@
                 },
                 {
                     "$ref": "#/definitions/InlineExternalElementReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineCite"
+                },
+                {
+                    "$ref": "#/definitions/InlineSectionReference"
                 }
             ]
         },

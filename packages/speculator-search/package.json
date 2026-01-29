@@ -49,8 +49,8 @@
         "vitest": "^1.0.0"
     },
     "lint-staged": {
-        "src/**/*.ts": [
-            "pnpm lint --fix",
+        "src/**/!(*.generated).ts": [
+            "eslint --fix --max-warnings 0",
             "bash -c 'pnpm typecheck'",
             "bash -c 'pnpm test --run'"
         ]

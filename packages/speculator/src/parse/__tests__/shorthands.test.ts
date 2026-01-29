@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { BlockParagraph, InlineWorkspaceDfnReference } from '#src/types/ast.generated';
+import type { BlockParagraph, InlineWorkspaceDfnReference, InlineSectionReference } from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.md'): SourceUnit {
     return { file, format: 'markdown', content, startLine: 1 };
@@ -137,8 +137,8 @@ describe('ShorthandsMarkdownParser', () => {
                 type: 'sectionReference',
                 targetId: 'details',
             });
-            const ref = para.children[1] as any;
-            expect(ref.children[0]).toMatchObject({ type: 'text', value: 'the details' });
+            const ref = para.children[1] as InlineSectionReference;
+            expect(ref.children![0]).toMatchObject({ type: 'text', value: 'the details' });
         });
     });
 });

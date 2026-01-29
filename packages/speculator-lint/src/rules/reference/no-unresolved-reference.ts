@@ -21,46 +21,55 @@ export const noUnresolvedReferenceRule: LintRule = {
         return {
             onDocument(doc) {
                 const references = collectReferences(doc);
-                for (const node of references) {
-                    const ref = node as any;
-                    const type = ref.type;
-                    
-                    if (type.startsWith('workspace')) {
-                        // Workspace references must have both targetId and targetDocumentId
-                        if (!ref.targetId || !ref.targetDocumentId) {
-                            context.report({
-                                message: `Unresolved workspace reference to "${ref.targetTerm || 'unknown'}". Both targetId and targetDocumentId must be populated.`,
-                                file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
-                                sourcePos: ref.sourcePos
-                            });
-                        }
-                    } else if (type.startsWith('external')) {
-                        // External references must have targetId
-                        if (!ref.targetId) {
-                            context.report({
-                                message: `Unresolved external reference to "${ref.targetTerm || 'unknown'}". targetId is missing or empty.`,
-                                file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
-                                sourcePos: ref.sourcePos
-                            });
-                        }
-                    } else if (type === 'cite') {
-                        // Citations must have targetId (resolved biblio key)
-                        if (!ref.targetId) {
-                            context.report({
-                                message: `Unresolved citation for key "${ref.key || 'unknown'}". targetId is missing or empty.`,
-                                file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
-                                sourcePos: ref.sourcePos
-                            });
-                        }
-                    } else if (type === 'sectionReference') {
-                        // Section references must have targetId
-                        if (!ref.targetId) {
-                            context.report({
-                                message: `Unresolved section reference. targetId is missing or empty.`,
-                                file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
-                                sourcePos: ref.sourcePos
-                            });
-                        }
+                for (const ref of references) {
+                    switch (ref.type) {
+                        case 'workspaceDfnReference':
+                        case 'workspaceIdlReference':
+                        case 'workspaceElementReference':
+                            // Workspace references must have both targetId and targetDocumentId
+                            if (!ref.targetId || !ref.targetDocumentId) {
+                                context.report({
+                                    message: `Unresolved workspace reference to "${ref.targetTerm || 'unknown'}". Both targetId and targetDocumentId must be populated.`,
+                                    file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
+                                    sourcePos: ref.sourcePos
+                                });
+                            }
+                            break;
+
+                        case 'externalDfnReference':
+                        case 'externalIdlReference':
+                        case 'externalElementReference':
+                            // External references must have targetId
+                            if (!ref.targetId) {
+                                context.report({
+                                    message: `Unresolved external reference to "${ref.targetTerm || 'unknown'}". targetId is missing or empty.`,
+                                    file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
+                                    sourcePos: ref.sourcePos
+                                });
+                            }
+                            break;
+
+                        case 'cite':
+                            // Citations must have targetId (resolved biblio key)
+                            if (!ref.targetId) {
+                                context.report({
+                                    message: `Unresolved citation for key "${ref.key || 'unknown'}". targetId is missing or empty.`,
+                                    file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
+                                    sourcePos: ref.sourcePos
+                                });
+                            }
+                            break;
+
+                        case 'sectionReference':
+                            // Section references must have targetId
+                            if (!ref.targetId) {
+                                context.report({
+                                    message: `Unresolved section reference. targetId is missing or empty.`,
+                                    file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
+                                    sourcePos: ref.sourcePos
+                                });
+                            }
+                            break;
                     }
                 }
             }

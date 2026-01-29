@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-28T15:48:34.669Z
+ * Generated at: 2026-01-29T07:51:32.929Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -114,7 +114,9 @@ export type InlineReference =
   | InlineWorkspaceElementReference
   | InlineExternalDfnReference
   | InlineExternalIdlReference
-  | InlineExternalElementReference;
+  | InlineExternalElementReference
+  | InlineCite
+  | InlineSectionReference;
 export type InlineWorkspaceDfnReference = BaseNode &
   WorkspaceReferenceBase & {
     type: 'workspaceDfnReference';
@@ -139,30 +141,6 @@ export type InlineExternalElementReference = BaseNode &
   ExternalReferenceBase & {
     type: 'externalElementReference';
   };
-export type InlineRequirement = BaseNode & {
-  type: 'requirement';
-  keyword:
-    | 'MUST'
-    | 'MUST NOT'
-    | 'REQUIRED'
-    | 'SHALL'
-    | 'SHALL NOT'
-    | 'SHOULD'
-    | 'SHOULD NOT'
-    | 'RECOMMENDED'
-    | 'MAY'
-    | 'OPTIONAL';
-  /**
-   * Optional requirement identifier
-   */
-  id?: string;
-};
-export type InlineIssue = BaseNode & {
-  type: 'issue';
-  id?: string;
-  status?: 'open' | 'closed' | 'wontfix';
-  children: Inline[];
-};
 export type InlineCite = BaseNode & {
   type: 'cite';
   /**
@@ -210,13 +188,6 @@ export type InlineCite = BaseNode & {
    */
   children?: Inline[];
 };
-export type InlineVariable = BaseNode & {
-  type: 'variable';
-  /**
-   * The variable name or content.
-   */
-  value: string;
-};
 export type InlineSectionReference = BaseNode & {
   type: 'sectionReference';
   /**
@@ -235,6 +206,37 @@ export type InlineSectionReference = BaseNode & {
    * Optional custom link text. If omitted, the renderer should use the section number (e.g., 'Section 1.2').
    */
   children?: Inline[];
+};
+export type InlineRequirement = BaseNode & {
+  type: 'requirement';
+  keyword:
+    | 'MUST'
+    | 'MUST NOT'
+    | 'REQUIRED'
+    | 'SHALL'
+    | 'SHALL NOT'
+    | 'SHOULD'
+    | 'SHOULD NOT'
+    | 'RECOMMENDED'
+    | 'MAY'
+    | 'OPTIONAL';
+  /**
+   * Optional requirement identifier
+   */
+  id?: string;
+};
+export type InlineIssue = BaseNode & {
+  type: 'issue';
+  id?: string;
+  status?: 'open' | 'closed' | 'wontfix';
+  children: Inline[];
+};
+export type InlineVariable = BaseNode & {
+  type: 'variable';
+  /**
+   * The variable name or content.
+   */
+  value: string;
 };
 export type Block =
   | BlockParagraph

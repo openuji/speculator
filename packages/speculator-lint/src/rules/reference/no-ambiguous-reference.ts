@@ -55,8 +55,10 @@ export const noAmbiguousReferenceRule: LintRule = {
                             .join(', ');
                         const suffix = uniqueCandidates.length > 3 ? '...' : '';
 
+                        const targetTerm = 'targetTerm' in ref ? ref.targetTerm : ('key' in ref ? ref.key : 'unknown');
+
                         context.report({
-                            message: `Ambiguous reference to "${ref.targetTerm}" matches ${uniqueCandidates.length} definitions at: ${locations}${suffix}`,
+                            message: `Ambiguous reference to "${targetTerm}" matches ${uniqueCandidates.length} definitions at: ${locations}${suffix}`,
                             file: ref.sourcePos?.file || doc.sourcePos?.file || '<unknown>',
                             sourcePos: ref.sourcePos
                         });

@@ -2,7 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { SpeculatorLinter } from '../linter.js';
 import { builtInRules } from '../rules/index.js';
 import { recommendedConfig } from '../config.js';
-import type { Workspace, Document, BlockParagraph, InlineLink } from '@openuji/speculator';
+import type { 
+    Workspace, 
+    Document, 
+    BlockParagraph, 
+    InlineLink,
+    InlineWorkspaceDfnReference,
+    InlineExternalDfnReference,
+    InlineCite,
+    InlineSectionReference
+} from '@openuji/speculator';
 
 function createMockWorkspace(docs: Document[]): Workspace {
     return {
@@ -111,7 +120,7 @@ describe('Speculator Lint Rules', () => {
                     {
                         type: 'paragraph',
                         children: [
-                            { type: 'workspaceDfnReference', targetTerm: 'Ambiguous', children: [] } as any
+                            { type: 'workspaceDfnReference', targetTerm: 'Ambiguous', children: [] } as InlineWorkspaceDfnReference
                         ]
                     } as BlockParagraph
                 ],
@@ -159,7 +168,7 @@ describe('Speculator Lint Rules', () => {
                     {
                         type: 'paragraph',
                         children: [
-                            { type: 'workspaceDfnReference', targetTerm: 'Ambiguous', forContexts: ['ContextA'], children: [] } as any
+                            { type: 'workspaceDfnReference', targetTerm: 'Ambiguous', forContexts: ['ContextA'], children: [] } as InlineWorkspaceDfnReference
                         ]
                     } as BlockParagraph
                 ],
@@ -201,7 +210,7 @@ describe('Speculator Lint Rules', () => {
                                 targetTerm: 'Term', 
                                 targetId: 'target-id', 
                                 children: [] 
-                            } as any
+                            } as InlineWorkspaceDfnReference
                         ]
                     } as BlockParagraph
                 ],
@@ -279,7 +288,7 @@ describe('Speculator Lint Rules', () => {
                     {
                         type: 'paragraph',
                         children: [
-                            { type: 'workspaceDfnReference', targetTerm: 'LowerTerm', targetId: 'dfn-lower', children: [] } as any
+                            { type: 'workspaceDfnReference', targetTerm: 'LowerTerm', targetId: 'dfn-lower', children: [] } as InlineWorkspaceDfnReference
                         ]
                     } as BlockParagraph
                 ],
@@ -331,14 +340,14 @@ describe('Speculator Lint Rules', () => {
                                 targetId: '', 
                                 targetDocumentId: 'other-doc',
                                 children: [] 
-                            } as any,
+                            } as InlineWorkspaceDfnReference,
                             { 
                                 type: 'workspaceDfnReference', 
                                 targetTerm: 'UnresolvedDoc', 
                                 targetId: 'some-id', 
                                 targetDocumentId: '',
                                 children: [] 
-                            } as any
+                            } as InlineWorkspaceDfnReference
                         ]
                     } as BlockParagraph
                 ]
@@ -371,9 +380,10 @@ describe('Speculator Lint Rules', () => {
                             { 
                                 type: 'externalDfnReference', 
                                 targetTerm: 'ExternalTerm', 
+                                xrefSpec: 'some-spec',
                                 targetId: '', 
                                 children: [] 
-                            } as any
+                            } as InlineExternalDfnReference
                         ]
                     } as BlockParagraph
                 ]
@@ -407,7 +417,7 @@ describe('Speculator Lint Rules', () => {
                                 key: 'MISSING-BIB', 
                                 targetId: '', 
                                 children: [] 
-                            } as any
+                            } as InlineCite
                         ]
                     } as BlockParagraph
                 ]
@@ -440,7 +450,7 @@ describe('Speculator Lint Rules', () => {
                                 type: 'sectionReference', 
                                 targetId: '', 
                                 children: [] 
-                            } as any
+                            } as InlineSectionReference
                         ]
                     } as BlockParagraph
                 ]
