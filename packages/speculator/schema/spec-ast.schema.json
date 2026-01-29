@@ -1288,6 +1288,25 @@
                 },
                 "sourcePos": {
                     "$ref": "#/definitions/SourcePos"
+                },
+                "authors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of authors"
+                },
+                "date": {
+                    "type": "string",
+                    "description": "Publication date"
+                },
+                "publisher": {
+                    "type": "string",
+                    "description": "Publisher name (e.g. 'IETF', 'W3C')"
+                },
+                "raw": {
+                    "type": "string",
+                    "description": "Raw bibliography entry text (optional fallback)"
                 }
             },
             "required": [
@@ -1610,6 +1629,10 @@
                     "type": "object",
                     "description": "Highest priority user-defined properties",
                     "additionalProperties": true
+                },
+                "noConformance": {
+                    "type": "boolean",
+                    "description": "If true, disables automatic conformance section generation."
                 }
             }
         },

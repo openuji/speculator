@@ -65,6 +65,9 @@ export interface RawRespecConfig {
 
     // Bibliography
     localBiblio?: Record<string, unknown>;
+
+    // Conformance
+    noConformance?: boolean;
 }
 
 export interface ResolvedDocumentConfig {
@@ -82,6 +85,9 @@ export interface ResolvedDocumentConfig {
 
   /** Maturity level (core config setting, takes priority over mapped respec.specStatus) */
   maturityLevel?: MaturityLevel;
+
+  /** If true, suppresses the automatic generation of the conformance section. */
+  noConformance?: boolean;
 
   /** Optional ReSpec configuration embedded in config.json */
   respec?: RawRespecConfig;

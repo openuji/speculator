@@ -59,9 +59,11 @@ describe('speculate', () => {
             fileProvider,
         });
 
-        const section = result.workspace?.documents[0].children[0] as Section;
-        expect(section.type).toBe('section');
-        expect(section.id).toBe('abstract');
+        const doc = result.workspace?.documents[0];
+        const abstractSection = doc?.children.find(c => c.type === 'section' && c.id === 'abstract') as Section;
+        expect(abstractSection).toBeDefined();
+        expect(abstractSection.type).toBe('section');
+        expect(abstractSection.id).toBe('abstract');
 
     });
 

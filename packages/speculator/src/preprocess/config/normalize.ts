@@ -179,5 +179,10 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         config.custom = docConfig.custom;
     }
 
+    if(docConfig.noConformance || docConfig.respec?.noConformance !== undefined) {
+        const noConformance = docConfig.noConformance || docConfig.respec?.noConformance;
+        config.noConformance = noConformance;
+    }
+
     return config;
 }

@@ -256,13 +256,25 @@ export interface SpecConfig {
     specProfile?: string;
 
     /** Local bibliography entries for citation resolution */
-    localBiblio?: Record<string, { title: string; url?: string }>;
+    localBiblio?: Record<string, { 
+        title: string; 
+        url?: string;
+        authors?: string[];
+        date?: string;
+        publisher?: string;
+        status?: string;
+        raw?: string;
+    }>;
 
     /** 
      * Custom user-defined properties. 
      * Highest priority - overwrites both root and respec values.
      */
     custom?: Record<string, unknown>;
+
+    /** If true, suppresses the automatic generation of the conformance section. */
+    noConformance?: boolean;
+
 }
 
 // ============================================================================

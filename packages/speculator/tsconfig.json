@@ -30,6 +30,8 @@
     "exclude": [
         "node_modules",
         "dist",
-        "scripts"
+        "scripts",
+        "**/*.test.ts",
+        "**/__tests__"
     ]
 }

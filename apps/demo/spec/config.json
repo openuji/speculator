@@ -6,6 +6,7 @@
         "title": "Speculator Demo Specification",
         "shortName": "spec-demo",
         "specStatus": "ED",
+        "noConformance": true,
         "lastUpdated": "2026-01-11",
         "editors": [
             {
@@ -17,11 +18,21 @@
         "localBiblio": {
             "RFC2119": {
                 "title": "Key words for use in RFCs to Indicate Requirement Levels",
-                "url": "https://www.rfc-editor.org/rfc/rfc2119"
+                "url": "https://datatracker.ietf.org/doc/html/rfc2119",
+                "authors": ["S. Bradner"],
+                "date": "March 1997",
+                "publisher": "IETF",
+                "status": "Best Current Practice"
             },
-            "DOM": {
-                "title": "DOM Standard",
-                "url": "https://dom.spec.whatwg.org/"
+            "HTML": {
+                "title": "HTML Standard",
+                "url": "https://html.spec.whatwg.org/multipage/",
+                "publisher": "WHATWG",
+                "status": "Living Standard"
+            },
+            "DOM": { 
+                "title": "DOM Standard", 
+                "url": "https://dom.spec.whatwg.org/" 
             }
         }
     }

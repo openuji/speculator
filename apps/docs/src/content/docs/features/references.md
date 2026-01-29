@@ -60,14 +60,48 @@ The `data-cite` attribute supports fragments and paths for external specs:
 <a data-cite="html#the-a-element">the a element</a>
 ```
 
-## Behavior of `<a>` Elements
+## Automatic Sections
 
-Speculator intercepts standard `<a>` tags if they contain attributes like `data-lt`, `data-link-for`, or `data-cite`. If these attributes are present, the `<a>` tag is treated as a semantic reference or citation.
+Speculator automatically generates certain standard sections to help you write compliant specifications faster.
 
-| Attribute        | Behavior                                                                  |
-| :--------------- | :------------------------------------------------------------------------ |
-| `href`           | Handled as a regular external link. Internal `#id` links are discouraged. |
-| `data-cite`      | Becomes an `InlineCite` node.                                             |
-| `data-lt`        | Becomes a workspace or external reference node.                           |
-| `data-link-for`  | Disambiguates terms by specifying their logical owner/context.            |
-| `data-link-type` | Guides the resolution to IDL, elements, or general definitions.           |
+### Conformance Section
+
+If your document does not already contain a section with `id="conformance"`, Speculator will automatically inject a standard **Conformance** section at the beginning of your document.
+
+This injected section:
+
+- Is **unnumbered** to avoid interfering with your document's outline.
+- Declares that everything in the document is normative except for notes, examples, etc.
+- Defines the key words MUST, SHOULD, MAY, etc., linking them to [[!RFC2119]] and [[!RFC8174]].
+
+To disable this automatic section, set `noConformance: true` in your configuration (either at the root or inside a `respec` object).
+
+### Bibliography Generation
+
+Speculator automatically collects all citations used in your document and generates a **References** section at the end.
+
+- **Normative References**: Contains all citations marked with `!` or forced normative by the Conformance section.
+- **Informative References**: Contains all other citations.
+
+If a citation is used as both normative and informative, it will be promoted to Normative.
+
+## Configuration
+
+You can define local bibliography entries in your `config.json` (or frontmatter) to provide details for your citations.
+
+```json
+{
+  "localBiblio": {
+    "RFC2119": {
+      "title": "Key words for use in RFCs to Indicate Requirement Levels",
+      "url": "https://datatracker.ietf.org/doc/html/rfc2119",
+      "authors": ["S. Bradner"],
+      "date": "March 1997",
+      "publisher": "IETF",
+      "status": "Best Current Practice"
+    }
+  }
+}
+```
+
+If an entry is not found in `localBiblio`, Speculator will attempt to fallback to a global bibliography (if configured) or display a raw placeholder.

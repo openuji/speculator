@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-29T11:03:40.885Z
+ * Generated at: 2026-01-29T12:56:46.125Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -433,6 +433,10 @@ export interface DocumentMetadata {
   custom?: {
     [k: string]: unknown | undefined;
   };
+  /**
+   * If true, disables automatic conformance section generation.
+   */
+  noConformance?: boolean;
 }
 export interface BaseNode {
   sourcePos?: SourcePos;
@@ -572,6 +576,22 @@ export interface IndexBiblioEntry {
    */
   status?: string;
   sourcePos?: SourcePos;
+  /**
+   * List of authors
+   */
+  authors?: string[];
+  /**
+   * Publication date
+   */
+  date?: string;
+  /**
+   * Publisher name (e.g. 'IETF', 'W3C')
+   */
+  publisher?: string;
+  /**
+   * Raw bibliography entry text (optional fallback)
+   */
+  raw?: string;
 }
 /**
  * Optional computed fields (x-computed: true)

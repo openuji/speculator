@@ -235,6 +235,10 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
         meta.custom = config.custom;
         hasContent = true;
     }
+    if (config.noConformance) {
+        meta.noConformance = config.noConformance;
+        hasContent = true;
+    }
 
     return hasContent ? meta : undefined;
 }

@@ -1,0 +1,99 @@
+---
+import { speculate, corePlugins, NodeFileProvider } from "@openuji/speculator";
+import BlockRenderer from "../components/BlockRenderer.astro";
+import Toc from "../components/Toc.astro";
+import Layout from "../layouts/Layout.astro";
+import path from "path";
+
+// Setup Speculator
+const specDir = path.resolve("spec");
+const entryFile = path.join(specDir, "references-demo.md");
+const configFile = path.join(specDir, "config.json");
+
+// Run the full pipeline with plugins
+const result = await speculate({
+  entry: entryFile,
+  configPath: configFile,
+  plugins: corePlugins,
+  fileProvider: new NodeFileProvider(),
+});
+
+const document = result.workspace?.documents[0];
+if (!document) {
+  throw new Error("Pipeline failed to produce a document");
+}
+
+const config = document.metadata || {};
+const toc = document.computed?.toc || [];
+console.log(document.computed);
+---
+
+<Layout title={config.title || "References Demo"}>
+  <div class="spec-layout">
+    {toc.length > 0 && <Toc toc={toc} />}
+
+    <article class="spec-main">
+      <header class="spec-header">
+        <h1>Reference Generation Demo</h1>
+        {config.subtitle && <p class="subtitle">{config.subtitle}</p>}
+
+        <div class="metadata">
+          <p>
+            This page demonstrates the <strong
+              >Automatic Reference Generation</strong
+            > (Conformance & Bibliography).
+          </p>
+        </div>
+      </header>
+
+      <hr />
+
+      <div class="spec-content">
+        {
+          document.children.map((child) => (
+            <BlockRenderer
+              node={child}
+              workspace={result.workspace}
+              documentPath={document.sourcePos?.file}
+            />
+          ))
+        }
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .spec-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .spec-main {
+    min-width: 0;
+  }
+
+  .spec-header {
+    margin-bottom: 2rem;
+  }
+
+  .metadata {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent);
+  }
+
+  .spec-layout:not(:has(.toc-sidebar)) {
+    grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 1024px) {
+    .spec-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
