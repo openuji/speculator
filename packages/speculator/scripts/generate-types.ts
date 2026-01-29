@@ -110,20 +110,22 @@ export function isInline(node: unknown): node is Inline {
     'text', 'emphasis', 'strong', 'inlineCode', 'link',
     'image', 'definition', 'requirement', 'issue', 'cite', 'variable',
     'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
-    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference',
+    'sectionReference'
   ].includes(type);
 }
 
 /**
  * Type guard for indexable inline nodes (definitions, references, requirements, issues)
  */
-export function isIndexableInline(node: unknown): node is InlineDefinition | InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference | InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference | InlineRequirement | InlineIssue {
+export function isIndexableInline(node: unknown): node is InlineDefinition | InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference | InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference | InlineRequirement | InlineIssue | InlineSectionReference {
   if (typeof node !== 'object' || node === null) return false;
   const type = (node as any).type;
   return [
     'definition', 'requirement', 'issue',
     'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
-    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference',
+    'sectionReference'
   ].includes(type);
 }
 

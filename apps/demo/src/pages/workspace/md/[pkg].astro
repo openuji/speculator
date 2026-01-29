@@ -77,6 +77,8 @@ if (workspace) {
 
 // Combine pipeline and lint diagnostics
 const allDiagnostics = lintResult?.diagnostics || [];
+console.log(`[LINTER] Found ${allDiagnostics.length} diagnostics for ${pkg}`);
+allDiagnostics.forEach((d) => console.log(`[LINTER] [${d.code}] ${d.message}`));
 const toc = document.computed?.toc || [];
 ---
 

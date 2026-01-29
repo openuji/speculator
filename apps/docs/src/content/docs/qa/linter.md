@@ -20,6 +20,7 @@ description: Developer-grade linting for technical specifications.
 
 - **`reference/no-ambiguous-reference`** (Warning): Flags references that resolve to multiple definitions. Use `data-link-for` to disambiguate.
 - **`reference/no-id-reference`** (Warning): Discourages hardcoded ID-based references (e.g., `href="#my-id"`). Use the semantic [Context Pattern](/features/references) instead.
+- **`reference/no-unresolved-reference`** (Error/Warning): Ensures all semantic references are successfully resolved. Workspace references are errors; external references and citations are warnings.
 
 ## 🚀 Usage
 
@@ -50,13 +51,14 @@ Speculator Lint supports configuration inheritance via the `extends` property.
 
 The `recommended` preset includes the following rules:
 
-| Rule                               | Severity  |
-| :--------------------------------- | :-------- |
-| `workspace/no-redefinition`        | `error`   |
-| `workspace/no-reverse-dependency`  | `error`   |
-| `document/no-duplicate-definition` | `error`   |
-| `reference/no-ambiguous-reference` | `warning` |
-| `reference/no-id-reference`        | `warning` |
+| Rule                                | Severity  |
+| :---------------------------------- | :-------- |
+| `workspace/no-redefinition`         | `error`   |
+| `workspace/no-reverse-dependency`   | `error`   |
+| `document/no-duplicate-definition`  | `error`   |
+| `reference/no-ambiguous-reference`  | `warning` |
+| `reference/no-id-reference`         | `warning` |
+| `reference/no-unresolved-reference` | `error`   |
 
 ## 📁 Workspace Configuration
 
@@ -64,10 +66,7 @@ For projects with multiple isolated specification groups (e.g., separate "core" 
 
 ```json
 {
-  "coreSpecs": [
-    { "entry": "spec/core.md" }, 
-    { "entry": "spec/api.html" }
-  ],
+  "coreSpecs": [{ "entry": "spec/core.md" }, { "entry": "spec/api.html" }],
   "addonSpecs": [
     { "entry": "addons/ui/index.md" },
     { "entry": "addons/storage/index.md" }

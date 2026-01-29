@@ -201,6 +201,25 @@ const sharedProps = { basePath };
           </span>
         );
 
+      case "sectionReference": {
+        const ref = node;
+        const href = `#${ref.targetId}`;
+        const label =
+          ref.children && ref.children.length > 0 ? (
+            <>
+              §{ref.targetNumber || ""}{" "}
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </>
+          ) : (
+            <>§{ref.targetNumber || ""}</>
+          );
+        return (
+          <a href={href} class="sec-ref" title={ref.targetTitle || undefined}>
+            {label}
+          </a>
+        );
+      }
+
       default:
         return (
           <span style="color: red; border: 1px solid red;">

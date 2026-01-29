@@ -15,7 +15,9 @@ export const REFERENCE_TYPES = new Set([
     'workspaceElementReference',
     'externalDfnReference',
     'externalIdlReference',
-    'externalElementReference'
+    'externalElementReference',
+    'cite',
+    'sectionReference'
 ]);
 
 /**
@@ -101,7 +103,11 @@ export function resolveReference(
 
     const candidateTerms = 'candidateTerms' in ref && Array.isArray(ref.candidateTerms)
         ? ref.candidateTerms
-        : [ref.targetTerm];
+        : (ref as any).targetTerm 
+            ? [(ref as any).targetTerm]
+            : [];
+
+    if (candidateTerms.length === 0) return [];
 
     let allCandidates: IndexDefinitionEntry[] = [];
 

@@ -115,4 +115,30 @@ describe('ShorthandsMarkdownParser', () => {
             expect(para.children[3]).toMatchObject({ type: 'workspaceElementReference' });
         });
     });
+
+    describe('sections [§#id]', () => {
+        it('parses basic section reference', () => {
+            const unit = createUnit('See [§#intro].');
+            const blocks = parser.parse(unit);
+            const para = blocks[0] as BlockParagraph;
+
+            expect(para.children[1]).toMatchObject({
+                type: 'sectionReference',
+                targetId: 'intro',
+            });
+        });
+
+        it('parses section reference with alias', () => {
+            const unit = createUnit('Go to [§#details|the details].');
+            const blocks = parser.parse(unit);
+            const para = blocks[0] as BlockParagraph;
+
+            expect(para.children[1]).toMatchObject({
+                type: 'sectionReference',
+                targetId: 'details',
+            });
+            const ref = para.children[1] as any;
+            expect(ref.children[0]).toMatchObject({ type: 'text', value: 'the details' });
+        });
+    });
 });

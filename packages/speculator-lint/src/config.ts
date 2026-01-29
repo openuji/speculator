@@ -22,7 +22,8 @@ export const recommendedConfig: LintConfig = {
         'workspace/no-reverse-dependency': 'error',
         'document/no-duplicate-definition': 'error',
         'reference/no-ambiguous-reference': 'warning',
-        'reference/no-id-reference': 'warning'
+        'reference/no-id-reference': 'warning',
+        'reference/no-unresolved-reference': 'error'
     }
 };
 

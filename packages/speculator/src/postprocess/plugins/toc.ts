@@ -65,6 +65,7 @@ function buildTocFromSections(
     children: (Section | import('#src/types/ast.generated').Block)[],
     counters: number[],
     headingNumbers: Map<string, string>,
+    headingTitles: Map<string, string>,
     parentUnnumbered: boolean = false
 ): TocEntry[] {
     const entries: TocEntry[] = [];
@@ -108,9 +109,12 @@ function buildTocFromSections(
             number = numberParts.join('.');
         }
 
-        // Store heading number if section has an ID and numbering is enabled
-        if (section.id && number) {
-            headingNumbers.set(section.id, number);
+        // Store heading number and title if section has an ID
+        if (section.id) {
+            headingTitles.set(section.id, text);
+            if (number) {
+                headingNumbers.set(section.id, number);
+            }
         }
 
         // Recursively process nested sections
@@ -119,6 +123,7 @@ function buildTocFromSections(
             section.children,
             [...counters], // Pass a copy to avoid mutation issues
             headingNumbers,
+            headingTitles,
             isUnnumbered   // Cascade unnumbered status to children
         );
 
@@ -144,9 +149,10 @@ function buildTocFromSections(
  */
 function generateToc(document: Document): void {
     const headingNumbers = new Map<string, string>();
+    const headingTitles = new Map<string, string>();
     const counters: number[] = [];
 
-    const toc = buildTocFromSections(document.children, counters, headingNumbers);
+    const toc = buildTocFromSections(document.children, counters, headingNumbers, headingTitles);
 
     // Initialize computed fields if not present
     if (!document.computed) {
@@ -156,9 +162,12 @@ function generateToc(document: Document): void {
     // Set TOC
     document.computed.toc = toc;
 
-    // Convert Map to plain object for headingNumbers
+    // Convert Map to plain object for headingNumbers and headingTitles
     if (headingNumbers.size > 0) {
         document.computed.headingNumbers = Object.fromEntries(headingNumbers);
+    }
+    if (headingTitles.size > 0) {
+        document.computed.headingTitles = Object.fromEntries(headingTitles);
     }
 }
 

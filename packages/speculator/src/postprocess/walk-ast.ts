@@ -32,7 +32,7 @@ const INLINE_TYPES = new Set([
     'definition', 
     'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
     'externalDfnReference', 'externalIdlReference', 'externalElementReference',
-    'requirement', 'issue', 'cite', 'variable'
+    'requirement', 'issue', 'cite', 'variable', 'sectionReference'
 ]);
 
 /**
