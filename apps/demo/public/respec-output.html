@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Specification</title>
+    <title>Speculator Demo Specification</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -262,17 +262,27 @@
             
         </p>
 
-        <h1>Specification</h1>
+        <h1>Speculator Demo Specification</h1>
         
 
         <p class="status-badge">ED</p>
 
         <dl>
             <dt>This version:</dt>
-            <dd>2026-01-02</dd>
+            <dd>2026-01-29</dd>
 
             
 
+            
+            <dt>Editor:</dt>
+            <dd>
+                
+                Antigravity
+                
+                
+                
+                
+            </dd>
             
 
             
@@ -316,10 +326,10 @@
 
 <section id="abstract">
 
-<p>This is a sample specification demonstrating the render-respec package. It showcases how spec data is transformed into ReSpec-compatible HTML using the Speculator AST pipeline.</p><p>The specification includes definitions, references, and various structural elements that are processed and indexed by Speculator.</p>
+<p>This is a sample specification demonstrating the render-respec package. It showcases how spec data is transformed into ReSpec-compatible HTML using the Speculator AST pipeline.</p><p>The specification includes <dfn id="dfn-definitions">definitions</dfn>, <a href="#">references</a>, and various structural elements that are processed and indexed by Speculator.</p>
 </section><section id="introduction">
 
-<p>This specification defines several key concepts:</p><ul><li><p>Widget: A fundamental building block</p></li><li><p>Component: A reusable element composed of one or more widgets</p></li><li><p>System: A collection of components working together</p></li></ul><section id="use-cases">
+<p>This specification defines several key concepts:</p><ul><li><p><dfn id="concept-widget">widget</dfn>: A fundamental building block</p></li><li><p><dfn id="concept-component">component</dfn>: A reusable element composed of one or more <a href="#">widgets</a></p></li><li><p><dfn id="concept-system">system</dfn>: A collection of <a href="#">components</a> working together</p></li></ul><section id="use-cases">
 
 <p>The primary use case for this specification is to demonstrate:</p><ol><li><p>How Speculator builds an AST from Markdown</p></li><li><p>How definitions are indexed globally</p></li><li><p>How references are resolved to their targets</p></li><li><p>How diagnostics from speculator-lint are displayed</p></li></ol>
 </section>
@@ -327,13 +337,13 @@
 
 <section id="widgets">
 
-<p>A widget is the most basic unit in our system. Every widget has the following properties:</p><ul><li><p><strong>id</strong>: A unique identifier</p></li><li><p><strong>type</strong>: The widget type</p></li><li><p><strong>state</strong>: Current operational state</p></li></ul>
+<p>A <a href="#">widget</a> is the most basic unit in our system. Every <a href="#">widget</a> has the following properties:</p><ul><li><p><strong>id</strong>: A unique identifier</p></li><li><p><strong>type</strong>: The widget type</p></li><li><p><strong>state</strong>: Current operational state</p></li></ul>
 </section><section id="components">
 
-<p>A component encapsulates one or more widgets. Components provide:</p><ul><li><p>Composability: Components can contain other components</p></li><li><p>Reusability: Components can be instantiated multiple times</p></li><li><p>Abstraction: Components hide implementation details</p></li></ul>
+<p>A <a href="#">component</a> encapsulates one or more <a href="#">widgets</a>. Components provide:</p><ul><li><p>Composability: <a href="#">Components</a> can contain other <a href="#">components</a></p></li><li><p>Reusability: <a href="#">Components</a> can be instantiated multiple times</p></li><li><p>Abstraction: <a href="#">Components</a> hide implementation details</p></li></ul>
 </section><section id="systems">
 
-<p>The system represents the highest level of abstraction, coordinating multiple components to achieve complex functionality.</p>
+<p>The <a href="#">system</a> represents the highest level of abstraction, coordinating multiple <a href="#">components</a> to achieve complex functionality.</p>
 </section>
 </section><section id="examples">
 
@@ -346,7 +356,7 @@
 </section>
 </section><section id="security-considerations">
 
-<p>When implementing a system, ensure that:</p><ol><li><p>All widgets are properly validated</p></li><li><p>Components enforce access controls</p></li><li><p>The system maintains audit logs</p></li></ol>
+<p>When implementing a <a href="#">system</a>, ensure that:</p><ol><li><p>All <a href="#">widgets</a> are properly validated</p></li><li><p><a href="#">Components</a> enforce access controls</p></li><li><p>The <a href="#">system</a> maintains audit logs</p></li></ol>
 </section><section id="references">
 
 <p>This specification builds upon concepts from:</p><ul><li><p>HTML </p></li><li><p>DOM </p></li></ul>

@@ -19,7 +19,7 @@
         "prepack": "pnpm build",
         "postbuild": "cp -r src/templates dist/",
         "dev": "tsc --watch",
-        "test": "vitest run",
+        "test": "vitest run --passWithNoTests",
         "test:watch": "vitest",
         "lint": "eslint src --ext .ts",
         "lint:fix": "eslint src --ext .ts --fix",

@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-29T07:51:32.929Z
+ * Generated at: 2026-01-29T11:03:40.885Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */

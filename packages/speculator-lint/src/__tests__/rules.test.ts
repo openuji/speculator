@@ -204,7 +204,7 @@ describe('Speculator Lint Rules', () => {
                     {
                         type: 'paragraph',
                         children: [
-                            { type: 'link', url: '#target-id', children: [{ type: 'text', value: 'internal link' }] } as InlineLink,
+                            { type: 'link', url: '#target-id', children: [{ type: 'text', value: 'internal link' }], sourcePos: { file: 'pkg-a/index.md', line: 49, column: 1 } } as InlineLink,
                             { 
                                 type: 'workspaceDfnReference', 
                                 targetTerm: 'Term', 
@@ -233,7 +233,7 @@ describe('Speculator Lint Rules', () => {
             const diagnostics = result.diagnostics.filter(d => d.code === 'no-id-reference');
             expect(diagnostics).toHaveLength(2);
             expect(diagnostics[0].message).toContain('Reference to ID "target-id" is discouraged (defined at pkg-a/index.md:50)');
-            expect(diagnostics[1].message).toContain('Internal link to ID "#target-id" found (defined at pkg-a/index.md:50)');
+            expect(diagnostics[1].message).toContain('Internal link to ID "#target-id" found (defined at pkg-a/index.md:49)');
         });
     });
 

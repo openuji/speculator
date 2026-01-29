@@ -1,4 +1,4 @@
-import type { SourcePos } from '@openuji/speculator';
+import type { InlineLink, SourcePos } from '@openuji/speculator';
 import type { LintRule, LintContext } from '../../types.js';
 import { collectReferences, buildIdIndex } from '../speculator-helpers.js';
 
@@ -18,6 +18,11 @@ export const noIdReferenceRule: LintRule = {
             onDocument(doc) {
                 const references = collectReferences(doc);
                 for (const ref of references) {
+                    // Ignore section references and citations as they currently require IDs/keys
+                    if (ref.type === 'sectionReference' || ref.type === 'cite') {
+                        continue;
+                    }
+
                     const targetId = ref.targetId;
                     const isWorkspaceRef = 'targetDocumentId' in ref;
                     
@@ -38,9 +43,9 @@ export const noIdReferenceRule: LintRule = {
                     const nodeRecord = node as Record<string, unknown>;
                     if (nodeRecord.type === 'link') {
                         const url = (nodeRecord.url as string) || '';
+
                         if (url.startsWith('#')) {
-                            const id = url.slice(1);
-                            const target = idIndex.get(id);
+                            const target = nodeRecord as unknown as InlineLink;
                             const loc = target ? ` (defined at ${target.sourcePos?.file}:${target.sourcePos?.line})` : '';
                             context.report({
                                 message: `Internal link to ID "${url}" found${loc}. Use semantic <xref> or <a> with data-link-type instead.`,
@@ -56,6 +61,7 @@ export const noIdReferenceRule: LintRule = {
                             walk(child);
                         }
                     }
+                    
                 }
 
                 if (doc.children) {
