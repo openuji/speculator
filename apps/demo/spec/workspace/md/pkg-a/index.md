@@ -10,3 +10,7 @@ It also incorrectly defines <dfn>Term A</dfn> again.
 
 It defines <dfn data-dfn-for="ContextX">Ambiguous Term</dfn> and
 <dfn data-dfn-for="ContextY">Ambiguous Term</dfn>.
+
+<!-- Trigger: reference/no-unresolved-reference -->
+
+Unresolved cross-spec reference: [=MissingTermInA=].

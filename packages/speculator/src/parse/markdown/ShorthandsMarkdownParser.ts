@@ -6,7 +6,7 @@
 
 import type { Text, RootContent as MdastRootContent } from 'mdast';
 import type { MarkdownParserModule, ParseContext, InlineHandlerResult, NodeWithPosition } from '#src/parse/registry';
-import type { Inline, InlineCite, InlineWorkspaceDfnReference, InlineWorkspaceIdlReference, InlineWorkspaceElementReference, InlineVariable } from '#src/types/ast.generated';
+import type { Inline, InlineCite, InlineWorkspaceDfnReference, InlineWorkspaceIdlReference, InlineWorkspaceElementReference, InlineVariable, InlineSectionReference } from '#src/types/ast.generated';
 
 /**
  * Definition of a shorthand and its implementation status
@@ -106,7 +106,7 @@ export const SHORTHAND_REGISTRY: ShorthandDefinition[] = [
         name: 'webidl',
         syntax: '{{Identifier}}',
         description: 'WebIDL interface reference',
-        pattern: /\{\{([^}]+)\}\}/g,
+        pattern: /\{\{([^?!][^}]*)\}\}/g,
         status: 'implemented',
         handler: (match, ctx, node) => {
             const result: InlineWorkspaceIdlReference = {
@@ -130,6 +130,27 @@ export const SHORTHAND_REGISTRY: ShorthandDefinition[] = [
                 type: 'workspaceElementReference',
                 targetTerm: match[1],
                 children: [{ type: 'text', value: match[1] }],
+            };
+            const sourcePos = ctx.createSourcePos(node);
+            if (sourcePos) result.sourcePos = sourcePos;
+            return result;
+        },
+    },
+    {
+        name: 'section-reference',
+        syntax: '[§#id]',
+        description: 'Reference to a section',
+        pattern: /\[§#([^\]|]+)(?:\|([^\]]+))?\]/g,
+        status: 'implemented',
+        handler: (match, ctx, node) => {
+            const id = match[1];
+            const alias = match[2];
+            const result: InlineSectionReference = {
+                type: 'sectionReference',
+                targetId: id,
+                children: alias 
+                    ? [{ type: 'text', value: alias }]
+                    : undefined,
             };
             const sourcePos = ctx.createSourcePos(node);
             if (sourcePos) result.sourcePos = sourcePos;

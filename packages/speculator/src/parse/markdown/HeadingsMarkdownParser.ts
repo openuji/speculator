@@ -20,16 +20,26 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
         const headingNode = node as Heading;
         const sourcePos = ctx.createSourcePos(node);
 
-        // Detect {.unnumbered} suffix in the last text node
+        // Detect {.unnumbered} or {#id} suffix in the last text node
         let unnumbered = false;
+        let explicitId: string | undefined;
         const children = headingNode.children;
         if (children.length > 0) {
             const lastChild = children[children.length - 1];
             if (lastChild.type === 'text') {
+                // Detect unnumbered
                 const unnumberedRegex = /\s*\{\.unnumbered\}\s*$/;
                 if (unnumberedRegex.test(lastChild.value)) {
                     unnumbered = true;
                     lastChild.value = lastChild.value.replace(unnumberedRegex, '');
+                }
+
+                // Detect explicit ID
+                const idRegex = /\s*\{#([^}]+)\}\s*$/;
+                const idMatch = idRegex.exec(lastChild.value);
+                if (idMatch) {
+                    explicitId = idMatch[1];
+                    lastChild.value = lastChild.value.replace(idRegex, '');
                 }
             }
         }
@@ -37,6 +47,7 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
         const result: BlockHeading = {
             type: 'heading',
             depth: headingNode.depth,
+            id: explicitId,
             children: ctx.transformInlineChildren(headingNode.children),
         };
 

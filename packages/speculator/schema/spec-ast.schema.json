@@ -347,6 +347,45 @@
                 { "type": "object", "properties": { "type": { "const": "externalElementReference" } }, "required": ["type"] }
             ]
         },
+        "InlineSectionReference": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Reference to a section by its ID. Resolved during post-processing to obtain section numbers/titles.",
+                    "properties": {
+                        "type": {
+                            "const": "sectionReference"
+                        },
+                        "targetId": {
+                            "type": "string",
+                            "description": "The ID of the target section."
+                        },
+                        "targetNumber": {
+                            "type": "string",
+                            "description": "Resolved section number (e.g., '1.2.3'). Filled during compute phase."
+                        },
+                        "targetTitle": {
+                            "type": "string",
+                            "description": "Resolved section title. Filled during compute phase."
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            },
+                            "description": "Optional custom link text. If omitted, the renderer should use the section number (e.g., 'Section 1.2')."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "targetId"
+                    ]
+                }
+            ]
+        },
         "InlineRequirement": {
             "allOf": [
                 {
@@ -565,6 +604,9 @@
                 },
                 {
                     "$ref": "#/definitions/InlineVariable"
+                },
+                {
+                    "$ref": "#/definitions/InlineSectionReference"
                 }
             ]
         },
@@ -1351,6 +1393,14 @@
                         "type": "string"
                     }
                 },
+                "headingTitles": {
+                    "type": "object",
+                    "description": "Map of heading ID to plain text title",
+                    "x-computed": true,
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "wordCount": {
                     "type": "integer",
                     "description": "Total word count",
@@ -1383,6 +1433,12 @@
                 },
                 {
                     "$ref": "#/definitions/InlineExternalElementReference"
+                },
+                {
+                    "$ref": "#/definitions/InlineCite"
+                },
+                {
+                    "$ref": "#/definitions/InlineSectionReference"
                 }
             ]
         },

@@ -15,7 +15,9 @@ export const REFERENCE_TYPES = new Set([
     'workspaceElementReference',
     'externalDfnReference',
     'externalIdlReference',
-    'externalElementReference'
+    'externalElementReference',
+    'cite',
+    'sectionReference'
 ]);
 
 /**
@@ -101,7 +103,11 @@ export function resolveReference(
 
     const candidateTerms = 'candidateTerms' in ref && Array.isArray(ref.candidateTerms)
         ? ref.candidateTerms
-        : [ref.targetTerm];
+        : 'targetTerm' in ref
+            ? [(ref as { targetTerm: string }).targetTerm]
+            : [];
+
+    if (candidateTerms.length === 0) return [];
 
     let allCandidates: IndexDefinitionEntry[] = [];
 
@@ -114,7 +120,8 @@ export function resolveReference(
     }
 
     // Filter by forContext if specified in the reference
-    const refForContexts = (ref.forContexts || []).filter((fc: string | null): fc is string => fc !== null);
+    const contexts = 'forContexts' in ref ? ref.forContexts : [];
+    const refForContexts = (contexts || []).filter((fc: string | null): fc is string => fc !== null);
     if (refForContexts.length > 0) {
         const filtered = allCandidates.filter(c => 
             (c.forContexts || [null]).some(cfc => 

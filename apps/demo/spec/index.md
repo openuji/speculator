@@ -53,6 +53,8 @@ You can also use images: ![Example Image](https://via.placeholder.com/150)
 
 Inline code: `const x = 42;`
 
+reference to [§#text-formatting|Text Formating]
+
 Fenced code block:
 
 ```typescript

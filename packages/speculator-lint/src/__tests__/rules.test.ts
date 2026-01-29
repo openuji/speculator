@@ -2,7 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { SpeculatorLinter } from '../linter.js';
 import { builtInRules } from '../rules/index.js';
 import { recommendedConfig } from '../config.js';
-import type { Workspace, Document, BlockParagraph, InlineWorkspaceDfnReference, InlineLink } from '@openuji/speculator';
+import type { 
+    Workspace, 
+    Document, 
+    BlockParagraph, 
+    InlineLink,
+    InlineWorkspaceDfnReference,
+    InlineExternalDfnReference,
+    InlineCite,
+    InlineSectionReference
+} from '@openuji/speculator';
 
 function createMockWorkspace(docs: Document[]): Workspace {
     return {
@@ -312,6 +321,153 @@ describe('Speculator Lint Rules', () => {
             const diagnostics = result.diagnostics.filter(d => d.code === 'no-reverse-dependency');
             expect(diagnostics).toHaveLength(1);
             expect(diagnostics[0].message).toContain('Higher-level spec "doc-a.md" (level 0) depends on lower-level spec "doc-b.md" (level 1)');
+        });
+    });
+
+    describe('reference/no-unresolved-reference', () => {
+        it('reports error for workspace references with empty targetId or targetDocumentId', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'doc-1',
+                sourcePos: { file: 'doc-1.md', line: 1, column: 1 },
+                children: [
+                    {
+                        type: 'paragraph',
+                        children: [
+                            { 
+                                type: 'workspaceDfnReference', 
+                                targetTerm: 'UnresolvedTerm', 
+                                targetId: '', 
+                                targetDocumentId: 'other-doc',
+                                children: [] 
+                            } as InlineWorkspaceDfnReference,
+                            { 
+                                type: 'workspaceDfnReference', 
+                                targetTerm: 'UnresolvedDoc', 
+                                targetId: 'some-id', 
+                                targetDocumentId: '',
+                                children: [] 
+                            } as InlineWorkspaceDfnReference
+                        ]
+                    } as BlockParagraph
+                ]
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['doc-1.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'no-unresolved-reference');
+            expect(diagnostics).toHaveLength(2);
+            expect(diagnostics[0].message).toContain('Unresolved workspace reference to "UnresolvedTerm"');
+            expect(diagnostics[1].message).toContain('Unresolved workspace reference to "UnresolvedDoc"');
+        });
+
+        it('reports error for external references with empty targetId', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'doc-1',
+                sourcePos: { file: 'doc-1.md', line: 1, column: 1 },
+                children: [
+                    {
+                        type: 'paragraph',
+                        children: [
+                            { 
+                                type: 'externalDfnReference', 
+                                targetTerm: 'ExternalTerm', 
+                                xrefSpec: 'some-spec',
+                                targetId: '', 
+                                children: [] 
+                            } as InlineExternalDfnReference
+                        ]
+                    } as BlockParagraph
+                ]
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['doc-1.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'no-unresolved-reference');
+            expect(diagnostics).toHaveLength(1);
+            expect(diagnostics[0].message).toContain('Unresolved external reference to "ExternalTerm"');
+        });
+
+        it('reports error for unresolved citations with empty targetId', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'doc-1',
+                sourcePos: { file: 'doc-1.md', line: 1, column: 1 },
+                children: [
+                    {
+                        type: 'paragraph',
+                        children: [
+                            { 
+                                type: 'cite', 
+                                key: 'MISSING-BIB', 
+                                targetId: '', 
+                                children: [] 
+                            } as InlineCite
+                        ]
+                    } as BlockParagraph
+                ]
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['doc-1.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'no-unresolved-reference');
+            expect(diagnostics).toHaveLength(1);
+            expect(diagnostics[0].message).toContain('Unresolved citation for key "MISSING-BIB"');
+        });
+
+        it('reports error for unresolved section references with empty targetId', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'doc-1',
+                sourcePos: { file: 'doc-1.md', line: 1, column: 1 },
+                children: [
+                    {
+                        type: 'paragraph',
+                        children: [
+                            { 
+                                type: 'sectionReference', 
+                                targetId: '', 
+                                children: [] 
+                            } as InlineSectionReference
+                        ]
+                    } as BlockParagraph
+                ]
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['doc-1.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'no-unresolved-reference');
+            expect(diagnostics).toHaveLength(1);
+            expect(diagnostics[0].message).toContain('Unresolved section reference');
         });
     });
 });

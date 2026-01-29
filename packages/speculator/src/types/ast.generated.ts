@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-27T20:34:17.641Z
+ * Generated at: 2026-01-29T07:51:32.929Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -47,7 +47,8 @@ export type Inline =
   | InlineRequirement
   | InlineIssue
   | InlineCite
-  | InlineVariable;
+  | InlineVariable
+  | InlineSectionReference;
 export type InlineText = BaseNode & {
   type: 'text';
   value: string;
@@ -113,7 +114,9 @@ export type InlineReference =
   | InlineWorkspaceElementReference
   | InlineExternalDfnReference
   | InlineExternalIdlReference
-  | InlineExternalElementReference;
+  | InlineExternalElementReference
+  | InlineCite
+  | InlineSectionReference;
 export type InlineWorkspaceDfnReference = BaseNode &
   WorkspaceReferenceBase & {
     type: 'workspaceDfnReference';
@@ -138,30 +141,6 @@ export type InlineExternalElementReference = BaseNode &
   ExternalReferenceBase & {
     type: 'externalElementReference';
   };
-export type InlineRequirement = BaseNode & {
-  type: 'requirement';
-  keyword:
-    | 'MUST'
-    | 'MUST NOT'
-    | 'REQUIRED'
-    | 'SHALL'
-    | 'SHALL NOT'
-    | 'SHOULD'
-    | 'SHOULD NOT'
-    | 'RECOMMENDED'
-    | 'MAY'
-    | 'OPTIONAL';
-  /**
-   * Optional requirement identifier
-   */
-  id?: string;
-};
-export type InlineIssue = BaseNode & {
-  type: 'issue';
-  id?: string;
-  status?: 'open' | 'closed' | 'wontfix';
-  children: Inline[];
-};
 export type InlineCite = BaseNode & {
   type: 'cite';
   /**
@@ -208,6 +187,49 @@ export type InlineCite = BaseNode & {
    * Optional inline content that represents the cite text.
    */
   children?: Inline[];
+};
+export type InlineSectionReference = BaseNode & {
+  type: 'sectionReference';
+  /**
+   * The ID of the target section.
+   */
+  targetId: string;
+  /**
+   * Resolved section number (e.g., '1.2.3'). Filled during compute phase.
+   */
+  targetNumber?: string;
+  /**
+   * Resolved section title. Filled during compute phase.
+   */
+  targetTitle?: string;
+  /**
+   * Optional custom link text. If omitted, the renderer should use the section number (e.g., 'Section 1.2').
+   */
+  children?: Inline[];
+};
+export type InlineRequirement = BaseNode & {
+  type: 'requirement';
+  keyword:
+    | 'MUST'
+    | 'MUST NOT'
+    | 'REQUIRED'
+    | 'SHALL'
+    | 'SHALL NOT'
+    | 'SHOULD'
+    | 'SHOULD NOT'
+    | 'RECOMMENDED'
+    | 'MAY'
+    | 'OPTIONAL';
+  /**
+   * Optional requirement identifier
+   */
+  id?: string;
+};
+export type InlineIssue = BaseNode & {
+  type: 'issue';
+  id?: string;
+  status?: 'open' | 'closed' | 'wontfix';
+  children: Inline[];
 };
 export type InlineVariable = BaseNode & {
   type: 'variable';
@@ -566,6 +588,12 @@ export interface ComputedFields {
     [k: string]: string | undefined;
   };
   /**
+   * Map of heading ID to plain text title
+   */
+  headingTitles?: {
+    [k: string]: string | undefined;
+  };
+  /**
    * Total word count
    */
   wordCount?: number;
@@ -659,20 +687,22 @@ export function isInline(node: unknown): node is Inline {
     'text', 'emphasis', 'strong', 'inlineCode', 'link',
     'image', 'definition', 'requirement', 'issue', 'cite', 'variable',
     'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
-    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference',
+    'sectionReference'
   ].includes(type);
 }
 
 /**
  * Type guard for indexable inline nodes (definitions, references, requirements, issues)
  */
-export function isIndexableInline(node: unknown): node is InlineDefinition | InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference | InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference | InlineRequirement | InlineIssue {
+export function isIndexableInline(node: unknown): node is InlineDefinition | InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference | InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference | InlineRequirement | InlineIssue | InlineSectionReference {
   if (typeof node !== 'object' || node === null) return false;
   const type = (node as any).type;
   return [
     'definition', 'requirement', 'issue',
     'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
-    'externalDfnReference', 'externalIdlReference', 'externalElementReference'
+    'externalDfnReference', 'externalIdlReference', 'externalElementReference',
+    'sectionReference'
   ].includes(type);
 }
 
