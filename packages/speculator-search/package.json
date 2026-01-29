@@ -1,6 +1,6 @@
 {
     "name": "@openuji/speculator-search",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Search index builder for Speculator with content mapping and navigation support",
     "type": "module",
     "main": "dist/index.js",
