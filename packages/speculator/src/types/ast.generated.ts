@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-29T12:56:46.125Z
+ * Generated at: 2026-01-31T10:31:42.067Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -248,7 +248,8 @@ export type Block =
   | BlockTable
   | BlockThematicBreak
   | BlockHtml
-  | BlockNote;
+  | BlockNote
+  | BlockSpecStatement;
 export type BlockParagraph = BaseNode & {
   type: 'paragraph';
   id?: string;
@@ -339,6 +340,38 @@ export type BlockNote = BaseNode & {
    */
   informative: true;
   children: Block[];
+};
+export type BlockSpecStatement = BaseNode & {
+  type: 'specStatement';
+  /**
+   * Unique identifier for this statement. If not explicitly provided, it is finalized from tempId during post-processing.
+   */
+  id?: string;
+  /**
+   * Temporary/candidate identifier used during parse before uniqueness is guaranteed.
+   */
+  tempId?: string;
+  /**
+   * The requirement level of the statement.
+   */
+  level?: 'MUST' | 'MUST NOT' | 'SHOULD' | 'SHOULD NOT' | 'MAY' | 'NOTE' | 'NONE' | 'AMBIGUOUS';
+  /**
+   * True if the statement is considered normative.
+   */
+  normative?: boolean;
+  /**
+   * Plain text content of the statement (collapsed whitespace).
+   */
+  contentText: string;
+  children: Inline[];
+  /**
+   * Resolved HTML ID for the rendered element.
+   */
+  htmlId?: string;
+  /**
+   * Reference to the subject of the statement (IRI or fragment).
+   */
+  about?: string;
 };
 
 /**
@@ -493,6 +526,7 @@ export interface Indexes {
   examples?: IndexExampleEntry[];
   citations?: IndexCiteEntry[];
   bibliography?: IndexBiblioEntry[];
+  statements?: IndexStatementEntry[];
 }
 /**
  * Entry in the definitions index, extracted from InlineDefinition nodes
@@ -594,6 +628,15 @@ export interface IndexBiblioEntry {
   raw?: string;
 }
 /**
+ * Entry in the statements index, extracted from BlockSpecStatement nodes
+ */
+export interface IndexStatementEntry {
+  id: string;
+  level: string;
+  contentText: string;
+  sourcePos: SourcePos;
+}
+/**
  * Optional computed fields (x-computed: true)
  */
 export interface ComputedFields {
@@ -617,6 +660,10 @@ export interface ComputedFields {
    * Total word count
    */
   wordCount?: number;
+  /**
+   * Embedded machine-readable statements/requirements in JSON-LD format.
+   */
+  statementsJsonLd?: {};
   /**
    * Estimated reading time in minutes
    */
@@ -646,6 +693,7 @@ export interface Indexes1 {
   examples?: IndexExampleEntry[];
   citations?: IndexCiteEntry[];
   bibliography?: IndexBiblioEntry[];
+  statements?: IndexStatementEntry[];
 }
 
 

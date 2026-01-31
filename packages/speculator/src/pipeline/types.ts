@@ -3,11 +3,13 @@ import type {
     Document,
     IndexDefinitionEntry,
     IndexBiblioEntry,
+    IndexStatementEntry,
     Indexes1 as GlobalIndexAST,
 } from '#src/types/ast.generated';
+import type { SpecConfig } from '#src/preprocess/types';
 
 // Re-export the core AST types for convenience
-export type { Workspace, Document, IndexDefinitionEntry, IndexBiblioEntry, GlobalIndexAST };
+export type { Workspace, Document, IndexDefinitionEntry, IndexBiblioEntry, IndexStatementEntry, GlobalIndexAST };
 
 
 /**
@@ -20,6 +22,8 @@ export interface RuntimeGlobalIndex {
     definitions: Map<string, IndexDefinitionEntry[]>;
     /** Map of key -> bibliography entry */
     bibliography: Map<string, IndexBiblioEntry>;
+    /** Aggregated statements */
+    statements: IndexStatementEntry[];
 }
 
 /**
@@ -71,6 +75,7 @@ export interface TransformContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 
@@ -79,6 +84,7 @@ export interface IndexContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 
@@ -87,6 +93,7 @@ export interface ResolveContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 
@@ -95,6 +102,7 @@ export interface ComputeContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 

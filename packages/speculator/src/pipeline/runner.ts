@@ -17,6 +17,7 @@ import type {
     RuntimeWorkspace,
 } from './types.js';
 import type { Document } from '#src/types/ast.generated';
+import type { SpecConfig } from '#src/preprocess/types';
 import { buildGlobalIndex, finalizeWorkspace } from './workspace-index.js';
 
 // Default order for plugins that don't specify
@@ -83,7 +84,7 @@ export class SpeculatorPipeline {
         entries: { entry: string; configPath?: string }[];
         fileProvider: FileProvider;
     }): Promise<SpeculateResult> {
-        const results: { doc: Document; entry: string }[] = [];
+        const results: { doc: Document; entry: string; config: SpecConfig }[] = [];
 
         // 1. Initial run: Preprocess + Parse
         for (const entryConfig of options.entries) {
@@ -99,7 +100,11 @@ export class SpeculatorPipeline {
                 const parseResult = parseWithRegistry(preprocessedSpec, registry);
 
                 if (!parseResult.result) continue;
-                results.push({ doc: parseResult.result.document, entry: entryConfig.entry });
+                results.push({ 
+                    doc: parseResult.result.document, 
+                    entry: entryConfig.entry,
+                    config: preprocessedSpec.config
+                });
             } catch {
                 // Preprocess errors are now thrown, skip this entry
                 continue;
@@ -113,7 +118,7 @@ export class SpeculatorPipeline {
         const runtimeWorkspace: RuntimeWorkspace = {
             documents: new Map(results.map(r => [r.entry, r.doc])),
             documentLevels: new Map(results.map((r, i) => [r.entry, i])),
-            globalIndex: { definitions: new Map(), bibliography: new Map() }
+            globalIndex: { definitions: new Map(), bibliography: new Map(), statements: [] }
         };
 
 
@@ -124,7 +129,12 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of transformPlugins) {
-                await plugin.transform!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.transform!({ 
+                    document: res.doc, 
+                    level, 
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
 
@@ -135,7 +145,12 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of indexPlugins) {
-                await plugin.index!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.index!({ 
+                    document: res.doc, 
+                    level, 
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
 
@@ -147,7 +162,12 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of resolvePlugins) {
-                await plugin.resolve!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.resolve!({ 
+                    document: res.doc, 
+                    level, 
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
 
@@ -156,7 +176,12 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of computePlugins) {
-                await plugin.compute!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.compute!({ 
+                    document: res.doc, 
+                    level, 
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
 

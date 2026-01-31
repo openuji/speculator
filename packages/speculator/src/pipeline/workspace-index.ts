@@ -5,7 +5,8 @@ import type {
     RuntimeGlobalIndex,
     RuntimeWorkspace,
     Workspace,
-    GlobalIndexAST
+    GlobalIndexAST,
+    IndexStatementEntry,
 } from './types.js';
 import { normalizeTerm } from '#src/parse/normalize';
 
@@ -18,6 +19,7 @@ export function buildGlobalIndex(
 ): RuntimeGlobalIndex {
     const definitions = new Map<string, IndexDefinitionEntry[]>();
     const bibliography = new Map<string, IndexBiblioEntry>();
+    const statements: IndexStatementEntry[] = [];
 
     for (const [, doc] of documents) {
         // Aggregate definitions
@@ -46,11 +48,17 @@ export function buildGlobalIndex(
                 }
             }
         }
+
+        // Aggregate statements
+        if (doc.indexes?.statements) {
+            statements.push(...doc.indexes.statements);
+        }
     }
 
     return {
         definitions,
         bibliography,
+        statements,
     };
 }
 
@@ -66,7 +74,8 @@ export function finalizeWorkspace(runtime: RuntimeWorkspace): Workspace {
         definitions: Array.from(new Set(
             Array.from(runtime.globalIndex.definitions.values()).flat()
         )),
-        bibliography: Array.from(runtime.globalIndex.bibliography.values())
+        bibliography: Array.from(runtime.globalIndex.bibliography.values()),
+        statements: runtime.globalIndex.statements,
     };
 
     return {

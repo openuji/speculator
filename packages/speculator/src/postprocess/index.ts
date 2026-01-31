@@ -14,6 +14,7 @@ export { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.
 export { sectionIdPlugin } from './plugins/section-id.js';
 export { dfnIndexPlugin } from './plugins/dfn-index.js';
 export { citationIndexPlugin } from './plugins/citation-index.js';
+export { statementIndexPlugin } from './plugins/statement-index.js';
 
 // Resolve plugins
 export { referenceResolvePlugin } from './plugins/reference-resolve.js';
@@ -23,6 +24,7 @@ export { citationResolvePlugin } from './plugins/citation-resolve.js';
 export { bibliographyGeneratorPlugin } from './plugins/bibliography-generator.js';
 export { tocPlugin } from './plugins/toc.js';
 export { sectionResolvePlugin } from './plugins/section-resolve.js';
+export { jsonldComputePlugin } from './plugins/jsonld-compute.js';
 
 // Utilities
 export { walkDocument, type AstVisitor } from './walk-ast.js';
@@ -36,11 +38,13 @@ import { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.
 import { sectionIdPlugin } from './plugins/section-id.js';
 import { dfnIndexPlugin } from './plugins/dfn-index.js';
 import { citationIndexPlugin } from './plugins/citation-index.js';
+import { statementIndexPlugin } from './plugins/statement-index.js';
 import { referenceResolvePlugin } from './plugins/reference-resolve.js';
 import { citationResolvePlugin } from './plugins/citation-resolve.js';
 import { bibliographyGeneratorPlugin } from './plugins/bibliography-generator.js';
 import { tocPlugin } from './plugins/toc.js';
 import { sectionResolvePlugin } from './plugins/section-resolve.js';
+import { jsonldComputePlugin } from './plugins/jsonld-compute.js';
 
 export const corePlugins = [
     // Transform plugins
@@ -49,6 +53,7 @@ export const corePlugins = [
     sectionIdPlugin,            // order: { index: 5 }
     dfnIndexPlugin,             // order: { index: 10 }
     citationIndexPlugin,        // order: { index: 12 }
+    statementIndexPlugin,       // order: { index: 15 }
     // Resolve plugins
     referenceResolvePlugin,     // order: { resolve: 10 }
     citationResolvePlugin,      // order: { resolve: 15 }
@@ -56,5 +61,6 @@ export const corePlugins = [
     bibliographyGeneratorPlugin, // order: { compute: 5 }
     tocPlugin,                  // order: { compute: 10 }
     sectionResolvePlugin,       // order: { compute: 20 }
+    jsonldComputePlugin,        // order: { compute: 25 }
 ];
 

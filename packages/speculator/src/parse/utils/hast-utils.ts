@@ -8,7 +8,7 @@
 import type { Element, Text as HastText, RootContent as HastRootContent } from 'hast';
 import type { Text } from 'mdast';
 import type { ParseContext, NodeWithPosition } from '#src/parse/registry';
-import type { Inline, SourcePos } from '#src/types/ast.generated';
+import type { Inline, SourcePos, Block, Section, BlockParagraph } from '#src/types/ast.generated';
 
 /**
  * Get element attribute value from hast element.
@@ -75,6 +75,39 @@ export function transformHastInline(node: HastRootContent, ctx: ParseContext): I
 }
 
 /**
+ * Transform a hast node to Speculator block(s) using HTML handlers.
+ */
+export function transformHastBlock(node: HastRootContent, ctx: ParseContext): (Section | Block)[] {
+    if (node.type !== 'element') return [];
+
+    const element = node as Element;
+    const tagName = element.tagName.toLowerCase();
+
+    const handler = ctx.registry.getHtmlBlockHandler(tagName);
+
+    if (handler?.handleBlock) {
+        const result = handler.handleBlock(element, ctx);
+        if (result === null) return [];
+        if (Array.isArray(result)) return result;
+        return [result];
+    }
+
+    // Fallback: wrap as paragraph if it has inline content
+    const sourcePos = ctx.createSourcePos(element);
+    const inlines = ctx.transformInlineChildren(element.children);
+    if (inlines.length > 0) {
+        const result: BlockParagraph = {
+            type: 'paragraph',
+            children: inlines,
+        };
+        if (sourcePos) result.sourcePos = sourcePos;
+        return [result];
+    }
+
+    return [];
+}
+
+/**
  * Create a hast-aware ParseContext from a base (markdown) context.
  * This allows hast nodes to be transformed using the same handler infrastructure.
  * 
@@ -120,6 +153,13 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
                     // Delegate anything else (text, mdast nodes) to the original transformer
                     results.push(...originalTransform([child]));
                 }
+            }
+            return results;
+        },
+        transformBlockChildren: (children) => {
+            const results: (Section | Block)[] = [];
+            for (const child of children as HastRootContent[]) {
+                results.push(...transformHastBlock(child, hastCtx));
             }
             return results;
         },

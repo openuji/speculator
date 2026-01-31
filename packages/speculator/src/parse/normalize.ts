@@ -101,3 +101,22 @@ export function parseDataCite(attr: string): DataCiteParsed {
         forcedNormative,
     };
 }
+
+/**
+ * Generate a deterministic slug from content text.
+ * 
+ * Rules:
+ * 1. Lowercase
+ * 2. Remove apostrophes/quotes
+ * 3. Replace non-alphanumeric with -
+ * 4. Trim -
+ * 
+ * Example: "The client MUST send an Accept header." → "the-client-must-send-an-accept-header"
+ */
+export function slugify(str: string): string {
+    return str
+        .toLowerCase()
+        .replace(/['"]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}

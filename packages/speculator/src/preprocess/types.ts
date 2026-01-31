@@ -275,6 +275,14 @@ export interface SpecConfig {
     /** If true, suppresses the automatic generation of the conformance section. */
     noConformance?: boolean;
 
+    /** JSON-LD metadata configuration */
+    jsonLd?: {
+        /** Base IRI for the specification vocabulary (default: https://speculator.openuji.org/vocab#) */
+        vocab?: string;
+        /** Standard contexts to include */
+        contexts?: Record<string, string>;
+    };
+
 }
 
 // ============================================================================

@@ -1,7 +1,11 @@
 import nunjucks from 'nunjucks';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import type { Workspace, Document } from '@openuji/speculator';
+import type { 
+    Workspace, Document, Section, Block, Inline,
+    BlockParagraph, BlockSpecStatement, BlockHeading,
+    InlineDefinition, BlockList, ListItem 
+} from '@openuji/speculator';
 import type { LintResult } from '@openuji/speculator-lint';
 import type { ReSpecConfig } from '../model.js';
 import { generateToc, renderTocHtml } from './toc.js';
@@ -68,6 +72,9 @@ export async function generateHTML(
 
         // Logos
         logos: config.logos || [],
+        
+        // JSON-LD
+        jsonLd: buildJsonLd(workspace, document, config),
     };
 
     // Configure Nunjucks
@@ -144,34 +151,54 @@ function renderNode(node: any): string {
             return renderList(node);
         case 'listItem':
             return `<li>${renderChildren(node)}</li>`;
+        case 'specStatement':
+            return renderSpecStatement(node);
         default:
             return renderChildren(node);
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderSection(node: any): string {
+function renderSection(node: Section): string {
     const id = node.id ? ` id="${escapeHtml(node.id)}"` : '';
-    const className = node.data?.respecClass ? ` class="${escapeHtml(node.data.respecClass)}"` : '';
-    const title = node.title ? `<h${node.level || 2}>${escapeHtml(node.title)}</h${node.level || 2}>` : '';
+    
+    // Some sections might have custom classes added by the assembler/transformer
+    const data = (node as { data?: Record<string, unknown> }).data;
+    const respecClass = data?.respecClass;
+    const className = typeof respecClass === 'string' ? ` class="${escapeHtml(respecClass)}"` : '';
+    
+    let title = '';
+    if (node.heading) {
+        const depth = node.heading.depth;
+        title = `<h${depth}>${renderChildren(node.heading)}</h${depth}>`;
+    }
+    
     const content = renderChildren(node);
 
     return `<section${id}${className}>\n${title}\n${content}\n</section>`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderParagraph(node: any): string {
+function renderParagraph(node: BlockParagraph): string {
     return `<p>${renderChildren(node)}</p>`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderHeading(node: any): string {
-    const level = node.level || 2;
+function renderSpecStatement(node: BlockSpecStatement): string {
+    const id = node.htmlId ? ` id="${escapeHtml(node.htmlId)}"` : '';
+    const levelClass = node.level ? ` ${node.level.toLowerCase().replace(/\s+/g, '-')}` : '';
+    const normativeClass = node.normative ? ' normative' : ' informative';
+    
+    return `<p${id} class="spec-statement${normativeClass}${levelClass}">${renderChildren(node)}</p>`;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderHeading(node: BlockHeading): string {
+    const level = node.depth || 2;
     return `<h${level}>${renderChildren(node)}</h${level}>`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderDefinition(node: any): string {
+function renderDefinition(node: InlineDefinition): string {
     const term = node.term || renderChildren(node);
     const id = node.id ? ` id="${escapeHtml(node.id)}"` : '';
     return `<dfn${id}>${escapeHtml(term)}</dfn>`;
@@ -185,7 +212,7 @@ function renderReference(node: any): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderList(node: any): string {
+function renderList(node: BlockList): string {
     const tag = node.ordered ? 'ol' : 'ul';
     const content = renderChildren(node);
     return `<${tag}>${content}</${tag}>`;
@@ -193,9 +220,9 @@ function renderList(node: any): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderChildren(node: any): string {
-    if (!node.children || !Array.isArray(node.children)) return '';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return node.children.map((child: any) => renderNode(child)).join('');
+    const children = (node as { children?: (Section | Block | Inline | ListItem)[] }).children;
+    if (!children || !Array.isArray(children)) return '';
+    return children.map((child) => renderNode(child)).join('');
 }
 
 function escapeHtml(text: string): string {
@@ -205,4 +232,16 @@ function escapeHtml(text: string): string {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+/**
+ * Build JSON-LD script tag
+ */
+function buildJsonLd(_workspace: Workspace, document: Document, _config: ReSpecConfig): string {
+    const statementsJsonLd = document.computed?.statementsJsonLd;
+    if (!statementsJsonLd) {
+        return '';
+    }
+
+    return `<script type="application/ld+json">\n${JSON.stringify(statementsJsonLd, null, 2)}\n</script>`;
 }

@@ -1034,6 +1034,64 @@
                 }
             ]
         },
+        "BlockSpecStatement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "A semantic statement node (normative or informative). Auto-detects RFC 2119 keywords and handles JSON-LD harvesting.",
+                    "properties": {
+                        "type": {
+                            "const": "specStatement"
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Unique identifier for this statement. If not explicitly provided, it is finalized from tempId during post-processing."
+                        },
+                        "tempId": {
+                            "type": "string",
+                            "description": "Temporary/candidate identifier used during parse before uniqueness is guaranteed."
+                        },
+                        "level": {
+                            "type": "string",
+                            "enum": [
+                                "MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY", "NOTE", "NONE", "AMBIGUOUS"
+                            ],
+                            "description": "The requirement level of the statement."
+                        },
+                        "normative": {
+                            "type": "boolean",
+                            "description": "True if the statement is considered normative."
+                        },
+                        "contentText": {
+                            "type": "string",
+                            "description": "Plain text content of the statement (collapsed whitespace)."
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        },
+                        "htmlId": {
+                            "type": "string",
+                            "description": "Resolved HTML ID for the rendered element."
+                        },
+                        "about": {
+                            "type": "string",
+                            "description": "Reference to the subject of the statement (IRI or fragment)."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "contentText",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "Block": {
             "oneOf": [
                 {
@@ -1065,6 +1123,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockNote"
+                },
+                {
+                    "$ref": "#/definitions/BlockSpecStatement"
                 }
             ]
         },
@@ -1313,6 +1374,30 @@
                 "key"
             ]
         },
+        "IndexStatementEntry": {
+            "type": "object",
+            "description": "Entry in the statements index, extracted from BlockSpecStatement nodes",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "contentText": {
+                    "type": "string"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "id",
+                "level",
+                "contentText",
+                "sourcePos"
+            ]
+        },
         "Indexes": {
             "type": "object",
             "description": "Indexes extracted from AST marker nodes during indexing. Not computed fields.",
@@ -1357,6 +1442,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/IndexBiblioEntry"
+                    }
+                },
+                "statements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexStatementEntry"
                     }
                 }
             }
@@ -1423,6 +1514,11 @@
                 "wordCount": {
                     "type": "integer",
                     "description": "Total word count",
+                    "x-computed": true
+                },
+                "statementsJsonLd": {
+                    "type": "object",
+                    "description": "Embedded machine-readable statements/requirements in JSON-LD format.",
                     "x-computed": true
                 },
                 "readingTime": {

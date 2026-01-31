@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { bibliographyGeneratorPlugin } from '../plugins/bibliography-generator';
 import type { ComputeContext, RuntimeWorkspace, RuntimeGlobalIndex } from '../../pipeline/types';
 import type { Document, IndexCiteEntry, IndexBiblioEntry, Section, BlockHtml } from '../../types/ast.generated';
+import type { SpecConfig } from '../../preprocess/types';
 
 describe('bibliography-generator', () => {
     // Mock setup helper
@@ -29,7 +30,8 @@ describe('bibliography-generator', () => {
 
         const globalIndex: RuntimeGlobalIndex = {
             definitions: new Map(),
-            bibliography: bibMap
+            bibliography: bibMap,
+            statements: []
         };
 
         const workspace: RuntimeWorkspace = {
@@ -41,7 +43,8 @@ describe('bibliography-generator', () => {
         return {
             document,
             level: 0,
-            workspace
+            workspace,
+            config: { id: 'doc' } as SpecConfig
         };
     }
 
