@@ -22,6 +22,10 @@ description: Developer-grade linting for technical specifications.
 - **`reference/no-id-reference`** (Warning): Discourages hardcoded ID-based references (e.g., `href="#my-id"`). Use the semantic [Context Pattern](/features/references) instead.
 - **`reference/no-unresolved-reference`** (Error/Warning): Ensures all semantic references are successfully resolved. Workspace references are errors; external references and citations are warnings.
 
+### Vocabulary Rules
+
+- **`vocab/validate-spec-terms`** (Warning): Validates that `spec:` prefixed IRIs reference valid terms from the [W3C Spec Terms](https://www.w3.org/ns/spec) vocabulary. Reports unknown terms like `spec:InvalidTerm`.
+
 ## 🚀 Usage
 
 ### CLI
@@ -59,6 +63,7 @@ The `recommended` preset includes the following rules:
 | `reference/no-ambiguous-reference`  | `warning` |
 | `reference/no-id-reference`         | `warning` |
 | `reference/no-unresolved-reference` | `error`   |
+| `vocab/validate-spec-terms`         | `warning` |
 
 ## 📁 Workspace Configuration
 
