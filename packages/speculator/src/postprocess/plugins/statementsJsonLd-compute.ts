@@ -64,8 +64,8 @@ function getJsonLdType(level: string): string {
 /**
  * JSON-LD Compute Plugin
  */
-export const jsonldComputePlugin: Plugin = {
-    name: 'jsonld-compute',
+export const statementsJsonLdComputePlugin: Plugin = {
+    name: 'statementsJsonLd-compute',
     order: { compute: 25 }, // Run after ToC and section resolve
 
     async compute(ctx: ComputeContext): Promise<void> {

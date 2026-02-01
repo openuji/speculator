@@ -3,7 +3,7 @@ import { MarkdownUnitParser } from '#src/parse/markdown/index.js';
 import '#src/parse/html/index.js';
 import { assembleDocument } from '#src/parse/assembler.js';
 import { statementIndexPlugin } from '../statement-index.js';
-import { jsonldComputePlugin } from '../jsonld-compute.js';
+import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute.js';
 import type { IndexContext, ComputeContext } from '#src/pipeline/types.js';
 import type { IndexStatementEntry, Workspace, BlockSpecStatement, Inline, BlockParagraph } from '#src/types/ast.generated.js';
 
@@ -44,7 +44,7 @@ describe('SpecStatement markup separation', () => {
         const workspace = { globalIndex: { statements: [] } };
         (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
 
-        await jsonldComputePlugin.compute!({ 
+        await statementsJsonLdComputePlugin.compute!({ 
             document, 
             workspace: workspace as unknown as Workspace, 
             config 

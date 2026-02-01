@@ -9,14 +9,20 @@ import type { Document, BlockSpecStatement, IndexStatementEntry, Section, Block,
 import { walkDocument } from '../walk-ast.js';
 
 /**
- * Resolve Class of Products (COP) identifier to IRI or CURIE
+ * Resolve Class of Products (COP) identifier to IRI.
+ * 
+ * Rules:
+ * - Bare token (client) → local fragment (baseIri#client)
+ * - Fragment (#IDP) → absolute IRI (baseIri#IDP)  
+ * - External IRI (https://...) → use as-is
+ * - CURIE form (spec:Client, custom:Something) → use as-is
  */
 function resolveCop(cop: string, baseIri: string): string | undefined {
     const trimmed = cop.trim();
     if (!trimmed) return undefined;
     
-    // CURIE form
-    if (trimmed.includes(':')) {
+    // External IRI - use as-is
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
         return trimmed;
     }
 
@@ -25,8 +31,13 @@ function resolveCop(cop: string, baseIri: string): string | undefined {
         return `${baseIri}${trimmed}`;
     }
 
-    // Bare token fallback -> spec:Capitalized
-    return `spec:${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}`;
+    // CURIE form (spec:Something, custom:Something) - use as-is
+    if (trimmed.includes(':')) {
+        return trimmed;
+    }
+
+    // Bare token → absolute IRI with fragment
+    return `${baseIri}#${trimmed}`;
 }
 
 /**

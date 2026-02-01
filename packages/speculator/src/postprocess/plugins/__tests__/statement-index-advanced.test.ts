@@ -80,10 +80,10 @@ describe('statement-index advanced edge cases', () => {
         const statements = document.indexes!.statements!;
         expect(statements).toHaveLength(5);
         
-        expect(statements[0].subject).toBe('spec:Client');
-        expect(statements[1].subject).toBe('spec:Server');
-        expect(statements[2].subject).toBe('spec:Ua');
-        expect(statements[3].subject).toBe('spec:Client');
+        expect(statements[0].subject).toBe('nested#client');
+        expect(statements[1].subject).toBe('nested#server');
+        expect(statements[2].subject).toBe('nested#ua');
+        expect(statements[3].subject).toBe('nested#client');
         expect(statements[4].subject).toBeUndefined();
     });
 

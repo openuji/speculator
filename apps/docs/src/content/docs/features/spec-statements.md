@@ -64,14 +64,23 @@ The `data-cop` attribute specifies the **class of products** that a requirement 
 >
 ```
 
+### Resolution Rules
+
+| Input         | Output             | Notes                     |
+| ------------- | ------------------ | ------------------------- |
+| `client`      | `{specIri}#client` | Bare token → absolute IRI |
+| `#IDP`        | `{specIri}#IDP`    | Fragment → absolute IRI   |
+| `https://...` | `https://...`      | External IRI (unchanged)  |
+| `spec:Client` | `spec:Client`      | CURIE form (unchanged)    |
+
 This generates JSON-LD with `spec:requirementSubject`:
 
 ```json
 {
-  "id": "https://example.org/spec#auth-requirement",
+  "id": "https://example.org/spec/1.0.0#auth-requirement",
   "type": "spec:Requirement",
   "spec:requirementLevel": { "id": "spec:MUST" },
-  "spec:requirementSubject": { "id": "spec:Client" }
+  "spec:requirementSubject": { "id": "https://example.org/spec/1.0.0#client" }
 }
 ```
 
@@ -110,21 +119,28 @@ Speculator generates JSON-LD for all statements in `document.computed.statements
   "id": "https://example.org/spec/1.0.0",
   "type": "spec:Specification",
   "dct:title": "My Specification",
-  "spec:classesOfProducts": [{ "id": "spec:Client" }, { "id": "spec:Server" }],
+  "spec:classesOfProducts": [
+    { "id": "https://example.org/spec/1.0.0#server" },
+    { "id": "https://example.org/spec/1.0.0#client" }
+  ],
   "spec:requirement": [
     {
       "id": "https://example.org/spec/1.0.0#the-server-must-validate-tokens",
       "type": "spec:Requirement",
+      "spec:requirementSubject": {
+        "id": "https://example.org/spec/1.0.0#server"
+      },
       "spec:requirementLevel": { "id": "spec:MUST" },
-      "spec:statement": "The server MUST validate tokens.",
-      "spec:requirementSubject": { "id": "spec:Server" }
+      "spec:statement": "The server MUST validate tokens."
     },
     {
       "id": "https://example.org/spec/1.0.0#the-client-may-cache-tokens",
       "type": "spec:Permission",
+      "spec:requirementSubject": {
+        "id": "https://example.org/spec/1.0.0#client"
+      },
       "spec:requirementLevel": { "id": "spec:MAY" },
-      "spec:statement": "The client MAY cache tokens.",
-      "spec:requirementSubject": { "id": "spec:Client" }
+      "spec:statement": "The client MAY cache tokens."
     }
   ]
 }

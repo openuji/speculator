@@ -3,7 +3,7 @@ import { MarkdownUnitParser } from '#src/parse/markdown/index.js';
 import { HtmlUnitParser } from '#src/parse/html/index.js';
 import { assembleDocument } from '#src/parse/assembler.js';
 import { statementIndexPlugin } from '../statement-index.js';
-import { jsonldComputePlugin } from '../jsonld-compute.js';
+import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute.js';
 import type { IndexContext, ComputeContext } from '#src/pipeline/types.js';
 import type { IndexStatementEntry, Workspace } from '#src/types/ast.generated.js';
 
@@ -37,7 +37,7 @@ describe('data-cop resolution', () => {
         const statements = document.indexes!.statements!;
         expect(statements).toHaveLength(3);
         
-        expect(statements[0].subject).toBe('spec:Client');
+        expect(statements[0].subject).toBe('https://example.org/spec/1.0.0#client');
         expect(statements[1].subject).toBe('https://example.org/spec/1.0.0#IDP');
         expect(statements[2].subject).toBe('spec:Standard');
     });
@@ -66,9 +66,9 @@ describe('data-cop resolution', () => {
         const statements = document.indexes!.statements!;
         expect(statements).toHaveLength(3);
         
-        expect(statements[0].subject).toBe('spec:Server');
-        expect(statements[1].subject).toBe('spec:Client'); // Overridden by statement
-        expect(statements[2].subject).toBe('spec:Ua'); // Bare token fallback
+        expect(statements[0].subject).toBe('https://example.org/spec/1.0.0#server');
+        expect(statements[1].subject).toBe('https://example.org/spec/1.0.0#client'); // Overridden by statement
+        expect(statements[2].subject).toBe('https://example.org/spec/1.0.0#ua'); // Bare token fallback
     });
 
     it('emits correct JSON-LD with spec:classesOfProducts', async () => {
@@ -92,16 +92,16 @@ describe('data-cop resolution', () => {
         // Mock global index aggregation
         (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
 
-        await jsonldComputePlugin.compute!({ 
+        await statementsJsonLdComputePlugin.compute!({ 
             document, 
             workspace: workspace as unknown as Workspace, 
             config 
         } as ComputeContext);
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
-        expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'spec:Client' });
-        expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'spec:Server' });
-        expect(((jsonLd['spec:requirement'] as unknown[])[0] as Record<string, unknown>)['spec:requirementSubject']).toEqual({ id: 'spec:Client' });
+        expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'https://example.org/spec/1.0.0#client' });
+        expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'https://example.org/spec/1.0.0#server' });
+        expect(((jsonLd['spec:requirement'] as unknown[])[0] as Record<string, unknown>)['spec:requirementSubject']).toEqual({ id: 'https://example.org/spec/1.0.0#client' });
     });
 
     it('emits full JSON-LD matching documentation example (section inheritance + override)', async () => {
@@ -124,7 +124,7 @@ describe('data-cop resolution', () => {
         // Mock global index aggregation
         (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
 
-        await jsonldComputePlugin.compute!({ 
+        await statementsJsonLdComputePlugin.compute!({ 
             document, 
             workspace: workspace as unknown as Workspace, 
             config 
@@ -134,8 +134,8 @@ describe('data-cop resolution', () => {
         
         // Verify classesOfProducts includes both Client and Server
         const classesOfProducts = jsonLd['spec:classesOfProducts'] as { id: string }[];
-        expect(classesOfProducts).toContainEqual({ id: 'spec:Server' });
-        expect(classesOfProducts).toContainEqual({ id: 'spec:Client' });
+        expect(classesOfProducts).toContainEqual({ id: 'https://example.org/spec/1.0.0#server' });
+        expect(classesOfProducts).toContainEqual({ id: 'https://example.org/spec/1.0.0#client' });
 
         // Verify requirements (use spec:requirement, not spec:statement)
         const requirements = jsonLd['spec:requirement'] as Record<string, unknown>[];
@@ -148,7 +148,7 @@ describe('data-cop resolution', () => {
         expect(serverStmt).toBeDefined();
         expect(serverStmt!['type']).toBe('spec:Requirement');
         expect(serverStmt!['spec:requirementLevel']).toEqual({ id: 'spec:MUST' });
-        expect(serverStmt!['spec:requirementSubject']).toEqual({ id: 'spec:Server' });
+        expect(serverStmt!['spec:requirementSubject']).toEqual({ id: 'https://example.org/spec/1.0.0#server' });
 
         // Second statement: overrides to client, level MAY -> Permission
         const clientStmt = requirements.find(s => 
@@ -157,6 +157,6 @@ describe('data-cop resolution', () => {
         expect(clientStmt).toBeDefined();
         expect(clientStmt!['type']).toBe('spec:Permission');
         expect(clientStmt!['spec:requirementLevel']).toEqual({ id: 'spec:MAY' });
-        expect(clientStmt!['spec:requirementSubject']).toEqual({ id: 'spec:Client' });
+        expect(clientStmt!['spec:requirementSubject']).toEqual({ id: 'https://example.org/spec/1.0.0#client' });
     });
 });

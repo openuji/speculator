@@ -24,7 +24,7 @@ export { citationResolvePlugin } from './plugins/citation-resolve.js';
 export { bibliographyGeneratorPlugin } from './plugins/bibliography-generator.js';
 export { tocPlugin } from './plugins/toc.js';
 export { sectionResolvePlugin } from './plugins/section-resolve.js';
-export { jsonldComputePlugin } from './plugins/jsonld-compute.js';
+export { statementsJsonLdComputePlugin } from './plugins/statementsJsonLd-compute.js';
 
 // Utilities
 export { walkDocument, type AstVisitor } from './walk-ast.js';
@@ -44,7 +44,7 @@ import { citationResolvePlugin } from './plugins/citation-resolve.js';
 import { bibliographyGeneratorPlugin } from './plugins/bibliography-generator.js';
 import { tocPlugin } from './plugins/toc.js';
 import { sectionResolvePlugin } from './plugins/section-resolve.js';
-import { jsonldComputePlugin } from './plugins/jsonld-compute.js';
+import { statementsJsonLdComputePlugin } from './plugins/statementsJsonLd-compute.js';
 
 export const corePlugins = [
     // Transform plugins
@@ -61,6 +61,6 @@ export const corePlugins = [
     bibliographyGeneratorPlugin, // order: { compute: 5 }
     tocPlugin,                  // order: { compute: 10 }
     sectionResolvePlugin,       // order: { compute: 20 }
-    jsonldComputePlugin,        // order: { compute: 25 }
+    statementsJsonLdComputePlugin, // order: { compute: 25 }
 ];
 
