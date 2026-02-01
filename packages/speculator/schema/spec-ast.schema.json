@@ -7,6 +7,36 @@
     "description": "AST-first schema for Speculator workspace. A workspace contains one or more specification documents. Semantic marker nodes are introduced during parse and may be refined during resolve. Global indexing aggregates definitions across documents.",
     "type": "object",
     "definitions": {
+        "NormativeLevel": {
+            "type": "string",
+            "enum": [
+                "MUST",
+                "MUST NOT",
+                "SHOULD",
+                "SHOULD NOT",
+                "MAY",
+                "NOTE",
+                "NONE",
+                "AMBIGUOUS"
+            ],
+            "description": "Canonical RFC 2119 / 8174 requirement level."
+        },
+        "NormativeKeyword": {
+            "type": "string",
+            "enum": [
+                "MUST",
+                "MUST NOT",
+                "REQUIRED",
+                "SHALL",
+                "SHALL NOT",
+                "SHOULD",
+                "SHOULD NOT",
+                "RECOMMENDED",
+                "MAY",
+                "OPTIONAL"
+            ],
+            "description": "RFC 2119 / 8174 keyword aliases."
+        },
         "SourcePos": {
             "type": "object",
             "description": "Source position for bidirectional AST-to-source mapping",
@@ -399,19 +429,7 @@
                             "const": "requirement"
                         },
                         "keyword": {
-                            "type": "string",
-                            "enum": [
-                                "MUST",
-                                "MUST NOT",
-                                "REQUIRED",
-                                "SHALL",
-                                "SHALL NOT",
-                                "SHOULD",
-                                "SHOULD NOT",
-                                "RECOMMENDED",
-                                "MAY",
-                                "OPTIONAL"
-                            ]
+                            "$ref": "#/definitions/NormativeKeyword"
                         },
                         "id": {
                             "type": "string",
@@ -668,6 +686,10 @@
                             "type": "boolean",
                             "description": "If true, the section created from this heading will be unnumbered.",
                             "default": false
+                        },
+                        "dataCop": {
+                            "type": "string",
+                            "description": "Optional Class of Products (COP) identifier for this heading/section scope."
                         }
                     },
                     "required": [
@@ -1055,15 +1077,8 @@
                             "description": "Temporary/candidate identifier used during parse before uniqueness is guaranteed."
                         },
                         "level": {
-                            "type": "string",
-                            "enum": [
-                                "MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY", "NOTE", "NONE", "AMBIGUOUS"
-                            ],
+                            "$ref": "#/definitions/NormativeLevel",
                             "description": "The requirement level of the statement."
-                        },
-                        "normative": {
-                            "type": "boolean",
-                            "description": "True if the statement is considered normative."
                         },
                         "contentText": {
                             "type": "string",
@@ -1075,13 +1090,9 @@
                                 "$ref": "#/definitions/Inline"
                             }
                         },
-                        "htmlId": {
+                        "dataCop": {
                             "type": "string",
-                            "description": "Resolved HTML ID for the rendered element."
-                        },
-                        "about": {
-                            "type": "string",
-                            "description": "Reference to the subject of the statement (IRI or fragment)."
+                            "description": "Optional explicit Class of Products (COP) identifier for this statement."
                         }
                     },
                     "required": [
@@ -1166,6 +1177,10 @@
                                     }
                                 ]
                             }
+                        },
+                        "dataCop": {
+                            "type": "string",
+                            "description": "Optional Class of Products (COP) identifier for this section scope."
                         }
                     },
                     "required": [
@@ -1386,6 +1401,10 @@
                 },
                 "contentText": {
                     "type": "string"
+                },
+                "subject": {
+                    "type": "string",
+                    "description": "Resolved requirement subject IRI (Class of Product)"
                 },
                 "sourcePos": {
                     "$ref": "#/definitions/SourcePos"

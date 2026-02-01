@@ -7,9 +7,7 @@ describe('render-respec HTML generation', () => {
         const stmtNode: BlockSpecStatement = {
             type: 'specStatement',
             id: 'stmt-1',
-            htmlId: 'stmt-stmt-1',
             level: 'MUST NOT',
-            normative: true,
             contentText: 'the server must not disclose secrets.',
             children: [{ type: 'text', value: 'The server MUST NOT disclose secrets.' } as InlineText]
         };
@@ -74,8 +72,7 @@ describe('render-respec HTML generation', () => {
         });
 
         // Check HTML classes
-        expect(html).toContain('class="spec-statement normative must-not"');
-        expect(html).toContain('id="stmt-stmt-1"');
+        expect(html).toContain('class="spec-statement must-not"');
         
         // Check JSON-LD
         expect(html).toContain('application/ld+json');

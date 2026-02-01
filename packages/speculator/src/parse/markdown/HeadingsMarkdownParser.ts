@@ -20,26 +20,39 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
         const headingNode = node as Heading;
         const sourcePos = ctx.createSourcePos(node);
 
-        // Detect {.unnumbered} or {#id} suffix in the last text node
+        // Detect attribute block { .unnumbered #id data-cop="..." }
         let unnumbered = false;
         let explicitId: string | undefined;
+        let dataCop: string | undefined;
+
         const children = headingNode.children;
         if (children.length > 0) {
             const lastChild = children[children.length - 1];
             if (lastChild.type === 'text') {
-                // Detect unnumbered
-                const unnumberedRegex = /\s*\{\.unnumbered\}\s*$/;
-                if (unnumberedRegex.test(lastChild.value)) {
-                    unnumbered = true;
-                    lastChild.value = lastChild.value.replace(unnumberedRegex, '');
-                }
+                const attrRegex = /\s*\{([^}]+)\}\s*$/;
+                const match = attrRegex.exec(lastChild.value);
+                if (match) {
+                    const attrContent = match[1];
+                    
+                    // Parse .unnumbered
+                    if (/\.unnumbered\b/.test(attrContent)) {
+                        unnumbered = true;
+                    }
 
-                // Detect explicit ID
-                const idRegex = /\s*\{#([^}]+)\}\s*$/;
-                const idMatch = idRegex.exec(lastChild.value);
-                if (idMatch) {
-                    explicitId = idMatch[1];
-                    lastChild.value = lastChild.value.replace(idRegex, '');
+                    // Parse #id
+                    const idMatch = /#([^\s}]+)/.exec(attrContent);
+                    if (idMatch) {
+                        explicitId = idMatch[1];
+                    }
+
+                    // Parse data-cop
+                    const dataCopMatch = /data-cop=(?:"([^"]+)"|'([^']+)'|([^\s}]+))/.exec(attrContent);
+                    if (dataCopMatch) {
+                        dataCop = dataCopMatch[1] || dataCopMatch[2] || dataCopMatch[3];
+                    }
+
+                    // Remove the attribute block from text
+                    lastChild.value = lastChild.value.replace(attrRegex, '');
                 }
             }
         }
@@ -49,6 +62,7 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
             depth: headingNode.depth,
             id: explicitId,
             children: ctx.transformInlineChildren(headingNode.children),
+            dataCop,
         };
 
         if (unnumbered) result.unnumbered = true;

@@ -140,7 +140,7 @@ describe('assembleDocument', () => {
             para('Content'),
         ];
 
-        const doc = assembleDocument(blocks, { id: 'test-doc' }, '/spec/format.md');
+        const doc = assembleDocument(blocks, { id: 'test-doc', specIri: 'test-doc' }, '/spec/format.md');
 
         expect(doc.type).toBe('document');
         expect(doc.children).toHaveLength(1);
@@ -148,7 +148,7 @@ describe('assembleDocument', () => {
     });
 
     it('includes metadata from config', () => {
-        const doc = assembleDocument([], { id: 'test-doc', title: 'My Spec', shortName: 'myspec' }, '/spec/format.md');
+        const doc = assembleDocument([], { id: 'test-doc', specIri: 'test-doc', title: 'My Spec', shortName: 'myspec' }, '/spec/format.md');
 
         expect(doc.metadata?.title).toBe('My Spec');
         expect(doc.metadata?.shortName).toBe('myspec');
@@ -161,7 +161,7 @@ describe('assembleDocument', () => {
             subtitle: 'A Great Spec',
             shortName: 'myspec',
             maturityLevel: 'stable' as const,
-            thisVersion: '1.0.0',
+            specIri: '1.0.0',
             custom: {
                 priority: 'high',
                 tags: ['core', 'v1']
@@ -182,9 +182,10 @@ describe('assembleDocument', () => {
         });
     });
 
-    it('omits metadata if config is empty', () => {
-        const doc = assembleDocument([], { id: 'test-doc' }, '/spec/format.md');
+    it('sets version from specIri if no explicit version', () => {
+        const doc = assembleDocument([], { id: 'test-doc', specIri: 'test-doc' }, '/spec/format.md');
 
-        expect(doc.metadata).toBeUndefined();
+        // specIri is always set, so version will be populated
+        expect(doc.metadata).toMatchObject({ version: 'test-doc' });
     });
 });

@@ -214,7 +214,10 @@ export interface SpecConfig {
     version?: string;
 
     /** This version URL */
-    thisVersion?: string;
+    specIri: string;
+
+    /** Base URL for assembling thisVersion (e.g., https://example.org/specs/) */
+    baseUrl?: string;
 
     /** Latest version URL */
     latestVersion?: string;
@@ -312,6 +315,8 @@ export interface WorkspaceEntry {
     entry: string;
     /** Optional path to specific config file */
     configPath?: string;
+    /** Optional config overrides to merge with loaded config (highest priority) */
+    configOverrides?: Partial<SpecConfig>;
 }
 
 /**

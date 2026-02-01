@@ -1,0 +1,113 @@
+import { describe, it, expect } from 'vitest';
+import { MarkdownUnitParser } from '#src/parse/markdown/index.js';
+import '#src/parse/html/index.js';
+import { assembleDocument } from '#src/parse/assembler.js';
+import { statementIndexPlugin } from '../statement-index.js';
+import type { IndexContext } from '#src/pipeline/types.js';
+
+describe('statement-index advanced edge cases', () => {
+    const mdParser = new MarkdownUnitParser();
+
+    it('handles ID collisions correctly', async () => {
+        const content = `
+<spec-statement id="the-a-element">Explicitly the first.</spec-statement>
+
+<spec-statement>The A element</spec-statement>
+
+<spec-statement>The A element</spec-statement>
+
+<spec-statement id="the-a-element-1">Another explicit.</spec-statement>
+
+<spec-statement>The A element</spec-statement>
+`;
+        const blocks = mdParser.parse({ file: 'collision.md', format: 'markdown', content, startLine: 1 });
+        const document = assembleDocument(blocks, { id: 'collision', title: 'Collision' }, 'collision.md');
+
+        await statementIndexPlugin.index!({ 
+            document, 
+            config: { id: 'collision', title: 'Collision', specIri: 'collision' }
+        } as IndexContext);
+
+        const statements = document.indexes!.statements!;
+        expect(statements).toHaveLength(5);
+        
+        // 1. Explicit ID
+        expect(statements[0].id).toBe('the-a-element');
+        
+        // 2. Generated from "The A element" -> slugified "the-a-element"
+        // But "the-a-element" and "the-a-element-1" are already taken (Pass 1 collects them).
+        // So the first generated one should be "the-a-element-2"
+        expect(statements[1].id).toBe('the-a-element-2');
+        
+        // 3. Next collision
+        expect(statements[2].id).toBe('the-a-element-3');
+        
+        // 4. Explicit "the-a-element-1"
+        expect(statements[3].id).toBe('the-a-element-1');
+        
+        // 5. Next collision
+        expect(statements[4].id).toBe('the-a-element-4');
+    });
+
+    it('resolves data-cop with nested inheritance and overrides', async () => {
+        const content = `
+## Section 1 {data-cop="client"}
+
+<spec-statement>Inherits client.</spec-statement>
+
+### Subsection 1.1 {data-cop="server"}
+
+<spec-statement>Inherits server.</spec-statement>
+
+<spec-statement data-cop="ua">Overrides to UA.</spec-statement>
+
+### Subsection 1.2
+
+<spec-statement>Inherits section 1 (client).</spec-statement>
+
+## Section 2
+
+<spec-statement>No COP.</spec-statement>
+`;
+        const blocks = mdParser.parse({ file: 'nested.md', format: 'markdown', content, startLine: 1 });
+        const document = assembleDocument(blocks, { id: 'nested', title: 'Nested' }, 'nested.md');
+
+        await statementIndexPlugin.index!({ 
+            document, 
+            config: { id: 'nested', title: 'Nested', specIri: 'nested' }
+        } as IndexContext);
+
+        const statements = document.indexes!.statements!;
+        expect(statements).toHaveLength(5);
+        
+        expect(statements[0].subject).toBe('spec:Client');
+        expect(statements[1].subject).toBe('spec:Server');
+        expect(statements[2].subject).toBe('spec:Ua');
+        expect(statements[3].subject).toBe('spec:Client');
+        expect(statements[4].subject).toBeUndefined();
+    });
+
+    it('resolves level defaults and ensures sourcePos matches document', async () => {
+        const content = `
+<spec-statement>Plain statement.</spec-statement>
+<spec-statement level="MUST">Normative statement.</spec-statement>
+`;
+        const blocks = mdParser.parse({ file: 'levels.md', format: 'markdown', content, startLine: 1 });
+        const document = assembleDocument(blocks, { id: 'levels', title: 'Levels' }, 'levels.md');
+
+        await statementIndexPlugin.index!({ 
+            document, 
+            config: { id: 'levels', title: 'Levels', specIri: 'levels' }
+        } as IndexContext);
+
+        const statements = document.indexes!.statements!;
+        expect(statements).toHaveLength(2);
+        
+        expect(statements[0].level).toBe('NONE');
+        expect(statements[1].level).toBe('MUST');
+        
+        expect(statements[0].sourcePos).toBeDefined();
+        expect(statements[0].sourcePos!.file).toBe('levels.md');
+        expect(statements[1].sourcePos!.file).toBe('levels.md');
+    });
+});

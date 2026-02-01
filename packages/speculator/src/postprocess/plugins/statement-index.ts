@@ -5,13 +5,34 @@
  */
 
 import type { Plugin, IndexContext } from '#src/pipeline/types';
-import type { Document, BlockSpecStatement, IndexStatementEntry } from '#src/types/ast.generated';
+import type { Document, BlockSpecStatement, IndexStatementEntry, Section, Block, BlockHeading } from '#src/types/ast.generated';
 import { walkDocument } from '../walk-ast.js';
+
+/**
+ * Resolve Class of Products (COP) identifier to IRI or CURIE
+ */
+function resolveCop(cop: string, baseIri: string): string | undefined {
+    const trimmed = cop.trim();
+    if (!trimmed) return undefined;
+    
+    // CURIE form
+    if (trimmed.includes(':')) {
+        return trimmed;
+    }
+
+    // Fragment form
+    if (trimmed.startsWith('#')) {
+        return `${baseIri}${trimmed}`;
+    }
+
+    // Bare token fallback -> spec:Capitalized
+    return `spec:${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}`;
+}
 
 /**
  * Build statement index from document into document.indexes
  */
-function buildStatementIndex(document: Document): void {
+function buildStatementIndex(document: Document, baseIri: string): void {
     // Initialize indexes structure
     if (!document.indexes) {
         document.indexes = {};
@@ -35,11 +56,29 @@ function buildStatementIndex(document: Document): void {
         }
     });
 
-    // Pass 2: Finalize temporary IDs and populate index
-    walkDocument(document, {
-        visitBlock: (block) => {
-            if (block.type === 'specStatement') {
-                const stmt = block as BlockSpecStatement;
+    const walk = (nodes: (Section | Block)[], currentCop?: string) => {
+        for (const node of nodes) {
+            let nextCop = currentCop;
+            
+            // Sections and Headings can provide dataCop
+            if (node.type === 'section') {
+                const section = node as Section;
+                if (section.dataCop) {
+                    nextCop = section.dataCop;
+                }
+            } else if (node.type === 'heading') {
+                const heading = node as BlockHeading;
+                if (heading.dataCop) {
+                    nextCop = heading.dataCop;
+                }
+            }
+
+            if (node.type === 'specStatement') {
+                const stmt = node as BlockSpecStatement;
+                
+                // If statement has its own dataCop, it takes precedence
+                const effectiveCop = stmt.dataCop || nextCop;
+                const resolvedSubject = effectiveCop ? resolveCop(effectiveCop, baseIri) : undefined;
 
                 // Finalize ID if not explicit
                 if (!stmt.id) {
@@ -53,16 +92,12 @@ function buildStatementIndex(document: Document): void {
                     usedIds.add(finalId);
                 }
 
-                // Ensure htmlId is set
-                if (!stmt.htmlId) {
-                    stmt.htmlId = `stmt-${stmt.id}`;
-                }
-
                 // Create index entry
                 const entry: IndexStatementEntry = {
                     id: stmt.id,
                     level: stmt.level || 'NONE',
                     contentText: stmt.contentText,
+                    subject: resolvedSubject,
                     sourcePos: stmt.sourcePos || {
                         file: document.sourcePos?.file || 'unknown',
                         line: 0,
@@ -77,8 +112,19 @@ function buildStatementIndex(document: Document): void {
 
                 statementIndex.push(entry);
             }
+
+            if ('children' in node && Array.isArray(node.children)) {
+                walk(node.children as (Section | Block)[], nextCop);
+            }
+            if (node.type === 'section' && node.heading) {
+                // Headings are handled together with the section they belong to?
+                // Actually, if we are in a section, we already looked at node.dataCop.
+                // We don't need to walk heading children separately for COP, as they are inline.
+            }
         }
-    });
+    };
+
+    walk(document.children);
 }
 
 /**
@@ -89,6 +135,10 @@ export const statementIndexPlugin: Plugin = {
     order: { index: 10 },
 
     async index(ctx: IndexContext): Promise<void> {
-        buildStatementIndex(ctx.document);
+        const baseSpecIri = ctx.config.specIri;
+        if (!baseSpecIri) {
+            throw new Error('specIri is required for statement index plugin');
+        }
+        buildStatementIndex(ctx.document, baseSpecIri);
     },
 };

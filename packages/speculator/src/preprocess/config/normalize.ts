@@ -59,10 +59,27 @@ function mapSpecStatusToMaturity(specStatus: string): MaturityLevel | undefined 
  * @returns Normalized SpecConfig with defaults applied
  */
 export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
+    
+    const id = docConfig.id;
+    
+      // baseUrl for assembling thisVersion (defaults to empty string)
+    const baseUrl = docConfig.baseUrl;
+    
+    const raw = docConfig.respec ?? {};
+    let thisVersion: string;
+    // Priority: root baseUrl > respec.thisVersion > assembled from baseUrl + id
+    if (baseUrl !== undefined) {
+        thisVersion = `${baseUrl.replace(/\/$/, '')}/${id}`;
+    } else if (raw.thisVersion !== undefined) {
+        thisVersion = raw.thisVersion;
+    } else {
+        thisVersion = id;
+    }
+
     const config: SpecConfig = {
         id: docConfig.id,
+        specIri: thisVersion,
     };
-    const raw = docConfig.respec ?? {};
 
     // Document metadata - Priority: root title > respec.title
     if (docConfig.title !== undefined) {
@@ -102,9 +119,11 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     if (raw.version !== undefined) {
         config.version = raw.version;
     }
-    if (raw.thisVersion !== undefined) {
-        config.thisVersion = raw.thisVersion;
-    }
+
+  
+
+
+
     if (raw.latestVersion !== undefined) {
         config.latestVersion = raw.latestVersion;
     }

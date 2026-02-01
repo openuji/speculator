@@ -184,11 +184,10 @@ function renderParagraph(node: BlockParagraph): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderSpecStatement(node: BlockSpecStatement): string {
-    const id = node.htmlId ? ` id="${escapeHtml(node.htmlId)}"` : '';
+    const id = '';
     const levelClass = node.level ? ` ${node.level.toLowerCase().replace(/\s+/g, '-')}` : '';
-    const normativeClass = node.normative ? ' normative' : ' informative';
     
-    return `<p${id} class="spec-statement${normativeClass}${levelClass}">${renderChildren(node)}</p>`;
+    return `<p${id} class="spec-statement${levelClass}">${renderChildren(node)}</p>`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

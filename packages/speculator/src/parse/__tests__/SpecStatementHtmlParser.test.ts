@@ -22,10 +22,8 @@ describe('SpecStatementHtmlParser', () => {
         const stmt = blocks[0] as BlockSpecStatement;
         expect(stmt.type).toBe('specStatement');
         expect(stmt.level).toBe('MUST');
-        expect(stmt.normative).toBe(true);
         expect(stmt.tempId).toBe('the-client-must-send-an-accept-header');
         expect(stmt.id).toBeUndefined();
-        expect(stmt.htmlId).toBeUndefined();
     });
 
     it('infers MUST NOT correctly', () => {
@@ -40,7 +38,6 @@ describe('SpecStatementHtmlParser', () => {
         const blocks = parser.parse(unit);
         const stmt = blocks[0] as BlockSpecStatement;
         expect(stmt.level).toBe('MAY');
-        expect(stmt.normative).toBe(true);
     });
 
     it('prefers explicit id attribute', () => {
@@ -48,7 +45,6 @@ describe('SpecStatementHtmlParser', () => {
         const blocks = parser.parse(unit);
         const stmt = blocks[0] as BlockSpecStatement;
         expect(stmt.id).toBe('secret-disclosure');
-        expect(stmt.htmlId).toBe('stmt-secret-disclosure');
     });
 
     it('uses about attribute for ID if no explicit ID', () => {

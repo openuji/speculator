@@ -120,3 +120,26 @@ export function slugify(str: string): string {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 }
+
+interface NodeWithText {
+    type: string;
+    value?: string;
+    children?: NodeWithText[];
+}
+
+/**
+ * Recursively collect plain text from a list of AST nodes.
+ */
+export function toPlainText(nodes: NodeWithText[]): string {
+    let text = '';
+    for (const node of nodes) {
+        if (node.type === 'text' || node.type === 'plain') {
+            text += node.value || '';
+        } else if (node.children && Array.isArray(node.children)) {
+            text += toPlainText(node.children);
+        } else if (node.value && typeof node.value === 'string') {
+            text += node.value;
+        }
+    }
+    return text;
+}

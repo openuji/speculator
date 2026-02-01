@@ -55,6 +55,10 @@ function createSectionFromHeading(heading: BlockHeading): Section {
         section.unnumbered = true;
         section.heading!.unnumbered = true;
     }
+    if (heading.dataCop) {
+        section.dataCop = heading.dataCop;
+        section.heading!.dataCop = heading.dataCop;
+    }
 
     return section;
 }
@@ -164,8 +168,8 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
     if (config.version) {
         meta.version = config.version;
         hasContent = true;
-    } else if (config.thisVersion) {
-        meta.version = config.thisVersion;
+    } else if (config.specIri) {
+        meta.version = config.specIri;
         hasContent = true;
     }
     if (config.publishDate) {

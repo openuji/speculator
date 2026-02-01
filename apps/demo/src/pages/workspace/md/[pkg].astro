@@ -32,8 +32,12 @@ const pipeline = new SpeculatorPipeline(corePlugins);
 
 const result = await pipeline.runWorkspace({
   entries: [
-    { entry: path.join(specRoot, "pkg-a/index.md") },
-    { entry: path.join(specRoot, "pkg-b/index.md") },
+    {
+      entry: path.join(specRoot, "pkg-a/index.md"),
+    },
+    {
+      entry: path.join(specRoot, "pkg-b/index.md"),
+    },
   ],
   fileProvider,
 });
@@ -80,9 +84,19 @@ const allDiagnostics = lintResult?.diagnostics || [];
 console.log(`[LINTER] Found ${allDiagnostics.length} diagnostics for ${pkg}`);
 allDiagnostics.forEach((d) => console.log(`[LINTER] [${d.code}] ${d.message}`));
 const toc = document.computed?.toc || [];
+const statementsJsonLd = document.computed?.statementsJsonLd;
 ---
 
 <Layout title={`${metadata.title || pkg} - Speculator Workspace (md)`}>
+  {
+    statementsJsonLd && (
+      <script
+        type="application/ld+json"
+        slot="head"
+        set:html={JSON.stringify(statementsJsonLd, null, 2)}
+      />
+    )
+  }
   <div class="spec-layout">
     {toc.length > 0 && <Toc toc={toc} />}
 

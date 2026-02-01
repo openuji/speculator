@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-31T10:31:42.067Z
+ * Generated at: 2026-02-01T13:45:43.566Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -28,12 +28,20 @@ export type Section = BaseNode & {
      * If true, the section created from this heading will be unnumbered.
      */
     unnumbered?: boolean;
+    /**
+     * Optional Class of Products (COP) identifier for this heading/section scope.
+     */
+    dataCop?: string;
   };
   /**
    * If true, this section and its descendants do not increment the TOC counter at this level.
    */
   unnumbered?: boolean;
   children: (Section | Block)[];
+  /**
+   * Optional Class of Products (COP) identifier for this section scope.
+   */
+  dataCop?: string;
 };
 export type Inline =
   | InlineText
@@ -209,22 +217,26 @@ export type InlineSectionReference = BaseNode & {
 };
 export type InlineRequirement = BaseNode & {
   type: 'requirement';
-  keyword:
-    | 'MUST'
-    | 'MUST NOT'
-    | 'REQUIRED'
-    | 'SHALL'
-    | 'SHALL NOT'
-    | 'SHOULD'
-    | 'SHOULD NOT'
-    | 'RECOMMENDED'
-    | 'MAY'
-    | 'OPTIONAL';
+  keyword: NormativeKeyword;
   /**
    * Optional requirement identifier
    */
   id?: string;
 };
+/**
+ * RFC 2119 / 8174 keyword aliases.
+ */
+export type NormativeKeyword =
+  | 'MUST'
+  | 'MUST NOT'
+  | 'REQUIRED'
+  | 'SHALL'
+  | 'SHALL NOT'
+  | 'SHOULD'
+  | 'SHOULD NOT'
+  | 'RECOMMENDED'
+  | 'MAY'
+  | 'OPTIONAL';
 export type InlineIssue = BaseNode & {
   type: 'issue';
   id?: string;
@@ -267,6 +279,10 @@ export type BlockHeading = BaseNode & {
    * If true, the section created from this heading will be unnumbered.
    */
   unnumbered?: boolean;
+  /**
+   * Optional Class of Products (COP) identifier for this heading/section scope.
+   */
+  dataCop?: string;
 };
 export type BlockCodeBlock = BaseNode & {
   type: 'codeBlock';
@@ -356,22 +372,14 @@ export type BlockSpecStatement = BaseNode & {
    */
   level?: 'MUST' | 'MUST NOT' | 'SHOULD' | 'SHOULD NOT' | 'MAY' | 'NOTE' | 'NONE' | 'AMBIGUOUS';
   /**
-   * True if the statement is considered normative.
-   */
-  normative?: boolean;
-  /**
    * Plain text content of the statement (collapsed whitespace).
    */
   contentText: string;
   children: Inline[];
   /**
-   * Resolved HTML ID for the rendered element.
+   * Optional explicit Class of Products (COP) identifier for this statement.
    */
-  htmlId?: string;
-  /**
-   * Reference to the subject of the statement (IRI or fragment).
-   */
-  about?: string;
+  dataCop?: string;
 };
 
 /**
@@ -634,6 +642,10 @@ export interface IndexStatementEntry {
   id: string;
   level: string;
   contentText: string;
+  /**
+   * Resolved requirement subject IRI (Class of Product)
+   */
+  subject?: string;
   sourcePos: SourcePos;
 }
 /**

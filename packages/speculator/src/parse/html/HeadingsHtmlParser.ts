@@ -28,7 +28,15 @@ export const HeadingsHtmlParser: HtmlParserModule = {
         };
 
         const id = ctx.getAttr(element, 'id');
+        const dataCop = ctx.getAttr(element, 'data-cop');
+        const className = ctx.getAttr(element, 'className') ?? '';
+        const unnumbered = className.split(/\s+/).some(c => 
+            ['unnumbered', 'informative', 'introductory'].includes(c)
+        );
+
         if (id) result.id = id;
+        if (dataCop) result.dataCop = dataCop;
+        if (unnumbered) result.unnumbered = true;
         if (sourcePos) result.sourcePos = sourcePos;
 
         return result;

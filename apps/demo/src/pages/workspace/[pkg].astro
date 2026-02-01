@@ -81,9 +81,19 @@ if (workspace) {
 // Combine pipeline and lint diagnostics
 const allDiagnostics = lintResult?.diagnostics || [];
 const toc = document.computed?.toc || [];
+const statementsJsonLd = document.computed?.statementsJsonLd;
 ---
 
 <Layout title={`${metadata.title || pkg} - Speculator Workspace`}>
+  {
+    statementsJsonLd && (
+      <script
+        type="application/ld+json"
+        slot="head"
+        set:html={JSON.stringify(statementsJsonLd, null, 2)}
+      />
+    )
+  }
   <div class="spec-layout">
     {toc.length > 0 && <Toc toc={toc} />}
 
