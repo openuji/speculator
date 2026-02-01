@@ -40,7 +40,8 @@ describe('SectionIdPlugin', () => {
         const section = createSectionWithHeading('Text Formatting');
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        const config = {id:'', specIri:''};
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('text-formatting');
     });

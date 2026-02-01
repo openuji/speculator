@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-01T13:45:43.566Z
+ * Generated at: 2026-02-01T22:05:48.119Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -290,6 +290,12 @@ export type BlockCodeBlock = BaseNode & {
   lang?: string | null;
   meta?: string | null;
   value: string;
+  /**
+   * Always empty - code blocks are leaf nodes with raw value content
+   *
+   * @maxItems 0
+   */
+  children: [];
 };
 export type BlockExample = BaseNode & {
   type: 'example';
@@ -338,11 +344,23 @@ export type TableCell = BaseNode & {
 export type BlockThematicBreak = BaseNode & {
   type: 'thematicBreak';
   id?: string;
+  /**
+   * Always empty - thematic breaks are void/leaf nodes
+   *
+   * @maxItems 0
+   */
+  children: [];
 };
 export type BlockHtml = BaseNode & {
   type: 'html';
   id?: string;
   value: string;
+  /**
+   * Always empty - HTML blocks are leaf nodes with raw value content
+   *
+   * @maxItems 0
+   */
+  children: [];
 };
 export type BlockNote = BaseNode & {
   type: 'note';

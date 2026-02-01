@@ -23,6 +23,7 @@ export const MiscMarkdownParser: MarkdownParserModule = {
         if (node.type === 'thematicBreak') {
             const result: BlockThematicBreak = {
                 type: 'thematicBreak',
+                children: [],
             };
             if (sourcePos) result.sourcePos = sourcePos;
             return result;
@@ -34,6 +35,7 @@ export const MiscMarkdownParser: MarkdownParserModule = {
             const result: BlockHtml = {
                 type: 'html',
                 value: htmlNode.value,
+                children: [],
             };
             if (sourcePos) result.sourcePos = sourcePos;
             return result;

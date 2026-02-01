@@ -728,11 +728,18 @@
                         },
                         "value": {
                             "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - code blocks are leaf nodes with raw value content"
                         }
                     },
                     "required": [
                         "type",
-                        "value"
+                        "value",
+                        "children"
                     ]
                 }
             ]
@@ -978,10 +985,17 @@
                         },
                         "id": {
                             "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - thematic breaks are void/leaf nodes"
                         }
                     },
                     "required": [
-                        "type"
+                        "type",
+                        "children"
                     ]
                 }
             ]
@@ -1002,11 +1016,18 @@
                         },
                         "value": {
                             "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - HTML blocks are leaf nodes with raw value content"
                         }
                     },
                     "required": [
                         "type",
-                        "value"
+                        "value",
+                        "children"
                     ]
                 }
             ]
