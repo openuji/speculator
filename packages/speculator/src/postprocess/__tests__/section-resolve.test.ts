@@ -3,13 +3,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { MarkdownUnitParser } from '#src/parse/markdown/index.js';
-import { assembleDocument } from '#src/parse/assembler.js';
-import { sectionIdPlugin } from '../plugins/section-id.js';
-import { tocPlugin } from '../plugins/toc.js';
-import { sectionResolvePlugin } from '../plugins/section-resolve.js';
-import type { BlockParagraph, InlineSectionReference } from '#src/types/ast.generated.js';
-import type { IndexContext, ComputeContext } from '#src/pipeline/types.js';
+import { MarkdownUnitParser } from '#src/parse/markdown/index';
+import { assembleDocument } from '#src/parse/assembler';
+import { sectionIdPlugin } from '../plugins/section-id';
+import { tocPlugin } from '../plugins/toc';
+import { sectionResolvePlugin } from '../plugins/section-resolve';
+import type { BlockParagraph, InlineSectionReference } from '#src/types/ast.generated';
 
 describe('sectionResolvePlugin', () => {
     const parser = new MarkdownUnitParser();
@@ -23,17 +22,18 @@ See [§#details].
 Content.
 `;
         const blocks = parser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'test', title: 'Test' }, 'test.md');
+        const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
+        const document = assembleDocument(blocks, config, 'test.md');
 
         // Run plugins in order
         // 1. section-id (already has IDs but index phase)
-        await sectionIdPlugin.index!({ document, level: 0 } as IndexContext);
+        await sectionIdPlugin.index!({ document, level: 0, config });
         
         // 2. toc (compute headingNumbers and headingTitles)
-        await tocPlugin.compute!({ document, level: 0 } as ComputeContext);
+        await tocPlugin.compute!({ document, level: 0, config });
 
         // 3. section-resolve
-        await sectionResolvePlugin.compute!({ document, level: 0 } as ComputeContext);
+        await sectionResolvePlugin.compute!({ document, level: 0, config });
 
         const section = document.children[0] as import('#src/types/ast.generated').Section;
         const para = section.children[0] as BlockParagraph;
@@ -54,11 +54,12 @@ See [§#details|the details].
 Content.
 `;
         const blocks = parser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'test-alias', title: 'Test' }, 'test.md');
+        const config = { id: 'test-alias', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
+        const document = assembleDocument(blocks, config, 'test.md');
 
-        await sectionIdPlugin.index!({ document, level: 0 } as IndexContext);
-        await tocPlugin.compute!({ document, level: 0 } as ComputeContext);
-        await sectionResolvePlugin.compute!({ document, level: 0 } as ComputeContext);
+        await sectionIdPlugin.index!({ document, level: 0, config });
+        await tocPlugin.compute!({ document, level: 0, config });
+        await sectionResolvePlugin.compute!({ document, level: 0, config });
 
         const section = document.children[0] as import('#src/types/ast.generated').Section;
         const para = section.children[0] as BlockParagraph;

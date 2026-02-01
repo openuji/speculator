@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { MarkdownUnitParser } from '#src/parse/markdown/index.js';
-import '#src/parse/html/index.js';
-import { assembleDocument } from '#src/parse/assembler.js';
-import { statementIndexPlugin } from '../statement-index.js';
-import type { IndexContext } from '#src/pipeline/types.js';
+import { MarkdownUnitParser } from '#src/parse/markdown/index';
+import '#src/parse/html/index';
+import { assembleDocument } from '#src/parse/assembler';
+import { statementIndexPlugin } from '../statement-index';
+import type { IndexContext } from '#src/pipeline/types';
 
 describe('statement-index advanced edge cases', () => {
     const mdParser = new MarkdownUnitParser();
@@ -21,11 +21,11 @@ describe('statement-index advanced edge cases', () => {
 <spec-statement>The A element</spec-statement>
 `;
         const blocks = mdParser.parse({ file: 'collision.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'collision', title: 'Collision' }, 'collision.md');
+        const document = assembleDocument(blocks, { id: 'collision', title: 'Collision', specIri: 'https://example.org/spec/1.0.0' }, 'collision.md');
 
         await statementIndexPlugin.index!({ 
             document, 
-            config: { id: 'collision', title: 'Collision', specIri: 'collision' }
+            config: { id: 'collision', title: 'Collision', specIri: 'https://example.org/spec/1.0.0' }
         } as IndexContext);
 
         const statements = document.indexes!.statements!;
@@ -69,21 +69,22 @@ describe('statement-index advanced edge cases', () => {
 
 <spec-statement>No COP.</spec-statement>
 `;
+        const config = { id: 'nested', title: 'Nested', specIri: 'https://example.org/spec/1.0.0/nested' };
         const blocks = mdParser.parse({ file: 'nested.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'nested', title: 'Nested' }, 'nested.md');
+        const document = assembleDocument(blocks, config, 'nested.md');
 
         await statementIndexPlugin.index!({ 
             document, 
-            config: { id: 'nested', title: 'Nested', specIri: 'nested' }
+            config
         } as IndexContext);
 
         const statements = document.indexes!.statements!;
         expect(statements).toHaveLength(5);
         
-        expect(statements[0].subject).toBe('nested#client');
-        expect(statements[1].subject).toBe('nested#server');
-        expect(statements[2].subject).toBe('nested#ua');
-        expect(statements[3].subject).toBe('nested#client');
+        expect(statements[0].subject).toBe('https://example.org/spec/1.0.0/nested#client');
+        expect(statements[1].subject).toBe('https://example.org/spec/1.0.0/nested#server');
+        expect(statements[2].subject).toBe('https://example.org/spec/1.0.0/nested#ua');
+        expect(statements[3].subject).toBe('https://example.org/spec/1.0.0/nested#client');
         expect(statements[4].subject).toBeUndefined();
     });
 
@@ -93,11 +94,11 @@ describe('statement-index advanced edge cases', () => {
 <spec-statement level="MUST">Normative statement.</spec-statement>
 `;
         const blocks = mdParser.parse({ file: 'levels.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'levels', title: 'Levels' }, 'levels.md');
+        const document = assembleDocument(blocks, { id: 'levels', title: 'Levels', specIri: 'https://example.org/spec/1.0.0' }, 'levels.md');
 
         await statementIndexPlugin.index!({ 
             document, 
-            config: { id: 'levels', title: 'Levels', specIri: 'levels' }
+            config: { id: 'levels', title: 'Levels', specIri: 'https://example.org/spec/1.0.0' }
         } as IndexContext);
 
         const statements = document.indexes!.statements!;

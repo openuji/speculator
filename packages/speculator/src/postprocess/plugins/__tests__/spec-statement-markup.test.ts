@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { MarkdownUnitParser } from '#src/parse/markdown/index.js';
-import '#src/parse/html/index.js';
-import { assembleDocument } from '#src/parse/assembler.js';
-import { statementIndexPlugin } from '../statement-index.js';
-import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute.js';
-import type { IndexContext, ComputeContext } from '#src/pipeline/types.js';
-import type { IndexStatementEntry, Workspace, BlockSpecStatement, Inline, BlockParagraph } from '#src/types/ast.generated.js';
+import { MarkdownUnitParser } from '#src/parse/markdown/index';
+import '#src/parse/html/index';
+import { assembleDocument } from '#src/parse/assembler';
+import { statementIndexPlugin } from '../statement-index';
+import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute';
+import type { IndexStatementEntry, BlockSpecStatement, Inline, BlockParagraph } from '#src/types/ast.generated';
 
 describe('SpecStatement markup separation', () => {
     const mdParser = new MarkdownUnitParser();
@@ -15,7 +14,7 @@ describe('SpecStatement markup separation', () => {
 <spec-statement>The client **MUST** send a \`header\` and [link](https://example.com).</spec-statement>
 `;
         const blocks = mdParser.parse({ file: 'markup.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'markup', title: 'Markup' }, 'markup.md');
+        const document = assembleDocument(blocks, { id: 'markup', title: 'Markup', specIri: 'https://example.org/spec/1.0.0' }, 'markup.md');
 
         // 1. Verify AST structure
         // Remark might wrap the HTML block in a paragraph if it doesn't recognize it as a block
@@ -34,7 +33,7 @@ describe('SpecStatement markup separation', () => {
 
         // 2. Run indexing
         const config = { id: 'markup', title: 'Markup', specIri: 'https://example.org/spec/1.0.0' };
-        await statementIndexPlugin.index!({ document, config } as IndexContext);
+        await statementIndexPlugin.index!({ document, config, level: 0 });
 
         const entry = document.indexes!.statements![0];
         // Index should have plain text
@@ -46,9 +45,10 @@ describe('SpecStatement markup separation', () => {
 
         await statementsJsonLdComputePlugin.compute!({ 
             document, 
-            workspace: workspace as unknown as Workspace, 
-            config 
-        } as ComputeContext);
+            workspace, 
+            config,
+            level: 0
+        });
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
         const statements = jsonLd['spec:requirement'] as Record<string, unknown>[];

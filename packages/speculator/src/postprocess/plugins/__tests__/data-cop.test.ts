@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { MarkdownUnitParser } from '#src/parse/markdown/index.js';
-import { HtmlUnitParser } from '#src/parse/html/index.js';
-import { assembleDocument } from '#src/parse/assembler.js';
-import { statementIndexPlugin } from '../statement-index.js';
-import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute.js';
-import type { IndexContext, ComputeContext } from '#src/pipeline/types.js';
-import type { IndexStatementEntry, Workspace } from '#src/types/ast.generated.js';
+import { MarkdownUnitParser } from '#src/parse/markdown/index';
+import { HtmlUnitParser } from '#src/parse/html/index';
+import { assembleDocument } from '#src/parse/assembler';
+import { statementIndexPlugin } from '../statement-index';
+import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute';
+import type { IndexStatementEntry, Workspace } from '#src/types/ast.generated';
 
 describe('data-cop resolution', () => {
     const mdParser = new MarkdownUnitParser();
@@ -26,13 +25,15 @@ describe('data-cop resolution', () => {
 
 <spec-statement>The Role MUST ...</spec-statement>
 `;
+        const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
         const blocks = mdParser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' }, 'test.md');
+        const document = assembleDocument(blocks, config, 'test.md');
 
         await statementIndexPlugin.index!({ 
             document, 
-            config: { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' }
-        } as IndexContext);
+            level: 0,
+            config
+        });
 
         const statements = document.indexes!.statements!;
         expect(statements).toHaveLength(3);
@@ -55,13 +56,15 @@ describe('data-cop resolution', () => {
     <spec-statement>The UA MUST ...</spec-statement>
 </section>
 `;
+const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
         const blocks = htmlParser.parse({ file: 'test.html', format: 'html', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'test', title: 'Test' }, 'test.html');
+        const document = assembleDocument(blocks, config, 'test.html');
 
         await statementIndexPlugin.index!({ 
             document, 
-            config: { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' }
-        } as IndexContext);
+            level: 0,
+            config
+        });
 
         const statements = document.indexes!.statements!;
         expect(statements).toHaveLength(3);
@@ -81,13 +84,13 @@ describe('data-cop resolution', () => {
 
 <spec-statement>The server MUST ...</spec-statement>
 `;
+const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
         const blocks = mdParser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'test', title: 'Test' }, 'test.md');
+        const document = assembleDocument(blocks, config, 'test.md');
 
-        const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
         const workspace = { globalIndex: { statements: [] } };
 
-        await statementIndexPlugin.index!({ document, config } as IndexContext);
+        await statementIndexPlugin.index!({ document, config, level: 0 });
         
         // Mock global index aggregation
         (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
@@ -95,8 +98,9 @@ describe('data-cop resolution', () => {
         await statementsJsonLdComputePlugin.compute!({ 
             document, 
             workspace: workspace as unknown as Workspace, 
-            config 
-        } as ComputeContext);
+            config,
+            level: 0
+        });
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
         expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'https://example.org/spec/1.0.0#client' });
@@ -113,22 +117,23 @@ describe('data-cop resolution', () => {
     <spec-statement data-cop="client">The client MAY cache tokens.</spec-statement>
 </section>
 `;
+const config = { id: 'test', title: 'My Specification', specIri: 'https://example.org/spec/1.0.0' };
         const blocks = htmlParser.parse({ file: 'test.html', format: 'html', content, startLine: 1 });
-        const document = assembleDocument(blocks, { id: 'test', title: 'My Specification' }, 'test.html');
+        const document = assembleDocument(blocks, config, 'test.html');
 
-        const config = { id: 'test', title: 'My Specification', specIri: 'https://example.org/spec/1.0.0' };
         const workspace = { globalIndex: { statements: [] } };
 
-        await statementIndexPlugin.index!({ document, config } as IndexContext);
+        await statementIndexPlugin.index!({ document, config, level: 0 });
         
         // Mock global index aggregation
         (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
 
         await statementsJsonLdComputePlugin.compute!({ 
             document, 
-            workspace: workspace as unknown as Workspace, 
-            config 
-        } as ComputeContext);
+            workspace, 
+            config,
+            level: 0
+        });
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
         
