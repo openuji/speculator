@@ -38,7 +38,7 @@ describe('SpecStatement markup separation', () => {
 
         const entry = document.indexes!.statements![0];
         // Index should have plain text
-        expect(entry.contentText).toBe('the client must send a header and link.');
+        expect(entry.contentText).toBe('The client MUST send a header and link.');
 
         // 3. Run JSON-LD compute
         const workspace = { globalIndex: { statements: [] } };
@@ -51,9 +51,9 @@ describe('SpecStatement markup separation', () => {
         } as ComputeContext);
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
-        const statements = jsonLd['spec:statement'] as Record<string, unknown>[];
+        const statements = jsonLd['spec:requirement'] as Record<string, unknown>[];
         
-        expect(statements[0]['spec:statement']).toBe('the client must send a header and link.');
+        expect(statements[0]['spec:statement']).toBe('The client MUST send a header and link.');
         // Ensure no HTML tags leaked into the string
         expect(statements[0]['spec:statement']).not.toContain('<strong>');
         expect(statements[0]['spec:statement']).not.toContain('`');

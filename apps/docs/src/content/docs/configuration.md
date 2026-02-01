@@ -82,6 +82,7 @@ In the example above, the document will use `"My Awesome Specification"` from th
 | `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the parent folder name.      |
 | `title`          | `string`   | **Priority** document title. Overwrites `respec.title`.                                                                    |
 | `deps`           | `string[]` | List of document IDs that this document depends on. They will be processed first.                                          |
+| `baseUrl`        | `string`   | Base URL for assembling `specIri` (e.g., `https://example.org/specs`). Combined with `id` to form statement IRIs.          |
 | `lastUpdateDate` | `string`   | **Priority** last update date (ISO 8601: `YYYY-MM-DD`). Overwrites `respec.modificationDate`.                              |
 | `maturityLevel`  | `string`   | **Priority** maturity level. One of: `incubating`, `draft`, `prerelease`, `stable`. Overwrites mapped `respec.specStatus`. |
 | `custom`         | `object`   | **Highest priority** user-defined properties. Passed through as-is, overwrites any conflicting root or respec values.      |

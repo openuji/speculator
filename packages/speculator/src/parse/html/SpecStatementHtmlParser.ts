@@ -8,7 +8,7 @@
 import type { Element } from 'hast';
 import type { HtmlParserModule, ParseContext, BlockHandlerResult, InlineHandlerResult } from '#src/parse/registry';
 import type { BlockSpecStatement, Inline } from '#src/types/ast.generated';
-import { normalizeTerm, slugify, toPlainText } from '#src/parse/normalize';
+import { slugify, toPlainText } from '#src/parse/normalize';
 import { inferLevel } from '#src/parse/utils/normative';
 
 
@@ -30,13 +30,14 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement {
     const sourcePos = ctx.createSourcePos(element);
     const children = ctx.transformInlineChildren(element.children);
     
-    // Extract plain text for contentText from children (strips markup)
-    const contentText = normalizeTerm(toPlainText(children));
+    // Extract plain text for contentText from children (strips markup, preserves casing)
+    const rawText = toPlainText(children).trim().replace(/\s+/g, ' ');
+    const contentText = rawText;
 
-    // Determine level
+    // Determine level (use lowercase for keyword matching)
     let level = (ctx.getAttr(element, 'level') || '').toUpperCase().replace(/\s+/g, ' ');
     if (!level) {
-        level = inferLevel(contentText);
+        level = inferLevel(rawText);
     }
 
     // Determine ID

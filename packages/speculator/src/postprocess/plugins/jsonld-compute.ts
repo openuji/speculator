@@ -3,14 +3,63 @@
  * 
  * Harvests document metadata and specification statements into a JSON-LD object.
  * The result is stored in document.computed.statementsJsonLd.
+ * 
+ * Conforms to Spec Terms vocabulary: http://www.w3.org/ns/spec#
  */
 
 import type { Plugin, ComputeContext } from '#src/pipeline/types.js';
 import type { IndexStatementEntry } from '#src/types/ast.generated.js';
-import { isRequirement } from '#src/parse/utils/normative';
 
 const DEFAULT_VOCAB = 'http://www.w3.org/ns/spec#';
 const DCT_VOCAB = 'http://purl.org/dc/terms/';
+
+/**
+ * Map normative level to Spec Terms IRI.
+ * - MUST → spec:MUST
+ * - SHOULD → spec:SHOULD
+ * - MAY → spec:MAY
+ * - MUST NOT → spec:MUSTNOT
+ * - SHOULD NOT → spec:SHOULDNOT
+ */
+function getRequirementLevelIri(level: string): string | undefined {
+    switch (level) {
+        case 'MUST':
+            return 'spec:MUST';
+        case 'MUST NOT':
+            return 'spec:MUSTNOT';
+        case 'SHOULD':
+            return 'spec:SHOULD';
+        case 'SHOULD NOT':
+            return 'spec:SHOULDNOT';
+        case 'MAY':
+            return 'spec:MAY';
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * Map normative level to JSON-LD type per Spec Terms:
+ * - MUST, MUST NOT → Requirement/Prohibition
+ * - SHOULD, SHOULD NOT → Recommendation
+ * - MAY → Permission
+ * - NONE/other → Statement
+ */
+function getJsonLdType(level: string): string {
+    switch (level) {
+        case 'MUST':
+            return 'spec:Requirement';
+        case 'MUST NOT':
+            return 'spec:Prohibition';
+        case 'SHOULD':
+        case 'SHOULD NOT':
+            return 'spec:Recommendation';
+        case 'MAY':
+            return 'spec:Permission';
+        default:
+            return 'spec:Statement';
+    }
+}
 
 /**
  * JSON-LD Compute Plugin
@@ -38,28 +87,31 @@ export const jsonldComputePlugin: Plugin = {
         // Gather statements from global index
         const statements = workspace?.globalIndex?.statements || [];
         
-        // Filter statements belonging to this document if needed?
-        // Actually, normally we want doc-specific requirements.
-        // But the global index has everything. We should ideally filter by documentId if available.
-        // For now, let's take all from the workspace (as per the renderer's logic).
-        
         const copIris = new Set<string>();
 
-        const specStatements = statements.map((stmt: IndexStatementEntry) => {
-            const isReq = isRequirement(stmt.level);
-            const type = isReq ? 'spec:Requirement' : 'spec:Statement';
+        const requirements = statements.map((stmt: IndexStatementEntry) => {
+            const type = getJsonLdType(stmt.level);
+            const levelIri = getRequirementLevelIri(stmt.level);
             
+            // Build entry with properties in Spec Terms order
             const entry: Record<string, unknown> = {
                 id: `${baseSpecIri}#${stmt.id}`,
                 type,
-                'spec:level': stmt.level,
-                'spec:statement': stmt.contentText,
             };
 
+            // spec:requirementSubject comes before spec:requirementLevel per Spec Terms
             if (stmt.subject) {
                 entry['spec:requirementSubject'] = { id: stmt.subject };
                 copIris.add(stmt.subject);
             }
+
+            // spec:requirementLevel with IRI value
+            if (levelIri) {
+                entry['spec:requirementLevel'] = { id: levelIri };
+            }
+
+            // spec:statement last (the literal text)
+            entry['spec:statement'] = stmt.contentText;
                 
             return entry;
         });
@@ -70,7 +122,8 @@ export const jsonldComputePlugin: Plugin = {
             id: baseSpecIri,
             type: 'spec:Specification',
             'dct:title': document.metadata?.title || 'Specification',
-            'spec:statement': specStatements,
+            // Use spec:requirement as container (not spec:statement)
+            'spec:requirement': requirements,
         };
 
         if (copIris.size > 0) {

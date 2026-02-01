@@ -41,11 +41,11 @@ describe('spec-statement integration', () => {
 
         expect(stmt1).toMatchObject({
             level: 'MUST NOT',
-            contentText: 'the server must not disclose secrets.',
+            contentText: 'The server MUST NOT disclose secrets.',
         });
         expect(logging).toMatchObject({
             level: 'SHOULD',
-            contentText: 'the server should log errors.',
+            contentText: 'The server SHOULD log errors.',
         });
 
         // Verify global index aggregation

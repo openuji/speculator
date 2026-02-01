@@ -101,6 +101,62 @@ describe('data-cop resolution', () => {
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
         expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'spec:Client' });
         expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'spec:Server' });
-        expect(((jsonLd['spec:statement'] as unknown[])[0] as Record<string, unknown>)['spec:requirementSubject']).toEqual({ id: 'spec:Client' });
+        expect(((jsonLd['spec:requirement'] as unknown[])[0] as Record<string, unknown>)['spec:requirementSubject']).toEqual({ id: 'spec:Client' });
+    });
+
+    it('emits full JSON-LD matching documentation example (section inheritance + override)', async () => {
+        // This test matches the exact example from features/spec-statements.md
+        const content = `
+<section data-cop="server">
+    <h2>Server Requirements</h2>
+    <spec-statement>The server MUST validate tokens.</spec-statement>
+    <spec-statement data-cop="client">The client MAY cache tokens.</spec-statement>
+</section>
+`;
+        const blocks = htmlParser.parse({ file: 'test.html', format: 'html', content, startLine: 1 });
+        const document = assembleDocument(blocks, { id: 'test', title: 'My Specification' }, 'test.html');
+
+        const config = { id: 'test', title: 'My Specification', specIri: 'https://example.org/spec/1.0.0' };
+        const workspace = { globalIndex: { statements: [] } };
+
+        await statementIndexPlugin.index!({ document, config } as IndexContext);
+        
+        // Mock global index aggregation
+        (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
+
+        await jsonldComputePlugin.compute!({ 
+            document, 
+            workspace: workspace as unknown as Workspace, 
+            config 
+        } as ComputeContext);
+
+        const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
+        
+        // Verify classesOfProducts includes both Client and Server
+        const classesOfProducts = jsonLd['spec:classesOfProducts'] as { id: string }[];
+        expect(classesOfProducts).toContainEqual({ id: 'spec:Server' });
+        expect(classesOfProducts).toContainEqual({ id: 'spec:Client' });
+
+        // Verify requirements (use spec:requirement, not spec:statement)
+        const requirements = jsonLd['spec:requirement'] as Record<string, unknown>[];
+        expect(requirements).toHaveLength(2);
+
+        // First statement: inherits server, level MUST -> Requirement
+        const serverStmt = requirements.find(s => 
+            (s['spec:statement'] as string).includes('server MUST validate tokens')
+        );
+        expect(serverStmt).toBeDefined();
+        expect(serverStmt!['type']).toBe('spec:Requirement');
+        expect(serverStmt!['spec:requirementLevel']).toEqual({ id: 'spec:MUST' });
+        expect(serverStmt!['spec:requirementSubject']).toEqual({ id: 'spec:Server' });
+
+        // Second statement: overrides to client, level MAY -> Permission
+        const clientStmt = requirements.find(s => 
+            (s['spec:statement'] as string).includes('client MAY cache tokens')
+        );
+        expect(clientStmt).toBeDefined();
+        expect(clientStmt!['type']).toBe('spec:Permission');
+        expect(clientStmt!['spec:requirementLevel']).toEqual({ id: 'spec:MAY' });
+        expect(clientStmt!['spec:requirementSubject']).toEqual({ id: 'spec:Client' });
     });
 });

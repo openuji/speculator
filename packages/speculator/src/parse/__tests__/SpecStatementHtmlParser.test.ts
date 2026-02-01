@@ -66,14 +66,14 @@ describe('SpecStatementHtmlParser', () => {
         const unit = createUnit('<spec-statement>  The   client    MUST    send  </spec-statement>');
         const blocks = parser.parse(unit);
         const stmt = blocks[0] as BlockSpecStatement;
-        expect(stmt.contentText).toBe('the client must send');
+        expect(stmt.contentText).toBe('The client MUST send');
     });
 
     it('handles nested inline markup', () => {
         const unit = createUnit('<spec-statement>The client <strong>MUST</strong> send an <code>Accept</code> header.</spec-statement>');
         const blocks = parser.parse(unit);
         const stmt = blocks[0] as BlockSpecStatement;
-        expect(stmt.contentText).toBe('the client must send an accept header.');
+        expect(stmt.contentText).toBe('The client MUST send an Accept header.');
         expect(stmt.children).toHaveLength(5); // "The client ", <strong>, " send an ", <code>, " header."
     });
 });
