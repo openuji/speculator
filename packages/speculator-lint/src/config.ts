@@ -23,7 +23,8 @@ export const recommendedConfig: LintConfig = {
         'document/no-duplicate-definition': 'error',
         'reference/no-ambiguous-reference': 'warning',
         'reference/no-id-reference': 'warning',
-        'reference/no-unresolved-reference': 'error'
+        'reference/no-unresolved-reference': 'error',
+        'vocab/validate-spec-terms': 'warning'
     }
 };
 
