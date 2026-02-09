@@ -30,6 +30,9 @@ export interface PreprocessOptions {
 
     /** File provider for reading files */
     fileProvider: FileProvider;
+
+    /** Optional environment object for variable interpolation */
+    env?: Record<string, string | undefined>;
 }
 
 /**
@@ -80,7 +83,7 @@ export async function preprocess(options: PreprocessOptions): Promise<Preprocess
     // Load document config (includes ID resolution)
     let config: SpecConfig;
     try {
-        const docConfig = await loadDocConfig(fileProvider, canonicalEntry);
+        const docConfig = await loadDocConfig(fileProvider, canonicalEntry, options.env);
         config = normalizeConfig(docConfig);
     } catch (error) {
         if (error instanceof ConfigLoadError) {

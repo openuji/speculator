@@ -1,10 +1,10 @@
-import { resolve, dirname } from 'path';
+import { resolve } from 'path';
 import { SpeculatorPipeline } from '#src/pipeline/runner';
 import { corePlugins } from '#src/postprocess/index';
 import { sortEntriesByDeps } from '#src/workspace/sort';
 import type { FileProvider } from '#src/file-provider/types';
 import type { Workspace } from '#src/types/ast.generated';
-import type { WorkspaceConfig } from '#src/preprocess/types';
+import type { WorkspaceEntryMap } from '#src/preprocess/types';
 import { NodeFileProvider } from '#src/file-provider/node';
 
 /**
@@ -18,31 +18,35 @@ export interface BuildWorkspacesResult {
 }
 
 /**
+ * Options for building workspaces
+ */
+export interface BuildWorkspacesOptions {
+    /** Workspace entry map (map of name -> entries) */
+    entryMap: WorkspaceEntryMap;
+    /** File provider for reading specs (defaults to NodeFileProvider) */
+    fileProvider?: FileProvider;
+    /** Pipeline instance (uses core plugins by default) */
+    pipeline?: SpeculatorPipeline;
+    /** Environment object for variable interpolation */
+    env?: Record<string, string | undefined>;
+}
+
+/**
  * Build multiple isolated workspaces from a configuration
- * 
- * @param config - Workspace configuration (map of name -> entries)
- * @param fileProvider - File provider for reading specs
- * @param configPath - Optional path to the config file (for relative path resolution)
- * @param pipeline - Optional pipeline instance (uses core plugins by default)
  */
 export async function buildWorkspaces(
-    config: WorkspaceConfig,
-    _fileProvider?: FileProvider,
-    configPath?: string,
-    pipeline?: SpeculatorPipeline
+    options: BuildWorkspacesOptions
 ): Promise<BuildWorkspacesResult> {
-    const fileProvider = _fileProvider ?? new NodeFileProvider();
+    const fileProvider = options.fileProvider ?? new NodeFileProvider();
     const workspaces: Record<string, Workspace> = {};
     const errors: string[] = [];
-    const p = pipeline ?? new SpeculatorPipeline(corePlugins);
-    const configDir = configPath ? dirname(resolve(configPath)) : process.cwd();
+    const p = options.pipeline ?? new SpeculatorPipeline(corePlugins);
 
-    for (const [name, entries] of Object.entries(config)) {
+    for (const [name, entries] of Object.entries(options.entryMap)) {
         try {
-            // 1. Resolve entry paths relative to config file
             const resolvedEntries = entries.map(e => ({
                 ...e,
-                entry: resolve(configDir, e.entry)
+                entry: resolve(e.entry)
             }));
 
             // 2. Sort entries by dependencies
@@ -56,6 +60,7 @@ export async function buildWorkspaces(
             const result = await p.runWorkspace({
                 entries: sortResult.entries,
                 fileProvider,
+                env: options.env,
             });
 
             if (!result.workspace) {

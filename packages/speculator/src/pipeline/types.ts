@@ -159,6 +159,9 @@ export interface SpeculateOptions {
 
     /** File provider for reading files (defaults to NodeFileProvider) */
     fileProvider?: import('#src/file-provider/types').FileProvider;
+
+    /** Optional environment object for variable interpolation */
+    env?: Record<string, string | undefined>;
 }
 
 /**

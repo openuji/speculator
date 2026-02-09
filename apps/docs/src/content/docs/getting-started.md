@@ -33,27 +33,18 @@ console.log(result.workspace);
 For managing multiple isolated specifications, Speculator provides a workspace building utility. This allows you to process multiple documents at once, keeping their namespaces and references isolated.
 
 ```typescript
-import { buildWorkspaces } from "@openuji/speculator";
-
-const workspacesConfig = {
-  coreSpecs: [
-    { entry: "spec/core/index.md" },
-    { entry: "spec/api/index.html" },
-  ],
-  addonSpecs: [
-    { entry: "addons/ui/index.md" },
-    { entry: "addons/storage/index.md" },
-  ],
-};
-
-const result = await buildWorkspaces(workspacesConfig);
+const result = await buildWorkspaces({
+  entryMap: {
+    docs: [{ entry: "spec/core/index.md" }, { entry: "spec/api/index.html" }],
+  },
+});
 
 if (result.errors.length > 0) {
   console.error("Errors encountered:", result.errors);
 }
 
-// Access built workspace coreSpecs AST
-console.log(result.workspaces.coreSpecs);
+// Access built workspace 'docs' AST
+console.log(result.workspaces.docs);
 ```
 
 ## Next Steps

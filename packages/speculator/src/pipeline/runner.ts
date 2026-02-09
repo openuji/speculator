@@ -72,10 +72,12 @@ export class SpeculatorPipeline {
         entry: string;
         configPath?: string;
         fileProvider: FileProvider;
+        env?: Record<string, string | undefined>;
     }): Promise<SpeculateResult> {
         return this.runWorkspace({
             entries: [{ entry: options.entry, configPath: options.configPath }],
-            fileProvider: options.fileProvider
+            fileProvider: options.fileProvider,
+            env: options.env
         });
     }
 
@@ -85,6 +87,7 @@ export class SpeculatorPipeline {
     async runWorkspace(options: {
         entries: { entry: string; configPath?: string }[];
         fileProvider: FileProvider;
+        env?: Record<string, string | undefined>;
     }): Promise<SpeculateResult> {
         const results: { doc: Document; entry: string; config: SpecConfig }[] = [];
 
@@ -95,6 +98,7 @@ export class SpeculatorPipeline {
                     entry: entryConfig.entry,
                     configPath: entryConfig.configPath,
                     fileProvider: options.fileProvider,
+                    env: options.env,
                 });
 
                 const registry = new ParseHandlerRegistry();

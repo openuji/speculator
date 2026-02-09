@@ -7,4 +7,4 @@
 export { sortEntriesByDeps } from './sort.js';
 export type { EntryWithConfig, SortResult } from './sort.js';
 export { buildWorkspaces } from './builder.js';
-export type { BuildWorkspacesResult } from './builder.js';
+export type { BuildWorkspacesResult, BuildWorkspacesOptions } from './builder.js';

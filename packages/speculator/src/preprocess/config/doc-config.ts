@@ -8,6 +8,8 @@
 import type { FileProvider } from '#src/file-provider/types';
 import { isFileNotFoundError } from '#src/file-provider/types';
 import type { DocumentConfig, ResolvedDocumentConfig } from './types.js';
+import { interpolateEnvVars } from './env.js';
+
 
 /**
  * Generate an auto ID from entry path
@@ -63,14 +65,16 @@ export function getConfigPath(entryPath: string): string {
  */
 export async function loadDocConfig(
     fileProvider: FileProvider,
-    entryPath: string
+    entryPath: string,
+    env?: Record<string, string | undefined>
 ): Promise<ResolvedDocumentConfig> {
     const configPath = getConfigPath(entryPath);
     const canonicalPath = fileProvider.canonicalize(configPath);
 
     try {
         const content = await fileProvider.readText(canonicalPath);
-        const config = JSON.parse(content) as DocumentConfig;
+        const interpolatedContent = interpolateEnvVars(content, env);
+        const config = JSON.parse(interpolatedContent) as DocumentConfig;
 
         // Determine ID (use provided or auto-generate)
         const hasValidId = config.id && typeof config.id === 'string';

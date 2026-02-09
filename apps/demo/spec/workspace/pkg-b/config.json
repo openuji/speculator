@@ -1,6 +1,6 @@
 {
     "id": "pkg-b",
-    "baseUrl": "http://localhost:4321/workspace",
+    "baseUrl": "${SPEC_BASE_URL}/workspace",
 
     "deps": [
         "pkg-a"

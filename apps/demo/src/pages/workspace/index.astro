@@ -5,14 +5,13 @@ import {
   NodeFileProvider,
   buildWorkspaces,
   type Document,
-  type WorkspaceConfig,
+  type WorkspaceEntryMap,
 } from "@openuji/speculator";
 
 import {
   SpeculatorLinter,
   builtInRules,
   recommendedConfig,
-  type LintDiagnostic,
 } from "@openuji/speculator-lint";
 
 import "@/styles/global.css";
@@ -31,12 +30,11 @@ const pipeline = new SpeculatorPipeline(corePlugins);
 const linter = new SpeculatorLinter(builtInRules);
 
 // Build all isolated workspaces from config
-const buildResult = await buildWorkspaces(
-  workspaceConfig as WorkspaceConfig,
+const buildResult = await buildWorkspaces({
+  entryMap: workspaceConfig as WorkspaceEntryMap,
   fileProvider,
-  configPath,
   pipeline,
-);
+});
 
 const processedWorkspaces = await Promise.all(
   Object.entries(buildResult.workspaces).map(async ([name, workspace]) => {

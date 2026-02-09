@@ -1,7 +1,7 @@
 {
     "id": "pkg-a",
     "deps": [],
-    "baseUrl": "http://localhost:4321/workspace",
+    "baseUrl": "${SPEC_BASE_URL}/workspace",
     "respec": {
         "title": "Package A Specification",
         "shortName": "pkg-a",
