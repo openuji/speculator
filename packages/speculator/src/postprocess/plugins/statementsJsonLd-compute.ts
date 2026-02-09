@@ -7,8 +7,8 @@
  * Conforms to Spec Terms vocabulary: http://www.w3.org/ns/spec#
  */
 
-import type { Plugin, ComputeContext } from '#src/pipeline/types.js';
-import type { IndexStatementEntry } from '#src/types/ast.generated.js';
+import type { Plugin, ComputeContext } from '#src/pipeline/types';
+import type { IndexStatementEntry } from '#src/types/ast.generated';
 
 const DEFAULT_VOCAB = 'http://www.w3.org/ns/spec#';
 const DCT_VOCAB = 'http://purl.org/dc/terms/';
@@ -45,7 +45,7 @@ function getRequirementLevelIri(level: string): string | undefined {
  * - MAY → Permission
  * - NONE/other → Statement
  */
-function getJsonLdType(level: string): string {
+function getJsonLdType(level: string): string | null {
     switch (level) {
         case 'MUST':
             return 'spec:Requirement';
@@ -57,7 +57,8 @@ function getJsonLdType(level: string): string {
         case 'MAY':
             return 'spec:Permission';
         default:
-            return 'spec:Statement';
+            // currently we only support normative statements
+            return null;
     }
 }
 
@@ -88,7 +89,9 @@ export const statementsJsonLdComputePlugin: Plugin = {
         
         const copIris = new Set<string>();
 
-        const requirements = statements.map((stmt: IndexStatementEntry) => {
+        const requirements = statements
+        .filter((stmt: IndexStatementEntry) => getJsonLdType(stmt.level))
+        .map((stmt: IndexStatementEntry) => {
             const type = getJsonLdType(stmt.level);
             const levelIri = getRequirementLevelIri(stmt.level);
             
