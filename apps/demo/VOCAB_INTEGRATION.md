@@ -11,12 +11,14 @@ Integrated `@openuji/vocab-build` into the demo app to automatically generate se
 Created two vocabulary definitions in `apps/demo/vocab/`:
 
 #### **ujm-core.jsonld** (Core Namespace)
+
 - **Namespace**: `https://ujm.specs.openuji.org/ns#`
 - **Classes**: `Journey`, `Step`, `Transition`
 - **Properties**: `start`, `steps`, `transitions`, `from`, `to`, `label`, `description`
 - **Status**: Editor's Draft (ED)
 
 #### **ujm-ui.jsonld** (UI Namespace)
+
 - **Namespace**: `https://ujm.specs.openuji.org/ui#`
 - **Classes**: `NodePosition`, `EdgeStyle`, `CanvasViewport`
 - **Properties**: `position`, `x`, `y`, `style`, `color`, `width`, `zoom`
@@ -32,7 +34,7 @@ Added to `apps/demo/package.json`:
     "vocab:core": "vocab-build build -i vocab/ujm-core.jsonld -o public/vocab -m core --mode ED",
     "vocab:ui": "vocab-build build -i vocab/ujm-ui.jsonld -o public/vocab -m ui --mode ED",
     "vocab:build": "pnpm vocab:core && pnpm vocab:ui",
-    "prebuild": "pnpm vocab:build"  // Runs automatically before astro build
+    "prebuild": "pnpm vocab:build" // Runs automatically before astro build
   },
   "dependencies": {
     "@openuji/vocab-build": "^0.1.0"
@@ -95,6 +97,7 @@ pnpm dev
 ```
 
 **Access with explicit filenames** (Astro dev server requirement):
+
 - http://localhost:4321/vocab/ns/index.html
 - http://localhost:4321/vocab/ui/index.html
 - http://localhost:4321/vocab/contexts/core.jsonld
@@ -118,6 +121,7 @@ Once deployed, vocabularies will be accessible at:
 To create an immutable TR version:
 
 1. **Update vocabulary source**:
+
    ```json
    {
      "status": "TR",
@@ -128,6 +132,7 @@ To create an immutable TR version:
    ```
 
 2. **Build TR snapshot**:
+
    ```bash
    vocab-build build \
      -i vocab/ujm-core.jsonld \
@@ -143,6 +148,7 @@ To create an immutable TR version:
 ## Verification
 
 ✅ **Build successful**:
+
 ```
 🏗️  Building vocabulary...
    Input: vocab/ujm-core.jsonld
@@ -159,6 +165,7 @@ Generated files:
 ```
 
 ✅ **Both vocabularies built**:
+
 - Core vocabulary (10 terms)
 - UI vocabulary (10 terms)
 
@@ -171,10 +178,10 @@ Generated files:
 
 ## Files Created
 
-- [apps/demo/vocab/ujm-core.jsonld](file:///Users/zavalit/Projects/openuji/speculator/apps/demo/vocab/ujm-core.jsonld)
-- [apps/demo/vocab/ujm-ui.jsonld](file:///Users/zavalit/Projects/openuji/speculator/apps/demo/vocab/ujm-ui.jsonld)
-- [apps/demo/vocab/README.md](file:///Users/zavalit/Projects/openuji/speculator/apps/demo/vocab/README.md)
+- [apps/demo/vocab/ujm-core.jsonld](./vocab/ujm-core.jsonld)
+- [apps/demo/vocab/ujm-ui.jsonld](./vocab/ujm-ui.jsonld)
+- [apps/demo/vocab/README.md](./vocab/README.md)
 
 ## Files Modified
 
-- [apps/demo/package.json](file:///Users/zavalit/Projects/openuji/speculator/apps/demo/package.json) - Added scripts and dependency
+- [apps/demo/package.json](./package.json) - Added scripts and dependency

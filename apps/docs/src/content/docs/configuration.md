@@ -173,6 +173,6 @@ After loading and normalization, these settings are exposed in the Document AST 
 
 Generated TypeScript types can be found in:
 
-- `SpecConfig` ([types.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/preprocess/types.ts))
-- `WorkspaceConfig` ([types.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/preprocess/types.ts))
-- `DocumentMetadata` ([ast.generated.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/types/ast.generated.ts))
+- `SpecConfig` ([types.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/preprocess/types.ts))
+- `WorkspaceConfig` ([types.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/preprocess/types.ts))
+- `DocumentMetadata` ([ast.generated.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/types/ast.generated.ts))

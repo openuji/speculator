@@ -15,15 +15,17 @@ pnpm add @openuji/speculator
 
 ## Basic Usage
 
-To start using Speculator, you'll typically initialize a pipeline and process some documents.
+To start using Speculator, you'll typically use the `speculate` function to process a document with a set of plugins.
 
 ```typescript
-import { SpeculatorPipeline } from "@openuji/speculator";
+import { speculate, corePlugins } from "@openuji/speculator";
 
-const pipeline = new SpeculatorPipeline();
-const result = await pipeline.process("path/to/spec.md");
+const result = await speculate({
+  entry: "path/to/spec.md",
+  plugins: corePlugins,
+});
 
-console.log(result.ast);
+console.log(result.workspace);
 ```
 
 ## Workspaces
@@ -35,8 +37,8 @@ import { buildWorkspaces } from "@openuji/speculator";
 
 const workspacesConfig = {
   coreSpecs: [
-    { entry: "spec/core.md" }, 
-    { entry: "spec/api.html" }
+    { entry: "spec/core/index.md" },
+    { entry: "spec/api/index.html" },
   ],
   addonSpecs: [
     { entry: "addons/ui/index.md" },
@@ -50,7 +52,7 @@ if (result.errors.length > 0) {
   console.error("Errors encountered:", result.errors);
 }
 
-// Access built workspace coreSpecs ASTs
+// Access built workspace coreSpecs AST
 console.log(result.workspaces.coreSpecs);
 ```
 

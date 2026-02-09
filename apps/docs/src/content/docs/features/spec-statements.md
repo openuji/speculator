@@ -34,7 +34,7 @@ The requirement level is automatically detected from RFC 2119 keywords:
 | `SHOULD`     | `spec:Recommendation` |
 | `SHOULD NOT` | `spec:Recommendation` |
 | `MAY`        | `spec:Permission`     |
-| (none)       | `spec:Statement`      |
+| (else)       | not rendered          |
 
 You can also set the level explicitly:
 
