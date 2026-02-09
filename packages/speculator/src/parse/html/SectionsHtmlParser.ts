@@ -24,7 +24,7 @@ export const SectionsHtmlParser: HtmlParserModule = {
         const unnumbered = className.split(/\s+/).some(c => 
             ['unnumbered', 'informative', 'introductory'].includes(c)
         );
-        const dataCop = ctx.getAttr(element, 'data-cop');
+        const dataCopConcept = ctx.getAttr(element, 'data-cop-concept');
 
         // Find heading and other children
         let heading: BlockHeading | undefined;
@@ -62,7 +62,7 @@ export const SectionsHtmlParser: HtmlParserModule = {
         if (id) result.id = id;
         if (heading) result.heading = heading;
         if (unnumbered) result.unnumbered = true;
-        if (dataCop) result.dataCop = dataCop;
+        if (dataCopConcept) result.dataCopConcept = dataCopConcept;
         if (sourcePos) result.sourcePos = sourcePos;
 
         return result;

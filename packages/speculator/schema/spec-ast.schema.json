@@ -687,7 +687,7 @@
                             "description": "If true, the section created from this heading will be unnumbered.",
                             "default": false
                         },
-                        "dataCop": {
+                        "dataCopConcept": {
                             "type": "string",
                             "description": "Optional Class of Products (COP) identifier for this heading/section scope."
                         }
@@ -1111,7 +1111,7 @@
                                 "$ref": "#/definitions/Inline"
                             }
                         },
-                        "dataCop": {
+                        "dataCopConcept": {
                             "type": "string",
                             "description": "Optional explicit Class of Products (COP) identifier for this statement."
                         }
@@ -1199,7 +1199,7 @@
                                 ]
                             }
                         },
-                        "dataCop": {
+                        "dataCopConcept": {
                             "type": "string",
                             "description": "Optional Class of Products (COP) identifier for this section scope."
                         }

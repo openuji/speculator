@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-09T09:46:36.385Z
+ * Generated at: 2026-02-09T18:15:43.242Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -31,7 +31,7 @@ export type Section = BaseNode & {
     /**
      * Optional Class of Products (COP) identifier for this heading/section scope.
      */
-    dataCop?: string;
+    dataCopConcept?: string;
   };
   /**
    * If true, this section and its descendants do not increment the TOC counter at this level.
@@ -41,7 +41,7 @@ export type Section = BaseNode & {
   /**
    * Optional Class of Products (COP) identifier for this section scope.
    */
-  dataCop?: string;
+  dataCopConcept?: string;
 };
 export type Inline =
   | InlineText
@@ -282,7 +282,7 @@ export type BlockHeading = BaseNode & {
   /**
    * Optional Class of Products (COP) identifier for this heading/section scope.
    */
-  dataCop?: string;
+  dataCopConcept?: string;
 };
 export type BlockCodeBlock = BaseNode & {
   type: 'codeBlock';
@@ -397,7 +397,7 @@ export type BlockSpecStatement = BaseNode & {
   /**
    * Optional explicit Class of Products (COP) identifier for this statement.
    */
-  dataCop?: string;
+  dataCopConcept?: string;
 };
 
 /**

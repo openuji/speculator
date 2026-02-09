@@ -15,22 +15,22 @@ interface Section {
   id?: string;
   heading?: BlockHeading;
   unnumbered?: boolean;
-  dataCop?: string;
+  dataCopConcept?: string;
   children: (Section | Block)[];
 }
 ```
 
-## Requirement Subjects (data-cop)
+## Requirement Subjects (`data-cop-concept`)
 
-The `data-cop` attribute specifies the **class of products** that requirements in a section apply to. This enables machine-readable categorization of requirements.
+The `data-cop-concept` attribute specifies the **class of products** that requirements in a section apply to. This enables machine-readable categorization of requirements.
 
 ### HTML Syntax
 
 ```html
-<section data-cop="client">
+<section data-cop-concept="client">
   <h2>Client Requirements</h2>
 
-  <!-- All spec-statements inherit data-cop="client" -->
+  <!-- All spec-statements inherit data-cop-concept="client" -->
   <spec-statement>The client MUST authenticate.</spec-statement>
   <spec-statement>The client SHOULD cache tokens.</spec-statement>
 </section>
@@ -41,23 +41,23 @@ The `data-cop` attribute specifies the **class of products** that requirements i
 Use the `{data-cop=value}` suffix:
 
 ```markdown
-## Client Requirements {data-cop=client #client}
+## Client Requirements {data-cop-concept=client #client}
 
 <spec-statement>The client MUST authenticate.</spec-statement>
 ```
 
 ### Inheritance
 
-`data-cop` cascades down to all nested sections and statements:
+`data-cop-concept` cascades down to all nested sections and statements:
 
 ```html
-<section id="server" data-cop="server">
+<section id="server" data-cop-concept="server">
   <h2>Server Requirements</h2>
 
   <!-- Inherits server -->
   <spec-statement>The server MUST validate tokens.</spec-statement>
 
-  <section data-cop="client">
+  <section data-cop-concept="client">
     <h3>Client-Server Interaction</h3>
 
     <!-- Overridden to client -->
@@ -66,34 +66,64 @@ Use the `{data-cop=value}` suffix:
 </section>
 ```
 
-**NOTE:** to make this referenceable, the **section** must get the same `id` attribute as the `data-cop` value.
+**NOTE:** to make this referenceable, the **section** must get the same `id` attribute as the `data-cop-concept` value.
 
 ### Statement-Level Override
 
 Individual statements can override the inherited value:
 
 ```html
-<section data-cop="server">
+<section data-cop-concept="server">
   <h2>Server Section</h2>
 
   <!-- Uses inherited "server" -->
   <spec-statement>The server MUST respond with JSON.</spec-statement>
 
   <!-- Overridden to "client" -->
-  <spec-statement data-cop="client">The client MUST parse JSON.</spec-statement>
+  <spec-statement data-cop-concept="client"
+    >The client MUST parse JSON.</spec-statement
+  >
 </section>
 ```
 
 ### JSON-LD Output
 
-When `data-cop` is set, statements include `spec:requirementSubject` in the JSON-LD:
+When `data-cop-concept` is set, statements include `spec:requirementSubject` in the JSON-LD:
 
 ```json
 {
-  "id": "https://example.org/spec#stmt-1",
-  "type": "spec:Requirement",
-  "spec:statement": "the client must authenticate.",
-  "spec:requirementSubject": { "id": "spec:Client" }
+  "@context": { ... },
+  "@graph": [
+    {
+      "id": "https://example.org/spec",
+      "type": "spec:Specification",
+    {
+      "id": "https://example.org/spec",
+      "type": "spec:Specification",
+      "spec:classesOfProducts": {
+        "id": "https://example.org/spec#classes-of-products",
+        "type": "skos:ConceptScheme",
+        "skos:hasTopConcept": [
+          { "id": "https://example.org/spec#client" }
+        ]
+      },
+      "spec:requirement": [
+        { "id": "https://example.org/spec#stmt-1" }
+      ]
+    },
+    {
+      "id": "https://example.org/spec#client",
+      "type": "skos:Concept",
+      "skos:inScheme": { "id": "https://example.org/spec#classes-of-products" },
+      "skos:topConceptOf": { "id": "https://example.org/spec#classes-of-products" }
+    },
+    {
+      "id": "https://example.org/spec#stmt-1",
+      "type": "spec:Requirement",
+      "spec:statement": "the client must authenticate.",
+      "spec:requirementSubject": { "id": "https://example.org/spec#client" }
+    }
+  ]
 }
 ```
 

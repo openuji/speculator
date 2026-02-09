@@ -18,7 +18,7 @@ It defines <dfn data-dfn-for="ContextX">Ambiguous Term</dfn> and
 Unresolved cross-spec reference: [=MissingTermInA=].
 look at [§#spec-a|spec A] or this way [spec A](#spec-a)
 
-## Client {data-cop="client"}
+## Client {data-cop-concept="client"}
 
 <spec-statement>
   The client MUST send a POST request to the **Endpoint URL**.
@@ -27,7 +27,7 @@ look at [§#spec-a|spec A] or this way [spec A](#spec-a)
   The client SHOULD set the Content-Type header to application/json.
 </spec-statement>
 
-## Server {data-cop="server"}
+## Server {data-cop-concept="server"}
 
 <spec-statement id="server-responses-at-endpoint">
   The server MUST return an HTTP response to requests received at the Endpoint URL.
@@ -36,7 +36,7 @@ look at [§#spec-a|spec A] or this way [spec A](#spec-a)
   The server SHOULD set the Content-Type header to application/json.
 </spec-statement>
 
-## Identity Provider {#idp data-cop="#IDP"}
+## Identity Provider {#idp data-cop-concept="#IDP"}
 
 <spec-statement>
   The IDP MUST authenticate the user before issuing a token.

@@ -1,23 +1,25 @@
 <section>
-    <h1>Spec A</h1>
-    <p>This document defines <dfn id="term-a">Term A</dfn>.</p>
+  <h1>Spec A</h1>
+  <p>This document defines <dfn id="term-a">Term A</dfn>.</p>
 
+  <section>
+    <h2>Workspace Context</h2>
+    <p>It also defines the <dfn>Workspace API</dfn>.</p>
+    <p>
+      Here is a reference to a <a data-link-type="dfn">Cross Reference</a> which
+      is defined in Spec B.
+    </p>
+  </section>
 
-    
-
-    <section>
-        <h2>Workspace Context</h2>
-        <p>It also defines the <dfn>Workspace API</dfn>.</p>
-        <p>Here is a reference to a <a data-link-type="dfn">Cross Reference</a> which is defined in Spec B.</p>
-    </section>
-
-    <section>
-        <h2>Contextual Definitions</h2>
-        <p>A context-specific definition: <dfn data-dfn-for="RunnerA">Runner</dfn>.</p>
-    </section>
+  <section>
+    <h2>Contextual Definitions</h2>
+    <p>
+      A context-specific definition: <dfn data-dfn-for="RunnerA">Runner</dfn>.
+    </p>
+  </section>
 </section>
 
-<section data-cop="client-a">
+<section data-cop-concept="client-a">
   <h2>Client</h2>
 
   <spec-statement>
@@ -28,25 +30,28 @@
   </spec-statement>
 </section>
 
-<section data-cop="server-a">
+<section data-cop-concept="server-a">
   <h2>Server</h2>
 
   <spec-statement id="server-responses-at-endpoint">
-    The server A MUST return an HTTP response to requests received at the Endpoint URL.
+    The server A MUST return an HTTP response to requests received at the
+    Endpoint URL.
   </spec-statement>
   <spec-statement>
     The server SHOULD set the Content-Type header to application/json.
   </spec-statement>
 </section>
 
-<section id="idp" data-cop="#IDP">
+<section id="idp" data-cop-concept="#IDP">
   <h2>Identity Provider</h2>
 
-  <spec-statement data-cop="spec:Client">
+  <spec-statement data-cop-concept="spec:Client">
     The IDP MUST authenticate the user before issuing a token.
   </spec-statement>
   <spec-statement>
     The IDP MUST NOT issue tokens for unknown clients.
   </spec-statement>
-  <spec-statement data-cop="client-a">The client a MAY cache tokens.</spec-statement>
+  <spec-statement data-cop-concept="client-a"
+    >The client a MAY cache tokens.</spec-statement
+  >
 </section>

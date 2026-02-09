@@ -32,9 +32,10 @@ function resolveCop(cop: string, baseIri: string): string | undefined {
     }
 
     // CURIE form (spec:Something, custom:Something) - use as-is
-    if (trimmed.includes(':')) {
-        return trimmed;
-    }
+    // TODO: this is global spec i can not embed in my locally defined CoP
+    // if (trimmed.includes(':')) {
+    //    return trimmed;
+    // }
 
     // Bare token → absolute IRI with fragment
     return `${baseIri}#${trimmed}`;
@@ -71,24 +72,24 @@ function buildStatementIndex(document: Document, baseIri: string): void {
         for (const node of nodes) {
             let nextCop = currentCop;
             
-            // Sections and Headings can provide dataCop
+            // Sections and Headings can provide dataCopConcept
             if (node.type === 'section') {
                 const section = node as Section;
-                if (section.dataCop) {
-                    nextCop = section.dataCop;
+                if (section.dataCopConcept) {
+                    nextCop = section.dataCopConcept;
                 }
             } else if (node.type === 'heading') {
                 const heading = node as BlockHeading;
-                if (heading.dataCop) {
-                    nextCop = heading.dataCop;
+                if (heading.dataCopConcept) {
+                    nextCop = heading.dataCopConcept;
                 }
             }
 
             if (node.type === 'specStatement') {
                 const stmt = node as BlockSpecStatement;
                 
-                // If statement has its own dataCop, it takes precedence
-                const effectiveCop = stmt.dataCop || nextCop;
+                // If statement has its own dataCopConcept, it takes precedence
+                const effectiveCop = stmt.dataCopConcept || nextCop;
                 const resolvedSubject = effectiveCop ? resolveCop(effectiveCop, baseIri) : undefined;
 
                 // Finalize ID if not explicit
