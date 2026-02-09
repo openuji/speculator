@@ -214,7 +214,10 @@ export interface SpecConfig {
     version?: string;
 
     /** This version URL */
-    thisVersion?: string;
+    specIri: string;
+
+    /** Base URL for assembling thisVersion (e.g., https://example.org/specs/) */
+    baseUrl?: string;
 
     /** Latest version URL */
     latestVersion?: string;
@@ -275,6 +278,14 @@ export interface SpecConfig {
     /** If true, suppresses the automatic generation of the conformance section. */
     noConformance?: boolean;
 
+    /** JSON-LD metadata configuration */
+    jsonLd?: {
+        /** Base IRI for the specification vocabulary (default: https://speculator.openuji.org/vocab#) */
+        vocab?: string;
+        /** Standard contexts to include */
+        contexts?: Record<string, string>;
+    };
+
 }
 
 // ============================================================================
@@ -304,6 +315,8 @@ export interface WorkspaceEntry {
     entry: string;
     /** Optional path to specific config file */
     configPath?: string;
+    /** Optional config overrides to merge with loaded config (highest priority) */
+    configOverrides?: Partial<SpecConfig>;
 }
 
 /**
@@ -311,4 +324,4 @@ export interface WorkspaceEntry {
  * Used for dynamic workspace building in CLI and Astro.
  * Each key represents a named, isolated workspace.
  */
-export type WorkspaceConfig = Record<string, WorkspaceEntry[]>;
+export type WorkspaceEntryMap = Record<string, WorkspaceEntry[]>;

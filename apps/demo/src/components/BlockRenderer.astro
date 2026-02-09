@@ -175,6 +175,15 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
           </aside>
         );
 
+      case "specStatement":
+        const stmt = node as any;
+        const stmtClass = `spec-statement ${stmt.level ? `level-${stmt.level.toLowerCase()}` : ""}`;
+        return (
+          <p class={stmtClass} id={stmt.id}>
+            <InlineRenderer nodes={stmt.children} {...inlineProps} />
+          </p>
+        );
+
       default:
         return (
           <div style="border:1px solid red">

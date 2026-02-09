@@ -13,7 +13,7 @@ import {
     NodeFileProvider, 
     buildWorkspaces 
 } from '@openuji/speculator';
-import type { Workspace, WorkspaceConfig } from '@openuji/speculator';
+import type { Workspace, WorkspaceEntryMap } from '@openuji/speculator';
 import { SpeculatorLinter } from './linter.js';
 import { builtInRules } from './rules/index.js';
 import { loadConfig, loadConfigFromDefaults, recommendedConfig } from './config.js';
@@ -96,14 +96,13 @@ async function main() {
         let workspacesToLint: Record<string, Workspace> = {};
 
         if (args.workspacePath.endsWith('.workspace.json')) {
-            const workspaceConfig = JSON.parse(workspaceContent) as WorkspaceConfig;
+            const entryMap = JSON.parse(workspaceContent) as WorkspaceEntryMap;
             const fileProvider = new NodeFileProvider();
             
-            const buildResult = await buildWorkspaces(
-                workspaceConfig,
+            const buildResult = await buildWorkspaces({
+                entryMap,
                 fileProvider,
-                workspacePath
-            );
+            });
 
             if (buildResult.errors.length > 0) {
                 for (const error of buildResult.errors) {

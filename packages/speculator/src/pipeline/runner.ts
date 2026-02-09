@@ -17,7 +17,10 @@ import type {
     RuntimeWorkspace,
 } from './types.js';
 import type { Document } from '#src/types/ast.generated';
-import { buildGlobalIndex, finalizeWorkspace } from './workspace-index.js';
+import type { SpecConfig } from '#src/preprocess/types';
+import { 
+    finalizeWorkspace 
+} from './workspace-index.js';
 
 // Default order for plugins that don't specify
 const DEFAULT_ORDER = 100;
@@ -69,10 +72,12 @@ export class SpeculatorPipeline {
         entry: string;
         configPath?: string;
         fileProvider: FileProvider;
+        env?: Record<string, string | undefined>;
     }): Promise<SpeculateResult> {
         return this.runWorkspace({
             entries: [{ entry: options.entry, configPath: options.configPath }],
-            fileProvider: options.fileProvider
+            fileProvider: options.fileProvider,
+            env: options.env
         });
     }
 
@@ -82,8 +87,9 @@ export class SpeculatorPipeline {
     async runWorkspace(options: {
         entries: { entry: string; configPath?: string }[];
         fileProvider: FileProvider;
+        env?: Record<string, string | undefined>;
     }): Promise<SpeculateResult> {
-        const results: { doc: Document; entry: string }[] = [];
+        const results: { doc: Document; entry: string; config: SpecConfig }[] = [];
 
         // 1. Initial run: Preprocess + Parse
         for (const entryConfig of options.entries) {
@@ -92,6 +98,7 @@ export class SpeculatorPipeline {
                     entry: entryConfig.entry,
                     configPath: entryConfig.configPath,
                     fileProvider: options.fileProvider,
+                    env: options.env,
                 });
 
                 const registry = new ParseHandlerRegistry();
@@ -99,7 +106,11 @@ export class SpeculatorPipeline {
                 const parseResult = parseWithRegistry(preprocessedSpec, registry);
 
                 if (!parseResult.result) continue;
-                results.push({ doc: parseResult.result.document, entry: entryConfig.entry });
+                results.push({ 
+                    doc: parseResult.result.document, 
+                    entry: entryConfig.entry,
+                    config: preprocessedSpec.config
+                });
             } catch {
                 // Preprocess errors are now thrown, skip this entry
                 continue;
@@ -124,10 +135,14 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of transformPlugins) {
-                await plugin.transform!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.transform!({
+                    document: res.doc,
+                    level,
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
-
 
 
         // 3. INDEX phase
@@ -135,38 +150,50 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of indexPlugins) {
-                await plugin.index!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.index!({
+                    document: res.doc,
+                    level,
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
 
-        // 4. AGGREGATE Global Index
-        runtimeWorkspace.globalIndex = buildGlobalIndex(runtimeWorkspace.documents, runtimeWorkspace.documentLevels);
-
-        // 5. RESOLVE phase
+        // 4. RESOLVE phase
         const resolvePlugins = sortPluginsForPhase(this.plugins.filter(p => p.resolve), 'resolve');
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of resolvePlugins) {
-                await plugin.resolve!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.resolve!({
+                    document: res.doc,
+                    level,
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
 
-        // 6. COMPUTE phase
+        // 5. COMPUTE phase
         const computePlugins = sortPluginsForPhase(this.plugins.filter(p => p.compute), 'compute');
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of computePlugins) {
-                await plugin.compute!({ document: res.doc, level, workspace: runtimeWorkspace });
+                await plugin.compute!({
+                    document: res.doc,
+                    level,
+                    workspace: runtimeWorkspace,
+                    config: res.config
+                });
             }
         }
 
 
-        // Finalize: Convert runtime workspace to AST
-        const workspaceAST = finalizeWorkspace(runtimeWorkspace);
+        // 6. FINALIZE Workspace AST
+        const workspace = await finalizeWorkspace(
+            runtimeWorkspace.documents,
+            runtimeWorkspace.globalIndex
+        );
 
-        return {
-            workspace: workspaceAST
-        };
+        return { workspace };
     }
 }
-

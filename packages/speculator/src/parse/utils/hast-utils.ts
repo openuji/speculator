@@ -8,7 +8,7 @@
 import type { Element, Text as HastText, RootContent as HastRootContent } from 'hast';
 import type { Text } from 'mdast';
 import type { ParseContext, NodeWithPosition } from '#src/parse/registry';
-import type { Inline, SourcePos } from '#src/types/ast.generated';
+import type { Inline, SourcePos, Block, Section, BlockParagraph } from '#src/types/ast.generated';
 
 /**
  * Get element attribute value from hast element.
@@ -17,10 +17,11 @@ import type { Inline, SourcePos } from '#src/types/ast.generated';
 export function getAttr(element: Element, name: string): string | undefined {
     let val = element.properties?.[name];
 
-    // Fallback: if camelCase name not found, try kebab-case for data- attributes
+    // Fallback: handle data- attributes (check both camelCase and kebab-case)
     if (val === undefined && name.startsWith('data')) {
+        const camel = name.replace(/-([a-z0-9])/g, (g) => g[1].toUpperCase());
         const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-        val = element.properties?.[kebab];
+        val = element.properties?.[camel] ?? element.properties?.[kebab];
     }
 
     if (typeof val === 'string') return val;
@@ -46,6 +47,8 @@ export function getTextContent(element: Element): string {
     return text;
 }
 
+import { parseMarkdownInlines } from './markdown-utils.js';
+
 /**
  * Transform a hast node to Speculator inline(s) using HTML handlers.
  * This is the core transformation logic shared by both paragraph and block HTML parsers.
@@ -53,7 +56,8 @@ export function getTextContent(element: Element): string {
 export function transformHastInline(node: HastRootContent, ctx: ParseContext): Inline | Inline[] | null {
     if (node.type === 'text') {
         const textValue = (node as HastText).value;
-        // Delegate back to Markdown's transformInlineChildren to handle shorthands (|var|)
+        // Delegate back to registry's transformInlineChildren. 
+        // In a hastCtx, this will be handled by our recursive-safe wrapper.
         const res = ctx.transformInlineChildren([{ type: 'text', value: textValue } as Text]);
         return res.length === 0 ? null : res;
     }
@@ -72,6 +76,39 @@ export function transformHastInline(node: HastRootContent, ctx: ParseContext): I
 
     // Fallback: recurse into children if no handler for this tag
     return ctx.transformInlineChildren(element.children);
+}
+
+/**
+ * Transform a hast node to Speculator block(s) using HTML handlers.
+ */
+export function transformHastBlock(node: HastRootContent, ctx: ParseContext): (Section | Block)[] {
+    if (node.type !== 'element') return [];
+
+    const element = node as Element;
+    const tagName = element.tagName.toLowerCase();
+
+    const handler = ctx.registry.getHtmlBlockHandler(tagName);
+
+    if (handler?.handleBlock) {
+        const result = handler.handleBlock(element, ctx);
+        if (result === null) return [];
+        if (Array.isArray(result)) return result;
+        return [result];
+    }
+
+    // Fallback: wrap as paragraph if it has inline content
+    const sourcePos = ctx.createSourcePos(element);
+    const inlines = ctx.transformInlineChildren(element.children);
+    if (inlines.length > 0) {
+        const result: BlockParagraph = {
+            type: 'paragraph',
+            children: inlines,
+        };
+        if (sourcePos) result.sourcePos = sourcePos;
+        return [result];
+    }
+
+    return [];
 }
 
 /**
@@ -110,17 +147,55 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
         transformInlineChildren: (children) => {
             const results: Inline[] = [];
             for (const child of children as HastRootContent[]) {
-                if (child.type === 'element') {
+                if (child.type === 'text') {
+                    // Re-parse text as Markdown to handle core markup (**bold**, `code`) and shorthands.
+                    // We use originalTransform (the non-recursive one) to break the chain.
+                    const mdastNodes = parseMarkdownInlines((child as HastText).value);
+                    results.push(...originalTransform(mdastNodes));
+                } else if (child.type === 'element') {
                     const res = transformHastInline(child, hastCtx);
                     if (res) {
                         if (Array.isArray(res)) results.push(...res);
                         else results.push(res);
                     }
                 } else {
-                    // Delegate anything else (text, mdast nodes) to the original transformer
+                    // Fallback for any other nodes (e.g. already parsed mdast nodes)
                     results.push(...originalTransform([child]));
                 }
             }
+            return results;
+        },
+        transformBlockChildren: (children) => {
+            const results: (Section | Block)[] = [];
+            let currentInlines: HastRootContent[] = [];
+
+            const flushInlines = () => {
+                if (currentInlines.length > 0) {
+                    const inlines = hastCtx.transformInlineChildren(currentInlines);
+                    if (inlines.length > 0) {
+                        results.push({
+                            type: 'paragraph',
+                            children: inlines,
+                        } as BlockParagraph);
+                    }
+                    currentInlines = [];
+                }
+            };
+
+            for (const child of children as HastRootContent[]) {
+                if (child.type === 'element') {
+                    const element = child as Element;
+                    const handler = hastCtx.registry.getHtmlBlockHandler(element.tagName.toLowerCase());
+                    if (handler?.handleBlock) {
+                        flushInlines();
+                        results.push(...transformHastBlock(child, hastCtx));
+                        continue;
+                    }
+                }
+                // If not a block element, add to current inlines
+                currentInlines.push(child);
+            }
+            flushInlines();
             return results;
         },
         getTextContent,

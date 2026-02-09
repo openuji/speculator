@@ -86,6 +86,9 @@ export interface ResolvedDocumentConfig {
   /** Maturity level (core config setting, takes priority over mapped respec.specStatus) */
   maturityLevel?: MaturityLevel;
 
+  /** Base URL for assembling thisVersion when not explicitly set */
+  baseUrl?: string;
+
   /** If true, suppresses the automatic generation of the conformance section. */
   noConformance?: boolean;
 

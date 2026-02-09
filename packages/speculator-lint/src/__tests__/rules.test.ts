@@ -470,4 +470,103 @@ describe('Speculator Lint Rules', () => {
             expect(diagnostics[0].message).toContain('Unresolved section reference');
         });
     });
+
+    describe('vocab/validate-spec-terms', () => {
+        it('reports warning for unknown spec: prefixed terms', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'doc-1',
+                sourcePos: { file: 'doc-1.md', line: 1, column: 1 },
+                children: [],
+                indexes: {
+                    statements: [
+                        { 
+                            id: 'stmt-1', 
+                            level: 'MUST',
+                            subject: 'spec:InvalidTerm',
+                            contentText: 'Test statement',
+                            sourcePos: { file: 'doc-1.md', line: 5, column: 1 }
+                        }
+                    ]
+                }
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['doc-1.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'validate-spec-terms');
+            expect(diagnostics).toHaveLength(1);
+            expect(diagnostics[0].message).toContain('Unknown Spec Terms concept "spec:InvalidTerm"');
+        });
+
+        it('does NOT report warning for valid spec: terms like Client', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'doc-1',
+                sourcePos: { file: 'doc-1.md', line: 1, column: 1 },
+                children: [],
+                indexes: {
+                    statements: [
+                        { 
+                            id: 'stmt-1', 
+                            level: 'MUST',
+                            subject: 'spec:Client',
+                            contentText: 'Test statement',
+                            sourcePos: { file: 'doc-1.md', line: 5, column: 1 }
+                        }
+                    ]
+                }
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['doc-1.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'validate-spec-terms');
+            expect(diagnostics).toHaveLength(0);
+        });
+
+        it('ignores non-spec: prefixed subjects', async () => {
+            const doc: Document = {
+                type: 'document',
+                id: 'doc-1',
+                sourcePos: { file: 'doc-1.md', line: 1, column: 1 },
+                children: [],
+                indexes: {
+                    statements: [
+                        { 
+                            id: 'stmt-1', 
+                            level: 'MUST',
+                            subject: 'https://example.org/spec#client',
+                            contentText: 'Test statement',
+                            sourcePos: { file: 'doc-1.md', line: 5, column: 1 }
+                        }
+                    ]
+                }
+            };
+
+            const workspace = createMockWorkspace([doc]);
+            const documentLevels = new Map([['doc-1.md', 0]]);
+
+            const result = await linter.lint({
+                workspace,
+                documentLevels,
+                config: recommendedConfig
+            });
+
+            const diagnostics = result.diagnostics.filter(d => d.code === 'validate-spec-terms');
+            expect(diagnostics).toHaveLength(0);
+        });
+    });
 });

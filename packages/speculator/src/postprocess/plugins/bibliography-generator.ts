@@ -57,7 +57,8 @@ function createReferenceSection(title: string, id: string, citations: string[], 
         children: [
             {
                 type: 'html',
-                value: `<dl class="bibliography">${dlContent}</dl>`
+                value: `<dl class="bibliography">${dlContent}</dl>`,
+                children: [],
             } as BlockHtml
         ]
     };

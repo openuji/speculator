@@ -82,6 +82,7 @@ In the example above, the document will use `"My Awesome Specification"` from th
 | `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the parent folder name.      |
 | `title`          | `string`   | **Priority** document title. Overwrites `respec.title`.                                                                    |
 | `deps`           | `string[]` | List of document IDs that this document depends on. They will be processed first.                                          |
+| `baseUrl`        | `string`   | Base URL for assembling `specIri` (e.g., `https://example.org/specs`). Combined with `id` to form statement IRIs.          |
 | `lastUpdateDate` | `string`   | **Priority** last update date (ISO 8601: `YYYY-MM-DD`). Overwrites `respec.modificationDate`.                              |
 | `maturityLevel`  | `string`   | **Priority** maturity level. One of: `incubating`, `draft`, `prerelease`, `stable`. Overwrites mapped `respec.specStatus`. |
 | `custom`         | `object`   | **Highest priority** user-defined properties. Passed through as-is, overwrites any conflicting root or respec values.      |
@@ -136,6 +137,63 @@ These settings reside within the `respec` object and closely mirror the [ReSpec 
 
 ---
 
+## Environment Variables
+
+Speculator supports environment variable interpolation in `config.json` files. This allows you to avoid hardcoding sensitive information or to use dynamic values based on your build environment.
+
+### Syntax
+
+- `${SPEC_VARIABLE_NAME}`
+- `$SPEC_VARIABLE_NAME`
+
+> [!IMPORTANT]
+> **Security Restriction:** For security reasons, Speculator only interpolates environment variables that start with the `SPEC_` prefix. Any placeholder referencing a variable without this prefix will be replaced with an empty string.
+
+If an allowed environment variable is not defined in the system, it will also be replaced with an empty string.
+
+### Example
+
+```json
+{
+  "title": "Build: ${SPEC_BUILD_NUMBER}",
+  "maturityLevel": "$SPEC_RELEASE_STAGE",
+  "custom": {
+    "apiKey": "${SPEC_API_KEY}",
+    "systemSecret": "$SECRET_KEY"
+  }
+}
+```
+
+If `SPEC_BUILD_NUMBER=42`, `SPEC_RELEASE_STAGE=stable`, and `SECRET_KEY=123456`, the resulting configuration will be:
+
+```json
+{
+  "title": "Build: 42",
+  "maturityLevel": "stable",
+  "custom": {
+    "apiKey": "",
+    "systemSecret": ""
+  }
+}
+```
+
+### Framework Integration (Astro/Vite)
+
+In frameworks like Astro or Vite, environment variables from `.env` files are loaded into `import.meta.env` rather than `process.env`. To support interpolation in these environments, you must explicitly pass the environment object to the Speculator pipeline.
+
+#### Example (Astro Page)
+
+```astro
+---
+const buildResult = await buildWorkspaces({
+  entryMap: workspaceMap,
+  env: import.meta.env, // Inject Astro environment
+});
+---
+```
+
+---
+
 ## Workspace Configuration
 
 While individual specifications use `config.json`, larger projects can define a **Workspace Configuration** to manage multiple, isolated specification groups. This is used by the `buildWorkspaces` utility and the Speculator CLI.
@@ -172,6 +230,6 @@ After loading and normalization, these settings are exposed in the Document AST 
 
 Generated TypeScript types can be found in:
 
-- `SpecConfig` ([types.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/preprocess/types.ts))
-- `WorkspaceConfig` ([types.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/preprocess/types.ts))
-- `DocumentMetadata` ([ast.generated.ts](file:///Users/zavalit/Projects/openuji/speculator/packages/speculator/src/types/ast.generated.ts))
+- `SpecConfig` ([types.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/preprocess/types.ts))
+- `WorkspaceEntryMap` ([types.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/preprocess/types.ts))
+- `DocumentMetadata` ([ast.generated.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/types/ast.generated.ts))

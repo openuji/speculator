@@ -3,11 +3,13 @@ import type {
     Document,
     IndexDefinitionEntry,
     IndexBiblioEntry,
-    Indexes1 as GlobalIndexAST,
+    IndexStatementEntry,
+    GlobalIndex,
 } from '#src/types/ast.generated';
+import type { SpecConfig } from '#src/preprocess/types';
 
 // Re-export the core AST types for convenience
-export type { Workspace, Document, IndexDefinitionEntry, IndexBiblioEntry, GlobalIndexAST };
+export type { Workspace, Document, IndexDefinitionEntry, IndexBiblioEntry, IndexStatementEntry, GlobalIndex as GlobalIndexAST };
 
 
 /**
@@ -19,7 +21,7 @@ export interface RuntimeGlobalIndex {
     /** Map of normalized term -> definitions */
     definitions: Map<string, IndexDefinitionEntry[]>;
     /** Map of key -> bibliography entry */
-    bibliography: Map<string, IndexBiblioEntry>;
+    bibliography: Map<string, IndexBiblioEntry>
 }
 
 /**
@@ -71,6 +73,7 @@ export interface TransformContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 
@@ -79,6 +82,7 @@ export interface IndexContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 
@@ -87,6 +91,7 @@ export interface ResolveContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 
@@ -95,6 +100,7 @@ export interface ComputeContext {
     readonly document: Document;
     readonly level: number;
     readonly workspace?: RuntimeWorkspace;
+    readonly config: SpecConfig;
 }
 
 
@@ -153,6 +159,9 @@ export interface SpeculateOptions {
 
     /** File provider for reading files (defaults to NodeFileProvider) */
     fileProvider?: import('#src/file-provider/types').FileProvider;
+
+    /** Optional environment object for variable interpolation */
+    env?: Record<string, string | undefined>;
 }
 
 /**

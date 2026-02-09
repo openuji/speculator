@@ -7,6 +7,8 @@
 import type { FileProvider } from '#src/file-provider/types';
 import { isFileNotFoundError } from '#src/file-provider/types';
 import type { DocumentConfig } from './types.js';
+import { interpolateEnvVars } from './env.js';
+
 
 /**
  * Error thrown when config loading fails
@@ -32,7 +34,8 @@ export class ConfigLoadError extends Error {
  */
 export async function loadConfig(
     fileProvider: FileProvider,
-    configPath: string
+    configPath: string,
+    env?: Record<string, string | undefined>
 ): Promise<DocumentConfig> {
     const canonicalPath = fileProvider.canonicalize(configPath);
 
@@ -56,7 +59,8 @@ export async function loadConfig(
     }
 
     try {
-        const config = JSON.parse(content) as DocumentConfig;
+        const interpolatedContent = interpolateEnvVars(content, env);
+        const config = JSON.parse(interpolatedContent) as DocumentConfig;
         return config;
     } catch (error) {
         throw new ConfigLoadError(

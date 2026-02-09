@@ -1,6 +1,6 @@
 {
     "name": "@openuji/render-respec",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Generate ReSpec-compatible HTML from specification source files using Speculator AST pipeline",
     "type": "module",
     "main": "dist/index.js",
@@ -54,5 +54,12 @@
         "eslint": "^8.57.0",
         "typescript": "^5.3.0",
         "vitest": "^1.0.0"
+    },
+    "lint-staged": {
+        "src/**/!(*.generated).ts": [
+            "eslint --fix --max-warnings 0",
+            "bash -c 'pnpm typecheck'",
+            "bash -c 'pnpm test --run'"
+        ]
     }
 }

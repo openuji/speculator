@@ -7,6 +7,36 @@
     "description": "AST-first schema for Speculator workspace. A workspace contains one or more specification documents. Semantic marker nodes are introduced during parse and may be refined during resolve. Global indexing aggregates definitions across documents.",
     "type": "object",
     "definitions": {
+        "NormativeLevel": {
+            "type": "string",
+            "enum": [
+                "MUST",
+                "MUST NOT",
+                "SHOULD",
+                "SHOULD NOT",
+                "MAY",
+                "NOTE",
+                "NONE",
+                "AMBIGUOUS"
+            ],
+            "description": "Canonical RFC 2119 / 8174 requirement level."
+        },
+        "NormativeKeyword": {
+            "type": "string",
+            "enum": [
+                "MUST",
+                "MUST NOT",
+                "REQUIRED",
+                "SHALL",
+                "SHALL NOT",
+                "SHOULD",
+                "SHOULD NOT",
+                "RECOMMENDED",
+                "MAY",
+                "OPTIONAL"
+            ],
+            "description": "RFC 2119 / 8174 keyword aliases."
+        },
         "SourcePos": {
             "type": "object",
             "description": "Source position for bidirectional AST-to-source mapping",
@@ -399,19 +429,7 @@
                             "const": "requirement"
                         },
                         "keyword": {
-                            "type": "string",
-                            "enum": [
-                                "MUST",
-                                "MUST NOT",
-                                "REQUIRED",
-                                "SHALL",
-                                "SHALL NOT",
-                                "SHOULD",
-                                "SHOULD NOT",
-                                "RECOMMENDED",
-                                "MAY",
-                                "OPTIONAL"
-                            ]
+                            "$ref": "#/definitions/NormativeKeyword"
                         },
                         "id": {
                             "type": "string",
@@ -668,6 +686,10 @@
                             "type": "boolean",
                             "description": "If true, the section created from this heading will be unnumbered.",
                             "default": false
+                        },
+                        "dataCop": {
+                            "type": "string",
+                            "description": "Optional Class of Products (COP) identifier for this heading/section scope."
                         }
                     },
                     "required": [
@@ -706,11 +728,18 @@
                         },
                         "value": {
                             "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - code blocks are leaf nodes with raw value content"
                         }
                     },
                     "required": [
                         "type",
-                        "value"
+                        "value",
+                        "children"
                     ]
                 }
             ]
@@ -956,10 +985,17 @@
                         },
                         "id": {
                             "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - thematic breaks are void/leaf nodes"
                         }
                     },
                     "required": [
-                        "type"
+                        "type",
+                        "children"
                     ]
                 }
             ]
@@ -980,11 +1016,18 @@
                         },
                         "value": {
                             "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - HTML blocks are leaf nodes with raw value content"
                         }
                     },
                     "required": [
                         "type",
-                        "value"
+                        "value",
+                        "children"
                     ]
                 }
             ]
@@ -1034,6 +1077,53 @@
                 }
             ]
         },
+        "BlockSpecStatement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "A semantic statement node (normative or informative). Auto-detects RFC 2119 keywords and handles JSON-LD harvesting.",
+                    "properties": {
+                        "type": {
+                            "const": "specStatement"
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Unique identifier for this statement. If not explicitly provided, it is finalized from tempId during post-processing."
+                        },
+                        "tempId": {
+                            "type": "string",
+                            "description": "Temporary/candidate identifier used during parse before uniqueness is guaranteed."
+                        },
+                        "level": {
+                            "$ref": "#/definitions/NormativeLevel",
+                            "description": "The requirement level of the statement."
+                        },
+                        "contentText": {
+                            "type": "string",
+                            "description": "Plain text content of the statement (collapsed whitespace)."
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        },
+                        "dataCop": {
+                            "type": "string",
+                            "description": "Optional explicit Class of Products (COP) identifier for this statement."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "contentText",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "Block": {
             "oneOf": [
                 {
@@ -1065,6 +1155,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockNote"
+                },
+                {
+                    "$ref": "#/definitions/BlockSpecStatement"
                 }
             ]
         },
@@ -1105,6 +1198,10 @@
                                     }
                                 ]
                             }
+                        },
+                        "dataCop": {
+                            "type": "string",
+                            "description": "Optional Class of Products (COP) identifier for this section scope."
                         }
                     },
                     "required": [
@@ -1313,9 +1410,37 @@
                 "key"
             ]
         },
-        "Indexes": {
+        "IndexStatementEntry": {
             "type": "object",
-            "description": "Indexes extracted from AST marker nodes during indexing. Not computed fields.",
+            "description": "Entry in the statements index, extracted from BlockSpecStatement nodes",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "contentText": {
+                    "type": "string"
+                },
+                "subject": {
+                    "type": "string",
+                    "description": "Resolved requirement subject IRI (Class of Product)"
+                },
+                "sourcePos": {
+                    "$ref": "#/definitions/SourcePos"
+                }
+            },
+            "required": [
+                "id",
+                "level",
+                "contentText",
+                "sourcePos"
+            ]
+        },
+        "DocumentIndexes": {
+            "type": "object",
+            "description": "Indexes extracted from AST marker nodes during indexing within a single document.",
             "properties": {
                 "definitions": {
                     "type": "array",
@@ -1351,6 +1476,24 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/IndexCiteEntry"
+                    }
+                },
+                "statements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexStatementEntry"
+                    }
+                }
+            }
+        },
+        "GlobalIndex": {
+            "type": "object",
+            "description": "Aggregated global index across all documents in a workspace.",
+            "properties": {
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexDefinitionEntry"
                     }
                 },
                 "bibliography": {
@@ -1423,6 +1566,11 @@
                 "wordCount": {
                     "type": "integer",
                     "description": "Total word count",
+                    "x-computed": true
+                },
+                "statementsJsonLd": {
+                    "type": "object",
+                    "description": "Embedded machine-readable statements/requirements in JSON-LD format.",
                     "x-computed": true
                 },
                 "readingTime": {
@@ -1664,7 +1812,7 @@
                     }
                 },
                 "indexes": {
-                    "$ref": "#/definitions/Indexes",
+                    "$ref": "#/definitions/DocumentIndexes",
                     "description": "Indexes extracted from marker nodes during indexing"
                 },
                 "computed": {
@@ -1699,7 +1847,7 @@
             "description": "Collection of documents in the workspace"
         },
         "globalIndex": {
-            "$ref": "#/definitions/Indexes",
+            "$ref": "#/definitions/GlobalIndex",
             "description": "Aggregated global index across all documents"
         }
     },

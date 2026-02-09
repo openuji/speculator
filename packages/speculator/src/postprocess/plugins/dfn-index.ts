@@ -12,7 +12,8 @@
 import type { Plugin, IndexContext } from '#src/pipeline/types';
 import type { Document, InlineDefinition, IndexDefinitionEntry } from '#src/types/ast.generated';
 
-import { walkDocument } from '../walk-ast.js';
+import { walkDocument } from '#src/postprocess/walk-ast';
+import { normalizeTerm } from '#src/parse/normalize';
 
 /**
  * Generate a unique ID for a definition if not already set
@@ -29,7 +30,7 @@ function generateDfnId(term: string, forContext: string | null): string {
 /**
  * Build definition index from document into document.indexes
  */
-function buildDefinitionIndex(document: Document): void {
+function buildDefinitionIndex(document: Document): IndexDefinitionEntry[] {
     // Initialize indexes structure
     if (!document.indexes) {
         document.indexes = {};
@@ -77,6 +78,8 @@ function buildDefinitionIndex(document: Document): void {
             }
         }
     });
+
+    return definitionIndex;
 }
 
 /**
@@ -87,7 +90,27 @@ export const dfnIndexPlugin: Plugin = {
     order: { index: 10 },
 
     async index(ctx: IndexContext): Promise<void> {
-        buildDefinitionIndex(ctx.document);
+        const definitions = buildDefinitionIndex(ctx.document);
+
+        // Perform global aggregation if workspace is available
+        if (ctx.workspace) {
+            const globalDefinitions = ctx.workspace.globalIndex.definitions;
+
+            for (const entry of definitions) {
+                const linkTexts = entry.linkTexts || [entry.term];
+
+                // Add primary term and all aliases to definitions lookup
+                const termsToProcess = new Set([entry.term, ...linkTexts]);
+                for (const term of termsToProcess) {
+                    const key = normalizeTerm(term);
+                    const existing = globalDefinitions.get(key) || [];
+
+                    // Add entry to definitions
+                    existing.push(entry);
+                    globalDefinitions.set(key, existing);
+                }
+            }
+        }
     },
 };
 

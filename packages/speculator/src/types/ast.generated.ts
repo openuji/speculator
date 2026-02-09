@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-01-29T12:56:46.125Z
+ * Generated at: 2026-02-09T09:46:36.385Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -28,12 +28,20 @@ export type Section = BaseNode & {
      * If true, the section created from this heading will be unnumbered.
      */
     unnumbered?: boolean;
+    /**
+     * Optional Class of Products (COP) identifier for this heading/section scope.
+     */
+    dataCop?: string;
   };
   /**
    * If true, this section and its descendants do not increment the TOC counter at this level.
    */
   unnumbered?: boolean;
   children: (Section | Block)[];
+  /**
+   * Optional Class of Products (COP) identifier for this section scope.
+   */
+  dataCop?: string;
 };
 export type Inline =
   | InlineText
@@ -209,22 +217,26 @@ export type InlineSectionReference = BaseNode & {
 };
 export type InlineRequirement = BaseNode & {
   type: 'requirement';
-  keyword:
-    | 'MUST'
-    | 'MUST NOT'
-    | 'REQUIRED'
-    | 'SHALL'
-    | 'SHALL NOT'
-    | 'SHOULD'
-    | 'SHOULD NOT'
-    | 'RECOMMENDED'
-    | 'MAY'
-    | 'OPTIONAL';
+  keyword: NormativeKeyword;
   /**
    * Optional requirement identifier
    */
   id?: string;
 };
+/**
+ * RFC 2119 / 8174 keyword aliases.
+ */
+export type NormativeKeyword =
+  | 'MUST'
+  | 'MUST NOT'
+  | 'REQUIRED'
+  | 'SHALL'
+  | 'SHALL NOT'
+  | 'SHOULD'
+  | 'SHOULD NOT'
+  | 'RECOMMENDED'
+  | 'MAY'
+  | 'OPTIONAL';
 export type InlineIssue = BaseNode & {
   type: 'issue';
   id?: string;
@@ -248,7 +260,8 @@ export type Block =
   | BlockTable
   | BlockThematicBreak
   | BlockHtml
-  | BlockNote;
+  | BlockNote
+  | BlockSpecStatement;
 export type BlockParagraph = BaseNode & {
   type: 'paragraph';
   id?: string;
@@ -266,6 +279,10 @@ export type BlockHeading = BaseNode & {
    * If true, the section created from this heading will be unnumbered.
    */
   unnumbered?: boolean;
+  /**
+   * Optional Class of Products (COP) identifier for this heading/section scope.
+   */
+  dataCop?: string;
 };
 export type BlockCodeBlock = BaseNode & {
   type: 'codeBlock';
@@ -273,6 +290,12 @@ export type BlockCodeBlock = BaseNode & {
   lang?: string | null;
   meta?: string | null;
   value: string;
+  /**
+   * Always empty - code blocks are leaf nodes with raw value content
+   *
+   * @maxItems 0
+   */
+  children: [];
 };
 export type BlockExample = BaseNode & {
   type: 'example';
@@ -321,11 +344,23 @@ export type TableCell = BaseNode & {
 export type BlockThematicBreak = BaseNode & {
   type: 'thematicBreak';
   id?: string;
+  /**
+   * Always empty - thematic breaks are void/leaf nodes
+   *
+   * @maxItems 0
+   */
+  children: [];
 };
 export type BlockHtml = BaseNode & {
   type: 'html';
   id?: string;
   value: string;
+  /**
+   * Always empty - HTML blocks are leaf nodes with raw value content
+   *
+   * @maxItems 0
+   */
+  children: [];
 };
 export type BlockNote = BaseNode & {
   type: 'note';
@@ -339,6 +374,30 @@ export type BlockNote = BaseNode & {
    */
   informative: true;
   children: Block[];
+};
+export type BlockSpecStatement = BaseNode & {
+  type: 'specStatement';
+  /**
+   * Unique identifier for this statement. If not explicitly provided, it is finalized from tempId during post-processing.
+   */
+  id?: string;
+  /**
+   * Temporary/candidate identifier used during parse before uniqueness is guaranteed.
+   */
+  tempId?: string;
+  /**
+   * The requirement level of the statement.
+   */
+  level?: 'MUST' | 'MUST NOT' | 'SHOULD' | 'SHOULD NOT' | 'MAY' | 'NOTE' | 'NONE' | 'AMBIGUOUS';
+  /**
+   * Plain text content of the statement (collapsed whitespace).
+   */
+  contentText: string;
+  children: Inline[];
+  /**
+   * Optional explicit Class of Products (COP) identifier for this statement.
+   */
+  dataCop?: string;
 };
 
 /**
@@ -354,7 +413,7 @@ export interface SpeculatorASTSchema {
    * Collection of documents in the workspace
    */
   documents: Document[];
-  globalIndex?: Indexes1;
+  globalIndex?: GlobalIndex;
 }
 /**
  * A single specification document
@@ -367,7 +426,7 @@ export interface Document {
   id: string;
   metadata?: DocumentMetadata;
   children: (Section | Block)[];
-  indexes?: Indexes;
+  indexes?: DocumentIndexes;
   computed?: ComputedFields;
   sourcePos?: SourcePos;
 }
@@ -485,14 +544,14 @@ export interface ExternalReferenceBase {
 /**
  * Indexes extracted from marker nodes during indexing
  */
-export interface Indexes {
+export interface DocumentIndexes {
   definitions?: IndexDefinitionEntry[];
   references?: IndexReferenceEntry[];
   requirements?: IndexRequirementEntry[];
   issues?: IndexIssueEntry[];
   examples?: IndexExampleEntry[];
   citations?: IndexCiteEntry[];
-  bibliography?: IndexBiblioEntry[];
+  statements?: IndexStatementEntry[];
 }
 /**
  * Entry in the definitions index, extracted from InlineDefinition nodes
@@ -565,6 +624,72 @@ export interface IndexCiteEntry {
   sourcePos: SourcePos;
 }
 /**
+ * Entry in the statements index, extracted from BlockSpecStatement nodes
+ */
+export interface IndexStatementEntry {
+  id: string;
+  level: string;
+  contentText: string;
+  /**
+   * Resolved requirement subject IRI (Class of Product)
+   */
+  subject?: string;
+  sourcePos: SourcePos;
+}
+/**
+ * Optional computed fields (x-computed: true)
+ */
+export interface ComputedFields {
+  /**
+   * Table of contents derived from headings
+   */
+  toc?: TocEntry[];
+  /**
+   * Map of heading ID to hierarchical number string
+   */
+  headingNumbers?: {
+    [k: string]: string | undefined;
+  };
+  /**
+   * Map of heading ID to plain text title
+   */
+  headingTitles?: {
+    [k: string]: string | undefined;
+  };
+  /**
+   * Total word count
+   */
+  wordCount?: number;
+  /**
+   * Embedded machine-readable statements/requirements in JSON-LD format.
+   */
+  statementsJsonLd?: {};
+  /**
+   * Estimated reading time in minutes
+   */
+  readingTime?: number;
+}
+/**
+ * Table of contents entry
+ */
+export interface TocEntry {
+  id?: string;
+  depth: number;
+  text: string;
+  /**
+   * Hierarchical number like '1.2.3'
+   */
+  number?: string;
+  children?: TocEntry[];
+}
+/**
+ * Aggregated global index across all documents
+ */
+export interface GlobalIndex {
+  definitions?: IndexDefinitionEntry[];
+  bibliography?: IndexBiblioEntry[];
+}
+/**
  * Entry in the bibliography index, merged from config and/or authored biblio sources during resolve/index phases
  */
 export interface IndexBiblioEntry {
@@ -592,60 +717,6 @@ export interface IndexBiblioEntry {
    * Raw bibliography entry text (optional fallback)
    */
   raw?: string;
-}
-/**
- * Optional computed fields (x-computed: true)
- */
-export interface ComputedFields {
-  /**
-   * Table of contents derived from headings
-   */
-  toc?: TocEntry[];
-  /**
-   * Map of heading ID to hierarchical number string
-   */
-  headingNumbers?: {
-    [k: string]: string | undefined;
-  };
-  /**
-   * Map of heading ID to plain text title
-   */
-  headingTitles?: {
-    [k: string]: string | undefined;
-  };
-  /**
-   * Total word count
-   */
-  wordCount?: number;
-  /**
-   * Estimated reading time in minutes
-   */
-  readingTime?: number;
-}
-/**
- * Table of contents entry
- */
-export interface TocEntry {
-  id?: string;
-  depth: number;
-  text: string;
-  /**
-   * Hierarchical number like '1.2.3'
-   */
-  number?: string;
-  children?: TocEntry[];
-}
-/**
- * Aggregated global index across all documents
- */
-export interface Indexes1 {
-  definitions?: IndexDefinitionEntry[];
-  references?: IndexReferenceEntry[];
-  requirements?: IndexRequirementEntry[];
-  issues?: IndexIssueEntry[];
-  examples?: IndexExampleEntry[];
-  citations?: IndexCiteEntry[];
-  bibliography?: IndexBiblioEntry[];
 }
 
 

@@ -23,6 +23,7 @@ export const CodeMarkdownParser: MarkdownParserModule = {
         const result: BlockCodeBlock = {
             type: 'codeBlock',
             value: codeNode.value,
+            children: [],
         };
 
         if (codeNode.lang) result.lang = codeNode.lang;

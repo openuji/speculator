@@ -12,6 +12,7 @@ export const ReSpecConfigSchema = z.object({
 
     // Publication dates
     publishDate: z.string().optional(), // YYYY-MM-DD format
+    thisVersion: z.string().optional(),
     previousPublishDate: z.string().optional(),
     previousMaturity: z.string().optional(),
 

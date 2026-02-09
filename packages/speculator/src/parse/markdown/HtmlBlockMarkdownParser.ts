@@ -7,7 +7,7 @@
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
 import type { Html, RootContent as MdastRootContent } from 'mdast';
-import type { Element, Root, RootContent } from 'hast';
+import type { Root, RootContent } from 'hast';
 import { type MarkdownParserModule, type ParseContext, type InlineHandlerResult, type BlockHandlerResult } from '#src/parse/registry';
 import { createHastContext } from '#src/parse/utils/hast-utils';
 
@@ -40,30 +40,14 @@ export const HtmlBlockMarkdownParser: MarkdownParserModule = {
         const sourcePos = ctx.createSourcePos(node);
         const hastCtx = createHastContext(ctx, sourcePos);
 
-        // Look for the first top-level element
-        const firstElement = tree.children.find((c): c is Element => c.type === 'element');
+        // Transform all children using hast block transformation
+        const results = hastCtx.transformBlockChildren(tree.children);
         
-        if (!firstElement) {
-            // No element found - wrap text content in paragraph
-            const children = hastCtx.transformInlineChildren(tree.children as RootContent[]);
-            return {
-                type: 'paragraph',
-                children,
-                sourcePos: ctx.createSourcePos(node),
-            };
+        if (results.length > 0) {
+            return results;
         }
 
-        // Look up block handler for this element
-        const tagName = firstElement.tagName.toLowerCase();
-        const handler = ctx.registry.getHtmlBlockHandler(tagName);
-
-        if (handler?.handleBlock) {
-            const result = handler.handleBlock(firstElement, hastCtx);
-            if (Array.isArray(result)) return result[0] || null;
-            return result;
-        }
-
-        // Fallback: wrap as inlines in paragraph
+        // Fallback: wrap as inlines in paragraph (for text-only blocks)
         const children = hastCtx.transformInlineChildren(tree.children as RootContent[]);
         return {
             type: 'paragraph',

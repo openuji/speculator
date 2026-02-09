@@ -43,7 +43,7 @@ export async function runRule(
         const visitor = rule.create(context);
 
         if (visitor.onDocument) {
-            visitor.onDocument(document);
+            await visitor.onDocument(document);
         }
     }
 

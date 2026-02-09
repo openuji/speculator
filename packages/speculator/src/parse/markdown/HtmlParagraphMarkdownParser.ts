@@ -7,11 +7,11 @@
 
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
-import type { Html, Text, Paragraph, RootContent as MdastRootContent } from 'mdast';
-import type { Root, RootContent } from 'hast';
+import type { Paragraph, RootContent as MdastRootContent } from 'mdast';
+import type { Root } from 'hast';
 import { type MarkdownParserModule, type ParseContext, type InlineHandlerResult, type BlockHandlerResult } from '#src/parse/registry';
-import type { Inline, BlockParagraph } from '#src/types/ast.generated';
-import { createHastContext, transformHastInline } from '#src/parse/utils/hast-utils';
+import type { BlockParagraph } from '#src/types/ast.generated';
+import { createHastContext } from '#src/parse/utils/hast-utils';
 
 /**
  * Markdown parser module for paragraphs containing HTML nodes.
@@ -38,15 +38,22 @@ export const HtmlParagraphMarkdownParser: MarkdownParserModule = {
             return null;
         }
 
-        // Concatenate all text and html into raw HTML string
+        // Use original source text if position is available to preserve all content (including Markdown)
         let rawHtml = '';
-        for (const child of paraNode.children) {
-            if (child.type === 'text') {
-                rawHtml += (child as Text).value;
-            } else if (child.type === 'html') {
-                rawHtml += (child as Html).value;
+        if (paraNode.position) {
+            const { start, end } = paraNode.position;
+            if (start.offset !== undefined && end.offset !== undefined) {
+                rawHtml = ctx.unit.content.slice(start.offset, end.offset);
             }
-            // Other node types (if any) are skipped since we're order 4
+        }
+
+        if (!rawHtml) {
+            // Fallback: Concatenate all text and html into raw HTML string
+            for (const child of paraNode.children) {
+                if ('value' in child && typeof child.value === 'string') {
+                    rawHtml += child.value;
+                }
+            }
         }
 
         // Re-parse as HTML to get proper element structure
@@ -55,16 +62,15 @@ export const HtmlParagraphMarkdownParser: MarkdownParserModule = {
         const sourcePos = ctx.createSourcePos(node);
         const hastCtx = createHastContext(ctx, sourcePos);
 
-        // Transform hast children to Speculator inlines
-        const children: Inline[] = [];
-        for (const child of tree.children) {
-            const res = transformHastInline(child as RootContent, hastCtx);
-            if (res) {
-                if (Array.isArray(res)) children.push(...res);
-                else children.push(res);
-            }
+        // Transform all children using hast block transformation
+        const results = hastCtx.transformBlockChildren(tree.children);
+        
+        if (results.length > 0) {
+            return results;
         }
 
+        // Fallback: wrap as inlines in paragraph
+        const children = hastCtx.transformInlineChildren(tree.children);
         const result: BlockParagraph = {
             type: 'paragraph',
             children,

@@ -55,6 +55,10 @@ function createSectionFromHeading(heading: BlockHeading): Section {
         section.unnumbered = true;
         section.heading!.unnumbered = true;
     }
+    if (heading.dataCop) {
+        section.dataCop = heading.dataCop;
+        section.heading!.dataCop = heading.dataCop;
+    }
 
     return section;
 }
@@ -164,8 +168,8 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
     if (config.version) {
         meta.version = config.version;
         hasContent = true;
-    } else if (config.thisVersion) {
-        meta.version = config.thisVersion;
+    } else if (config.specIri) {
+        meta.version = config.specIri;
         hasContent = true;
     }
     if (config.publishDate) {
@@ -267,19 +271,7 @@ export function assembleDocument(
         doc.metadata = metadata;
     }
 
-    // Add local bibliography from config if present
-    if (config.localBiblio) {
-        if (!doc.indexes) doc.indexes = {};
-        if (!doc.indexes.bibliography) doc.indexes.bibliography = [];
-        
-        for (const [key, entry] of Object.entries(config.localBiblio)) {
-            doc.indexes.bibliography.push({
-                key,
-                title: entry.title,
-                url: entry.url,
-            });
-        }
-    }
+
 
     // Add sourcePos for document root
     doc.sourcePos = {

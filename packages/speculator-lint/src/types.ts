@@ -107,7 +107,7 @@ export interface LintVisitor {
      * Called once per document before visiting nodes
      * @param doc The document
      */
-    onDocument?(doc: Document): void;
+    onDocument?(doc: Document): void | Promise<void>;
 }
 
 /**

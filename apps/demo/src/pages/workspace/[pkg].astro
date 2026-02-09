@@ -1,9 +1,5 @@
 ---
-import {
-  SpeculatorPipeline,
-  corePlugins,
-  NodeFileProvider,
-} from "@openuji/speculator";
+import { buildWorkspaces, NodeFileProvider } from "@openuji/speculator";
 import {
   SpeculatorLinter,
   builtInRules,
@@ -15,6 +11,7 @@ import Toc from "../../components/Toc.astro";
 import "../../styles/global.css";
 import Layout from "../../layouts/Layout.astro";
 import path from "path";
+import fs from "fs";
 
 export async function getStaticPaths() {
   return [
@@ -27,21 +24,23 @@ export async function getStaticPaths() {
 const { pkg } = Astro.params;
 
 // Setup Speculator for Workspace
-const specRoot = path.resolve("spec/workspace");
-const fileProvider = new NodeFileProvider();
+const workspaceConfigPath = path.resolve("speculator.workspace.json");
+const workspaceConfigContent = await fs.promises.readFile(
+  workspaceConfigPath,
+  "utf-8",
+);
+const workspaceConfig = JSON.parse(workspaceConfigContent);
 
-const pipeline = new SpeculatorPipeline(corePlugins);
-
-const result = await pipeline.runWorkspace({
-  entries: [
-    { entry: path.join(specRoot, "pkg-a/index.html") },
-    { entry: path.join(specRoot, "pkg-b/index.html") },
-    { entry: path.join(specRoot, "pkg-c/index.html") },
-  ],
-  fileProvider,
+const buildResult = await buildWorkspaces({
+  entryMap: workspaceConfig,
+  env: import.meta.env,
 });
 
-const workspace = result.workspace;
+if (buildResult.errors.length > 0) {
+  console.error("Workspace build errors:", buildResult.errors);
+}
+
+const workspace = buildResult.workspaces["specWorkspace"];
 const docs = workspace?.documents || [];
 
 // Find the doc matching the pkg
@@ -81,9 +80,19 @@ if (workspace) {
 // Combine pipeline and lint diagnostics
 const allDiagnostics = lintResult?.diagnostics || [];
 const toc = document.computed?.toc || [];
+const statementsJsonLd = document.computed?.statementsJsonLd;
 ---
 
 <Layout title={`${metadata.title || pkg} - Speculator Workspace`}>
+  {
+    statementsJsonLd && (
+      <script
+        type="application/ld+json"
+        slot="head"
+        set:html={JSON.stringify(statementsJsonLd, null, 2)}
+      />
+    )
+  }
   <div class="spec-layout">
     {toc.length > 0 && <Toc toc={toc} />}
 

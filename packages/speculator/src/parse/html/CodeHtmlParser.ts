@@ -27,6 +27,7 @@ export const CodeHtmlParser: HtmlParserModule = {
         const result: BlockCodeBlock = {
             type: 'codeBlock',
             value: codeEl ? ctx.getTextContent(codeEl) : ctx.getTextContent(element),
+            children: [],
         };
 
         // Try to extract language from class

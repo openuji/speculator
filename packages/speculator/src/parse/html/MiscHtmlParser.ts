@@ -50,6 +50,7 @@ export const MiscHtmlParser: HtmlParserModule = {
         if (tagName === 'hr') {
             const result: BlockThematicBreak = {
                 type: 'thematicBreak',
+                children: [],
             };
             const id = ctx.getAttr(element, 'id');
             if (id) result.id = id;

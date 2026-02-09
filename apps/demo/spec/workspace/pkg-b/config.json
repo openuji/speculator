@@ -1,5 +1,7 @@
 {
     "id": "pkg-b",
+    "baseUrl": "${SPEC_BASE_URL}/workspace",
+
     "deps": [
         "pkg-a"
     ],

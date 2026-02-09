@@ -15,15 +15,17 @@ pnpm add @openuji/speculator
 
 ## Basic Usage
 
-To start using Speculator, you'll typically initialize a pipeline and process some documents.
+To start using Speculator, you'll typically use the `speculate` function to process a document with a set of plugins.
 
 ```typescript
-import { SpeculatorPipeline } from "@openuji/speculator";
+import { speculate, corePlugins } from "@openuji/speculator";
 
-const pipeline = new SpeculatorPipeline();
-const result = await pipeline.process("path/to/spec.md");
+const result = await speculate({
+  entry: "path/to/spec.md",
+  plugins: corePlugins,
+});
 
-console.log(result.ast);
+console.log(result.workspace);
 ```
 
 ## Workspaces
@@ -31,27 +33,18 @@ console.log(result.ast);
 For managing multiple isolated specifications, Speculator provides a workspace building utility. This allows you to process multiple documents at once, keeping their namespaces and references isolated.
 
 ```typescript
-import { buildWorkspaces } from "@openuji/speculator";
-
-const workspacesConfig = {
-  coreSpecs: [
-    { entry: "spec/core.md" }, 
-    { entry: "spec/api.html" }
-  ],
-  addonSpecs: [
-    { entry: "addons/ui/index.md" },
-    { entry: "addons/storage/index.md" },
-  ],
-};
-
-const result = await buildWorkspaces(workspacesConfig);
+const result = await buildWorkspaces({
+  entryMap: {
+    docs: [{ entry: "spec/core/index.md" }, { entry: "spec/api/index.html" }],
+  },
+});
 
 if (result.errors.length > 0) {
   console.error("Errors encountered:", result.errors);
 }
 
-// Access built workspace coreSpecs ASTs
-console.log(result.workspaces.coreSpecs);
+// Access built workspace 'docs' AST
+console.log(result.workspaces.docs);
 ```
 
 ## Next Steps

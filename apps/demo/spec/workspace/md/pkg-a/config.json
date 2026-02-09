@@ -1,6 +1,8 @@
 {
+  "baseUrl": "http://localhost:4321/workspace/md",
   "respec": {
     "title": "Protocol A Specification",
+    "noConformance": true,
     "shortName": "proto-a",
     "specStatus": "WD",
     "publishDate": "2026-01-20",
