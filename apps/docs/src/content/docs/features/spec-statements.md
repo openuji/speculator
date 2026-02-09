@@ -89,7 +89,7 @@ This generates JSON-LD with `spec:requirementSubject`:
 `data-cop` can also be set on sections, and statements inherit from their parent:
 
 ```html
-<section data-cop="server">
+<section id="server" data-cop="server">
   <h2>Server Requirements</h2>
 
   <!-- Inherits data-cop="server" -->

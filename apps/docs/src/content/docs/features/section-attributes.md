@@ -41,7 +41,7 @@ The `data-cop` attribute specifies the **class of products** that requirements i
 Use the `{data-cop=value}` suffix:
 
 ```markdown
-## Client Requirements {data-cop=client}
+## Client Requirements {data-cop=client #client}
 
 <spec-statement>The client MUST authenticate.</spec-statement>
 ```
@@ -51,7 +51,7 @@ Use the `{data-cop=value}` suffix:
 `data-cop` cascades down to all nested sections and statements:
 
 ```html
-<section data-cop="server">
+<section id="server" data-cop="server">
   <h2>Server Requirements</h2>
 
   <!-- Inherits server -->
@@ -65,6 +65,8 @@ Use the `{data-cop=value}` suffix:
   </section>
 </section>
 ```
+
+**NOTE:** to make this referenceable, the **section** must get the same `id` attribute as the `data-cop` value.
 
 ### Statement-Level Override
 
