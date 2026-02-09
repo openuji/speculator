@@ -1,87 +1,50 @@
-import type {
-    Document,
-    IndexDefinitionEntry,
-    IndexBiblioEntry,
+/**
+ * Workspace Indexer
+ * 
+ * Provides utilities for finalizing the workspace AST after pipeline processing.
+ */
+
+import type { 
+    Document, 
     RuntimeGlobalIndex,
-    RuntimeWorkspace,
     Workspace,
-    GlobalIndexAST,
-    IndexStatementEntry,
+    GlobalIndexAST
 } from './types.js';
-import { normalizeTerm } from '#src/parse/normalize';
 
 /**
- * Build a global index from a collection of documents.
+ * Finalize the workspace AST.
  */
-export function buildGlobalIndex(
+export async function finalizeWorkspace(
     documents: Map<string, Document>,
-    _documentLevels: Map<string, number>
-): RuntimeGlobalIndex {
-    const definitions = new Map<string, IndexDefinitionEntry[]>();
-    const bibliography = new Map<string, IndexBiblioEntry>();
-    const statements: IndexStatementEntry[] = [];
+    globalIndex: RuntimeGlobalIndex
+): Promise<Workspace> {
+    const definitions = [];
+    const bibliography = [];
 
-    for (const [, doc] of documents) {
-        // Aggregate definitions
-        if (doc.indexes?.definitions) {
-            for (const entry of doc.indexes.definitions) {
-                const linkTexts = entry.linkTexts || [entry.term];
-
-                // Add primary term and all aliases to definitions lookup
-                const termsToProcess = new Set([entry.term, ...linkTexts]);
-                for (const term of termsToProcess) {
-                    const key = normalizeTerm(term);
-                    const existing = definitions.get(key) || [];
-
-                    // Add entry to definitions
-                    existing.push(entry);
-                    definitions.set(key, existing);
-                }
-            }
-        }
-
-        // Aggregate bibliography
-        if (doc.indexes?.bibliography) {
-            for (const entry of doc.indexes.bibliography) {
-                if (!bibliography.has(entry.key)) {
-                    bibliography.set(entry.key, entry);
-                }
-            }
-        }
-
-        // Aggregate statements
-        if (doc.indexes?.statements) {
-            statements.push(...doc.indexes.statements);
-        }
+    // 1. Convert global definitions map to array
+    for (const [term, entries] of globalIndex.definitions) {
+        // Just take the first entry as the primary definition for now
+        // In a more advanced version, we might want to handle multiple definitions
+        const entry = entries[0];
+        definitions.push({
+            ...entry,
+            term // ensure term matches key
+        });
     }
 
-    return {
-        definitions,
-        bibliography,
-        statements,
-    };
-}
+    // 2. Convert global bibliography map to array
+    for (const entry of globalIndex.bibliography.values()) {
+        bibliography.push(entry);
+    }
 
-/**
- * Convert a RuntimeWorkspace into a Workspace AST.
- * This flattens the maps into arrays as defined by the schema.
- */
-export function finalizeWorkspace(runtime: RuntimeWorkspace): Workspace {
-    const globalIndex: GlobalIndexAST = {
-        // Flat array of all unique definition entries
-        // Note: Multiple terms might point to the same entry object. 
-        // We collect the unique objects.
-        definitions: Array.from(new Set(
-            Array.from(runtime.globalIndex.definitions.values()).flat()
-        )),
-        bibliography: Array.from(runtime.globalIndex.bibliography.values()),
-        statements: runtime.globalIndex.statements,
+    const globalIndexAST: GlobalIndexAST = {
+        definitions: definitions.sort((a, b) => a.term.localeCompare(b.term)),
+        bibliography: bibliography.sort((a, b) => a.key.localeCompare(b.key))
     };
 
     return {
         type: 'workspace',
-        schemaVersion: '1.1.0',
-        documents: Array.from(runtime.documents.values()),
-        globalIndex
+        documents: Array.from(documents.values()),
+        globalIndex: globalIndexAST
     };
 }

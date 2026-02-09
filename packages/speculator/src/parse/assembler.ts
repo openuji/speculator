@@ -271,19 +271,7 @@ export function assembleDocument(
         doc.metadata = metadata;
     }
 
-    // Add local bibliography from config if present
-    if (config.localBiblio) {
-        if (!doc.indexes) doc.indexes = {};
-        if (!doc.indexes.bibliography) doc.indexes.bibliography = [];
-        
-        for (const [key, entry] of Object.entries(config.localBiblio)) {
-            doc.indexes.bibliography.push({
-                key,
-                title: entry.title,
-                url: entry.url,
-            });
-        }
-    }
+
 
     // Add sourcePos for document root
     doc.sourcePos = {

@@ -18,7 +18,9 @@ import type {
 } from './types.js';
 import type { Document } from '#src/types/ast.generated';
 import type { SpecConfig } from '#src/preprocess/types';
-import { buildGlobalIndex, finalizeWorkspace } from './workspace-index.js';
+import { 
+    finalizeWorkspace 
+} from './workspace-index.js';
 
 // Default order for plugins that don't specify
 const DEFAULT_ORDER = 100;
@@ -118,7 +120,7 @@ export class SpeculatorPipeline {
         const runtimeWorkspace: RuntimeWorkspace = {
             documents: new Map(results.map(r => [r.entry, r.doc])),
             documentLevels: new Map(results.map((r, i) => [r.entry, i])),
-            globalIndex: { definitions: new Map(), bibliography: new Map(), statements: [] }
+            globalIndex: { definitions: new Map(), bibliography: new Map() }
         };
 
 
@@ -129,15 +131,14 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of transformPlugins) {
-                await plugin.transform!({ 
-                    document: res.doc, 
-                    level, 
+                await plugin.transform!({
+                    document: res.doc,
+                    level,
                     workspace: runtimeWorkspace,
                     config: res.config
                 });
             }
         }
-
 
 
         // 3. INDEX phase
@@ -145,40 +146,37 @@ export class SpeculatorPipeline {
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of indexPlugins) {
-                await plugin.index!({ 
-                    document: res.doc, 
-                    level, 
+                await plugin.index!({
+                    document: res.doc,
+                    level,
                     workspace: runtimeWorkspace,
                     config: res.config
                 });
             }
         }
 
-        // 4. AGGREGATE Global Index
-        runtimeWorkspace.globalIndex = buildGlobalIndex(runtimeWorkspace.documents, runtimeWorkspace.documentLevels);
-
-        // 5. RESOLVE phase
+        // 4. RESOLVE phase
         const resolvePlugins = sortPluginsForPhase(this.plugins.filter(p => p.resolve), 'resolve');
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of resolvePlugins) {
-                await plugin.resolve!({ 
-                    document: res.doc, 
-                    level, 
+                await plugin.resolve!({
+                    document: res.doc,
+                    level,
                     workspace: runtimeWorkspace,
                     config: res.config
                 });
             }
         }
 
-        // 6. COMPUTE phase
+        // 5. COMPUTE phase
         const computePlugins = sortPluginsForPhase(this.plugins.filter(p => p.compute), 'compute');
         for (const res of results) {
             const level = runtimeWorkspace.documentLevels.get(res.entry) ?? 0;
             for (const plugin of computePlugins) {
-                await plugin.compute!({ 
-                    document: res.doc, 
-                    level, 
+                await plugin.compute!({
+                    document: res.doc,
+                    level,
                     workspace: runtimeWorkspace,
                     config: res.config
                 });
@@ -186,12 +184,12 @@ export class SpeculatorPipeline {
         }
 
 
-        // Finalize: Convert runtime workspace to AST
-        const workspaceAST = finalizeWorkspace(runtimeWorkspace);
+        // 6. FINALIZE Workspace AST
+        const workspace = await finalizeWorkspace(
+            runtimeWorkspace.documents,
+            runtimeWorkspace.globalIndex
+        );
 
-        return {
-            workspace: workspaceAST
-        };
+        return { workspace };
     }
 }
-

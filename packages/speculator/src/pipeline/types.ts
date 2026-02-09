@@ -4,12 +4,12 @@ import type {
     IndexDefinitionEntry,
     IndexBiblioEntry,
     IndexStatementEntry,
-    Indexes1 as GlobalIndexAST,
+    GlobalIndex,
 } from '#src/types/ast.generated';
 import type { SpecConfig } from '#src/preprocess/types';
 
 // Re-export the core AST types for convenience
-export type { Workspace, Document, IndexDefinitionEntry, IndexBiblioEntry, IndexStatementEntry, GlobalIndexAST };
+export type { Workspace, Document, IndexDefinitionEntry, IndexBiblioEntry, IndexStatementEntry, GlobalIndex as GlobalIndexAST };
 
 
 /**
@@ -21,9 +21,7 @@ export interface RuntimeGlobalIndex {
     /** Map of normalized term -> definitions */
     definitions: Map<string, IndexDefinitionEntry[]>;
     /** Map of key -> bibliography entry */
-    bibliography: Map<string, IndexBiblioEntry>;
-    /** Aggregated statements */
-    statements: IndexStatementEntry[];
+    bibliography: Map<string, IndexBiblioEntry>
 }
 
 /**

@@ -36,6 +36,8 @@ function createDocWithSections(sections: Section[]): Document {
 }
 
 describe('SectionIdPlugin', () => {
+    const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
+
     it('generates ID for section without ID', async () => {
         const section = createSectionWithHeading('Text Formatting');
         const doc = createDocWithSections([section]);
@@ -50,7 +52,7 @@ describe('SectionIdPlugin', () => {
         const section = createSectionWithHeading('Introduction', 'intro');
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config: {id:'', specIri:''} });
 
         expect(section.id).toBe('intro');
     });
@@ -59,7 +61,7 @@ describe('SectionIdPlugin', () => {
         const section = createSectionWithHeading('Code Blocks', 'Section_123');
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('code-blocks');
     });
@@ -70,7 +72,7 @@ describe('SectionIdPlugin', () => {
         const section3 = createSectionWithHeading('Overview');
         const doc = createDocWithSections([section1, section2, section3]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section1.id).toBe('overview');
         expect(section2.id).toBe('overview-2');
@@ -81,7 +83,7 @@ describe('SectionIdPlugin', () => {
         const section = createSectionWithHeading('Code & Examples: Part 1');
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('code-examples-part-1');
     });
@@ -102,7 +104,7 @@ describe('SectionIdPlugin', () => {
         };
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('using-getelementbyid-method');
     });
@@ -123,7 +125,7 @@ describe('SectionIdPlugin', () => {
         };
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('important-notes');
     });
@@ -147,7 +149,7 @@ describe('SectionIdPlugin', () => {
         };
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('see-documentation');
     });
@@ -171,7 +173,7 @@ describe('SectionIdPlugin', () => {
         };
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('about-event-loop');
     });
@@ -195,7 +197,7 @@ describe('SectionIdPlugin', () => {
         };
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('understanding-task-queue');
     });
@@ -206,7 +208,7 @@ describe('SectionIdPlugin', () => {
         parentSection.children = [childSection];
         const doc = createDocWithSections([parentSection]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(parentSection.id).toBe('main-topic');
         expect(childSection.id).toBe('sub-topic');
@@ -218,7 +220,7 @@ describe('SectionIdPlugin', () => {
         parentSection.children = [childSection];
         const doc = createDocWithSections([parentSection]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(parentSection.id).toBe('features');
         expect(childSection.id).toBe('features-2');
@@ -231,7 +233,7 @@ describe('SectionIdPlugin', () => {
         };
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         // Section without heading should not get an ID
         expect(section.id).toBeUndefined();
@@ -249,7 +251,7 @@ describe('SectionIdPlugin', () => {
         };
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('section');
     });
@@ -258,7 +260,7 @@ describe('SectionIdPlugin', () => {
         const section = createSectionWithHeading('IMPORTANT SECTION');
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('important-section');
     });
@@ -267,7 +269,7 @@ describe('SectionIdPlugin', () => {
         const section = createSectionWithHeading('---Test---');
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('test');
     });
@@ -276,7 +278,7 @@ describe('SectionIdPlugin', () => {
         const section = createSectionWithHeading('Multiple   Spaces');
         const doc = createDocWithSections([section]);
 
-        await sectionIdPlugin.index!({ document: doc, level: 0 });
+        await sectionIdPlugin.index!({ document: doc, level: 0, config });
 
         expect(section.id).toBe('multiple-spaces');
     });

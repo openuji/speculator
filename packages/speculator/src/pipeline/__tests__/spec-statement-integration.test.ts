@@ -47,9 +47,6 @@ describe('spec-statement integration', () => {
             level: 'SHOULD',
             contentText: 'The server SHOULD log errors.',
         });
-
-        // Verify global index aggregation
-        expect(result.workspace?.globalIndex?.statements).toHaveLength(2);
     });
 
     it('resolves duplicate IDs by appending a counter', async () => {

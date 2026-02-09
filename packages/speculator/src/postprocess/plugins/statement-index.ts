@@ -6,7 +6,7 @@
 
 import type { Plugin, IndexContext } from '#src/pipeline/types';
 import type { Document, BlockSpecStatement, IndexStatementEntry, Section, Block, BlockHeading } from '#src/types/ast.generated';
-import { walkDocument } from '../walk-ast.js';
+import { walkDocument } from '#src/postprocess/walk-ast';
 
 /**
  * Resolve Class of Products (COP) identifier to IRI.
@@ -120,7 +120,7 @@ function buildStatementIndex(document: Document, baseIri: string): void {
                 if (entry.sourcePos && !entry.sourcePos.file) {
                     entry.sourcePos.file = document.sourcePos?.file || 'unknown';
                 }
-
+                
                 statementIndex.push(entry);
             }
 

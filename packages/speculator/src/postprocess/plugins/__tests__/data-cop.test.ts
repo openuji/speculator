@@ -4,7 +4,6 @@ import { HtmlUnitParser } from '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
 import { statementIndexPlugin } from '../statement-index';
 import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute';
-import type { IndexStatementEntry, Workspace } from '#src/types/ast.generated';
 
 describe('data-cop resolution', () => {
     const mdParser = new MarkdownUnitParser();
@@ -88,16 +87,10 @@ const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1
         const blocks = mdParser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
         const document = assembleDocument(blocks, config, 'test.md');
 
-        const workspace = { globalIndex: { statements: [] } };
-
         await statementIndexPlugin.index!({ document, config, level: 0 });
         
-        // Mock global index aggregation
-        (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
-
         await statementsJsonLdComputePlugin.compute!({ 
             document, 
-            workspace: workspace as unknown as Workspace, 
             config,
             level: 0
         });
@@ -121,16 +114,10 @@ const config = { id: 'test', title: 'My Specification', specIri: 'https://exampl
         const blocks = htmlParser.parse({ file: 'test.html', format: 'html', content, startLine: 1 });
         const document = assembleDocument(blocks, config, 'test.html');
 
-        const workspace = { globalIndex: { statements: [] } };
-
         await statementIndexPlugin.index!({ document, config, level: 0 });
         
-        // Mock global index aggregation
-        (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
-
         await statementsJsonLdComputePlugin.compute!({ 
             document, 
-            workspace, 
             config,
             level: 0
         });

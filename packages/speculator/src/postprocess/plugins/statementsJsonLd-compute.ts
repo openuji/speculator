@@ -69,7 +69,7 @@ export const statementsJsonLdComputePlugin: Plugin = {
     order: { compute: 25 }, // Run after ToC and section resolve
 
     async compute(ctx: ComputeContext): Promise<void> {
-        const { document, workspace, config } = ctx;
+        const { document, config } = ctx;
         
         // Configuration
         const vocab = config.jsonLd?.vocab || DEFAULT_VOCAB;
@@ -84,8 +84,7 @@ export const statementsJsonLdComputePlugin: Plugin = {
             ...config.jsonLd?.contexts
         };
 
-        // Gather statements from global index
-        const statements = workspace?.globalIndex?.statements || [];
+        const statements = document.indexes?.statements || [];
         
         const copIris = new Set<string>();
 

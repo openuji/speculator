@@ -13,6 +13,7 @@ export { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.
 // Index plugins
 export { sectionIdPlugin } from './plugins/section-id.js';
 export { dfnIndexPlugin } from './plugins/dfn-index.js';
+export { biblioIndexPlugin } from './plugins/biblio-index.js';
 export { citationIndexPlugin } from './plugins/citation-index.js';
 export { statementIndexPlugin } from './plugins/statement-index.js';
 
@@ -37,6 +38,7 @@ export { walkDocument, type AstVisitor } from './walk-ast.js';
 import { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.js';
 import { sectionIdPlugin } from './plugins/section-id.js';
 import { dfnIndexPlugin } from './plugins/dfn-index.js';
+import { biblioIndexPlugin } from './plugins/biblio-index.js';
 import { citationIndexPlugin } from './plugins/citation-index.js';
 import { statementIndexPlugin } from './plugins/statement-index.js';
 import { referenceResolvePlugin } from './plugins/reference-resolve.js';
@@ -52,6 +54,7 @@ export const corePlugins = [
     // Index plugins
     sectionIdPlugin,            // order: { index: 5 }
     dfnIndexPlugin,             // order: { index: 10 }
+    biblioIndexPlugin,          // order: { index: 1 }
     citationIndexPlugin,        // order: { index: 12 }
     statementIndexPlugin,       // order: { index: 15 }
     // Resolve plugins

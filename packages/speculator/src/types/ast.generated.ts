@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-01T22:05:48.119Z
+ * Generated at: 2026-02-09T09:46:36.385Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -413,7 +413,7 @@ export interface SpeculatorASTSchema {
    * Collection of documents in the workspace
    */
   documents: Document[];
-  globalIndex?: Indexes1;
+  globalIndex?: GlobalIndex;
 }
 /**
  * A single specification document
@@ -426,7 +426,7 @@ export interface Document {
   id: string;
   metadata?: DocumentMetadata;
   children: (Section | Block)[];
-  indexes?: Indexes;
+  indexes?: DocumentIndexes;
   computed?: ComputedFields;
   sourcePos?: SourcePos;
 }
@@ -544,14 +544,13 @@ export interface ExternalReferenceBase {
 /**
  * Indexes extracted from marker nodes during indexing
  */
-export interface Indexes {
+export interface DocumentIndexes {
   definitions?: IndexDefinitionEntry[];
   references?: IndexReferenceEntry[];
   requirements?: IndexRequirementEntry[];
   issues?: IndexIssueEntry[];
   examples?: IndexExampleEntry[];
   citations?: IndexCiteEntry[];
-  bibliography?: IndexBiblioEntry[];
   statements?: IndexStatementEntry[];
 }
 /**
@@ -625,35 +624,6 @@ export interface IndexCiteEntry {
   sourcePos: SourcePos;
 }
 /**
- * Entry in the bibliography index, merged from config and/or authored biblio sources during resolve/index phases
- */
-export interface IndexBiblioEntry {
-  key: string;
-  title?: string;
-  url?: string;
-  /**
-   * Optional status or classification for the reference (e.g., 'standard', 'draft')
-   */
-  status?: string;
-  sourcePos?: SourcePos;
-  /**
-   * List of authors
-   */
-  authors?: string[];
-  /**
-   * Publication date
-   */
-  date?: string;
-  /**
-   * Publisher name (e.g. 'IETF', 'W3C')
-   */
-  publisher?: string;
-  /**
-   * Raw bibliography entry text (optional fallback)
-   */
-  raw?: string;
-}
-/**
  * Entry in the statements index, extracted from BlockSpecStatement nodes
  */
 export interface IndexStatementEntry {
@@ -715,15 +685,38 @@ export interface TocEntry {
 /**
  * Aggregated global index across all documents
  */
-export interface Indexes1 {
+export interface GlobalIndex {
   definitions?: IndexDefinitionEntry[];
-  references?: IndexReferenceEntry[];
-  requirements?: IndexRequirementEntry[];
-  issues?: IndexIssueEntry[];
-  examples?: IndexExampleEntry[];
-  citations?: IndexCiteEntry[];
   bibliography?: IndexBiblioEntry[];
-  statements?: IndexStatementEntry[];
+}
+/**
+ * Entry in the bibliography index, merged from config and/or authored biblio sources during resolve/index phases
+ */
+export interface IndexBiblioEntry {
+  key: string;
+  title?: string;
+  url?: string;
+  /**
+   * Optional status or classification for the reference (e.g., 'standard', 'draft')
+   */
+  status?: string;
+  sourcePos?: SourcePos;
+  /**
+   * List of authors
+   */
+  authors?: string[];
+  /**
+   * Publication date
+   */
+  date?: string;
+  /**
+   * Publisher name (e.g. 'IETF', 'W3C')
+   */
+  publisher?: string;
+  /**
+   * Raw bibliography entry text (optional fallback)
+   */
+  raw?: string;
 }
 
 

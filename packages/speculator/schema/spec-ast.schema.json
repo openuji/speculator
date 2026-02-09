@@ -1438,9 +1438,9 @@
                 "sourcePos"
             ]
         },
-        "Indexes": {
+        "DocumentIndexes": {
             "type": "object",
-            "description": "Indexes extracted from AST marker nodes during indexing. Not computed fields.",
+            "description": "Indexes extracted from AST marker nodes during indexing within a single document.",
             "properties": {
                 "definitions": {
                     "type": "array",
@@ -1478,16 +1478,28 @@
                         "$ref": "#/definitions/IndexCiteEntry"
                     }
                 },
-                "bibliography": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/IndexBiblioEntry"
-                    }
-                },
                 "statements": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/IndexStatementEntry"
+                    }
+                }
+            }
+        },
+        "GlobalIndex": {
+            "type": "object",
+            "description": "Aggregated global index across all documents in a workspace.",
+            "properties": {
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexDefinitionEntry"
+                    }
+                },
+                "bibliography": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexBiblioEntry"
                     }
                 }
             }
@@ -1800,7 +1812,7 @@
                     }
                 },
                 "indexes": {
-                    "$ref": "#/definitions/Indexes",
+                    "$ref": "#/definitions/DocumentIndexes",
                     "description": "Indexes extracted from marker nodes during indexing"
                 },
                 "computed": {
@@ -1835,7 +1847,7 @@
             "description": "Collection of documents in the workspace"
         },
         "globalIndex": {
-            "$ref": "#/definitions/Indexes",
+            "$ref": "#/definitions/GlobalIndex",
             "description": "Aggregated global index across all documents"
         }
     },
