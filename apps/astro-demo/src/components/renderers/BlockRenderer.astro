@@ -1,0 +1,172 @@
+---
+import type { Block, BlockHeading, Section } from "@openuji/speculator";
+import RecursiveBlockRenderer from "./BlockRenderer.astro";
+import InlineRenderer from "./InlineRenderer.astro";
+import Mermaid from "./Mermaid.astro";
+import Callout from "@/components/ui/Callout.astro";
+import CodeBlock from "@/components/ui/CodeBlock.astro";
+
+interface Props {
+  node: Block | Section;
+  basePath?: string;
+  headingNumbers?: Record<string, string | undefined>;
+}
+
+const { node, basePath, headingNumbers } = Astro.props;
+
+const inlineProps = { basePath };
+const blockProps = { basePath, headingNumbers };
+
+type HeadingTagName = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+const getHeadingTag = (heading: BlockHeading): HeadingTagName => {
+  const level = Math.min(heading.depth, 6) as 1 | 2 | 3 | 4 | 5 | 6;
+  return `h${level}`;
+};
+---
+
+{
+  (() => {
+    switch (node.type) {
+      case "section": {
+        const HeadingTag = node.heading ? getHeadingTag(node.heading) : "h2";
+        const sectionNumber = node.id ? headingNumbers?.[node.id] : undefined;
+        return (
+          <section class="spec-section" id={node.id}>
+            {node.heading && (
+              // @ts-ignore dynamic heading tag
+              <HeadingTag id={node.heading.id} class="section-heading">
+                {sectionNumber && (
+                  <span class="section-number">{sectionNumber}</span>
+                )}
+                <InlineRenderer nodes={node.heading.children} {...inlineProps} />
+              </HeadingTag>
+            )}
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </section>
+        );
+      }
+
+      case "paragraph":
+        return (
+          <p id={node.id}>
+            <InlineRenderer nodes={node.children} {...inlineProps} />
+          </p>
+        );
+
+      case "heading": {
+        const Heading = getHeadingTag(node);
+        return (
+          <Heading id={node.id}>
+            <InlineRenderer nodes={node.children} {...inlineProps} />
+          </Heading>
+        );
+      }
+
+      case "codeBlock":
+        if (node.lang === "mermaid") {
+          return <Mermaid code={node.value} id={node.id} />;
+        }
+        return <CodeBlock code={node.value} language={node.lang || "text"} id={node.id} />;
+
+      case "blockquote":
+        return (
+          <blockquote id={node.id}>
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </blockquote>
+        );
+
+      case "list": {
+        const ListTag = node.ordered ? "ol" : "ul";
+        return (
+          // @ts-ignore dynamic list tag
+          <ListTag id={node.id} start={node.ordered ? node.start : undefined}>
+            {node.children.map((item) => (
+              <li>
+                {item.children.map((child) => (
+                  <RecursiveBlockRenderer node={child} {...blockProps} />
+                ))}
+              </li>
+            ))}
+          </ListTag>
+        );
+      }
+
+      case "table":
+        return (
+          <table id={node.id}>
+            <tbody>
+              {node.children.map((row) => (
+                <tr>
+                  {row.children.map((cell) => {
+                    const Cell = cell.header ? "th" : "td";
+                    return (
+                      // @ts-ignore dynamic cell tag
+                      <Cell style={{ textAlign: cell.align || "left" }}>
+                        <InlineRenderer nodes={cell.children} {...inlineProps} />
+                      </Cell>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+
+      case "thematicBreak":
+        return <hr id={node.id} />;
+
+      case "html":
+        return <div id={node.id} set:html={node.value} />;
+
+      case "example":
+        return (
+          <Callout kind="example" title={node.title || "Example"}>
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </Callout>
+        );
+
+      case "note": {
+        const typedNode = node as any;
+        const noteType = typedNode.noteType || "note";
+        const kind =
+          noteType === "warning"
+            ? "warning"
+            : noteType === "issue"
+              ? "issue"
+              : noteType === "example"
+                ? "example"
+                : "note";
+        return (
+          <Callout kind={kind} title={noteType.toUpperCase()}>
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </Callout>
+        );
+      }
+
+      case "specStatement": {
+        const statement = node as any;
+        const level = String(statement.level || "statement").toUpperCase();
+        const kind = level.includes("MUST") ? "warning" : "note";
+        return (
+          <Callout kind={kind} title={`Spec Statement ${level === "STATEMENT" ? "" : `(${level})`}`}>
+            <p id={node.id}>
+              <InlineRenderer nodes={node.children} {...inlineProps} />
+            </p>
+          </Callout>
+        );
+      }
+
+      default:
+        return <Callout kind="issue" title="Unknown block">{(node as any).type}</Callout>;
+    }
+  })()
+}

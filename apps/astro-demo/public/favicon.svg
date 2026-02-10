@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Speculator Studio">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0d7f72" />
+      <stop offset="1" stop-color="#c36d0f" />
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="116" height="116" rx="24" fill="#f7f4ee" stroke="#d8cfbf" stroke-width="8" />
+  <path d="M34 86V42h18c9 0 16 6 16 15s-7 15-16 15H46v14H34zm12-24h6c4 0 7-2 7-6s-3-6-7-6h-6v12zm30 24V42h12v34h20v10H76z" fill="url(#g)"/>
+</svg>

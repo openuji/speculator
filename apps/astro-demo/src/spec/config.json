@@ -1,0 +1,42 @@
+{
+  "id": "studio-spec",
+  "baseUrl": "https://example.com/specs",
+  "respec": {
+    "title": "Studio Protocol Draft",
+    "shortName": "studio-protocol",
+    "specStatus": "ED",
+    "lastUpdated": "2026-02-09",
+    "noConformance": true,
+    "editors": [
+      {
+        "name": "OpenUJI Team",
+        "url": "https://github.com/openuji"
+      }
+    ],
+    "abstract": "A compact draft used to demonstrate the Speculator renderer blocks in this Astro theme starter.",
+    "localBiblio": {
+      "RFC2119": {
+        "title": "Key words for use in RFCs to Indicate Requirement Levels",
+        "url": "https://datatracker.ietf.org/doc/html/rfc2119",
+        "authors": ["S. Bradner"],
+        "date": "March 1997",
+        "publisher": "IETF",
+        "status": "Best Current Practice"
+      },
+      "RFC8174": {
+        "title": "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words",
+        "url": "https://datatracker.ietf.org/doc/html/rfc8174",
+        "authors": ["B. Leiba"],
+        "date": "May 2017",
+        "publisher": "IETF",
+        "status": "Best Current Practice"
+      },
+      "HTML": {
+        "title": "HTML Standard",
+        "url": "https://html.spec.whatwg.org/multipage/",
+        "publisher": "WHATWG",
+        "status": "Living Standard"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "preparedAt": "2026-02-09",
+  "theme": {
+    "name": "Speculator Studio Theme",
+    "slug": "speculator-studio-theme",
+    "summary": "A clean Astro starter for specification docs with reusable Speculator block and inline renderer UI components.",
+    "description": "Speculator Studio Theme is an Astro theme starter for teams writing technical standards and specification-style docs. It includes automatic dark/light mode, a reusable local component system, and Tailwind v4 token/utility styling around a renderer playground backed by Speculator.",
+    "category": "Documentation",
+    "technologies": [
+      "TypeScript"
+    ],
+    "pricing": "Free",
+    "license": "MIT",
+    "repoUrl": "https://github.com/<org>/<repo>",
+    "demoUrl": "https://<your-domain>",
+    "getStartedUrl": "https://github.com/<org>/<repo>#readme",
+    "supportUrl": "https://github.com/<org>/<repo>/issues"
+  },
+  "features": [
+    "Recursive BlockRenderer and InlineRenderer mapped to local UI primitives",
+    "Tailwind v4 tokenized theme variables and reusable utility/component layers",
+    "Automatic light and dark themes via prefers-color-scheme",
+    "Mermaid rendering aligned with active system theme",
+    "Spec-focused typography, callouts, code panels, and TOC",
+    "Playground route rendering local sample spec source"
+  ],
+  "submissionReferences": [
+    "https://astro.build/themes",
+    "https://portal.astro.build/",
+    "https://astro.build/themes/details/astrolite/",
+    "https://astro.build/themes/details/astro-erudite/",
+    "https://astro.build/themes/details/a11y-dark/"
+  ],
+  "openItems": [
+    "Publish standalone template repository",
+    "Replace workspace dependency with published @openuji/speculator version",
+    "Set production site URL in astro.config.mjs",
+    "Attach final screenshots and social preview image"
+  ]
+}

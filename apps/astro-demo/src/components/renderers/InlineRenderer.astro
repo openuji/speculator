@@ -1,0 +1,228 @@
+---
+import type { Inline } from "@openuji/speculator";
+import RecursiveInlineRenderer from "./InlineRenderer.astro";
+
+interface Props {
+  nodes: Inline[];
+  basePath?: string;
+}
+
+const { nodes, basePath } = Astro.props;
+const sharedProps = { basePath };
+---
+
+{
+  nodes.map((node) => {
+    switch (node.type) {
+      case "text":
+        return <>{node.value}</>;
+
+      case "emphasis":
+        return (
+          <em>
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
+          </em>
+        );
+
+      case "strong":
+        return (
+          <strong>
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
+          </strong>
+        );
+
+      case "inlineCode":
+        return <code>{node.value}</code>;
+
+      case "variable":
+        return <var>{node.value}</var>;
+
+      case "link":
+        return (
+          <a href={node.url} title={node.title || undefined}>
+            <RecursiveInlineRenderer nodes={node.children} {...sharedProps} />
+          </a>
+        );
+
+      case "image":
+        return (
+          <img
+            src={node.url}
+            alt={node.alt || ""}
+            title={node.title || ""}
+            loading="lazy"
+            decoding="async"
+          />
+        );
+
+      case "definition": {
+        const definition = node;
+        const dfnId = definition.explicitId || definition.id;
+        const dfnFor = definition.forContexts?.filter(Boolean).join(", ");
+        return (
+          <dfn
+            id={dfnId}
+            title={definition.term}
+            data-dfn-for={dfnFor || undefined}
+            data-dfn-type={
+              definition.dfnType !== "dfn" ? definition.dfnType : undefined
+            }
+          >
+            <RecursiveInlineRenderer
+              nodes={definition.children}
+              {...sharedProps}
+            />
+          </dfn>
+        );
+      }
+
+      case "workspaceDfnReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        return (
+          <a href={href} class="xref" title={ref.targetTerm}>
+            <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+          </a>
+        );
+      }
+
+      case "workspaceIdlReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        return (
+          <code class="idl" data-link-type="idl">
+            <a href={href} class="xref" title={ref.targetTerm}>
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
+
+      case "workspaceElementReference": {
+        const ref = node;
+        const href =
+          ref.targetDocumentId && basePath
+            ? `${basePath}/${ref.targetDocumentId}#${ref.targetId || ""}`
+            : `#${ref.targetId || ""}`;
+        return (
+          <code class="element" data-link-type="element">
+            <a href={href} class="xref" title={ref.targetTerm}>
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
+
+      case "externalDfnReference": {
+        const ref = node;
+        return (
+          <a
+            href={ref.url || "#"}
+            class="xref external"
+            title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+          </a>
+        );
+      }
+
+      case "externalIdlReference": {
+        const ref = node;
+        return (
+          <code class="idl" data-link-type="idl">
+            <a
+              href={ref.url || "#"}
+              class="xref external"
+              title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
+
+      case "externalElementReference": {
+        const ref = node;
+        return (
+          <code class="element" data-link-type="element">
+            <a
+              href={ref.url || "#"}
+              class="xref external"
+              title={`${ref.targetTerm} in ${ref.xrefSpec}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+            </a>
+          </code>
+        );
+      }
+
+      case "cite": {
+        const cite = node as any;
+        const citeClass = cite.forcedNormative
+          ? "ui-badge ui-badge-accent"
+          : cite.forcedInformative
+            ? "ui-badge ui-badge-neutral"
+            : "ui-badge ui-badge-neutral";
+
+        const citeHref = cite.url || (cite.targetId ? `#${cite.targetId}` : undefined);
+        const citeContent =
+          cite.children && cite.children.length > 0 ? (
+            <RecursiveInlineRenderer nodes={cite.children} {...sharedProps} />
+          ) : (
+            <>[{cite.key}]</>
+          );
+
+        return citeHref ? (
+          <a href={citeHref} class={citeClass} data-cite={cite.key}>
+            {citeContent}
+          </a>
+        ) : (
+          <cite class={citeClass} data-cite={cite.key}>
+            {citeContent}
+          </cite>
+        );
+      }
+
+      case "requirement":
+        return <span class="ui-badge ui-badge-warn">{node.keyword}</span>;
+
+      case "issue":
+        return (
+          <span class="ui-badge ui-badge-danger">
+            Issue {node.id ? `#${node.id}` : ""}
+          </span>
+        );
+
+      case "sectionReference": {
+        const ref = node;
+        return (
+          <a href={`#${ref.targetId}`} class="sec-ref" title={ref.targetTitle || undefined}>
+            {ref.children && ref.children.length > 0 ? (
+              <>
+                <span class="toc-number">{`\u00a7${ref.targetNumber || ""}`}</span>{" "}
+                <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+              </>
+            ) : (
+              <span class="toc-number">{`\u00a7${ref.targetNumber || ""}`}</span>
+            )}
+          </a>
+        );
+      }
+
+      default:
+        return <span class="ui-badge ui-badge-danger">Unknown inline: {(node as Inline).type}</span>;
+    }
+  })
+}

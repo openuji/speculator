@@ -1,0 +1,16 @@
+---
+interface Props {
+  code: string;
+  language?: string;
+  id?: string;
+}
+
+const { code, language = "text", id } = Astro.props;
+---
+
+<div class="ui-code-block" id={id}>
+  <div class="ui-code-header">
+    <span>{language}</span>
+  </div>
+  <pre><code class={`language-${language}`}>{code}</code></pre>
+</div>

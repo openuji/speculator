@@ -1,0 +1,68 @@
+---
+import ThemeLayout from "@/layouts/ThemeLayout.astro";
+import Panel from "@/components/ui/Panel.astro";
+import Badge from "@/components/ui/Badge.astro";
+import { site } from "@/theme/site";
+
+const features = [
+  {
+    title: "Theme-ready shell",
+    copy: "Polished header, responsive navigation, typography tokens, and reusable layout primitives.",
+  },
+  {
+    title: "Renderer block registry",
+    copy: "BlockRenderer and InlineRenderer route semantic AST nodes through local UI blocks like callouts and code panels.",
+  },
+  {
+    title: "Publish checklist",
+    copy: "README and project metadata are organized around Astro Theme Catalog submission expectations.",
+  },
+];
+---
+
+<ThemeLayout>
+  <section class="hero">
+    <Badge tone="accent">Publish-ready starter</Badge>
+    <h1>{site.title}</h1>
+    <p>
+      A clean Astro theme scaffold for technical documentation and specs. It includes
+      a live Speculator rendering route so your theme doubles as a practical test bed.
+    </p>
+
+    <div class="button-row">
+      <a href="/playground" class="btn btn-primary">Open renderer playground</a>
+      <a href="https://astro.build/themes" class="btn btn-secondary" target="_blank" rel="noreferrer">View Astro themes</a>
+    </div>
+
+    <div class="hero-grid">
+      <Panel
+        title="Built for the Astro catalog"
+        description="Structured as a starter app, not a one-off demo. Replace content later without changing the theme skeleton."
+      />
+      <Panel
+        title="Shadcn-style blocks"
+        description="The renderer uses local, composable primitives (badge, panel, callout, code block) so component styling is centralized."
+      />
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>What is included</h2>
+    <div class="card-grid">
+      {features.map((item) => (
+        <Panel title={item.title} description={item.copy} />
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Submission readiness checklist</h2>
+    <div class="card-grid">
+      {site.submitReadyChecklist.map((item) => (
+        <Panel>
+          <p>{item}</p>
+        </Panel>
+      ))}
+    </div>
+  </section>
+</ThemeLayout>

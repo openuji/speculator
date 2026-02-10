@@ -1,0 +1,24 @@
+---
+import type { TocEntry } from "@openuji/speculator";
+import TocTree from "./TocTree.astro";
+
+interface Props {
+  entries: TocEntry[];
+}
+
+const { entries } = Astro.props;
+---
+
+<ol>
+  {entries.map((entry) => (
+    <li>
+      <a href={entry.id ? `#${entry.id}` : "#"}>
+        <span class="toc-number">{entry.number || ""}</span>
+        <span>{entry.text}</span>
+      </a>
+      {entry.children && entry.children.length > 0 && (
+        <TocTree entries={entry.children} />
+      )}
+    </li>
+  ))}
+</ol>

@@ -1,0 +1,55 @@
+---
+import "@/styles/theme.css";
+import { nav, site } from "@/theme/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = site.title, description = site.description } = Astro.props;
+const pathname = Astro.url.pathname;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <slot name="head" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a class="wordmark" href="/">
+            Speculator Studio
+            <small>Astro Theme Starter</small>
+          </a>
+          <nav class="nav-links" aria-label="Main">
+            {nav.map((item) => (
+              <a
+                href={item.href}
+                aria-current={pathname === item.href ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <main class="page">
+        <slot />
+      </main>
+
+      <footer class="page theme-footer">
+        <p>{site.title}. Built for Astro Theme Catalog submission workflow.</p>
+      </footer>
+    </div>
+  </body>
+</html>

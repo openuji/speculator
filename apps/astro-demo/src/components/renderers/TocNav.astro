@@ -1,0 +1,20 @@
+---
+import type { TocEntry } from "@openuji/speculator";
+import TocTree from "./TocTree.astro";
+
+interface Props {
+  entries: TocEntry[];
+  title?: string;
+}
+
+const { entries, title = "On this page" } = Astro.props;
+---
+
+{
+  entries.length > 0 && (
+    <aside class="toc">
+      <h2>{title}</h2>
+      <TocTree entries={entries} />
+    </aside>
+  )
+}
