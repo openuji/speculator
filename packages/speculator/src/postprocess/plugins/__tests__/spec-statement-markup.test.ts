@@ -4,7 +4,7 @@ import '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
 import { statementIndexPlugin } from '../statement-index';
 import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute';
-import type { IndexStatementEntry, BlockSpecStatement, Inline, BlockParagraph } from '#src/types/ast.generated';
+import type { BlockSpecStatement, Inline, BlockParagraph } from '#src/types/ast.generated';
 
 describe('SpecStatement markup separation', () => {
     const mdParser = new MarkdownUnitParser();
@@ -40,18 +40,16 @@ describe('SpecStatement markup separation', () => {
         expect(entry.contentText).toBe('The client MUST send a header and link.');
 
         // 3. Run JSON-LD compute
-        const workspace = { globalIndex: { statements: [] } };
-        (workspace.globalIndex.statements as IndexStatementEntry[]) = document.indexes!.statements!;
-
         await statementsJsonLdComputePlugin.compute!({ 
             document, 
-            workspace, 
+            workspace: { globalIndex: { definitions: [], bibliographies: [] } }, 
             config,
             level: 0
         });
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
-        const statements = jsonLd['spec:requirement'] as Record<string, unknown>[];
+        const graph = jsonLd['@graph'] as Record<string, unknown>[];
+        const statements = graph.filter(n => n.type === 'spec:Requirement');
         
         expect(statements[0]['spec:statement']).toBe('The client MUST send a header and link.');
         // Ensure no HTML tags leaked into the string

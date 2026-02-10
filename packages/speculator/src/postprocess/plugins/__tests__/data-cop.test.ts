@@ -11,16 +11,16 @@ describe('data-cop resolution', () => {
 
     it('resolves data-cop from markdown headings', async () => {
         const content = `
-## Client {data-cop="client"}
+## Client {data-cop-concept="client"}
 
 
 <spec-statement>The client MUST ...</spec-statement>
 
-## Identity Provider {#idp data-cop="#IDP"}
+## Identity Provider {#idp data-cop-concept="#IDP"}
 
 <spec-statement>The IDP MUST ...</spec-statement>
 
-## Standard Role {data-cop="spec:Standard"}
+## Standard Role {data-cop-concept="spec:Standard"}
 
 <spec-statement>The Role MUST ...</spec-statement>
 `;
@@ -39,19 +39,19 @@ describe('data-cop resolution', () => {
         
         expect(statements[0].subject).toBe('https://example.org/spec/1.0.0#client');
         expect(statements[1].subject).toBe('https://example.org/spec/1.0.0#IDP');
-        expect(statements[2].subject).toBe('spec:Standard');
+        expect(statements[2].subject).toBe('https://example.org/spec/1.0.0#spec:Standard');
     });
 
     it('resolves data-cop from HTML sections', async () => {
         const content = `
-<section data-cop="server">
+<section data-cop-concept="server">
     <h2>Server</h2>
     <spec-statement>The server MUST ...</spec-statement>
 </section>
 
-<section data-cop="ua">
+<section data-cop-concept="ua">
     <h2>User Agent</h2>
-    <spec-statement data-cop="client">The UA acting as client MUST ...</spec-statement>
+    <spec-statement data-cop-concept="client">The UA acting as client MUST ...</spec-statement>
     <spec-statement>The UA MUST ...</spec-statement>
 </section>
 `;
@@ -73,13 +73,13 @@ const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1
         expect(statements[2].subject).toBe('https://example.org/spec/1.0.0#ua'); // Bare token fallback
     });
 
-    it('emits correct JSON-LD with spec:classesOfProducts', async () => {
+    it('emits correct JSON-LD with spec:classesOfProducts and skos:ConceptScheme', async () => {
         const content = `
-## Client {data-cop="client"}
+## Client {data-cop-concept="client"}
 
 <spec-statement>The client MUST ...</spec-statement>
 
-## Server {data-cop="server"}
+## Server {data-cop-concept="server"}
 
 <spec-statement>The server MUST ...</spec-statement>
 `;
@@ -96,18 +96,45 @@ const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1
         });
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
-        expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'https://example.org/spec/1.0.0#client' });
-        expect(jsonLd['spec:classesOfProducts'] as unknown[]).toContainEqual({ id: 'https://example.org/spec/1.0.0#server' });
-        expect(((jsonLd['spec:requirement'] as unknown[])[0] as Record<string, unknown>)['spec:requirementSubject']).toEqual({ id: 'https://example.org/spec/1.0.0#client' });
+        const graph = jsonLd['@graph'] as Record<string, unknown>[];
+
+        // 1. Check Specification node with embedded ConceptScheme
+        const specNode = graph.find(n => n.type === 'spec:Specification');
+        expect(specNode).toBeDefined();
+        
+        const scheme = specNode!['spec:classesOfProducts'];
+        expect(scheme).toBeDefined();
+        expect(scheme.id).toBe('https://example.org/spec/1.0.0#classes-of-products');
+        expect(scheme.type).toBe('skos:ConceptScheme');
+
+        // 2. Check embedded top concepts
+        const topConcepts = scheme['skos:hasTopConcept'];
+        expect(topConcepts).toBeDefined();
+        expect(topConcepts).toHaveLength(2);
+        expect(topConcepts).toContainEqual({ id: 'https://example.org/spec/1.0.0#client' });
+        expect(topConcepts).toContainEqual({ id: 'https://example.org/spec/1.0.0#server' });
+
+        // 3. Check Concept nodes in graph
+        const clientConcept = graph.find(n => n.id === 'https://example.org/spec/1.0.0#client');
+        expect(clientConcept).toBeDefined();
+        expect(clientConcept!.type).toBe('skos:Concept');
+        expect(clientConcept!['skos:inScheme']).toEqual({ id: 'https://example.org/spec/1.0.0#classes-of-products' });
+        expect(clientConcept!['skos:topConceptOf']).toEqual({ id: 'https://example.org/spec/1.0.0#classes-of-products' });
+        expect(clientConcept!['skos:prefLabel']).toBe('Client');
+
+        const serverConcept = graph.find(n => n.id === 'https://example.org/spec/1.0.0#server');
+        expect(serverConcept).toBeDefined();
+        expect(serverConcept!.type).toBe('skos:Concept');
+        expect(serverConcept!['skos:topConceptOf']).toEqual({ id: 'https://example.org/spec/1.0.0#classes-of-products' });
     });
 
     it('emits full JSON-LD matching documentation example (section inheritance + override)', async () => {
         // This test matches the exact example from features/spec-statements.md
         const content = `
-<section data-cop="server">
+<section data-cop-concept="server">
     <h2>Server Requirements</h2>
     <spec-statement>The server MUST validate tokens.</spec-statement>
-    <spec-statement data-cop="client">The client MAY cache tokens.</spec-statement>
+    <spec-statement data-cop-concept="client">The client MAY cache tokens.</spec-statement>
 </section>
 `;
 const config = { id: 'test', title: 'My Specification', specIri: 'https://example.org/spec/1.0.0' };
@@ -123,14 +150,25 @@ const config = { id: 'test', title: 'My Specification', specIri: 'https://exampl
         });
 
         const jsonLd = document.computed!.statementsJsonLd as Record<string, unknown>;
+        const graph = jsonLd['@graph'] as Record<string, unknown>[];
         
-        // Verify classesOfProducts includes both Client and Server
-        const classesOfProducts = jsonLd['spec:classesOfProducts'] as { id: string }[];
-        expect(classesOfProducts).toContainEqual({ id: 'https://example.org/spec/1.0.0#server' });
-        expect(classesOfProducts).toContainEqual({ id: 'https://example.org/spec/1.0.0#client' });
+        // 1. Verify Specification has refs to requirements and embedded scheme
+        const specNode = graph.find(n => n.type === 'spec:Specification');
+        expect(specNode).toBeDefined();
+        const reqRefs = specNode!['spec:requirement'] as { id: string }[];
+        expect(reqRefs).toHaveLength(2);
 
-        // Verify requirements (use spec:requirement, not spec:statement)
-        const requirements = jsonLd['spec:requirement'] as Record<string, unknown>[];
+        // 2. Verify Embedded ConceptScheme
+        const scheme = specNode!['spec:classesOfProducts'];
+        expect(scheme).toBeDefined();
+        expect(scheme.type).toBe('skos:ConceptScheme');
+        
+        const topConcepts = scheme['skos:hasTopConcept'] as { id: string }[];
+        expect(topConcepts).toContainEqual({ id: 'https://example.org/spec/1.0.0#server' });
+        expect(topConcepts).toContainEqual({ id: 'https://example.org/spec/1.0.0#client' });
+
+        // 3. Requirements in graph
+        const requirements = graph.filter(n => n.type === 'spec:Requirement');
         expect(requirements).toHaveLength(2);
 
         // First statement: inherits server, level MUST -> Requirement
@@ -138,16 +176,15 @@ const config = { id: 'test', title: 'My Specification', specIri: 'https://exampl
             (s['spec:statement'] as string).includes('server MUST validate tokens')
         );
         expect(serverStmt).toBeDefined();
-        expect(serverStmt!['type']).toBe('spec:Requirement');
         expect(serverStmt!['spec:requirementLevel']).toEqual({ id: 'spec:MUST' });
         expect(serverStmt!['spec:requirementSubject']).toEqual({ id: 'https://example.org/spec/1.0.0#server' });
 
-        // Second statement: overrides to client, level MAY -> Permission
+        // Second statement: overrides to client, level MAY -> Requirement
         const clientStmt = requirements.find(s => 
             (s['spec:statement'] as string).includes('client MAY cache tokens')
         );
         expect(clientStmt).toBeDefined();
-        expect(clientStmt!['type']).toBe('spec:Permission');
+        expect(clientStmt!['type']).toBe('spec:Requirement');
         expect(clientStmt!['spec:requirementLevel']).toEqual({ id: 'spec:MAY' });
         expect(clientStmt!['spec:requirementSubject']).toEqual({ id: 'https://example.org/spec/1.0.0#client' });
     });

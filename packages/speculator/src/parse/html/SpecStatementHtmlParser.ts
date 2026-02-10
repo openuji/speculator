@@ -43,7 +43,7 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement {
     // Determine ID
     const explicitId = ctx.getAttr(element, 'id');
     const about = ctx.getAttr(element, 'about');
-    const dataCop = ctx.getAttr(element, 'data-cop');
+    const dataCopConcept = ctx.getAttr(element, 'data-cop-concept');
     
     const id: string | undefined = explicitId;
     let tempId: string | undefined = undefined;
@@ -57,7 +57,7 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement {
         id,
         tempId,
         level: level as BlockSpecStatement['level'],
-        dataCop,
+        dataCopConcept,
         contentText,
         children,
         sourcePos,

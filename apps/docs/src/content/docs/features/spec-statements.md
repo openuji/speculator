@@ -27,14 +27,14 @@ Embed the HTML element directly in your Markdown:
 
 The requirement level is automatically detected from RFC 2119 keywords:
 
-| Keyword      | JSON-LD Type          |
-| ------------ | --------------------- |
-| `MUST`       | `spec:Requirement`    |
-| `MUST NOT`   | `spec:Prohibition`    |
-| `SHOULD`     | `spec:Recommendation` |
-| `SHOULD NOT` | `spec:Recommendation` |
-| `MAY`        | `spec:Permission`     |
-| (else)       | not rendered          |
+| Keyword      | JSON-LD Type       |
+| ------------ | ------------------ |
+| `MUST`       | `spec:Requirement` |
+| `MUST NOT`   | `spec:Requirement` |
+| `SHOULD`     | `spec:Requirement` |
+| `SHOULD NOT` | `spec:Requirement` |
+| `MAY`        | `spec:Requirement` |
+| (else)       | not rendered       |
 
 You can also set the level explicitly:
 
@@ -54,12 +54,12 @@ By default, IDs are generated from the statement text. You can set an explicit I
 >
 ```
 
-## Requirement Subjects (data-cop)
+## Requirement Subjects (`data-cop-concept`)
 
-The `data-cop` attribute specifies the **class of products** that a requirement applies to:
+The `data-cop-concept` attribute specifies the **class of products** that a requirement applies to:
 
 ```html
-<spec-statement data-cop="client"
+<spec-statement data-cop-concept="client"
   >The client MUST send credentials.</spec-statement
 >
 ```
@@ -71,7 +71,6 @@ The `data-cop` attribute specifies the **class of products** that a requirement 
 | `client`      | `{specIri}#client` | Bare token → absolute IRI |
 | `#IDP`        | `{specIri}#IDP`    | Fragment → absolute IRI   |
 | `https://...` | `https://...`      | External IRI (unchanged)  |
-| `spec:Client` | `spec:Client`      | CURIE form (unchanged)    |
 
 This generates JSON-LD with `spec:requirementSubject`:
 
@@ -86,23 +85,23 @@ This generates JSON-LD with `spec:requirementSubject`:
 
 ### Inheritance from Sections
 
-`data-cop` can also be set on sections, and statements inherit from their parent:
+`data-cop-concept` can also be set on sections, and statements inherit from their parent:
 
 ```html
-<section id="server" data-cop="server">
+<section id="server" data-cop-concept="server">
   <h2>Server Requirements</h2>
 
-  <!-- Inherits data-cop="server" -->
+  <!-- Inherits data-cop-concept="server" -->
   <spec-statement>The server MUST validate tokens.</spec-statement>
 
   <!-- Override for this statement -->
-  <spec-statement data-cop="client"
+  <spec-statement data-cop-concept="client"
     >The client MAY cache tokens.</spec-statement
   >
 </section>
 ```
 
-See [Section Attributes](/features/section-attributes) for more on `data-cop` inheritance.
+See [Section Attributes](/features/section-attributes) for more on `data-cop-concept` inheritance.
 
 ## JSON-LD Output
 
@@ -113,17 +112,53 @@ Speculator generates JSON-LD for all statements in `document.computed.statements
   "@context": {
     "dct": "http://purl.org/dc/terms/",
     "spec": "http://www.w3.org/ns/spec#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
     "id": "@id",
     "type": "@type"
   },
-  "id": "https://example.org/spec/1.0.0",
-  "type": "spec:Specification",
-  "dct:title": "My Specification",
-  "spec:classesOfProducts": [
-    { "id": "https://example.org/spec/1.0.0#server" },
-    { "id": "https://example.org/spec/1.0.0#client" }
-  ],
-  "spec:requirement": [
+  "@graph": [
+    {
+      "id": "https://example.org/spec/1.0.0",
+      "type": "spec:Specification",
+      "dct:title": "My Specification",
+      "spec:classesOfProducts": {
+        "id": "https://example.org/spec/1.0.0#classes-of-products",
+        "type": "skos:ConceptScheme",
+        "skos:prefLabel": "Classes of Products",
+        "skos:hasTopConcept": [
+          { "id": "https://example.org/spec/1.0.0#server" },
+          { "id": "https://example.org/spec/1.0.0#client" }
+        ]
+      },
+      "spec:requirement": [
+        {
+          "id": "https://example.org/spec/1.0.0#the-server-must-validate-tokens"
+        },
+        { "id": "https://example.org/spec/1.0.0#the-client-may-cache-tokens" }
+      ]
+    },
+    {
+      "id": "https://example.org/spec/1.0.0#server",
+      "type": "skos:Concept",
+      "skos:prefLabel": "Server",
+      "skos:inScheme": {
+        "id": "https://example.org/spec/1.0.0#classes-of-products"
+      },
+      "skos:topConceptOf": {
+        "id": "https://example.org/spec/1.0.0#classes-of-products"
+      }
+    },
+    {
+      "id": "https://example.org/spec/1.0.0#client",
+      "type": "skos:Concept",
+      "skos:prefLabel": "Client",
+      "skos:inScheme": {
+        "id": "https://example.org/spec/1.0.0#classes-of-products"
+      },
+      "skos:topConceptOf": {
+        "id": "https://example.org/spec/1.0.0#classes-of-products"
+      }
+    },
     {
       "id": "https://example.org/spec/1.0.0#the-server-must-validate-tokens",
       "type": "spec:Requirement",
@@ -135,7 +170,7 @@ Speculator generates JSON-LD for all statements in `document.computed.statements
     },
     {
       "id": "https://example.org/spec/1.0.0#the-client-may-cache-tokens",
-      "type": "spec:Permission",
+      "type": "spec:Requirement",
       "spec:requirementSubject": {
         "id": "https://example.org/spec/1.0.0#client"
       },
@@ -188,5 +223,5 @@ Statements can contain rich Markdown formatting:
 
 ## Related
 
-- [Section Attributes](/features/section-attributes) – `data-cop` inheritance and `.unnumbered`
+- [Section Attributes](/features/section-attributes) – `data-cop-concept` inheritance and `.unnumbered`
 - [Configuration](/configuration) – `baseUrl` and spec metadata

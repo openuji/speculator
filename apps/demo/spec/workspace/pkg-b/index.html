@@ -12,7 +12,7 @@
         <p>Reference to the <a data-link-type="dfn" data-link-for="RunnerA">Runner</a> from Spec A.</p>
         <p>We also define our own <dfn data-dfn-for="RunnerB">Runner</dfn>.</p>
     </section>
-<section data-cop="client-b">
+<section data-cop-concept="client-b">
   <h2>Client B</h2>
 
   <spec-statement>
@@ -23,7 +23,7 @@
   </spec-statement>
 </section>
 
-<section data-cop="server-b">
+<section data-cop-concept="server-b">
   <h2>Server B</h2>
 
   <spec-statement id="server-responses-at-endpoint">
@@ -34,16 +34,16 @@
   </spec-statement>
 </section>
 
-<section id="idp" data-cop="#IDP">
+<section id="idp" data-cop-concept="#IDP">
   <h2>Identity Provider</h2>
 
-  <spec-statement data-cop="spec:Client">
+  <spec-statement data-cop-concept="spec:Client">
     The IDP MUST authenticate the user before issuing a token.
   </spec-statement>
   <spec-statement>
     The IDP MUST NOT issue tokens for unknown clients.
   </spec-statement>
-  <spec-statement data-cop="client">The client MAY cache tokens.</spec-statement>
-  <spec-statement data-cop="client">The client could enqueue cache tokens.</spec-statement>
+  <spec-statement data-cop-concept="client">The client MAY cache tokens.</spec-statement>
+  <spec-statement data-cop-concept="client">The client could enqueue cache tokens.</spec-statement>
 </section>
 </section>

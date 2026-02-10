@@ -51,15 +51,15 @@ describe('statement-index advanced edge cases', () => {
 
     it('resolves data-cop with nested inheritance and overrides', async () => {
         const content = `
-## Section 1 {data-cop="client"}
+## Section 1 {data-cop-concept="client"}
 
 <spec-statement>Inherits client.</spec-statement>
 
-### Subsection 1.1 {data-cop="server"}
+### Subsection 1.1 {data-cop-concept="server"}
 
 <spec-statement>Inherits server.</spec-statement>
 
-<spec-statement data-cop="ua">Overrides to UA.</spec-statement>
+<spec-statement data-cop-concept="ua">Overrides to UA.</spec-statement>
 
 ### Subsection 1.2
 

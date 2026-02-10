@@ -20,10 +20,10 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
         const headingNode = node as Heading;
         const sourcePos = ctx.createSourcePos(node);
 
-        // Detect attribute block { .unnumbered #id data-cop="..." }
+        // Detect attribute block { .unnumbered #id data-cop-concept="..." }
         let unnumbered = false;
         let explicitId: string | undefined;
-        let dataCop: string | undefined;
+        let dataCopConcept: string | undefined;
 
         const children = headingNode.children;
         if (children.length > 0) {
@@ -45,10 +45,10 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
                         explicitId = idMatch[1];
                     }
 
-                    // Parse data-cop
-                    const dataCopMatch = /data-cop=(?:"([^"]+)"|'([^']+)'|([^\s}]+))/.exec(attrContent);
+                    // Parse data-cop-concept
+                    const dataCopMatch = /data-cop-concept=(?:"([^"]+)"|'([^']+)'|([^\s}]+))/.exec(attrContent);
                     if (dataCopMatch) {
-                        dataCop = dataCopMatch[1] || dataCopMatch[2] || dataCopMatch[3];
+                        dataCopConcept = dataCopMatch[1] || dataCopMatch[2] || dataCopMatch[3];
                     }
 
                     // Remove the attribute block from text
@@ -62,7 +62,7 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
             depth: headingNode.depth,
             id: explicitId,
             children: ctx.transformInlineChildren(headingNode.children),
-            dataCop,
+            dataCopConcept,
         };
 
         if (unnumbered) result.unnumbered = true;

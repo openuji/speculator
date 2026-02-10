@@ -12,6 +12,7 @@ import type { IndexStatementEntry } from '#src/types/ast.generated';
 
 const DEFAULT_VOCAB = 'http://www.w3.org/ns/spec#';
 const DCT_VOCAB = 'http://purl.org/dc/terms/';
+const SCOS_VOCAB = 'http://www.w3.org/2004/02/skos/core#';
 
 /**
  * Map normative level to Spec Terms IRI.
@@ -40,22 +41,17 @@ function getRequirementLevelIri(level: string): string | undefined {
 
 /**
  * Map normative level to JSON-LD type per Spec Terms:
- * - MUST, MUST NOT → Requirement/Prohibition
- * - SHOULD, SHOULD NOT → Recommendation
- * - MAY → Permission
+ * - MUST, MUST NOT, SHOULD, SHOULD NOT, MAY → Requirement
  * - NONE/other → Statement
  */
 function getJsonLdType(level: string): string | null {
     switch (level) {
         case 'MUST':
-            return 'spec:Requirement';
         case 'MUST NOT':
-            return 'spec:Prohibition';
         case 'SHOULD':
         case 'SHOULD NOT':
-            return 'spec:Recommendation';
         case 'MAY':
-            return 'spec:Permission';
+            return 'spec:Requirement';
         default:
             // currently we only support normative statements
             return null;
@@ -73,13 +69,13 @@ export const statementsJsonLdComputePlugin: Plugin = {
         const { document, config } = ctx;
         
         // Configuration
-        const vocab = config.jsonLd?.vocab || DEFAULT_VOCAB;
         const baseSpecIri = config.specIri;
         
         // JSON-LD Context
         const context: Record<string, string> = {
             dct: DCT_VOCAB,
-            spec: vocab,
+            spec: DEFAULT_VOCAB,
+            skos: SCOS_VOCAB,
             id: '@id',
             type: '@type',
             ...config.jsonLd?.contexts
@@ -118,21 +114,57 @@ export const statementsJsonLdComputePlugin: Plugin = {
             return entry;
         });
 
-        // Build the root JSON-LD object
-        const jsonLd: Record<string, unknown> = {
-            '@context': context,
+        const copSchemeId = `${baseSpecIri}#classes-of-products`;
+
+        // Create SKOS Concept nodes for each CoP
+        const copConcepts = Array.from(copIris).map(iri => {
+            // Extract a label from the IRI fragment (e.g. #client -> Client)
+            let label = 'Unknown Product Class';
+            try {
+                const fragment = iri.split('#')[1] || iri;
+                // Capitalize first letter
+                label = fragment.charAt(0).toUpperCase() + fragment.slice(1);
+            } catch (e) {
+                // fallback
+            }
+
+            return {
+                id: iri,
+                type: 'skos:Concept',
+                'skos:prefLabel': label,
+                'skos:inScheme': { id: copSchemeId },
+                'skos:topConceptOf': { id: copSchemeId },
+            };
+        });
+
+        // Create the ConceptScheme node
+        const copScheme = {
+            id: copSchemeId,
+            type: 'skos:ConceptScheme',
+            'skos:prefLabel': 'Classes of Products',
+            'skos:hasTopConcept': Array.from(copIris).map(id => ({ id }))
+        };
+
+        // Build the root JSON-LD object (flat graph)
+        const specification = {
             id: baseSpecIri,
             type: 'spec:Specification',
             'dct:title': document.metadata?.title || 'Specification',
-            // Use spec:requirement as container (not spec:statement)
-            'spec:requirement': requirements,
+            'spec:classesOfProducts': copScheme,
+            'spec:requirement': requirements.map(r => ({ id: r.id as string })) // Link by ID
         };
 
-        if (copIris.size > 0) {
-            jsonLd['spec:classesOfProducts'] = Array.from(copIris).map(id => ({ id }));
-        } else {
-            jsonLd['spec:classesOfProducts'] = [];
-        }
+        const graph = [
+            specification,
+            ...copConcepts,
+            ...requirements
+        ];
+
+        // Result object with context and graph
+        const jsonLd: Record<string, unknown> = {
+            '@context': context,
+            '@graph': graph
+        };
 
         // Store in AST
         if (!document.computed) {

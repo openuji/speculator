@@ -55,9 +55,9 @@ function createSectionFromHeading(heading: BlockHeading): Section {
         section.unnumbered = true;
         section.heading!.unnumbered = true;
     }
-    if (heading.dataCop) {
-        section.dataCop = heading.dataCop;
-        section.heading!.dataCop = heading.dataCop;
+    if (heading.dataCopConcept) {
+        section.dataCopConcept = heading.dataCopConcept;
+        section.heading!.dataCopConcept = heading.dataCopConcept;
     }
 
     return section;
