@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-09T18:15:43.242Z
+ * Generated at: 2026-02-10T14:12:07.106Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -260,6 +260,7 @@ export type Block =
   | BlockTable
   | BlockThematicBreak
   | BlockHtml
+  | BlockLikeC4View
   | BlockNote
   | BlockSpecStatement;
 export type BlockParagraph = BaseNode & {
@@ -357,6 +358,32 @@ export type BlockHtml = BaseNode & {
   value: string;
   /**
    * Always empty - HTML blocks are leaf nodes with raw value content
+   *
+   * @maxItems 0
+   */
+  children: [];
+};
+export type BlockLikeC4View = BaseNode & {
+  type: 'likeC4View';
+  id?: string;
+  /**
+   * LikeC4 view ID
+   */
+  viewId: string;
+  /**
+   * Original source attribute value
+   */
+  src: string;
+  /**
+   * Resolved absolute path to source file
+   */
+  resolvedSrc?: string;
+  /**
+   * Optional visualization variant
+   */
+  dynamicVariant?: 'diagram' | 'sequence';
+  /**
+   * Always empty - LikeC4 views are leaf nodes
    *
    * @maxItems 0
    */
@@ -764,7 +791,8 @@ export function isBlock(node: unknown): node is Block {
   const type = (node as any).type;
   return [
     'paragraph', 'heading', 'codeBlock', 'example',
-    'blockquote', 'list', 'table', 'thematicBreak', 'html'
+    'blockquote', 'list', 'table', 'thematicBreak', 'html', 'likeC4View',
+    'note', 'specStatement'
   ].includes(type);
 }
 

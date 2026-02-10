@@ -1000,6 +1000,56 @@
                 }
             ]
         },
+        "BlockLikeC4View": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "likeC4View"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "viewId": {
+                            "type": "string",
+                            "description": "LikeC4 view ID"
+                        },
+                        "src": {
+                            "type": "string",
+                            "description": "Original source attribute value"
+                        },
+                        "resolvedSrc": {
+                            "type": "string",
+                            "description": "Resolved absolute path to source file"
+                        },
+                        "dynamicVariant": {
+                            "type": "string",
+                            "enum": [
+                                "diagram",
+                                "sequence"
+                            ],
+                            "description": "Optional visualization variant"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - LikeC4 views are leaf nodes"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "viewId",
+                        "src",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "BlockHtml": {
             "allOf": [
                 {
@@ -1152,6 +1202,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockHtml"
+                },
+                {
+                    "$ref": "#/definitions/BlockLikeC4View"
                 },
                 {
                     "$ref": "#/definitions/BlockNote"

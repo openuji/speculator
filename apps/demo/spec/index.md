@@ -84,6 +84,10 @@ graph TD
     D --> E[HTML]
 ```
 
+LikeC4 diagrams are rendered automatically:
+
+<likec4-view view-id="oidc" dynamic-variant="sequence" src="./diagrams/model.c4"/>
+
 ---
 
 ## Blockquotes

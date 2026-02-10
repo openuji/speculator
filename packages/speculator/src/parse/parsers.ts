@@ -17,6 +17,7 @@ export { DfnHtmlParser } from './html/DfnHtmlParser.js';
 export { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 export { AsideHtmlParser } from './html/AsideHtmlParser.js';
 export { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
+export { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 export { MiscHtmlParser } from './html/MiscHtmlParser.js';
 
 // Markdown Parser Modules
@@ -45,6 +46,7 @@ import { DfnHtmlParser } from './html/DfnHtmlParser.js';
 import { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 import { AsideHtmlParser } from './html/AsideHtmlParser.js';
 import { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
+import { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 import { MiscHtmlParser } from './html/MiscHtmlParser.js';
 
 import { HeadingsMarkdownParser } from './markdown/HeadingsMarkdownParser.js';
@@ -71,6 +73,7 @@ export const coreHtmlParsers: HtmlParserModule[] = [
     ReferenceHtmlParser,      // order: 5
     SpecStatementHtmlParser,  // order: 5
     AsideHtmlParser,     // order: 8
+    LikeC4ViewHtmlParser,     // order: 9
     // Standard parsers
     SectionsHtmlParser,  // order: 10
     HeadingsHtmlParser,  // order: 10
@@ -104,4 +107,3 @@ export const coreMarkdownParsers: MarkdownParserModule[] = [
     // Fallback parsers (lower priority)
     MiscMarkdownParser,      // order: 20
 ];
-

@@ -15,12 +15,20 @@
     "prebuild": "pnpm vocab:build && pnpm search:build"
   },
   "dependencies": {
+    "@astrojs/react": "^4.4.0",
+    "@likec4/core": "^1.48.0",
+    "@likec4/diagram": "^1.48.0",
     "@openuji/render-respec": "workspace:*",
     "@openuji/speculator": "workspace:*",
     "@openuji/speculator-lint": "workspace:*",
     "@openuji/speculator-search": "workspace:*",
     "@openuji/vocab-build": "workspace:*",
     "astro": "^5.16.4",
-    "mermaid": "^11.12.2"
+    "mermaid": "^11.12.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "likec4": "^1.48.0"
   }
 }
