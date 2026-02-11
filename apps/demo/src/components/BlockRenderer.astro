@@ -3,6 +3,7 @@ import type { Block, Section, BlockHeading } from "@openuji/speculator";
 import InlineRenderer from "./InlineRenderer.astro";
 import RecursiveBlockRenderer from "./BlockRenderer.astro";
 import Mermaid from "./Mermaid.astro";
+import LikeC4 from "./LikeC4.astro";
 
 interface Props {
   node: Block | Section;
@@ -144,6 +145,15 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
 
       case "thematicBreak":
         return <hr id={node.id} />;
+
+      case "likeC4View":
+        return (
+          <LikeC4
+            viewId={node.viewId}
+            dynamicVariant={node.dynamicVariant}
+            id={node.id}
+          />
+        );
 
       case "idl":
         // IDL Block — header must be OUTSIDE <pre> to avoid Astro whitespace issues
