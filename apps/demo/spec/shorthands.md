@@ -1,4 +1,4 @@
-# ReSpec Shorthands Demo {.unnumbered}
+# ReSpec Shorthands Demo {.unnumbered} {#shorthands-demo}
 
 This document demonstrates all shorthands supported by Speculator.
 
@@ -52,16 +52,17 @@ Shorthands can be mixed freely:
 
 ## Summary Table
 
-| Shorthand     | Syntax            | Example               | AST Type    |
-| ------------- | ----------------- | --------------------- | ----------- |
-| Citation      | `[[REF]]`         | `[[DOM]]`             | `cite`      |
-| Normative     | `[[!REF]]`        | `[[!RFC2119]]`        | `cite`      |
-| Informative   | `[[?REF]]`        | `[[?WHATWG-URL]]`     | `cite`      |
-| Expanded      | `[[[REF]]]`       | `[[[HTML]]]`          | `cite`      |
-| Concept       | `[=term=]`        | `[=Algorithm=]`       | `reference` |
-| Concept Alias | `[=term\|alias=]` | `[=Algorithm\|algo=]` | `reference` |
-| Variable      | `\|var\|`         | `\|x\|`               | `variable`  |
-| WebIDL        | `{{IDL}}`         | `{{Document}}`        | `reference` |
-| Element       | `[^tag^]`         | `[^div^]`             | `reference` |
+| Shorthand     | Syntax            | Example                         | AST Type    |
+| ------------- | ----------------- | ------------------------------- | ----------- |
+| Citation      | `[[REF]]`         | `[[DOM]]`                       | `cite`      |
+| Normative     | `[[!REF]]`        | `[[!RFC2119]]`                  | `cite`      |
+| Informative   | `[[?REF]]`        | `[[?WHATWG-URL]]`               | `cite`      |
+| Expanded      | `[[[REF]]]`       | `[[[HTML]]]`                    | `cite`      |
+| Concept       | `[=term=]`        | `[=Algorithm=]`                 | `reference` |
+| Concept Alias | `[=term|alias=]` | `[=Algorithm|algo=]` -> [=Algorithm|algo=]           | `reference` |
+| Section Alias | `[§#id|alias]`   | `[§#shorthands-demo|Shorthands]`  -> [§#shorthands-demo|Shorthands] | `reference` |
+| Variable      | `\|var\|`         | `|x|` ->  |x|                        | `variable`  |
+| WebIDL        | `{{IDL}}`         | `{{Document}}`                  | `reference` |
+| Element       | `[^tag^]`         | `[^div^]`                       | `reference` |
 
 ---
