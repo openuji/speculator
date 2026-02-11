@@ -46,6 +46,7 @@ You can also use images: ![Example Image](https://via.placeholder.com/150)
 | Tables      | ✅     | GFM tables                 |
 | Code        | ✅     | Fenced blocks              |
 | Blockquotes | ✅     | Nested support             |
+| Shorthands  | ✅     | [§#text-formatting\|Links] |
 
 ---
 

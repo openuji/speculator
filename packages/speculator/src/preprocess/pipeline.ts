@@ -14,6 +14,7 @@ import type {
 import { inferFormat } from '#src/preprocess/types';
 import { normalizeConfig, ConfigLoadError, loadDocConfig } from '#src/preprocess/config/index';
 import { resolveIncludes, IncludeResolveError } from '#src/preprocess/include/index';
+import { escapePipesInSource } from './EscapePipeMiddleware.js';
 
 /**
  * Options for preprocessing a specification
@@ -102,6 +103,9 @@ export async function preprocess(options: PreprocessOptions): Promise<Preprocess
         }
         throw error;
     }
+
+    // Escape pipes in shorthands to prevent table breakage
+    source = escapePipesInSource(source);
 
     return {
         config,
