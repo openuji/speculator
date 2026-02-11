@@ -14,6 +14,7 @@
                 "url": "https://google.com"
             }
         ],
+        "xref": ["dom", "webidl"],
         "abstract": "This specification demonstrates the capabilities of the Speculator parser and render pipeline.",
         "localBiblio": {
             "RFC2119": {

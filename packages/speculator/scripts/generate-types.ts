@@ -96,7 +96,8 @@ export function isBlock(node: unknown): node is Block {
   const type = (node as any).type;
   return [
     'paragraph', 'heading', 'codeBlock', 'example',
-    'blockquote', 'list', 'table', 'thematicBreak', 'html'
+    'blockquote', 'list', 'table', 'thematicBreak', 'html', 'likeC4View',
+    'note', 'specStatement'
   ].includes(type);
 }
 

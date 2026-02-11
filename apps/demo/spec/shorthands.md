@@ -1,4 +1,4 @@
-# ReSpec Shorthands Demo {.unnumbered}
+# ReSpec Shorthands Demo {.unnumbered} {#shorthands-demo}
 
 This document demonstrates all shorthands supported by Speculator.
 
@@ -29,6 +29,13 @@ Citations reference bibliography entries.
 
 ## WebIDL References
 
+<pre class="idl">
+interface Element {
+  DOMString? getAttribute(DOMString qualifiedName);
+  void close();
+};
+</pre>
+
 Use double braces for WebIDL interface and member references:
 
 - The {{Document}} interface provides methods for querying the DOM.
@@ -48,20 +55,21 @@ Use `[^element^]` syntax to reference HTML/SVG elements:
 Shorthands can be mixed freely:
 
 - If |p| is true in [[HTML]], then [=Algorithm=] should be invoked.
-- The {{Document/querySelector}} method returns an [^element^] or null.
+- The {{Document/getElementsByTagName(qualifiedName)}} method returns an {{Element}} or null.
 
 ## Summary Table
 
-| Shorthand     | Syntax            | Example               | AST Type    |
-| ------------- | ----------------- | --------------------- | ----------- |
-| Citation      | `[[REF]]`         | `[[DOM]]`             | `cite`      |
-| Normative     | `[[!REF]]`        | `[[!RFC2119]]`        | `cite`      |
-| Informative   | `[[?REF]]`        | `[[?WHATWG-URL]]`     | `cite`      |
-| Expanded      | `[[[REF]]]`       | `[[[HTML]]]`          | `cite`      |
-| Concept       | `[=term=]`        | `[=Algorithm=]`       | `reference` |
-| Concept Alias | `[=term\|alias=]` | `[=Algorithm\|algo=]` | `reference` |
-| Variable      | `\|var\|`         | `\|x\|`               | `variable`  |
-| WebIDL        | `{{IDL}}`         | `{{Document}}`        | `reference` |
-| Element       | `[^tag^]`         | `[^div^]`             | `reference` |
+| Shorthand     | Syntax            | Example                         | AST Type    |
+| ------------- | ----------------- | ------------------------------- | ----------- |
+| Citation      | `[[REF]]`         | `[[DOM]]`                       | `cite`      |
+| Normative     | `[[!REF]]`        | `[[!RFC2119]]`                  | `cite`      |
+| Informative   | `[[?REF]]`        | `[[?WHATWG-URL]]`               | `cite`      |
+| Expanded      | `[[[REF]]]`       | `[[[HTML]]]`                    | `cite`      |
+| Concept       | `[=term=]`        | `[=Algorithm=]`                 | `reference` |
+| Concept Alias | `[=term|alias=]` | `[=Algorithm|algo=]` -> [=Algorithm|algo=]           | `reference` |
+| Section Alias | `[§#id|alias]`   | `[§#shorthands-demo|Shorthands]`  -> [§#shorthands-demo|Shorthands] | `reference` |
+| Variable      | `\|var\|`         | `|x|` ->  |x|                        | `variable`  |
+| WebIDL        | `{{IDL}}`         | `{{Document}}`                  | `reference` |
+| Element       | `[^tag^]`         | `[^div^]`                       | `reference` |
 
 ---

@@ -1,6 +1,6 @@
 {
     "name": "@openuji/speculator",
-    "version": "0.7.1",
+    "version": "0.7.2",
     "description": "AST-first specification processor with schema-central architecture",
     "type": "module",
     "main": "dist/index.js",
@@ -54,6 +54,7 @@
     },
     "license": "MIT",
     "dependencies": {
+        "hast-util-to-html": "^9.0.5",
         "rehype-parse": "^9.0.1",
         "remark-gfm": "^4.0.1",
         "remark-parse": "^11.0.0",

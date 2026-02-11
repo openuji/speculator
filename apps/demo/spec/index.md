@@ -46,6 +46,7 @@ You can also use images: ![Example Image](https://via.placeholder.com/150)
 | Tables      | ✅     | GFM tables                 |
 | Code        | ✅     | Fenced blocks              |
 | Blockquotes | ✅     | Nested support             |
+| Shorthands  | ✅     | [§#text-formatting\|Links] |
 
 ---
 
@@ -83,6 +84,14 @@ graph TD
     C --> D[Renderer]
     D --> E[HTML]
 ```
+
+LikeC4 diagrams are rendered automatically:
+
+<likec4-view view-id="oidc" dynamic-variant="sequence" />
+
+another LikeC4 view:
+
+<likec4-view view-id="includesOnly" />
 
 ---
 

@@ -68,6 +68,9 @@ export interface RawRespecConfig {
 
     // Conformance
     noConformance?: boolean;
+
+    // Cross-references
+    xref?: string | string[] | Record<string, string>;
 }
 
 export interface ResolvedDocumentConfig {
