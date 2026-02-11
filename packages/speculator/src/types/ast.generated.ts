@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-10T14:12:07.106Z
+ * Generated at: 2026-02-11T14:31:20.025Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -370,14 +370,6 @@ export type BlockLikeC4View = BaseNode & {
    * LikeC4 view ID
    */
   viewId: string;
-  /**
-   * Original source attribute value
-   */
-  src: string;
-  /**
-   * Resolved absolute path to source file
-   */
-  resolvedSrc?: string;
   /**
    * Optional visualization variant
    */

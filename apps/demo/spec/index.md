@@ -86,7 +86,7 @@ graph TD
 
 LikeC4 diagrams are rendered automatically:
 
-<likec4-view view-id="oidc" dynamic-variant="sequence" src="./diagrams/model.c4"/>
+<likec4-view view-id="oidc" dynamic-variant="sequence" />
 
 ---
 

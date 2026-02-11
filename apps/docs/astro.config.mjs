@@ -105,6 +105,10 @@ export default defineConfig({
 					autogenerate: { directory: 'features' },
 				},
 				{
+					label: 'Diagrams',
+					autogenerate: { directory: 'diagrams' },
+				},
+				{
 					label: 'Quality Assurance',
 					autogenerate: { directory: 'qa' },
 				},

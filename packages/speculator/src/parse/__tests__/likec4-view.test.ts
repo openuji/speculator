@@ -6,7 +6,6 @@ import { HtmlBlockMarkdownParser } from '#src/parse/markdown/HtmlBlockMarkdownPa
 import { LikeC4ViewHtmlParser } from '#src/parse/html/LikeC4ViewHtmlParser';
 import { parse } from '#src/parse/pipeline';
 import type { BlockLikeC4View } from '#src/types/ast.generated';
-import * as path from 'node:path';
 
 describe('LikeC4 view parsing', () => {
     it('parses <likec4-view> into BlockLikeC4View AST node', () => {
@@ -26,9 +25,7 @@ describe('LikeC4 view parsing', () => {
         const block = blocks[0] as BlockLikeC4View;
         expect(block.type).toBe('likeC4View');
         expect(block.viewId).toBe('oidc');
-        expect(block.src).toBe('architecture/oidc.c4');
         expect(block.dynamicVariant).toBe('sequence');
-        expect(block.resolvedSrc).toBe(path.resolve('/spec/architecture/oidc.c4'));
         expect(block.sourcePos?.file).toBe('/spec/index.md');
     });
 

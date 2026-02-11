@@ -1018,14 +1018,6 @@
                             "type": "string",
                             "description": "LikeC4 view ID"
                         },
-                        "src": {
-                            "type": "string",
-                            "description": "Original source attribute value"
-                        },
-                        "resolvedSrc": {
-                            "type": "string",
-                            "description": "Resolved absolute path to source file"
-                        },
                         "dynamicVariant": {
                             "type": "string",
                             "enum": [
@@ -1044,7 +1036,6 @@
                     "required": [
                         "type",
                         "viewId",
-                        "src",
                         "children"
                     ]
                 }
