@@ -203,5 +203,10 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         config.noConformance = noConformance;
     }
 
+    // Cross-references
+    if (raw.xref !== undefined) {
+        config.xref = raw.xref;
+    }
+
     return config;
 }

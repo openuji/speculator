@@ -7,7 +7,9 @@ import { HtmlBlockMarkdownParser } from '#src/parse/markdown/HtmlBlockMarkdownPa
 import { ParagraphsMarkdownParser } from '#src/parse/markdown/ParagraphsMarkdownParser';
 import { DfnHtmlParser } from '#src/parse/html/DfnHtmlParser';
 import { ReferenceHtmlParser } from '#src/parse/html/ReferenceHtmlParser';
-import type { InlineDefinition, InlineCite, InlineVariable, BlockParagraph, InlineText } from '#src/types/ast.generated';
+import { IdlHtmlParser } from '#src/parse/html/IdlHtmlParser';
+import { CodeHtmlParser } from '#src/parse/html/CodeHtmlParser';
+import type { InlineDefinition, InlineCite, InlineVariable, BlockParagraph, InlineText, BlockIdl } from '#src/types/ast.generated';
 
 describe('HTML in Markdown Parsing', () => {
     const registry = new ParseHandlerRegistry();
@@ -19,6 +21,8 @@ describe('HTML in Markdown Parsing', () => {
     registry.registerMarkdownParser(HtmlBlockMarkdownParser);
     registry.registerHtmlParser(DfnHtmlParser);
     registry.registerHtmlParser(ReferenceHtmlParser);
+    registry.registerHtmlParser(IdlHtmlParser);
+    registry.registerHtmlParser(CodeHtmlParser);
 
     const parser = new MarkdownUnitParser(registry);
 
@@ -92,5 +96,40 @@ describe('HTML in Markdown Parsing', () => {
         const dfn = para.children[1] as InlineDefinition;
         expect(dfn.type).toBe('definition');
         expect(dfn.term).toBe('term');
+    });
+
+    it('parses <pre class="idl"> in Markdown with correct content', () => {
+        const idl = `
+<pre class="idl">
+interface Document {
+  void close();
+};
+</pre>
+`;
+        const content = `Some text.\n${idl}\nMore text.`;
+        const unit = {
+            file: 'test.md',
+            format: 'markdown' as const,
+            content: content,
+            startLine: 1,
+        };
+        const blocks = parser.parse(unit);
+        
+        // Structure: Paragraph, BlockHtml(pre), Paragraph
+        expect(blocks).toHaveLength(3);
+        
+        const preBlock = blocks[1] as BlockIdl;
+        expect(preBlock.type).toBe('idl');
+        
+        // Crucial check: the value should NOT contain the surrounding text
+        expect(preBlock.value).not.toContain('Some text');
+        expect(preBlock.value).not.toContain('More text');
+        expect(preBlock.value).toContain('interface Document');
+        
+        // And it should have children definitions
+        expect(preBlock.children).toBeDefined();
+        const defs = preBlock.children;
+        const docDef = defs.find((d): d is InlineDefinition => d.type === 'definition' && d.term === 'Document');
+        expect(docDef).toBeDefined();
     });
 });

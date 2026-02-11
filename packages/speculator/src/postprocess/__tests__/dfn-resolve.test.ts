@@ -10,6 +10,7 @@ function createCtx(doc: Document): ResolveContext {
     return {
         document: doc,
         level: 0,
+        config: { id: 'test', specIri: 'http://test' },
     };
 }
 

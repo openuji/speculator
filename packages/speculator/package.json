@@ -54,6 +54,7 @@
     },
     "license": "MIT",
     "dependencies": {
+        "hast-util-to-html": "^9.0.5",
         "rehype-parse": "^9.0.1",
         "remark-gfm": "^4.0.1",
         "remark-parse": "^11.0.0",
