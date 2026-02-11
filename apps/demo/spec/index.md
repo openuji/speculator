@@ -88,6 +88,10 @@ LikeC4 diagrams are rendered automatically:
 
 <likec4-view view-id="oidc" dynamic-variant="sequence" />
 
+another LikeC4 view:
+
+<likec4-view view-id="includesOnly" />
+
 ---
 
 ## Blockquotes

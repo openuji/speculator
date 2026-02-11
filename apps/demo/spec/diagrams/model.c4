@@ -343,4 +343,18 @@ views {
       '''
     }
   }
+
+  view includesOnly {
+    title "Includes Only"
+
+    
+    description """
+      This diagram shows the **high-level**
+      components and interactions.
+    """
+
+    include WebID, UAS, ClientID, Client, RAS, RS
+  }
+
+
 }
