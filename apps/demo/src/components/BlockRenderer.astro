@@ -145,6 +145,110 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
       case "thematicBreak":
         return <hr id={node.id} />;
 
+      case "idl":
+        // IDL Block — header must be OUTSIDE <pre> to avoid Astro whitespace issues
+        return (
+          <div class="idl-block" id={node.id}>
+            <div class="idlHeader">
+              <span>IDL</span>
+              <button
+                title="Copy IDL to clipboard"
+                class="respec-button-copy-paste"
+                onclick={`navigator.clipboard.writeText(this.closest('.idl-block').querySelector('code').textContent)`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <>
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </>
+                </svg>
+                Copy
+              </button>
+            </div>
+            <div
+              set:html={(() => {
+                // Render the entire <pre><code> as a raw string to prevent Astro whitespace injection
+                const renderInline = (n: any): string => {
+                  if (!n) return "";
+                  if (typeof n === "string") return n;
+
+                  let html = "";
+                  const type = n.type;
+
+                  if (type === "text") {
+                    html = n.value || "";
+                  } else if (
+                    type === "definition" ||
+                    type === "idlName" ||
+                    type === "idlMethod" ||
+                    type === "idlAttribute"
+                  ) {
+                    const dfnId = n.explicitId || n.id;
+                    const dfnFor = n.forContexts?.filter(Boolean).join(", ");
+                    const dfnType =
+                      n.dfnType ||
+                      (type === "idlName"
+                        ? "interface"
+                        : type === "idlMethod" || type === "idlAttribute"
+                          ? "method"
+                          : "dfn");
+                    const idAttr = dfnId ? ` id="${dfnId}"` : "";
+                    const titleAttr =
+                      n.term || n.title ? ` title="${n.term || n.title}"` : "";
+                    const forAttr = dfnFor ? ` data-dfn-for="${dfnFor}"` : "";
+                    const typeAttr =
+                      dfnType && dfnType !== "dfn"
+                        ? ` data-dfn-type="${dfnType}"`
+                        : "";
+                    const children = n.children
+                      ? n.children.map(renderInline).join("")
+                      : n.value || n.targetTerm || "";
+                    html = `<dfn${idAttr}${titleAttr}${forAttr}${typeAttr}>${children}</dfn>`;
+                  } else if (type === "workspaceIdlReference") {
+                    const href =
+                      n.targetDocumentId && basePath
+                        ? `${basePath}/${n.targetDocumentId}#${n.targetId || ""}`
+                        : `#${n.targetId || ""}`;
+                    const children = n.children
+                      ? n.children.map(renderInline).join("")
+                      : n.targetTerm || "";
+                    html = `<code class="idl" data-link-type="idl"><a href="${href}" class="xref" title="${n.targetTerm || ""}">${children}</a></code>`;
+                  } else if (type === "externalIdlReference") {
+                    const href = n.url || "#";
+                    const children = n.children
+                      ? n.children.map(renderInline).join("")
+                      : n.targetTerm || "";
+                    html = `<code class="idl" data-link-type="idl"><a href="${href}" class="xref external" title="${n.targetTerm || ""} in ${n.xrefSpec || ""}">${children}</a></code>`;
+                  } else if (type === "idlKeyword") {
+                    html = `<span class="idlKeyword">${n.value || ""}</span>`;
+                  } else if (type === "idlType") {
+                    html = `<span class="idlType">${n.value || ""}</span>`;
+                  } else if (n.children && Array.isArray(n.children)) {
+                    html = n.children.map(renderInline).join("");
+                  } else {
+                    html = n.value || n.targetTerm || "";
+                  }
+
+                  // Debug log
+                  // console.log(`[IDL Render] Type: ${type}, Term: ${n.term || n.targetTerm || 'none'}, Result: ${html.slice(0, 50)}${html.length > 50 ? '...' : ''}`);
+
+                  return html;
+                };
+                const content = node.children.map(renderInline).join("");
+                return `<pre class="idl def"><code class="idl">${content}</code></pre>`;
+              })()}
+            />
+          </div>
+        );
+
       case "html":
         return <div id={node.id} set:html={node.value} />;
 

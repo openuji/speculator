@@ -744,6 +744,40 @@
                 }
             ]
         },
+        "BlockIdl": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "idl"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "Raw IDL content"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            },
+                            "description": "Tokenized IDL content (Text, Definitions, References)"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "BlockExample": {
             "allOf": [
                 {
@@ -1152,6 +1186,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockHtml"
+                },
+                {
+                    "$ref": "#/definitions/BlockIdl"
                 },
                 {
                     "$ref": "#/definitions/BlockNote"
