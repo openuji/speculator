@@ -286,6 +286,8 @@ export interface SpecConfig {
         contexts?: Record<string, string>;
     };
 
+    /** External reference configuration */
+    xref?: string | string[] | Record<string, string>;
 }
 
 // ============================================================================

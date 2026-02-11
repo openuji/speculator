@@ -19,6 +19,7 @@ export { AsideHtmlParser } from './html/AsideHtmlParser.js';
 export { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
 export { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 export { MiscHtmlParser } from './html/MiscHtmlParser.js';
+export { IdlHtmlParser } from './html/IdlHtmlParser.js';
 
 // Markdown Parser Modules
 export { HeadingsMarkdownParser } from './markdown/HeadingsMarkdownParser.js';
@@ -48,6 +49,7 @@ import { AsideHtmlParser } from './html/AsideHtmlParser.js';
 import { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
 import { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 import { MiscHtmlParser } from './html/MiscHtmlParser.js';
+import { IdlHtmlParser } from './html/IdlHtmlParser.js';
 
 import { HeadingsMarkdownParser } from './markdown/HeadingsMarkdownParser.js';
 import { ParagraphsMarkdownParser } from './markdown/ParagraphsMarkdownParser.js';
@@ -75,6 +77,7 @@ export const coreHtmlParsers: HtmlParserModule[] = [
     AsideHtmlParser,     // order: 8
     LikeC4ViewHtmlParser,     // order: 9
     // Standard parsers
+    IdlHtmlParser,       // order: 10 (handles <pre class="idl">)
     SectionsHtmlParser,  // order: 10
     HeadingsHtmlParser,  // order: 10
     ParagraphsHtmlParser,// order: 10

@@ -83,7 +83,6 @@ pre {
     padding: 1rem;
     border-radius: 8px;
     overflow-x: auto;
-    border: 1px solid var(--border);
 }
 
 pre code {
@@ -259,4 +258,109 @@ cite::after {
 .mermaid svg {
     max-width: 100%;
     height: auto;
+}
+
+/* IDL Block */
+.idl-block {
+    border: 1px solid #818cf8;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    margin: 1.5rem 0;
+    overflow: hidden;
+}
+
+.idl-block > pre.idl.def {
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+}
+
+.idlHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #818cf8;
+    background: rgba(129, 140, 248, 0.08);
+    border-bottom: 1px solid rgba(129, 140, 248, 0.15);
+}
+
+.respec-button-copy-paste {
+    background: none;
+    border: 1px solid rgba(129, 140, 248, 0.3);
+    border-radius: 4px;
+    color: #818cf8;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-family: var(--font-sans);
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.respec-button-copy-paste:hover {
+    background: rgba(129, 140, 248, 0.15);
+    border-color: #818cf8;
+    color: #c4b5fd;
+}
+
+.respec-button-copy-paste svg {
+    width: 14px;
+    height: 14px;
+}
+
+.idl-block > pre.idl.def > code.idl {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #e2e8f0;
+    white-space: pre;
+    background: transparent;
+}
+
+/* IDL syntax colors */
+code.idl .idlKeyword {
+    color: #c084fc;
+    font-weight: 600;
+}
+
+code.idl .idlType {
+    color: #38bdf8;
+}
+
+code.idl .idlName {
+    color: #67e8f9;
+    font-weight: 600;
+}
+
+code.idl .idlParam {
+    color: #fbbf24;
+}
+
+code.idl .idlMethod {
+    color: #34d399;
+}
+
+code.idl .idlAttr {
+    color: #34d399;
+}
+
+code.idl a {
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+}
+
+code.idl a:hover {
+    border-bottom-style: solid;
 }

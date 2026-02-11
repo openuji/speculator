@@ -145,6 +145,9 @@ importers:
 
   packages/speculator:
     dependencies:
+      hast-util-to-html:
+        specifier: ^9.0.5
+        version: 9.0.5
       rehype-parse:
         specifier: ^9.0.1
         version: 9.0.1

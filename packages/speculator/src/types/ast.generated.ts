@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-11T14:31:20.025Z
+ * Generated at: 2026-02-11T15:24:35.680Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -261,6 +261,7 @@ export type Block =
   | BlockThematicBreak
   | BlockHtml
   | BlockLikeC4View
+  | BlockIdl
   | BlockNote
   | BlockSpecStatement;
 export type BlockParagraph = BaseNode & {
@@ -380,6 +381,18 @@ export type BlockLikeC4View = BaseNode & {
    * @maxItems 0
    */
   children: [];
+};
+export type BlockIdl = BaseNode & {
+  type: 'idl';
+  id?: string;
+  /**
+   * Raw IDL content
+   */
+  value: string;
+  /**
+   * Tokenized IDL content (Text, Definitions, References)
+   */
+  children: Inline[];
 };
 export type BlockNote = BaseNode & {
   type: 'note';
