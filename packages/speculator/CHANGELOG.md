@@ -1,5 +1,11 @@
 # @openuji/speculator
 
+## 0.7.3
+
+### Patch Changes
+
+- 9d98ceb: fix pipe escaping in tables
+
 ## 0.7.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @openuji/render-respec
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [9d98ceb]
+  - @openuji/speculator@0.7.3
+  - @openuji/speculator-lint@0.3.3
+
 ## 0.1.3
 
 ### Patch Changes
