@@ -37,6 +37,14 @@ function runComplianceTests(name: string, provider: FileProvider) {
 
             expect(resolved).toBe(expected);
         });
+
+        if (provider.readdir) {
+            it('lists directory contents', async () => {
+                const dir = provider.canonicalize('/');
+                const files = await provider.readdir!(dir);
+                expect(Array.isArray(files)).toBe(true);
+            });
+        }
     });
 }
 
@@ -55,6 +63,34 @@ describe('MemoryFileProvider', () => {
     it('throws FileNotFoundError for missing files', async () => {
         await expect(provider.readText('/missing.md'))
             .rejects.toThrow(FileNotFoundError);
+    });
+
+    it('readdir lists files in directory', async () => {
+        const provider = new MemoryFileProvider({
+            '/a/1.md': '...',
+            '/a/2.md': '...',
+            '/a/b/3.md': '...',
+            '/c/4.md': '...'
+        });
+
+        const aFiles = await provider.readdir('/a');
+        expect(aFiles).toContain(provider.canonicalize('/a/1.md'));
+        expect(aFiles).toContain(provider.canonicalize('/a/2.md'));
+        expect(aFiles).not.toContain(provider.canonicalize('/a/b/3.md'));
+        expect(aFiles).not.toContain(provider.canonicalize('/c/4.md'));
+    });
+
+    it('readdir recursive lists all files under prefix', async () => {
+        const provider = new MemoryFileProvider({
+            '/a/1.md': '...',
+            '/a/b/2.md': '...',
+            '/c/3.md': '...'
+        });
+
+        const aFiles = await provider.readdir('/a', { recursive: true });
+        expect(aFiles).toHaveLength(2);
+        expect(aFiles).toContain(provider.canonicalize('/a/1.md'));
+        expect(aFiles).toContain(provider.canonicalize('/a/b/2.md'));
     });
 });
 

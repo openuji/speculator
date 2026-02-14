@@ -65,6 +65,24 @@ export class NodeFileProvider implements FileProvider {
         return this.canonicalize(path.join(fromDir, relativePath));
     }
 
+    async readdir(dirPath: string, options?: { recursive?: boolean }): Promise<string[]> {
+        const canonical = this.canonicalize(dirPath);
+        
+        try {
+            const files = await fs.readdir(canonical, { recursive: options?.recursive });
+            // readdir with recursive: true returns relative paths from the root
+            // we want to return absolute canonical paths
+            return files.map(file => path.join(canonical, file.toString()));
+        } catch (error) {
+            if (error instanceof Error && 'code' in error) {
+                if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+                    return []; // Non-existent directory returns empty list
+                }
+            }
+            throw new FileReadError(canonical, error instanceof Error ? error : undefined);
+        }
+    }
+
     canonicalize(filePath: string): string {
         // Make absolute if relative
         const absolutePath = path.isAbsolute(filePath)

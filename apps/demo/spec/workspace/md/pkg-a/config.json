@@ -1,5 +1,6 @@
 {
   "baseUrl": "http://localhost:4321/workspace/md",
+  
   "respec": {
     "title": "Protocol A Specification",
     "noConformance": true,

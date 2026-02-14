@@ -14,11 +14,30 @@ import path from "path";
 import fs from "fs";
 
 export async function getStaticPaths() {
-  return [
-    { params: { pkg: "pkg-a" } },
-    { params: { pkg: "pkg-b" } },
-    { params: { pkg: "pkg-c" } },
-  ];
+  const workspaceConfigPath = path.resolve("speculator.workspace.json");
+  const workspaceConfigContent = await fs.promises.readFile(
+    workspaceConfigPath,
+    "utf-8",
+  );
+  const workspaceConfig = JSON.parse(workspaceConfigContent);
+
+  const buildResult = await buildWorkspaces({
+    entryMap: workspaceConfig,
+  });
+
+  const allDocs = Object.values(buildResult.workspaces).flatMap(
+    (ws) => ws.documents,
+  );
+
+  const pkgs = new Set<string>();
+  allDocs.forEach((doc) => {
+    const docPath = doc.sourcePos?.file || "";
+    if (docPath) {
+      pkgs.add(path.basename(path.dirname(docPath)));
+    }
+  });
+
+  return Array.from(pkgs).map((pkg) => ({ params: { pkg } }));
 }
 
 const { pkg } = Astro.params;
@@ -36,19 +55,21 @@ const buildResult = await buildWorkspaces({
   env: import.meta.env,
 });
 
-if (buildResult.errors.length > 0) {
-  console.error("Workspace build errors:", buildResult.errors);
-}
-
-const workspace = buildResult.workspaces["specWorkspace"];
-const docs = workspace?.documents || [];
+const allDocs = Object.values(buildResult.workspaces).flatMap(
+  (ws) => ws.documents,
+);
 
 // Find the doc matching the pkg
-const document = docs.find((d) => {
+const document = allDocs.find((d) => {
   const docPath = d.sourcePos?.file || "";
   // pkg is the name of the directory
   return path.basename(path.dirname(docPath)) === pkg;
 });
+
+// Find the workspace this document belongs to (for linting)
+const workspace = Object.values(buildResult.workspaces).find((ws) =>
+  ws.documents.some((doc) => doc === document),
+);
 
 if (!document) {
   return Astro.redirect("/404");

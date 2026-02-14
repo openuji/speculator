@@ -1,5 +1,8 @@
 {
   "maturityLevel": "incubating",
+  "deps": [
+    "pkg-a"
+  ],
   "respec": {
     "specStatus": "CG-DRAFT",
     "shortName": "proto-b",

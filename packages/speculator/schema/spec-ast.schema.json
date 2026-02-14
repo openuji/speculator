@@ -1709,6 +1709,11 @@
                 "version": {
                     "type": "string"
                 },
+                "deps": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Dependencies from config.json"
+                },
                 "editors": {
                     "type": "array",
                     "items": {

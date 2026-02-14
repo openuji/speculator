@@ -161,7 +161,8 @@ describe('assembleDocument', () => {
             subtitle: 'A Great Spec',
             shortName: 'myspec',
             maturityLevel: 'stable' as const,
-            specIri: '1.0.0',
+            version: '1.0.0',
+            specIri: 'https://example.org/spec/1.0.0',
             custom: {
                 priority: 'high',
                 tags: ['core', 'v1']
@@ -182,10 +183,9 @@ describe('assembleDocument', () => {
         });
     });
 
-    it('sets version from specIri if no explicit version', () => {
+    it('does not set version from specIri if no explicit version', () => {
         const doc = assembleDocument([], { id: 'test-doc', specIri: 'test-doc' }, '/spec/format.md');
 
-        // specIri is always set, so version will be populated
-        expect(doc.metadata).toMatchObject({ version: 'test-doc' });
+        expect(doc.metadata?.version).toBeUndefined();
     });
 });

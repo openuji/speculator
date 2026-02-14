@@ -4,6 +4,7 @@
 
 export { noRedefinitionRule } from './workspace/no-redefinition.js';
 export { noReverseDependencyRule } from './workspace/no-reverse-dependency.js';
+export { validDependenciesRule } from './workspace/valid-dependencies.js';
 export { noDuplicateDefinitionRule } from './document/no-duplicate-definition.js';
 export { noAmbiguousReferenceRule } from './reference/no-ambiguous-reference.js';
 export { noIdReferenceRule } from './reference/no-id-reference.js';
@@ -12,6 +13,7 @@ export { validateSpecTermsRule } from './vocab/validate-spec-terms.js';
 
 import { noRedefinitionRule } from './workspace/no-redefinition.js';
 import { noReverseDependencyRule } from './workspace/no-reverse-dependency.js';
+import { validDependenciesRule } from './workspace/valid-dependencies.js';
 import { noDuplicateDefinitionRule } from './document/no-duplicate-definition.js';
 import { noAmbiguousReferenceRule } from './reference/no-ambiguous-reference.js';
 import { noIdReferenceRule } from './reference/no-id-reference.js';
@@ -29,7 +31,8 @@ export const builtInRules: LintRule[] = [
     noAmbiguousReferenceRule,
     noIdReferenceRule,
     noUnresolvedReferenceRule,
-    validateSpecTermsRule
+    validateSpecTermsRule,
+    validDependenciesRule
 ];
 
 /**

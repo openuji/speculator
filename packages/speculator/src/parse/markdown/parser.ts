@@ -8,7 +8,7 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
-import type { Root, RootContent } from 'mdast';
+import type {  RootContent } from 'mdast';
 import type { SourceUnit } from '#src/preprocess/types';
 import type { UnitParser } from '#src/parse/types';
 import type {
@@ -23,6 +23,7 @@ import {
     type ParseContext,
     type NodeWithPosition,
 } from '#src/parse/registry';
+import { escapeShorthandPipesInTables } from '../utils/markdown-utils.js';
 
 /**
  * Create source position from mdast node position
@@ -75,7 +76,9 @@ export class MarkdownUnitParser implements UnitParser {
      * Parse markdown unit to AST blocks
      */
     parse(unit: SourceUnit): (Section | Block)[] {
-        const tree = this.processor.parse(unit.content) as Root;
+        // Escape shorthand pipes in table lines before GFM splits them into cells
+        const content = escapeShorthandPipesInTables(unit.content);
+        const tree = this.processor.parse(content);
 
         // Create context for handlers
         const ctx = this.createContext(unit);
