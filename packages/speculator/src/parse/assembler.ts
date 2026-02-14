@@ -169,6 +169,10 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
         meta.version = config.version;
         hasContent = true;
     }
+    if (config.deps && config.deps.length > 0) {
+        meta.deps = config.deps;
+        hasContent = true;
+    }
     if (config.publishDate) {
         meta.publishDate = config.publishDate;
         hasContent = true;

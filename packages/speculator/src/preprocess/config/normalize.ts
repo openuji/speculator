@@ -78,6 +78,7 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
 
     const config: SpecConfig = {
         id: docConfig.id,
+        deps: docConfig.deps,
         specIri: thisVersion,
     };
 

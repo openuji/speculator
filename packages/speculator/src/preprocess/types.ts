@@ -189,6 +189,9 @@ export interface SpecConfig {
     /** Document ID (from config.json or auto-generated) */
     id: string;
 
+    /** Dependencies (empty array if none) */
+    deps: string[];
+
     /** Document title */
     title?: string;
 

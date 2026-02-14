@@ -11,6 +11,7 @@ description: Developer-grade linting for technical specifications.
 
 - **`workspace/no-redefinition`** (Error): Prevents lower-level specs from redefining terms already defined in higher-level specs.
 - **`workspace/no-reverse-dependency`** (Error): Ensures higher-level specs do not depend on lower-level specs, maintaining a clear hierarchy.
+- **`workspace/valid-dependencies`** (Error): Ensures that all dependencies listed in a document's configuration exist within the workspace.
 
 ### Document Rules
 
@@ -59,6 +60,7 @@ The `recommended` preset includes the following rules:
 | :---------------------------------- | :-------- |
 | `workspace/no-redefinition`         | `error`   |
 | `workspace/no-reverse-dependency`   | `error`   |
+| `workspace/valid-dependencies`      | `error`   |
 | `document/no-duplicate-definition`  | `error`   |
 | `reference/no-ambiguous-reference`  | `warning` |
 | `reference/no-id-reference`         | `warning` |

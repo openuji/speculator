@@ -53,7 +53,6 @@ export async function buildWorkspaces(
             const sortResult = await sortEntriesByDeps(resolvedEntries, fileProvider);
             if (sortResult.errors.length > 0) {
                 errors.push(...sortResult.errors.map(err => `[${name}] ${err}`));
-                continue;
             }
 
             // 3. Build workspace AST
