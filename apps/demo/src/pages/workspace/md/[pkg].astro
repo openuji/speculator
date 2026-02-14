@@ -1,7 +1,6 @@
 ---
 import {
-  SpeculatorPipeline,
-  corePlugins,
+  buildWorkspaces,
   NodeFileProvider,
   type Document,
 } from "@openuji/speculator";
@@ -16,33 +15,50 @@ import Toc from "@/components/Toc.astro";
 import "@/styles/global.css";
 import Layout from "@/layouts/Layout.astro";
 import path from "path";
+import fs from "fs";
 
 export async function getStaticPaths() {
-  const pkgs = ["pkg-a", "pkg-b"];
-  return pkgs.map((pkg) => ({ params: { pkg } }));
+  const workspaceConfigPath = path.resolve("speculator.workspace.json");
+  const workspaceConfigContent = await fs.promises.readFile(
+    workspaceConfigPath,
+    "utf-8",
+  );
+  const workspaceConfig = JSON.parse(workspaceConfigContent);
+
+  const buildResult = await buildWorkspaces({
+    entryMap: workspaceConfig,
+  });
+
+  const mdWorkspace = buildResult.workspaces["mdWorkspace"];
+  const docs = mdWorkspace?.documents || [];
+
+  const pkgs = new Set<string>();
+  docs.forEach((doc) => {
+    const docPath = doc.sourcePos?.file || "";
+    if (docPath) {
+      pkgs.add(path.basename(path.dirname(docPath)));
+    }
+  });
+
+  return Array.from(pkgs).map((pkg) => ({ params: { pkg } }));
 }
 
 const { pkg } = Astro.params;
 
 // Setup Speculator for Workspace
-const specRoot = path.resolve("spec/workspace/md");
-const fileProvider = new NodeFileProvider();
+const workspaceConfigPath = path.resolve("speculator.workspace.json");
+const workspaceConfigContent = await fs.promises.readFile(
+  workspaceConfigPath,
+  "utf-8",
+);
+const workspaceConfig = JSON.parse(workspaceConfigContent);
 
-const pipeline = new SpeculatorPipeline(corePlugins);
-
-const result = await pipeline.runWorkspace({
-  entries: [
-    {
-      entry: path.join(specRoot, "pkg-a/index.md"),
-    },
-    {
-      entry: path.join(specRoot, "pkg-b/index.md"),
-    },
-  ],
-  fileProvider,
+const buildResult = await buildWorkspaces({
+  entryMap: workspaceConfig,
+  env: import.meta.env,
 });
 
-const workspace = result.workspace;
+const workspace = buildResult.workspaces["mdWorkspace"];
 const docs = workspace?.documents || [];
 
 // Find the doc matching the pkg

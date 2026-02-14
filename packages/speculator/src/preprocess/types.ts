@@ -329,4 +329,4 @@ export interface WorkspaceEntry {
  * Used for dynamic workspace building in CLI and Astro.
  * Each key represents a named, isolated workspace.
  */
-export type WorkspaceEntryMap = Record<string, WorkspaceEntry[]>;
+export type WorkspaceEntryMap = Record<string, WorkspaceEntry[] | string>;

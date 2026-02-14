@@ -50,6 +50,15 @@ export interface FileProvider {
     readText(path: string): Promise<string>;
 
     /**
+     * List files in a directory
+     * 
+     * @param path - Canonical directory path
+     * @param options - Scanning options (e.g., recursive)
+     * @returns List of canonical file paths
+     */
+    readdir?(path: string, options?: { recursive?: boolean }): Promise<string[]>;
+
+    /**
      * Resolve a relative path from a source file's location
      * 
      * @param fromFile - Canonical path of the file containing the reference

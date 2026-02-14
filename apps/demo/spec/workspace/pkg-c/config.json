@@ -1,0 +1,13 @@
+{
+    "id": "pkg-c",
+    "baseUrl": "${SPEC_BASE_URL}/workspace",
+
+    "deps": [
+        "pkg-b"
+    ],
+    "respec": {
+        "title": "Package C Specification",
+        "shortName": "pkg-c",
+        "specStatus": "ED"
+    }
+}
