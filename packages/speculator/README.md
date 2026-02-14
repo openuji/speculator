@@ -8,10 +8,12 @@ Speculator is the core engine of the Speculator ecosystem. It transforms specifi
 
 Speculator operates on a strict three-stage pipeline to ensure determinism and semantic accuracy:
 
-### 1. Preprocess (Composition)
+### 1. Preprocess (Discovery & Composition)
 
-Handles configuration loading and spec composition. It resolves includes (both Markdown directives and HTML markers) into a deterministic `CompositeSource`.
+Handles workspace discovery, configuration loading, and spec composition.
 
+- **Workspace Discovery**: Automatically finds specifications using directory shorthands (e.g., `spec/docs/`) or glob patterns (e.g., `spec/**/*.md`).
+- **Composition**: Resolves includes (both Markdown directives and HTML markers) into a deterministic `CompositeSource`.
 - **Isomorphic IO**: Uses `FileProvider` adapters for Node.js, Web, or Memory environments.
 - **Cycle Detection**: Prevents infinite include loops with actionable diagnostics.
 
@@ -44,6 +46,8 @@ The **Speculator AST JSON Schema** is the single source of truth. All pipeline o
 
 ## 🚀 Usage
 
+### Single Document
+
 ```typescript
 import { speculate, corePlugins, NodeFileProvider } from "@openuji/speculator";
 
@@ -53,7 +57,25 @@ const result = await speculate({
   fileProvider: new NodeFileProvider(),
 });
 
-console.log(result.workspace.documents[0].ast);
+// The result contains the Workspace AST
+const document = result.workspace?.documents[0];
+console.log(document?.id);
+```
+
+### Multiple Workspaces (Discovery)
+
+```typescript
+import { buildWorkspaces, corePlugins } from "@openuji/speculator";
+
+const result = await buildWorkspaces({
+  entryMap: {
+    "api-group": "spec/api/", // Scans directory for index.{md,html}
+    "md-group": "spec/**/*.md", // Glob discovery
+  },
+  plugins: [...corePlugins],
+});
+
+console.log(Object.keys(result.workspaces)); // ["api-group", "md-group"]
 ```
 
 ## 🛠️ Development & Playbook
