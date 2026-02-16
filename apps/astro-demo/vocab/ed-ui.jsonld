@@ -1,0 +1,45 @@
+{
+  "module": "ui",
+  "namespace": "${SPEC_BASE_URL}/vocab/ui#",
+  "docBase": "${SPEC_BASE_URL}/vocab/ui",
+  "title": "Speculator Demo UI Vocabulary",
+  "description": "UI-oriented terms for rendering and searching workspace specifications.",
+  "status": "ED",
+  "updated": "2026-02-16",
+  "terms": [
+    {
+      "id": "SearchModal",
+      "kind": "Class",
+      "label": "Search Modal",
+      "comment": "Dialog surface used to query the generated search index."
+    },
+    {
+      "id": "SearchResult",
+      "kind": "Class",
+      "label": "Search Result",
+      "comment": "Ranked search hit with workspace and document context."
+    },
+    {
+      "id": "score",
+      "kind": "Property",
+      "label": "score",
+      "comment": "Weighted relevance score used to order search results.",
+      "domain": "${SPEC_BASE_URL}/vocab/ui#SearchResult",
+      "range": "http://www.w3.org/2001/XMLSchema#decimal"
+    }
+  ],
+  "context": {
+    "SearchModal": {
+      "@id": "${SPEC_BASE_URL}/vocab/ui#SearchModal",
+      "@type": "@id"
+    },
+    "SearchResult": {
+      "@id": "${SPEC_BASE_URL}/vocab/ui#SearchResult",
+      "@type": "@id"
+    },
+    "score": {
+      "@id": "${SPEC_BASE_URL}/vocab/ui#score",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    }
+  }
+}

@@ -4,7 +4,7 @@
     "name": "Speculator Studio Theme",
     "slug": "speculator-studio-theme",
     "summary": "A clean Astro starter for specification docs with reusable Speculator block and inline renderer UI components.",
-    "description": "Speculator Studio Theme is an Astro theme starter for teams writing technical standards and specification-style docs. It includes automatic dark/light mode, a reusable local component system, and Tailwind v4 token/utility styling around a renderer playground backed by Speculator.",
+    "description": "Speculator Studio Theme is an Astro theme starter for teams writing technical standards and specification-style docs. It includes automatic dark/light mode, a reusable local component system, a two-workspace Speculator showcase, and Tailwind v4 token/utility styling with global modal search.",
     "category": "Documentation",
     "technologies": [
       "TypeScript"
@@ -22,7 +22,7 @@
     "Automatic light and dark themes via prefers-color-scheme",
     "Mermaid rendering aligned with active system theme",
     "Spec-focused typography, callouts, code panels, and TOC",
-    "Playground route rendering local sample spec source"
+    "Workspace routes rendering local sample spec corpora with lint/search/vocab outputs"
   ],
   "submissionReferences": [
     "https://astro.build/themes",

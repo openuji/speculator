@@ -1,0 +1,26 @@
+specification {
+  element system
+}
+
+model {
+  system Client "Client" {
+    description "Requests interoperable resources."
+  }
+  system Gateway "Gateway" {
+    description "Validates requests and routes calls."
+  }
+  system InteropChannel "Interop Channel" {
+    description "Shared interface for cross-spec interoperability."
+  }
+
+  Client -> Gateway "Submit request"
+  Gateway -> InteropChannel "Resolve channel"
+  InteropChannel -> Gateway "Return channel details"
+}
+
+views {
+  view interop-flow {
+    title "Interop Flow"
+    include *
+  }
+}

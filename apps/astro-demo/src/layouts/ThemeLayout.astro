@@ -1,6 +1,9 @@
 ---
 import "@/styles/theme.css";
 import { nav, site } from "@/theme/site";
+import { themePresets, serializeThemePreset } from "@/theme/tokens";
+import HeaderSearch from "@/components/search/HeaderSearch.astro";
+import SearchModal from "@/components/search/SearchModal.astro";
 
 interface Props {
   title?: string;
@@ -9,6 +12,8 @@ interface Props {
 
 const { title = site.title, description = site.description } = Astro.props;
 const pathname = Astro.url.pathname;
+const themeCss = serializeThemePreset(themePresets[site.themePreset] || themePresets.studio);
+const themeStyleTag = `<style>${themeCss}</style>`;
 ---
 
 <html lang="en">
@@ -20,6 +25,7 @@ const pathname = Astro.url.pathname;
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+    <Fragment set:html={themeStyleTag} />
     <slot name="head" />
   </head>
   <body>
@@ -30,22 +36,27 @@ const pathname = Astro.url.pathname;
             Speculator Studio
             <small>Astro Theme Starter</small>
           </a>
-          <nav class="nav-links" aria-label="Main">
-            {nav.map((item) => (
-              <a
-                href={item.href}
-                aria-current={pathname === item.href ? "page" : undefined}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          <div class="site-header-actions">
+            <nav class="nav-links" aria-label="Main">
+              {nav.map((item) => (
+                <a
+                  href={item.href}
+                  aria-current={pathname === item.href ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+            <HeaderSearch />
+          </div>
         </div>
       </header>
 
       <main class="page">
         <slot />
       </main>
+
+      <SearchModal />
 
       <footer class="page theme-footer">
         <p>{site.title}. Built for Astro Theme Catalog submission workflow.</p>

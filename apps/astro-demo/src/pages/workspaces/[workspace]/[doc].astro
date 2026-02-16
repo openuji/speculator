@@ -1,0 +1,243 @@
+---
+import ThemeLayout from "@/layouts/ThemeLayout.astro";
+import Badge from "@/components/ui/Badge.astro";
+import Panel from "@/components/ui/Panel.astro";
+import TocNav from "@/components/renderers/TocNav.astro";
+import BlockRenderer from "@/components/renderers/BlockRenderer.astro";
+import { loadWorkspaces } from "@/lib/load-workspaces";
+
+export async function getStaticPaths() {
+  const data = await loadWorkspaces();
+
+  return data.documents.map((document) => ({
+    params: {
+      workspace: document.workspaceKey,
+      doc: document.id,
+    },
+  }));
+}
+
+const params = Astro.params as { workspace?: string; doc?: string };
+const workspaceKey = params.workspace || "";
+const docId = params.doc || "";
+
+const data = await loadWorkspaces();
+const workspace = data.workspaceMap.get(workspaceKey);
+const documentView = data.getDocument(workspaceKey, docId);
+
+if (!workspace || !documentView) {
+  return Astro.redirect("/workspaces");
+}
+
+const document = documentView.document;
+const metadata = (document.metadata || {}) as Record<string, unknown>;
+const toc = document.computed?.toc || [];
+const headingNumbers = document.computed?.headingNumbers || {};
+const statementsJsonLd = document.computed?.statementsJsonLd;
+const title = String(metadata.title || documentView.id);
+const abstract = String(metadata.abstract || "");
+const workspaceAnchorHref = `/workspaces#workspace-${workspaceKey}`;
+const documentIndex = workspace.documents.findIndex((entry) => entry.id === documentView.id);
+const previousDocument =
+  documentIndex > 0 ? workspace.documents[documentIndex - 1] : undefined;
+const nextDocument =
+  documentIndex >= 0 && documentIndex < workspace.documents.length - 1
+    ? workspace.documents[documentIndex + 1]
+    : undefined;
+
+const vocabLinkCatalog: Record<
+  string,
+  Array<{ href: string; label: string }>
+> = {
+  core: [
+    { href: "/vocab/ns/index.html", label: "Core vocabulary browser" },
+    { href: "/vocab/ns/ns.ttl", label: "Core Turtle" },
+    { href: "/vocab/contexts/core.jsonld", label: "Core JSON-LD context" },
+  ],
+  ui: [
+    { href: "/vocab/ui/index.html", label: "UI vocabulary browser" },
+    { href: "/vocab/ui/ui.ttl", label: "UI Turtle" },
+    { href: "/vocab/contexts/ui.jsonld", label: "UI JSON-LD context" },
+  ],
+};
+
+const vocabLinks = Array.from(
+  new Map(
+    documentView.vocabModules
+      .flatMap((moduleName) =>
+        (vocabLinkCatalog[moduleName] || []).map((link) => ({
+          ...link,
+          moduleName,
+        }))
+      )
+      .map((link) => [link.href, link])
+  ).values()
+);
+---
+
+<ThemeLayout title={`${title} | Workspace Showcase`}>
+  {
+    statementsJsonLd && (
+      <script
+        is:inline
+        type="application/ld+json"
+        slot="head"
+        set:html={JSON.stringify(statementsJsonLd, null, 2)}
+      />
+    )
+  }
+
+  <section class="section !mt-0">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/workspaces">Workspace Showcase</a>
+      <span class="crumb-sep">/</span>
+      <a href={workspaceAnchorHref}>{workspaceKey}</a>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">{title}</span>
+    </nav>
+    <Badge tone={workspaceKey === "ed-clean" ? "accent" : "warn"}>{workspaceKey}</Badge>
+    <h2 class="mt-2.5">{title}</h2>
+    {abstract && <p>{abstract}</p>}
+  </section>
+
+  <div class="spec-layout fade-up">
+    <TocNav entries={toc} title="On this document" />
+
+    <article class="spec-article">
+      <header class="spec-header">
+        <h1>{title}</h1>
+        <p>{documentView.sourceFile}</p>
+      </header>
+
+      {documentView.diagnostics.length > 0 && (
+        <section class="section diagnostics-block">
+          <Panel
+            title={`Document Diagnostics (${documentView.diagnostics.length})`}
+            description="Intentional lint scenarios are expected in ed-to-lint."
+          >
+            <ul class="diagnostics-list">
+              {documentView.diagnostics.map((diagnostic) => (
+                <li class={`diag-${diagnostic.severity}`}>
+                  <code>{diagnostic.code}</code>
+                  <span>{diagnostic.message}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </section>
+      )}
+
+      {workspace.buildErrors.length > 0 && (
+        <section class="section diagnostics-block">
+          <Panel title="Workspace Build Notes">
+            <ul class="diagnostics-list">
+              {workspace.buildErrors.map((error) => (
+                <li class="diag-error">
+                  <code>build</code>
+                  <span>{error}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </section>
+      )}
+
+      {vocabLinks.length > 0 && (
+        <section class="section diagnostics-block">
+          <Panel
+            title="Vocabulary Artifacts"
+            description={`Referenced modules: ${documentView.vocabModules.join(", ")}`}
+          >
+            <ul class="artifact-links">
+              {vocabLinks.map((link) => (
+                <li>
+                  <a href={link.href}>{link.label}</a>
+                  <span>({link.moduleName})</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </section>
+      )}
+
+      <div class="spec-prose">
+        {document.children.map((child) => (
+          <BlockRenderer
+            node={child}
+            headingNumbers={headingNumbers}
+            basePath={`/workspaces/${workspaceKey}`}
+          />
+        ))}
+      </div>
+
+      {(previousDocument || nextDocument) && (
+        <nav class="spec-pager" aria-label="Document navigation">
+          {previousDocument ? (
+            <a class="spec-pager-link spec-pager-prev" href={previousDocument.route}>
+              <span>Previous spec</span>
+              <strong>{previousDocument.title}</strong>
+            </a>
+          ) : (
+            <div />
+          )}
+          {nextDocument ? (
+            <a class="spec-pager-link spec-pager-next" href={nextDocument.route}>
+              <span>Next spec</span>
+              <strong>{nextDocument.title}</strong>
+            </a>
+          ) : (
+            <div />
+          )}
+        </nav>
+      )}
+    </article>
+  </div>
+</ThemeLayout>
+
+<style>
+  .diagnostics-block {
+    margin-top: 1rem;
+  }
+
+  .diagnostics-list {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .diagnostics-list li {
+    margin-bottom: 0.4rem;
+    display: flex;
+    gap: 0.4rem;
+    align-items: baseline;
+    font-size: 0.88rem;
+  }
+
+  .diagnostics-list code {
+    font-size: 0.75rem;
+  }
+
+  .artifact-links {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .artifact-links li {
+    margin-bottom: 0.35rem;
+    font-size: 0.88rem;
+    color: var(--ui-ink-2);
+  }
+
+  .artifact-links span {
+    margin-left: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--ui-ink-3);
+  }
+
+  .diag-error {
+    color: var(--ui-danger);
+  }
+
+  .diag-warning {
+    color: var(--ui-accent);
+  }
+</style>

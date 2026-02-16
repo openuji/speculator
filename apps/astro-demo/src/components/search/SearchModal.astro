@@ -1,0 +1,39 @@
+<div class="search-modal" data-search-modal hidden>
+  <div class="search-modal-backdrop" data-search-close></div>
+  <section
+    class="search-modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="search-modal-title"
+    tabindex="-1"
+    data-search-modal-panel
+  >
+    <header class="search-modal-header">
+      <h2 id="search-modal-title">Search Workspace Documents</h2>
+      <button type="button" class="search-modal-close" data-search-close>Close</button>
+    </header>
+
+    <label for="search-modal-input" class="sr-only">Search query</label>
+    <input
+      id="search-modal-input"
+      type="search"
+      class="search-modal-input"
+      placeholder="Type to search across workspaces"
+      autocomplete="off"
+      spellcheck="false"
+      data-search-modal-input
+    />
+
+    <p class="search-modal-status" data-search-status>
+      Focus search input in the header or press Cmd/Ctrl+K to open this modal.
+    </p>
+
+    <ol class="search-modal-results" role="listbox" aria-label="Search results" data-search-results></ol>
+  </section>
+</div>
+
+<script>
+  import { initGlobalSearch } from "../../lib/search/client";
+
+  initGlobalSearch();
+</script>

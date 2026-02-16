@@ -18,7 +18,7 @@
 ## UX and quality
 
 1. Validate light and dark modes on desktop and mobile.
-2. Validate nav, TOC links, and playground rendering.
+2. Validate nav, TOC links, workspace routes, and header search modal behavior.
 3. Validate Mermaid diagrams render in both themes.
 4. Run final build and preview.
 

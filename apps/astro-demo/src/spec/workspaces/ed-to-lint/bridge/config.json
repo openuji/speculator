@@ -1,0 +1,15 @@
+{
+  "id": "ed-lint-bridge",
+  "deps": ["ed-lint-base", "missing-dependency"],
+  "baseUrl": "${SPEC_BASE_URL}/workspaces/ed-to-lint",
+  "custom": {
+    "vocabModules": ["core", "ui"]
+  },
+  "respec": {
+    "title": "ED To Lint Bridge",
+    "shortName": "ed-lint-bridge",
+    "specStatus": "WD",
+    "modificationDate": "2026-02-13",
+    "abstract": "Intermediate document with dependency and ambiguity issues."
+  }
+}

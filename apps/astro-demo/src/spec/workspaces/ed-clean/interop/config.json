@@ -1,0 +1,18 @@
+{
+  "id": "ed-clean-interop",
+  "deps": ["ed-clean-foundation"],
+  "baseUrl": "${SPEC_BASE_URL}/workspaces/ed-clean",
+  "custom": {
+    "vocabModules": ["core", "ui"]
+  },
+  "respec": {
+    "title": "ED Clean Interop (Fallback)",
+    "shortName": "ed-clean-interop",
+    "specStatus": "WD",
+    "modificationDate": "2026-02-11",
+    "noTOC": false,
+    "maxTocLevel": 4,
+    "abstract": "Interoperability layer for clean workspace examples."
+  },
+  "title": "ED Clean Interop"
+}

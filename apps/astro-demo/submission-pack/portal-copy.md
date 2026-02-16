@@ -10,7 +10,7 @@
 
 ## Long description
 
-`Speculator Studio Theme is an Astro theme starter for teams writing technical standards and specification-style docs. It ships with a polished responsive shell, automatic dark/light mode, and a renderer playground that runs Speculator AST output through reusable local UI primitives (badge, panel, callout, code block). Styling is built with Tailwind v4 using tokenized theme variables and utility/component layers, so teams can evolve branding without rewriting templates.`
+`Speculator Studio Theme is an Astro theme starter for teams writing technical standards and specification-style docs. It ships with a polished responsive shell, automatic dark/light mode, and a two-workspace showcase (`ed-clean` and `ed-to-lint`) that demonstrates Speculator rendering, lint diagnostics, search indexing, and vocabulary artifacts. Styling is built with Tailwind v4 using tokenized theme variables and utility/component layers, so teams can evolve branding without rewriting templates.`
 
 ## Feature bullets
 
@@ -18,7 +18,9 @@
 - `Tailwind v4 token + utility architecture for predictable customization`
 - `Automatic system dark/light theme including Mermaid diagram theme`
 - `Table of contents navigation and spec-focused prose styling`
-- `Local sample spec source with computed TOC and JSON-LD preview`
+- `Two workspace corpora with mixed HTML/Markdown inputs, includes, and dependencies`
+- `Global header search modal (focus/type and Cmd/Ctrl+K) with weighted ranking`
+- `Generated vocab outputs and search index linked from showcase pages`
 - `MIT licensed starter suitable for template publishing`
 
 ## Links to fill before submission
@@ -30,7 +32,7 @@
 
 ## Suggested social copy
 
-`Speculator Studio Theme is now available in the Astro Theme Catalog: a docs-focused Astro starter with auto dark mode, renderer blocks, and a spec playground powered by @openuji/speculator.`
+`Speculator Studio Theme is now available in the Astro Theme Catalog: a docs-focused Astro starter with auto dark mode, a workspace showcase, and global spec search powered by @openuji/speculator.`
 
 ## Important notes for this repo
 

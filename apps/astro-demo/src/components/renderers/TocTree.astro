@@ -1,6 +1,5 @@
 ---
 import type { TocEntry } from "@openuji/speculator";
-import TocTree from "./TocTree.astro";
 
 interface Props {
   entries: TocEntry[];
@@ -17,7 +16,7 @@ const { entries } = Astro.props;
         <span>{entry.text}</span>
       </a>
       {entry.children && entry.children.length > 0 && (
-        <TocTree entries={entry.children} />
+        <Astro.self entries={entry.children} />
       )}
     </li>
   ))}

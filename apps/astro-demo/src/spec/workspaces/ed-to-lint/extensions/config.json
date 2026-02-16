@@ -1,0 +1,16 @@
+{
+  "id": "ed-lint-extensions",
+  "deps": ["ed-lint-bridge"],
+  "baseUrl": "${SPEC_BASE_URL}/workspaces/ed-to-lint",
+  "custom": {
+    "vocabModules": ["core"]
+  },
+  "maturityLevel": "incubating",
+  "respec": {
+    "title": "ED To Lint Extensions",
+    "shortName": "ed-lint-extensions",
+    "specStatus": "CG-DRAFT",
+    "modificationDate": "2026-02-14",
+    "abstract": "Lower-level extension document used for reverse-dependency checks."
+  }
+}

@@ -1,19 +1,17 @@
 {
-  "id": "studio-spec",
-  "baseUrl": "https://example.com/specs",
+  "id": "ed-clean-foundation",
+  "deps": [],
+  "baseUrl": "${SPEC_BASE_URL}/workspaces/ed-clean",
+  "custom": {
+    "vocabModules": ["core"]
+  },
+  "title": "ED Clean Foundation",
   "respec": {
-    "title": "Studio Protocol Draft",
-    "shortName": "studio-protocol",
+    "title": "ED Clean Foundation (Fallback)",
+    "shortName": "ed-clean-foundation",
     "specStatus": "ED",
-    "lastUpdated": "2026-02-09",
-    "noConformance": true,
-    "editors": [
-      {
-        "name": "OpenUJI Team",
-        "url": "https://github.com/openuji"
-      }
-    ],
-    "abstract": "A compact draft used to demonstrate the Speculator renderer blocks in this Astro theme starter.",
+    "modificationDate": "2026-02-10",
+    "abstract": "Foundation rules used by clean workspace examples.",
     "localBiblio": {
       "RFC2119": {
         "title": "Key words for use in RFCs to Indicate Requirement Levels",
@@ -30,12 +28,6 @@
         "date": "May 2017",
         "publisher": "IETF",
         "status": "Best Current Practice"
-      },
-      "HTML": {
-        "title": "HTML Standard",
-        "url": "https://html.spec.whatwg.org/multipage/",
-        "publisher": "WHATWG",
-        "status": "Living Standard"
       }
     }
   }

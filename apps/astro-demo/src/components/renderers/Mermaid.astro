@@ -12,15 +12,50 @@ const { code, id } = Astro.props;
 </div>
 
 <script>
-  import mermaid from "mermaid";
+  const runtime = window as Window & {
+    __astroDemoMermaidBoot?: boolean;
+    __astroDemoMermaidInit?: boolean;
+  };
 
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const renderMermaid = async () => {
+    const mermaidModule = await import("mermaid/dist/mermaid.esm.min.mjs");
+    const mermaid = mermaidModule.default;
 
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: prefersDark ? "dark" : "default",
-    securityLevel: "strict",
-  });
+    if (!runtime.__astroDemoMermaidInit) {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: prefersDark ? "dark" : "default",
+        securityLevel: "strict",
+      });
+      runtime.__astroDemoMermaidInit = true;
+    }
 
-  mermaid.run({ querySelector: ".mermaid" });
+    const nodes = Array.from(
+      document.querySelectorAll<HTMLElement>("pre.mermaid:not([data-processed])")
+    );
+    if (nodes.length === 0) {
+      return;
+    }
+
+    await mermaid.run({ nodes });
+  };
+
+  if (!runtime.__astroDemoMermaidBoot) {
+    runtime.__astroDemoMermaidBoot = true;
+
+    renderMermaid().catch((error) => {
+      console.error("[mermaid] render failed:", error);
+    });
+
+    window.addEventListener("astro:after-swap", () => {
+      renderMermaid().catch((error) => {
+        console.error("[mermaid] render failed:", error);
+      });
+    });
+  } else {
+    renderMermaid().catch((error) => {
+      console.error("[mermaid] render failed:", error);
+    });
+  }
 </script>

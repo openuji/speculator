@@ -1,0 +1,45 @@
+{
+  "module": "core",
+  "namespace": "${SPEC_BASE_URL}/vocab/ns#",
+  "docBase": "${SPEC_BASE_URL}/vocab/ns",
+  "title": "Speculator Demo Core Vocabulary",
+  "description": "Core terms used across the astro-demo workspace showcase.",
+  "status": "ED",
+  "updated": "2026-02-16",
+  "terms": [
+    {
+      "id": "SessionToken",
+      "kind": "Class",
+      "label": "Session Token",
+      "comment": "Credential token used to bind client sessions to authenticated requests."
+    },
+    {
+      "id": "InteropChannel",
+      "kind": "Class",
+      "label": "Interop Channel",
+      "comment": "Identifier used by interoperable components during request routing."
+    },
+    {
+      "id": "usesToken",
+      "kind": "Property",
+      "label": "uses token",
+      "comment": "Links a client profile to a required session token.",
+      "domain": "${SPEC_BASE_URL}/vocab/ns#InteropChannel",
+      "range": "${SPEC_BASE_URL}/vocab/ns#SessionToken"
+    }
+  ],
+  "context": {
+    "SessionToken": {
+      "@id": "${SPEC_BASE_URL}/vocab/ns#SessionToken",
+      "@type": "@id"
+    },
+    "InteropChannel": {
+      "@id": "${SPEC_BASE_URL}/vocab/ns#InteropChannel",
+      "@type": "@id"
+    },
+    "usesToken": {
+      "@id": "${SPEC_BASE_URL}/vocab/ns#usesToken",
+      "@type": "@id"
+    }
+  }
+}

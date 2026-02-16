@@ -6,51 +6,51 @@ import { site } from "@/theme/site";
 
 const features = [
   {
-    title: "Theme-ready shell",
-    copy: "Polished header, responsive navigation, typography tokens, and reusable layout primitives.",
+    title: "Workspace-first rendering",
+    copy: "The demo builds two isolated workspaces, each with multiple dependent specs and mixed Markdown/HTML inputs.",
   },
   {
-    title: "Renderer block registry",
-    copy: "BlockRenderer and InlineRenderer route semantic AST nodes through local UI blocks like callouts and code panels.",
+    title: "Intentional lint walkthrough",
+    copy: "`ed-to-lint` triggers workspace/document/reference diagnostics while `ed-clean` stays stable for contrast.",
   },
   {
-    title: "Publish checklist",
-    copy: "README and project metadata are organized around Astro Theme Catalog submission expectations.",
+    title: "Build-time artifacts",
+    copy: "Search index JSON plus vocabulary outputs are generated before dev/build and linked from the hub.",
   },
 ];
 ---
 
 <ThemeLayout>
   <section class="hero">
-    <Badge tone="accent">Publish-ready starter</Badge>
+    <Badge tone="accent">Token-driven Theme Starter</Badge>
     <h1>{site.title}</h1>
     <p>
-      A clean Astro theme scaffold for technical documentation and specs. It includes
-      a live Speculator rendering route so your theme doubles as a practical test bed.
+      A Tailwind v4 Astro showcase for the Speculator ecosystem. Theme design is controlled by token presets,
+      and global header search opens a modal with weighted results across workspace documents.
     </p>
 
     <div class="button-row">
-      <a href="/playground" class="btn btn-primary">Open renderer playground</a>
-      <a href="https://astro.build/themes" class="btn btn-secondary" target="_blank" rel="noreferrer">View Astro themes</a>
+      <a href="/workspaces" class="btn btn-primary">Open Workspace Showcase</a>
+      <a href="/search-index.json" class="btn btn-secondary">Inspect Search Index</a>
     </div>
 
     <div class="hero-grid">
       <Panel
-        title="Built for the Astro catalog"
-        description="Structured as a starter app, not a one-off demo. Replace content later without changing the theme skeleton."
+        title="Theme Overrides"
+        description="Switch `site.themePreset` to reskin the app without touching CSS selectors or component templates."
       />
       <Panel
-        title="Shadcn-style blocks"
-        description="The renderer uses local, composable primitives (badge, panel, callout, code block) so component styling is centralized."
+        title="Global Search Modal"
+        description="Focus the header search or press Cmd/Ctrl+K to query all workspace documents with contextual ranking."
       />
     </div>
   </section>
 
   <section class="section">
-    <h2>What is included</h2>
+    <h2>What This Demo Exercises</h2>
     <div class="card-grid">
-      {features.map((item) => (
-        <Panel title={item.title} description={item.copy} />
+      {features.map((feature) => (
+        <Panel title={feature.title} description={feature.copy} />
       ))}
     </div>
   </section>
