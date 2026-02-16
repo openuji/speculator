@@ -189,6 +189,9 @@ export interface SpecConfig {
     /** Document ID (from config.json or auto-generated) */
     id: string;
 
+    /** Dependencies (empty array if none) */
+    deps: string[];
+
     /** Document title */
     title?: string;
 
@@ -286,6 +289,8 @@ export interface SpecConfig {
         contexts?: Record<string, string>;
     };
 
+    /** External reference configuration */
+    xref?: string | string[] | Record<string, string>;
 }
 
 // ============================================================================
@@ -324,4 +329,4 @@ export interface WorkspaceEntry {
  * Used for dynamic workspace building in CLI and Astro.
  * Each key represents a named, isolated workspace.
  */
-export type WorkspaceEntryMap = Record<string, WorkspaceEntry[]>;
+export type WorkspaceEntryMap = Record<string, WorkspaceEntry[] | string>;

@@ -744,6 +744,40 @@
                 }
             ]
         },
+        "BlockIdl": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "idl"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "Raw IDL content"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            },
+                            "description": "Tokenized IDL content (Text, Definitions, References)"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "BlockExample": {
             "allOf": [
                 {
@@ -1000,6 +1034,47 @@
                 }
             ]
         },
+        "BlockLikeC4View": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "likeC4View"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "viewId": {
+                            "type": "string",
+                            "description": "LikeC4 view ID"
+                        },
+                        "dynamicVariant": {
+                            "type": "string",
+                            "enum": [
+                                "diagram",
+                                "sequence"
+                            ],
+                            "description": "Optional visualization variant"
+                        },
+                        "children": {
+                            "type": "array",
+                            "maxItems": 0,
+                            "items": {},
+                            "description": "Always empty - LikeC4 views are leaf nodes"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "viewId",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "BlockHtml": {
             "allOf": [
                 {
@@ -1152,6 +1227,12 @@
                 },
                 {
                     "$ref": "#/definitions/BlockHtml"
+                },
+                {
+                    "$ref": "#/definitions/BlockLikeC4View"
+                },
+                {
+                    "$ref": "#/definitions/BlockIdl"
                 },
                 {
                     "$ref": "#/definitions/BlockNote"
@@ -1627,6 +1708,11 @@
                 },
                 "version": {
                     "type": "string"
+                },
+                "deps": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Dependencies from config.json"
                 },
                 "editors": {
                     "type": "array",

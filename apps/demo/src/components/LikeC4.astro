@@ -1,0 +1,36 @@
+---
+import { LikeC4View } from "likec4:react";
+
+interface Props {
+  viewId: string;
+  dynamicVariant?: string;
+  id?: string;
+}
+
+const { viewId, dynamicVariant, id } = Astro.props;
+
+const runtimeProps: Record<string, unknown> = {
+  viewId: viewId,
+};
+
+if (dynamicVariant) {
+  runtimeProps.dynamicVariant = dynamicVariant;
+  runtimeProps.dynamicViewVariant = dynamicVariant;
+  runtimeProps.enableDynamicViewWalkthrough = dynamicVariant === "sequence";
+}
+---
+
+<div class="likec4-container" id={id} data-dynamic-variant={dynamicVariant}>
+  <LikeC4View client:only="react" {...runtimeProps} />
+</div>
+
+<style>
+  .likec4-container {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin: 1.5rem 0;
+    min-height: 380px;
+  }
+</style>

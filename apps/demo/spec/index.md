@@ -46,6 +46,7 @@ You can also use images: ![Example Image](https://via.placeholder.com/150)
 | Tables      | ✅     | GFM tables                 |
 | Code        | ✅     | Fenced blocks              |
 | Blockquotes | ✅     | Nested support             |
+| Shorthands  | ✅     | [§#text-formatting\|Links] |
 
 ---
 
@@ -83,6 +84,34 @@ graph TD
     C --> D[Renderer]
     D --> E[HTML]
 ```
+
+other mermaid diagram:
+
+```mermaid
+graph LR
+    %% The Core Flow
+    S1[State: Feed] -->|Explicit| S2[State: Post]
+
+    %% The TransitionSet (Global Nav)
+    subgraph Global Nav
+      H[Target: Home]
+      P[Target: Profile]
+    end
+
+    %% Injection logic: These apply to ALL states
+    S1 -.->|Injected| H
+    S1 -.->|Injected| P
+    S2 -.->|Injected| H
+    S2 -.->|Injected| P
+```
+
+LikeC4 diagrams are rendered automatically:
+
+<likec4-view view-id="oidc" dynamic-variant="sequence" />
+
+another LikeC4 view:
+
+<likec4-view view-id="includesOnly" />
 
 ---
 

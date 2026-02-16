@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-09T18:15:43.242Z
+ * Generated at: 2026-02-14T13:23:36.996Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -260,6 +260,8 @@ export type Block =
   | BlockTable
   | BlockThematicBreak
   | BlockHtml
+  | BlockLikeC4View
+  | BlockIdl
   | BlockNote
   | BlockSpecStatement;
 export type BlockParagraph = BaseNode & {
@@ -362,6 +364,36 @@ export type BlockHtml = BaseNode & {
    */
   children: [];
 };
+export type BlockLikeC4View = BaseNode & {
+  type: 'likeC4View';
+  id?: string;
+  /**
+   * LikeC4 view ID
+   */
+  viewId: string;
+  /**
+   * Optional visualization variant
+   */
+  dynamicVariant?: 'diagram' | 'sequence';
+  /**
+   * Always empty - LikeC4 views are leaf nodes
+   *
+   * @maxItems 0
+   */
+  children: [];
+};
+export type BlockIdl = BaseNode & {
+  type: 'idl';
+  id?: string;
+  /**
+   * Raw IDL content
+   */
+  value: string;
+  /**
+   * Tokenized IDL content (Text, Definitions, References)
+   */
+  children: Inline[];
+};
 export type BlockNote = BaseNode & {
   type: 'note';
   id?: string;
@@ -439,6 +471,10 @@ export interface DocumentMetadata {
   shortName?: string;
   status?: string;
   version?: string;
+  /**
+   * Dependencies from config.json
+   */
+  deps?: string[];
   editors?: {
     name?: string;
     url?: string;
@@ -764,7 +800,8 @@ export function isBlock(node: unknown): node is Block {
   const type = (node as any).type;
   return [
     'paragraph', 'heading', 'codeBlock', 'example',
-    'blockquote', 'list', 'table', 'thematicBreak', 'html'
+    'blockquote', 'list', 'table', 'thematicBreak', 'html', 'likeC4View',
+    'note', 'specStatement'
   ].includes(type);
 }
 

@@ -8,6 +8,7 @@
  * 2. Walk AST to find all reference nodes
  * 3. Match references to definitions using term/candidateTerms + forContext
  * 4. Assign IDs to resolved references
+ * 5. For unresolved workspace refs with xref config, resolve via respec.org/xref API
  * 
  * Note: Requires dfn-index plugin to run first
  */
@@ -23,6 +24,7 @@ import type {
     InlineExternalIdlReference,
     InlineExternalElementReference
 } from '#src/types/ast.generated';
+import type { SpecConfig } from '#src/preprocess/types';
 
 type AnyReference = 
     | InlineWorkspaceDfnReference
@@ -31,6 +33,15 @@ type AnyReference =
     | InlineExternalDfnReference
     | InlineExternalIdlReference
     | InlineExternalElementReference;
+
+type ExternalReference = InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference;
+type WorkspaceReference = InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference;
+
+const WORKSPACE_TO_EXTERNAL_MAP = {
+    workspaceDfnReference: 'externalDfnReference',
+    workspaceIdlReference: 'externalIdlReference',
+    workspaceElementReference: 'externalElementReference'
+} as const;
 
 import { normalizeTerm } from '#src/parse/normalize';
 import { walkDocument } from '../walk-ast.js';
@@ -74,7 +85,7 @@ function resolveReference(
 ): IndexDefinitionEntry | null {
     const candidateTerms = ref.candidateTerms || [ref.targetTerm];
     const forContexts = ref.forContexts || [null];
-    const preferredType = (ref as { preferredType?: string }).preferredType; // preferredType is not on the base yet, using cast for now or could add to interface
+    const preferredType = (ref as { preferredType?: string }).preferredType;
 
     // Try each candidate term
     for (const term of candidateTerms) {
@@ -114,10 +125,212 @@ function resolveReference(
     return null;
 }
 
+// ============================================================================
+// External xref resolution via respec.org/xref API
+// ============================================================================
+
+interface XrefResult {
+    shortname: string;
+    spec: string;
+    type: string;
+    for?: string[];
+    normative: boolean;
+    uri: string;
+}
+
+/**
+ * Parse a targetTerm like "Document/getElementsByTagName(qualifiedName)" 
+ * into { term, forContext } for the xref API.
+ * 
+ * The xref API expects member references as separate term + for fields:
+ *   term: "getElementsByTagName(qualifiedName)", for: "Document"
+ */
+function parseTermForXref(targetTerm: string): { term: string; forContext?: string } {
+    const slashIdx = targetTerm.indexOf('/');
+    if (slashIdx > 0) {
+        return {
+            forContext: targetTerm.substring(0, slashIdx),
+            term: targetTerm.substring(slashIdx + 1),
+        };
+    }
+    return { term: targetTerm };
+}
+
+/**
+ * Batch-resolve external references via respec.org/xref and specref APIs.
+ * 
+ * 1. POST to respec.org/xref with all terms → get relative URIs + spec shortnames
+ * 2. GET specref.org/bibrefs for unique shortnames → get base URLs
+ * 3. Combine base URL + relative URI for absolute links
+ */
+async function resolveExternalXrefs(
+    pendingRefs: Array<{ ref: ExternalReference; specs: string[]; origType: string }>,
+): Promise<void> {
+    if (pendingRefs.length === 0) return;
+
+    try {
+        // Step 1: Batch lookup terms via respec.org/xref POST API
+        // Split "Interface/member" or "element/attribute" terms into term + for context
+        const keys = pendingRefs.map(({ ref, specs, origType }) => {
+            const { term, forContext } = parseTermForXref(ref.targetTerm);
+            const isElementRef = origType === 'workspaceElementReference' || origType === 'externalElementReference';
+            const key: Record<string, unknown> = { term };
+            
+            // For element refs, don't filter by specs (elements live in 'html', not necessarily in the user's xref spec)
+            if (!isElementRef) {
+                key.specs = specs;
+            }
+
+            if (forContext) {
+                key.for = forContext;
+            }
+
+            // Add type hints based on reference type for more accurate results
+            if (isElementRef) {
+                key.types = forContext ? ['element-attr'] : ['element'];
+            }
+
+            return key;
+        });
+
+        const xrefResponse = await fetch('https://respec.org/xref/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keys }),
+        });
+
+        if (!xrefResponse.ok) {
+            console.warn(`[reference-resolve] xref API returned ${xrefResponse.status}`);
+            return;
+        }
+
+        const xrefData = await xrefResponse.json() as {
+            result: Array<[string, XrefResult[]]>;
+        };
+
+        // Build a map from index → best result
+        // When multiple results exist, prefer the 'html' spec for element references
+        const resultsByIndex = new Map<number, XrefResult>();
+        if (xrefData.result) {
+            for (let i = 0; i < xrefData.result.length; i++) {
+                const [, results] = xrefData.result[i];
+                if (results && results.length > 0) {
+                    // Prefer html spec result if available (common for elements defined in both html and svg)
+                    const htmlResult = results.find(r => r.spec === 'html');
+                    resultsByIndex.set(i, htmlResult || results[0]);
+                }
+            }
+        }
+
+        // Step 2: Collect unique spec shortnames that need base URL lookup
+        const specShortnames = new Set<string>();
+        for (const result of resultsByIndex.values()) {
+            if (result.spec) {
+                specShortnames.add(result.spec);
+            }
+        }
+
+        // Step 3: Fetch base URLs from specref
+        const specBaseUrls = new Map<string, string>();
+        if (specShortnames.size > 0) {
+            const refs = Array.from(specShortnames).join(',');
+            const specrefResponse = await fetch(
+                `https://api.specref.org/bibrefs?refs=${encodeURIComponent(refs)}`
+            );
+
+            if (specrefResponse.ok) {
+                const specrefData = await specrefResponse.json() as Record<string, { href?: string; aliasOf?: string }>;
+
+                // Resolve aliases and collect hrefs
+                for (const shortname of specShortnames) {
+                    const entry = specrefData[shortname];
+                    if (entry) {
+                        if (entry.href) {
+                            specBaseUrls.set(shortname, entry.href);
+                        } else if (entry.aliasOf && specrefData[entry.aliasOf]?.href) {
+                            specBaseUrls.set(shortname, specrefData[entry.aliasOf].href!);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Step 4: Assign absolute URLs to pending refs
+        for (let i = 0; i < pendingRefs.length; i++) {
+            const { ref } = pendingRefs[i];
+            const result = resultsByIndex.get(i);
+
+            if (result) {
+                const baseUrl = specBaseUrls.get(result.spec);
+                ref.xrefSpec = result.spec;
+
+                if (baseUrl && result.uri) {
+                    // Construct absolute URL: base + relative URI
+                    // URI from xref is typically a fragment like "#document"
+                    ref.url = baseUrl.replace(/\/$/, '') + '/' + result.uri.replace(/^\//, '');
+                } else {
+                    // Fallback: link to the xref search page
+                    ref.url = `https://respec.org/xref/?term=${encodeURIComponent(ref.targetTerm)}`;
+                }
+            }
+        }
+    } catch (error) {
+        console.warn('[reference-resolve] Failed to resolve external xrefs:', error);
+        // Non-fatal: references will keep their fallback URLs
+    }
+}
 
 
 const WORKSPACE_REF_TYPES = new Set(['workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference']);
 const EXTERNAL_REF_TYPES = new Set(['externalDfnReference', 'externalIdlReference', 'externalElementReference']);
+
+/**
+ * Promote a workspace reference to its external equivalent
+ */
+function promoteWorkspaceToExternal(ref: WorkspaceReference): ExternalReference {
+    const workspaceType = ref.type as keyof typeof WORKSPACE_TO_EXTERNAL_MAP;
+    const externalType = WORKSPACE_TO_EXTERNAL_MAP[workspaceType];
+    
+    const extRef = ref as unknown as ExternalReference;
+    extRef.type = externalType;
+    
+    // Cleanup workspace-specific state
+    if ('targetDocumentId' in extRef) {
+        delete (extRef as unknown as WorkspaceReference).targetDocumentId;
+    }
+    
+    return extRef;
+}
+
+/**
+ * Attempt to resolve a reference externally via manual mapping or batch API queue
+ */
+function handleExternalResolution(
+    ref: ExternalReference, 
+    xrefConfig: SpecConfig['xref'], 
+    pendingQueue: Array<{ ref: ExternalReference; specs: string[]; origType: string }>
+) {
+    // 1. Manual Mapping Resolution
+    if (typeof xrefConfig === 'object' && !Array.isArray(xrefConfig)) {
+        const directUrl = (xrefConfig as Record<string, string>)[ref.targetTerm];
+        if (directUrl) {
+            ref.xrefSpec = 'manual';
+            ref.url = directUrl;
+            return;
+        }
+    }
+
+    // 2. Batch API Resolution Queueing
+    let specs: string[] = [];
+    if (Array.isArray(xrefConfig)) {
+        specs = xrefConfig;
+    } else if (typeof xrefConfig === 'string') {
+        specs = [xrefConfig];
+    }
+
+    ref.xrefSpec = specs.length > 0 ? specs[0] : 'web-platform';
+    pendingQueue.push({ ref, specs, origType: ref.type });
+}
 
 /**
  * Reference resolve plugin
@@ -132,39 +345,46 @@ export const referenceResolvePlugin: Plugin = {
             ? ctx.workspace.globalIndex.definitions
             : buildLookupMap(ctx.document);
 
+        const xrefConfig = ctx.config.xref;
+
+        // Collect refs that need external resolution
+        const pendingExternalRefs: Array<{ ref: ExternalReference; specs: string[]; origType: string }> = [];
+
         walkDocument(ctx.document, {
             visitInline: (inline) => {
-                if (WORKSPACE_REF_TYPES.has(inline.type) || EXTERNAL_REF_TYPES.has(inline.type)) {
-                    const ref = inline as AnyReference;
-                    const match = resolveReference(ref, index);
+                if (!WORKSPACE_REF_TYPES.has(inline.type) && !EXTERNAL_REF_TYPES.has(inline.type)) return;
 
-                    if (match) {
-                        // Assign the resolved target ID 
-                        ref.targetId = match.id;
+                const ref = inline as AnyReference;
 
-                        // For workspace references, also record the target document
-                        if (WORKSPACE_REF_TYPES.has(ref.type)) {
-                           (ref as InlineWorkspaceDfnReference | InlineWorkspaceIdlReference | InlineWorkspaceElementReference).targetDocumentId = match.documentId;
-                        }
+                // 1. Heuristic: Some references (like elements [^...^]) should skip local resolution 
+                // if we are in a mode that prefers external HTML/SVG specs.
+                const isElementRef = ref.type === 'workspaceElementReference';
+                const shouldSkipLocal = isElementRef && !!xrefConfig;
+
+                // 2. Attempt Local Resolution
+                const match = shouldSkipLocal ? null : resolveReference(ref, index);
+
+                if (match) {
+                    ref.targetId = match.id;
+                    if (WORKSPACE_REF_TYPES.has(ref.type)) {
+                        (ref as WorkspaceReference).targetDocumentId = match.documentId;
                     }
+                    return;
+                }
 
-                    // For external references, populate URL (even if no match in definitions, 
-                    // we might need a fallback or cross-spec link)
-                    if (EXTERNAL_REF_TYPES.has(ref.type)) {
-                        const eRef = ref as InlineExternalDfnReference | InlineExternalIdlReference | InlineExternalElementReference;
-                        // Implement URL resolution logic for external specs
-                        // For now, use a placeholder if no match, 
-                        // in a real system we would look up the spec base URL
-                        if (eRef.xrefSpec && eRef.targetId) {
-                            // Simple placeholder: https://respec.org/xref/SPEC/ID
-                            eRef.url = `https://respec.org/xref/${eRef.xrefSpec}/${eRef.targetId}`;
-                        } else if (eRef.xrefSpec) {
-                             eRef.url = `https://respec.org/xref/${eRef.xrefSpec}/${eRef.targetTerm}`;
-                        }
-                    }
+                // 3. Optional: Fallback to External Resolution (only for workspace refs)
+                if (WORKSPACE_REF_TYPES.has(ref.type) && xrefConfig) {
+                    const extRef = promoteWorkspaceToExternal(ref as WorkspaceReference);
+                    handleExternalResolution(extRef, xrefConfig, pendingExternalRefs);
                 }
             }
         });
+
+        // Batch-resolve all pending external references via API
+        if (pendingExternalRefs.length > 0) {
+            await resolveExternalXrefs(pendingExternalRefs);
+        }
+
+        
     },
 };
-

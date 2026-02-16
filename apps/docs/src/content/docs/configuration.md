@@ -3,9 +3,70 @@ title: Configuration
 description: Detailed guide to Speculator configuration, including core settings and ReSpec compatibility.
 ---
 
-Speculator uses a `config.json` file located sibling to each specification entry file (e.g., `index.md` or `index.html`) to define its metadata, dependencies, and processing options.
+Speculator configuration is handled at two levels: **Workspace** level (discovering multiple specifications) and **Document** level (defining metadata for a single specification).
 
-## Config Structure
+---
+
+## Workspace Configuration
+
+Workspace configuration defines how Speculator finds and groups your specifications. A workspace corresponds to a collection of documents that share a namespace and can refer to each other.
+
+Workspace configuration is typically defined in a `speculator.workspace.json` file or passed as the `entryMap` to `buildWorkspaces`.
+
+### Structure
+
+Workspace configuration is a mapping of workspace names to their definitions. Definitions can be **explicit entries**, **directory shorthands**, or **glob patterns**.
+
+```json
+{
+  "api-workspace": "spec/api", // Directory shorthand
+  "md-group": "spec/md/**/*.md", // Glob pattern
+  "explicit-ws": [
+    { "entry": "spec/core/index.html" },
+    { "entry": "spec/utils/index.md" }
+  ]
+}
+```
+
+### Discovery Shorthands
+
+#### 1. Directory Shorthand
+
+If a workspace value is a plain directory path (e.g., `"spec/workspace"`), Speculator recursively scans that directory for entry files following a naming convention.
+
+**Convention-based Discovery:**
+Speculator looks for files named `index.html` or `index.md` in all subdirectories. Each discovered file is added as a document entry in the workspace.
+
+#### 2. Glob Patterns
+
+Speculator supports full glob patterns for file discovery.
+
+- `*` : Matches any number of characters except `/`.
+- `**`: Matches any number of characters including `/` (recursive matching).
+- `?` : Matches a single character.
+- `{a,b}`: Matches either `a` or `b`.
+
+**Automatic Conventions in Globs:**
+
+- If a glob pattern ends in `/` or `**`, Speculator automatically appends `index.{html,md}` logic to find specification entries within those directories.
+- Example: `"spec/**/"` expands to `"spec/**/index.{html,md}"`.
+
+### Explicit Entries
+
+For precise control, you can provide an array of entry objects.
+
+| Property     | Type     | Description                                                                                     |
+| :----------- | :------- | :---------------------------------------------------------------------------------------------- |
+| `entry`      | `string` | Path to the specification entry file (`.md` or `.html`) or a folder containing `index.md/html`. |
+| `configPath` | `string` | (Optional) Explicit path to a configuration file, overriding the default `config.json` lookup.  |
+
+---
+
+## Document Configuration
+
+Each specification entry file (e.g., `index.md` or `index.html`) follows a convention to find its document-level metadata. By default, Speculator looks for a `config.json` file in the same directory.
+
+### Config Structure
 
 The configuration follows a dual-layered structure: **Core Settings** at the root level and **ReSpec Settings** within a nested `respec` object.
 
@@ -21,15 +82,11 @@ The configuration follows a dual-layered structure: **Core Settings** at the roo
     "shortName": "my-spec",
     "specStatus": "ED",
     "modificationDate": "2026-01-10"
-  },
-  "custom": {
-    "myCustomField": "value",
-    "analytics": { "enabled": true }
   }
 }
 ```
 
-## Principle of Priority
+### Principle of Priority
 
 Speculator enforces a strict **Priority Override** rule with three layers:
 
@@ -40,106 +97,35 @@ Speculator enforces a strict **Priority Override** rule with three layers:
 > 2. Root-level properties (`title`, `lastUpdateDate`, `maturityLevel`) - Override respec
 > 3. `custom.*` - **Highest priority**, overwrites everything
 
-This allows you to maintain ReSpec compatibility for traditional spec metadata while using the root level for Speculator-specific overrides, and `custom` for any user-defined properties that must take precedence.
-
-### Example: Update Dates
-
-The `lastUpdateDate` field follows this priority:
-
-1. **Root `lastUpdateDate`**: Highest priority. If set, this value is used in the AST.
-2. **`respec.modificationDate`**: Fallback level. Used only if the root setting is missing.
-
-In the example above, the resulting AST will have `lastUpdateDate: "2026-01-11"`, completely ignoring the older `modificationDate` in the `respec` block.
-
-### Example: Maturity Level
-
-The `maturityLevel` field follows the same priority pattern:
-
-1. **Root `maturityLevel`**: Highest priority. Accepts values: `incubating`, `draft`, `prerelease`, `stable`.
-2. **Mapped `respec.specStatus`**: Fallback. ReSpec status codes are automatically mapped:
-   - `ED`, `WD`, `FPWD` → `draft`
-   - `CR`, `PR`, `LCWD` → `prerelease`
-   - `REC`, `NOTE`, `CG-FINAL` → `stable`
-   - `unofficial`, `CG-DRAFT` → `incubating`
-
-In the example above, `maturityLevel: "stable"` overrides the implied `draft` from `specStatus: "ED"`.
-
-### Example: Title
-
-The `title` field also follows the priority pattern:
-
-1. **Root `title`**: Highest priority. If set, this becomes the document title.
-2. **`respec.title`**: Fallback. Used only if root `title` is missing.
-
-In the example above, the document will use `"My Awesome Specification"` from the root, ignoring `"Fallback Title"` in the respec block.
-
----
-
-## Core Settings
+### Core Settings
 
 | Setting          | Type       | Description                                                                                                                |
 | :--------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------- |
-| `id`             | `string`   | Unique identifier for the document within a workspace. If omitted, one is auto-generated from the parent folder name.      |
+| `id`             | `string`   | Unique identifier for the document. If omitted, one is auto-generated from the parent folder name.                         |
 | `title`          | `string`   | **Priority** document title. Overwrites `respec.title`.                                                                    |
 | `deps`           | `string[]` | List of document IDs that this document depends on. They will be processed first.                                          |
-| `baseUrl`        | `string`   | Base URL for assembling `specIri` (e.g., `https://example.org/specs`). Combined with `id` to form statement IRIs.          |
+| `baseUrl`        | `string`   | Base URL for statement IRIs. Combined with `id` to form full URLs.                                                         |
 | `lastUpdateDate` | `string`   | **Priority** last update date (ISO 8601: `YYYY-MM-DD`). Overwrites `respec.modificationDate`.                              |
 | `maturityLevel`  | `string`   | **Priority** maturity level. One of: `incubating`, `draft`, `prerelease`, `stable`. Overwrites mapped `respec.specStatus`. |
-| `custom`         | `object`   | **Highest priority** user-defined properties. Passed through as-is, overwrites any conflicting root or respec values.      |
-| `respec`         | `object`   | ReSpec-compatible configuration (see below).                                                                               |
+| `custom`         | `object`   | **Highest priority** user-defined properties. Passed through as-is.                                                        |
+| `respec`         | `object`   | ReSpec-compatible configuration.                                                                                           |
 
----
+### ReSpec Settings
 
-## ReSpec Settings
+These settings reside within the `respec` object and closely mirror [ReSpec options](https://respec.org/docs/#configuration-options).
 
-These settings reside within the `respec` object and closely mirror the [ReSpec configuration options](https://respec.org/docs/#configuration-options).
-
-### Document Metadata
-
-| Setting     | Type     | Description                                                           |
-| :---------- | :------- | :-------------------------------------------------------------------- |
-| `title`     | `string` | **Fallback** title for the specification. Overridden by root `title`. |
-| `shortName` | `string` | A URL-friendly short name for the spec.                               |
-| `subtitle`  | `string` | An optional subtitle or tagline.                                      |
-
-### Versioning & Status
-
-| Setting            | Type     | Description                                                                            |
-| :----------------- | :------- | :------------------------------------------------------------------------------------- |
-| `specStatus`       | `string` | Status code (e.g., `ED`, `WD`, `CR`, `REC`). **Fallback** for `maturityLevel` mapping. |
-| `publishDate`      | `string` | Formal publication date (ISO 8601: `YYYY-MM-DD`).                                      |
-| `modificationDate` | `string` | **Fallback** last update date. Overridden by root `lastUpdateDate`.                    |
-| `thisVersion`      | `string` | URL for this version of the spec.                                                      |
-| `latestVersion`    | `string` | URL for the latest version.                                                            |
-| `prevVersion`      | `string` | URL for the previous version.                                                          |
-
-### Contributors
-
-| Setting   | Type    | Description                                                      |
-| :-------- | :------ | :--------------------------------------------------------------- |
-| `editors` | `array` | List of person objects containing `name`, `url`, `company`, etc. |
-| `authors` | `array` | List of authorship objects, similar to editors.                  |
-
-### Content & Structure
-
-| Setting       | Type      | Description                                             |
-| :------------ | :-------- | :------------------------------------------------------ |
-| `abstract`    | `string`  | Abstract text if not provided in the document body.     |
-| `noTOC`       | `boolean` | If `true`, disables Table of Contents generation.       |
-| `maxTocLevel` | `number`  | Maximum depth for the Table of Contents (default: `4`). |
-| `license`     | `string`  | License shortname or URL (e.g., `cc-by`).               |
-
-### Branding
-
-| Setting | Type    | Description                                  |
-| :------ | :------ | :------------------------------------------- |
-| `logos` | `array` | Array of logo objects: `{ src, alt, href }`. |
+| Category     | Settings                                                                                 |
+| :----------- | :--------------------------------------------------------------------------------------- |
+| **Metadata** | `title` (fallback), `shortName`, `subtitle`                                              |
+| **Status**   | `specStatus` (fallback for maturity), `publishDate`, `modificationDate`, `latestVersion` |
+| **People**   | `editors` (array), `authors` (array)                                                     |
+| **Content**  | `abstract`, `noTOC`, `maxTocLevel`, `license`                                            |
 
 ---
 
 ## Environment Variables
 
-Speculator supports environment variable interpolation in `config.json` files. This allows you to avoid hardcoding sensitive information or to use dynamic values based on your build environment.
+Speculator supports environment variable interpolation in `config.json` files.
 
 ### Syntax
 
@@ -147,89 +133,23 @@ Speculator supports environment variable interpolation in `config.json` files. T
 - `$SPEC_VARIABLE_NAME`
 
 > [!IMPORTANT]
-> **Security Restriction:** For security reasons, Speculator only interpolates environment variables that start with the `SPEC_` prefix. Any placeholder referencing a variable without this prefix will be replaced with an empty string.
-
-If an allowed environment variable is not defined in the system, it will also be replaced with an empty string.
-
-### Example
-
-```json
-{
-  "title": "Build: ${SPEC_BUILD_NUMBER}",
-  "maturityLevel": "$SPEC_RELEASE_STAGE",
-  "custom": {
-    "apiKey": "${SPEC_API_KEY}",
-    "systemSecret": "$SECRET_KEY"
-  }
-}
-```
-
-If `SPEC_BUILD_NUMBER=42`, `SPEC_RELEASE_STAGE=stable`, and `SECRET_KEY=123456`, the resulting configuration will be:
-
-```json
-{
-  "title": "Build: 42",
-  "maturityLevel": "stable",
-  "custom": {
-    "apiKey": "",
-    "systemSecret": ""
-  }
-}
-```
+> **Security Restriction:** For security reasons, Speculator only interpolates variables starting with the `SPEC_` prefix.
 
 ### Framework Integration (Astro/Vite)
 
-In frameworks like Astro or Vite, environment variables from `.env` files are loaded into `import.meta.env` rather than `process.env`. To support interpolation in these environments, you must explicitly pass the environment object to the Speculator pipeline.
+In frameworks like Astro, variable injection must be explicit:
 
-#### Example (Astro Page)
-
-```astro
----
+```typescript
 const buildResult = await buildWorkspaces({
   entryMap: workspaceMap,
-  env: import.meta.env, // Inject Astro environment
+  env: import.meta.env, // Inject Astro/Vite environment
 });
----
 ```
-
----
-
-## Workspace Configuration
-
-While individual specifications use `config.json`, larger projects can define a **Workspace Configuration** to manage multiple, isolated specification groups. This is used by the `buildWorkspaces` utility and the Speculator CLI.
-
-### Structure
-
-A workspace configuration is a mapping of workspace names to arrays of specification entry points.
-
-```json
-{
-  "core-specs": [{ "entry": "specs/core/index.md" }],
-  "extended-features": [
-    {
-      "entry": "specs/features/auth.md",
-      "configPath": "configs/auth-config.json"
-    },
-    { "entry": "specs/features/api.md" }
-  ]
-}
-```
-
-### Properties
-
-| Property     | Type     | Description                                                                                     |
-| :----------- | :------- | :---------------------------------------------------------------------------------------------- |
-| `entry`      | `string` | Path to the specification entry file (`.md` or `.html`) or a folder containing `index.md/html`. |
-| `configPath` | `string` | (Optional) Explicit path to a configuration file, overriding the default `config.json` lookup.  |
 
 ---
 
 ## Technical Details
 
-After loading and normalization, these settings are exposed in the Document AST under `document.metadata`.
-
-Generated TypeScript types can be found in:
-
-- `SpecConfig` ([types.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/preprocess/types.ts))
-- `WorkspaceEntryMap` ([types.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/preprocess/types.ts))
-- `DocumentMetadata` ([ast.generated.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/types/ast.generated.ts))
+- **Isomorphic Discovery**: Custom `FileProvider` implementations must provide `readdir?(path: string, options?: { recursive?: boolean }): Promise<string[]>` to support folder and glob discovery.
+- **AST Mapping**: Configuration is exposed in the Document AST under `document.metadata`.
+- **Typing**: See `SpecConfig` and `WorkspaceEntryMap` in [preprocess/types.ts](https://github.com/openuji/speculator/blob/main/packages/speculator/src/preprocess/types.ts).

@@ -1,5 +1,20 @@
 # @openuji/speculator
 
+## 0.7.3
+
+### Patch Changes
+
+- 9d98ceb: fix pipe escaping in tables
+
+## 0.7.2
+
+### Patch Changes
+
+- 0eda10c: fix handling of pipes in shortcuts, to enable them in markdown table
+- e828e86: introduce LikeC4 intergration
+- 56f4e1d: Introduce handling and rendering of WebIDL definitions. use respec xref resolvment for external definitions
+- d38b980: Provide Diagrams documentatation
+
 ## 0.7.1
 
 ### Patch Changes

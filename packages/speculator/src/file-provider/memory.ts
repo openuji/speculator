@@ -89,6 +89,23 @@ export class MemoryFileProvider implements FileProvider {
         return this.canonicalize(`${fromDir}/${relativePath}`);
     }
 
+    async readdir(path: string, options?: { recursive?: boolean }): Promise<string[]> {
+        const canonical = this.canonicalize(path);
+        const prefix = canonical.endsWith('/') ? canonical : canonical + '/';
+        const results: string[] = [];
+
+        for (const filePath of this.files.keys()) {
+            if (filePath.startsWith(prefix)) {
+                const relative = filePath.slice(prefix.length);
+                if (options?.recursive || !relative.includes('/')) {
+                    results.push(filePath);
+                }
+            }
+        }
+
+        return results;
+    }
+
     canonicalize(path: string): string {
         // Normalize to forward slashes
         let normalized = path.replace(/\\/g, '/');

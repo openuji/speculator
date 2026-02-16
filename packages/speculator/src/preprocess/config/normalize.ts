@@ -78,6 +78,7 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
 
     const config: SpecConfig = {
         id: docConfig.id,
+        deps: docConfig.deps,
         specIri: thisVersion,
     };
 
@@ -201,6 +202,11 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     if(docConfig.noConformance || docConfig.respec?.noConformance !== undefined) {
         const noConformance = docConfig.noConformance || docConfig.respec?.noConformance;
         config.noConformance = noConformance;
+    }
+
+    // Cross-references
+    if (raw.xref !== undefined) {
+        config.xref = raw.xref;
     }
 
     return config;
