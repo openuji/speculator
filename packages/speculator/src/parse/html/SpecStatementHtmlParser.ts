@@ -39,16 +39,28 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement | Bl
     const dataCopConcept = ctx.getAttr(element, 'data-cop-concept');
 
     const isInline = allChildren.length === 1 && allChildren[0].type === 'paragraph';
-    return {
-        type: isInline ? 'specStatement' : 'specStatementGroup',
-        id,
-        tempId,
-        level: level as BlockSpecStatement['level'],
-        dataCopConcept,
-        contentText: rawText,
-        children: allChildren as Block[],
-        sourcePos,
-    };
+
+    if (isInline) {
+        return {
+            type: 'specStatement',
+            id,
+            tempId,
+            level: level as BlockSpecStatement['level'],
+            dataCopConcept,
+            contentText: rawText,
+            children: (allChildren[0] as unknown as { children: Inline[] }).children,
+            sourcePos,
+        };
+    } else {
+        return {
+            type: 'specStatementGroup',
+            id,
+            level: level as BlockSpecStatement['level'],
+            dataCopConcept,
+            children: allChildren as Block[],
+            sourcePos,
+        };
+    }
 }
 
 function getLevel(element: Element, text: string, ctx: ParseContext): string {

@@ -139,12 +139,23 @@ export function preserveCustomHtmlBlocks(content: string): string {
 
         if (!insideTag) {
             // Check for custom element opening tag (tag name contains hyphen)
-            const match = line.match(/^(\s*<[a-z][a-z0-9]*-[a-z0-9-]*(?:\s[^>]*)?>)(.*)/i);
+            // Allow list markers (-, *, +, 1.) before the tag
+            const match = line.match(/^(\s*(?:[-*+]|\d+\.)?\s*<[a-z][a-z0-9]*-[a-z0-9-]*(?:\s[^>]*)?>)(.*)/i);
             if (match) {
                 const tagOnly = match[1];
                 const afterTag = match[2];
                 const tagNameMatch = tagOnly.match(/<([a-z][a-z0-9]*-[a-z0-9-]*)/i);
-                insideTag = tagNameMatch![1];
+                const tagName = tagNameMatch![1];
+                
+                // Assumption: we are entering a block
+                insideTag = tagName;
+
+                // Check if the block closes on the same line (inline usage)
+                // The closing tag could be in afterTag
+                if (afterTag.includes(`</${tagName}>`)) {
+                    insideTag = null;
+                }
+                
                 // Ensure a blank line precedes the custom element so remark
                 // treats it as a standalone HTML block instead of merging it
                 // into the preceding paragraph (e.g. a <dfn> line).
@@ -161,8 +172,22 @@ export function preserveCustomHtmlBlocks(content: string): string {
                     // Content after the opening tag on the same line prevents
                     // CommonMark type-7 HTML block recognition. Split it so the
                     // tag is on its own line and content follows.
+                    
+                    // We must indent the content to keep it within the parent list item (if any).
+                    // A safe heuristic is to indent to the same level as the tag's start,
+                    // plus a standard indent (e.g. 2 spaces) or simply align with the tag.
+                    // Actually, for list items, we want to align with the *content* start.
+                    // If the line starts with `- <tag>`, indentation should match `<tag>`.
+                    
+                    // Match indentation and marker
+                    const prefixMatch = tagOnly.match(/^(\s*(?:[-*+]|\d+\.)?\s*)/);
+                    const prefix = prefixMatch ? prefixMatch[1] : '';
+                    
+                    // Use a string of spaces equal to length of prefix (replacing marker with spaces)
+                    const indentation = ' '.repeat(prefix.length);
+
                     result.push(tagOnly);
-                    result.push(afterTag);
+                    result.push(indentation + afterTag);
                 } else {
                     result.push(line);
                 }

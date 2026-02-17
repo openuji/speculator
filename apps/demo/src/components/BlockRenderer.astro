@@ -105,7 +105,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
           // @ts-ignore
           <ListTag id={node.id} start={node.start}>
             {node.children.map((item) => (
-              <li>
+              <li id={item.id}>
                 {/* ListItem children are Blocks */}
                 {item.children.map((child) => (
                   <RecursiveBlockRenderer node={child} {...blockProps} />
@@ -120,7 +120,7 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
           <table id={node.id}>
             <tbody>
               {node.children.map((row) => (
-                <tr>
+                <tr id={row.id}>
                   {row.children.map((cell) => {
                     const CellTag = cell.header ? "th" : "td";
                     return (

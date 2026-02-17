@@ -74,8 +74,10 @@ describe('SpecStatementHtmlParser', () => {
         const blocks = parser.parse(unit);
         const stmt = blocks[0] as BlockSpecStatement;
         expect(stmt.contentText).toBe('The client MUST send an Accept header.');
-        // Children are now block-level (paragraphs wrapping inlines)
-        expect(stmt.children).toHaveLength(1);
-        expect(stmt.children[0].type).toBe('paragraph');
+        // Children are now inline nodes (unwrapped from paragraph)
+        expect(stmt.children).toHaveLength(5);
+        expect(stmt.children[0].type).toBe('text');
+        expect(stmt.children[1].type).toBe('strong');
+        expect(stmt.children[3].type).toBe('inlineCode');
     });
 });
