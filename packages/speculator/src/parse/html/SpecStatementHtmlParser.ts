@@ -39,7 +39,6 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement | Bl
     const dataCopConcept = ctx.getAttr(element, 'data-cop-concept');
 
     const isInline = allChildren.length === 1 && allChildren[0].type === 'paragraph';
-
     return {
         type: isInline ? 'specStatement' : 'specStatementGroup',
         id,

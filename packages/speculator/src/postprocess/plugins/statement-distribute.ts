@@ -20,7 +20,18 @@ function distributeToList(list: BlockList, stmt: BlockSpecStatement | BlockSpecS
     
     let modified = false;
     for (const item of list.children) {
+        
         if (item.type === 'listItem') {
+
+            if(item.children.length == 2 ){
+                const first = item.children[0];
+                const second = item.children[1];
+                if(first.type === 'paragraph' && second.type === 'list'){
+                    const childPrefix = toPlainText(first.children).trim();
+                    distributeToList(second, stmt, [prefix, childPrefix].join(' '));
+                    continue;
+                }
+            }
             const itemText = toPlainText(item.children as unknown as (Block | Inline)[]).trim();
             const fullText = prefix + (prefix ? ' ' : '') + itemText;
             const level = inferLevel(fullText);
