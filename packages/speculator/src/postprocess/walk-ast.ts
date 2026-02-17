@@ -10,6 +10,9 @@ import type {
     Section,
     Block,
     Inline,
+    ListItem,
+    TableRow,
+    TableCell,
 } from '#src/types/ast.generated';
 
 
@@ -24,6 +27,12 @@ export interface AstVisitor {
     visitBlock?(block: Block): void;
     /** Called for each section node */
     visitSection?(section: Section): void;
+    /** Called for list items */
+    visitListItem?(item: ListItem): void;
+    /** Called for table rows */
+    visitTableRow?(row: TableRow): void;
+    /** Called for table cells */
+    visitTableCell?(cell: TableCell): void;
 }
 
 /** Inline type names for detection */
@@ -50,22 +59,59 @@ function walkInlines(inlines: Inline[], visitor: AstVisitor): void {
 }
 
 /**
- * Walk a block node and its children
+ * Walk any node with children
  */
-function walkBlock(block: Block, visitor: AstVisitor): void {
-    visitor.visitBlock?.(block);
 
-    if ('children' in block) {
-        const blockWithChildren = block as Block & { children: Array<Block | Inline> };
-        const children = blockWithChildren.children;
-        if (Array.isArray(children) && children.length > 0) {
+type AstNode = Document | Section | Block | Inline | ListItem | TableRow | TableCell;
+
+function isAstNode(node: unknown): node is AstNode {
+    return !!node && typeof node === 'object' && 'type' in node;
+}
+
+function walkNode(node: AstNode, visitor: AstVisitor): void {
+    if (!node || typeof node !== 'object') return;
+
+    // Visit current node
+    switch (node.type) {
+        case 'section': {
+            const section = node as Section;
+            visitor.visitSection?.(section);
+            if (section.heading) {
+                walkInlines(section.heading.children, visitor);
+            }
+            break;
+        }
+        case 'listItem':
+            visitor.visitListItem?.(node as ListItem);
+            break;
+        case 'tableRow':
+            visitor.visitTableRow?.(node as TableRow);
+            break;
+        case 'tableCell':
+            visitor.visitTableCell?.(node as TableCell);
+            break;
+        default:
+            if (INLINE_TYPES.has(node.type)) {
+                visitor.visitInline?.(node as Inline);
+            } else {
+                visitor.visitBlock?.(node as Block);
+            }
+    }
+
+    // Recurse into children
+    // Use unsafe casting to access children but check them before walking
+    const nodeWithChildren = node as unknown as { children?: unknown[] };
+    if (Array.isArray(nodeWithChildren.children)) {
+        const children = nodeWithChildren.children;
+        if (children.length > 0) {
             const firstChild = children[0];
-            if (firstChild && typeof firstChild === 'object' && 'type' in firstChild) {
-                if (INLINE_TYPES.has(firstChild.type)) {
-                    walkInlines(children as Inline[], visitor);
-                } else {
-                    for (const child of children as Block[]) {
-                        walkBlock(child, visitor);
+            // Check if first child is inline to optimize walkInlines call
+            if (isAstNode(firstChild) && INLINE_TYPES.has(firstChild.type)) {
+                walkInlines(children as Inline[], visitor);
+            } else {
+                for (const child of children) {
+                    if (isAstNode(child)) {
+                        walkNode(child, visitor);
                     }
                 }
             }
@@ -74,49 +120,8 @@ function walkBlock(block: Block, visitor: AstVisitor): void {
 }
 
 /**
- * Walk a section node and its children
- */
-function walkSection(section: Section, visitor: AstVisitor): void {
-    visitor.visitSection?.(section);
-
-    // Walk heading if present
-    if (section.heading) {
-        walkInlines(section.heading.children, visitor);
-    }
-
-    // Walk children
-    for (const child of section.children) {
-        if (child.type === 'section') {
-            walkSection(child, visitor);
-        } else {
-            walkBlock(child, visitor);
-        }
-    }
-}
-
-/**
  * Walk an entire document, calling visitor methods for each node type.
- * 
- * @param document - The document to traverse
- * @param visitor - Visitor with optional callbacks for each node type
- * 
- * @example
- * ```typescript
- * walkDocument(doc, {
- *     visitInline: (inline) => {
- *         if (inline.type === 'definition') {
- *             // process definition
- *         }
- *     }
- * });
- * ```
  */
 export function walkDocument(document: Document, visitor: AstVisitor): void {
-    for (const child of document.children) {
-        if (child.type === 'section') {
-            walkSection(child, visitor);
-        } else {
-            walkBlock(child, visitor);
-        }
-    }
+    walkNode(document, visitor);
 }

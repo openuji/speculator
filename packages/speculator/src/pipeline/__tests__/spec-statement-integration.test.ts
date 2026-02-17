@@ -17,7 +17,7 @@ describe('spec-statement integration', () => {
 </div>
 
 <div>
-<spec-statement about="Logging">The server SHOULD log errors.</spec-statement>
+<spec-statement id="logging">The server SHOULD log errors.</spec-statement>
 </div>
 `,
         });

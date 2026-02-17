@@ -24,7 +24,8 @@ export const recommendedConfig: LintConfig = {
         'reference/no-ambiguous-reference': 'warning',
         'reference/no-id-reference': 'warning',
         'reference/no-unresolved-reference': 'error',
-        'vocab/validate-spec-terms': 'warning'
+        'vocab/validate-spec-terms': 'warning',
+        'document/require-cop-concept': 'error'
     }
 };
 

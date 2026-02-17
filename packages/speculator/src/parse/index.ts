@@ -43,3 +43,6 @@ export { HtmlUnitParser } from '#src/parse/html/index';
 // Parser module aggregates
 export { coreHtmlParsers, coreMarkdownParsers } from '#src/parse/parsers';
 
+
+// Normative Utils
+export * from '#src/parse/utils/normative';

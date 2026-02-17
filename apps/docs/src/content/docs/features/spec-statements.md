@@ -191,6 +191,55 @@ To include the JSON-LD in your rendered page:
 </script>
 ```
 
+## Block Content
+
+Spec statements can contain block-level Markdown elements, such as lists and tables.
+
+### Lists
+
+Use standard Markdown list syntax inside the statement:
+
+```markdown
+<spec-statement>
+The server MUST validate the request by checking:
+
+- The `Authorization` header presence
+- The token expiration timestamp
+- The issuer signature
+  </spec-statement>
+```
+
+### Recursive Lists
+
+Complex requirements can use nested or recursive lists:
+
+```markdown
+<spec-statement>
+The configuration object MUST contain:
+
+- `id` (string): Unique identifier
+- `options` (object):
+  - `retries` (number): Max retry count
+  - `timeout` (number): Request timeout in ms
+    </spec-statement>
+```
+
+### Tables
+
+You can also include tables for structured requirements:
+
+```markdown
+<spec-statement>
+The response body MUST comply with the following schema:
+
+| Field    | Type   | Description      |
+| -------- | ------ | ---------------- |
+| `status` | string | Operation result |
+| `code`   | number | Error code       |
+
+</spec-statement>
+```
+
 ## Configuration
 
 ### specIri / baseUrl

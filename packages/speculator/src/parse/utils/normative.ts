@@ -80,13 +80,13 @@ export function inferLevel(text: string): NormativeLevel {
 
     // Check positive forms
     // Note: we check if they are NOT followed by NOT to avoid double matching
-    if (/\b(MUST|SHALL|REQUIRED)\b/.test(upperText) && !/\b(MUST|SHALL) NOT\b/.test(upperText)) {
+    if (/\b(MUST|SHALL)\b/.test(upperText) && !/\b(MUST|SHALL) NOT\b/.test(upperText)) {
         foundLevels.add('MUST');
     }
-    if (/\b(SHOULD|RECOMMENDED)\b/.test(upperText) && !/\bSHOULD NOT\b/.test(upperText)) {
+    if (/\b(SHOULD)\b/.test(upperText) && !/\bSHOULD NOT\b/.test(upperText)) {
         foundLevels.add('SHOULD');
     }
-    if (/\b(MAY|OPTIONAL)\b/.test(upperText)) {
+    if (/\b(MAY)\b/.test(upperText)) {
         foundLevels.add('MAY');
     }
 

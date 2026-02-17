@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-14T13:23:36.996Z
+ * Generated at: 2026-02-17T12:07:40.739Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -263,7 +263,8 @@ export type Block =
   | BlockLikeC4View
   | BlockIdl
   | BlockNote
-  | BlockSpecStatement;
+  | BlockSpecStatement
+  | BlockSpecStatementGroup;
 export type BlockParagraph = BaseNode & {
   type: 'paragraph';
   id?: string;
@@ -326,8 +327,18 @@ export type ListItem = BaseNode & {
    * For task lists: true/false/null
    */
   checked?: boolean | null;
+  id?: string;
   children: Block[];
+  level?: NormativeLevel;
+  subject?: string;
+  contentText?: string;
+  tempId?: string;
+  dataCopConcept?: string;
 };
+/**
+ * Canonical RFC 2119 / 8174 requirement level.
+ */
+export type NormativeLevel = 'MUST' | 'MUST NOT' | 'SHOULD' | 'SHOULD NOT' | 'MAY' | 'NOTE' | 'NONE' | 'AMBIGUOUS';
 export type BlockTable = BaseNode & {
   type: 'table';
   children: TableRow[];
@@ -335,7 +346,13 @@ export type BlockTable = BaseNode & {
 };
 export type TableRow = BaseNode & {
   type: 'tableRow';
+  id?: string;
   children: TableCell[];
+  level?: NormativeLevel;
+  subject?: string;
+  contentText?: string;
+  tempId?: string;
+  dataCopConcept?: string;
 };
 export type TableCell = BaseNode & {
   type: 'tableCell';
@@ -418,16 +435,29 @@ export type BlockSpecStatement = BaseNode & {
    */
   tempId?: string;
   /**
-   * The requirement level of the statement.
+   * Canonical RFC 2119 / 8174 requirement level.
    */
   level?: 'MUST' | 'MUST NOT' | 'SHOULD' | 'SHOULD NOT' | 'MAY' | 'NOTE' | 'NONE' | 'AMBIGUOUS';
   /**
    * Plain text content of the statement (collapsed whitespace).
    */
   contentText: string;
-  children: Inline[];
+  children: (Block | Inline)[];
   /**
    * Optional explicit Class of Products (COP) identifier for this statement.
+   */
+  dataCopConcept?: string;
+};
+export type BlockSpecStatementGroup = BaseNode & {
+  type: 'specStatementGroup';
+  /**
+   * Optional unique identifier for the group container.
+   */
+  id?: string;
+  level?: NormativeLevel;
+  children: Block[];
+  /**
+   * Optional explicit Class of Products (COP) identifier for this group scope.
    */
   dataCopConcept?: string;
 };

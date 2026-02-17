@@ -29,12 +29,14 @@ export const HtmlBlockMarkdownParser: MarkdownParserModule = {
         if (node.type !== 'html') return null;
 
         const htmlNode = node as Html;
-        const html = htmlNode.value;
+        // Restore blank lines preserved by markdown-utils
+        const html = htmlNode.value.replace(/__SPECULATOR_BLANK_LINE__/g, '\n');
+        
 
         // Parse HTML to get proper element structure
         const processor = unified().use(rehypeParse, { fragment: true });
         const tree = processor.parse(html) as Root;
-
+        
         if (tree.children.length === 0) return null;
 
         const sourcePos = ctx.createSourcePos(node);

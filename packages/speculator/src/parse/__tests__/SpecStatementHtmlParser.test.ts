@@ -47,11 +47,11 @@ describe('SpecStatementHtmlParser', () => {
         expect(stmt.id).toBe('secret-disclosure');
     });
 
-    it('uses about attribute for ID if no explicit ID', () => {
-        const unit = createUnit('<spec-statement about="Disclosure">The server MUST NOT disclose the secret.</spec-statement>');
+    it('generates tempId from text when no explicit ID', () => {
+        const unit = createUnit('<spec-statement>The server MUST NOT disclose the secret.</spec-statement>');
         const blocks = parser.parse(unit);
         const stmt = blocks[0] as BlockSpecStatement;
-        expect(stmt.tempId).toBe('disclosure');
+        expect(stmt.tempId).toBe('the-server-must-not-disclose-the-secret');
         expect(stmt.id).toBeUndefined();
     });
 
@@ -74,6 +74,10 @@ describe('SpecStatementHtmlParser', () => {
         const blocks = parser.parse(unit);
         const stmt = blocks[0] as BlockSpecStatement;
         expect(stmt.contentText).toBe('The client MUST send an Accept header.');
-        expect(stmt.children).toHaveLength(5); // "The client ", <strong>, " send an ", <code>, " header."
+        // Children are now inline nodes (unwrapped from paragraph)
+        expect(stmt.children).toHaveLength(5);
+        expect(stmt.children[0].type).toBe('text');
+        expect(stmt.children[1].type).toBe('strong');
+        expect(stmt.children[3].type).toBe('inlineCode');
     });
 });

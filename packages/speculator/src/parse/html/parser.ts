@@ -105,9 +105,37 @@ export class HtmlUnitParser implements UnitParser {
             transformBlockChildren: (children) => {
                 const results: (Section | Block)[] = [];
                 const ctx = self.createContext(unit);
+                let currentInlines: RootContent[] = [];
+
+                const flushInlines = () => {
+                    if (currentInlines.length > 0) {
+                        const inlines = self.transformInlineChildren(currentInlines, unit);
+                        if (inlines.length > 0) {
+                            results.push({
+                                type: 'paragraph',
+                                children: inlines,
+                            } as BlockParagraph);
+                        }
+                        currentInlines = [];
+                    }
+                };
+
                 for (const child of children as RootContent[]) {
-                    results.push(...self.transformBlock(child, ctx));
+                    if (child.type === 'element') {
+                        const element = child as Element;
+                        const handler = self.registry.getHtmlBlockHandler(element.tagName.toLowerCase());
+                        if (handler?.handleBlock) {
+                            flushInlines();
+                            results.push(...self.transformBlock(child, ctx));
+                            continue;
+                        }
+                    }
+
+                    // Text, inline elements, etc. → collect as inlines
+                    currentInlines.push(child);
                 }
+
+                flushInlines();
                 return results;
             },
             getTextContent,
