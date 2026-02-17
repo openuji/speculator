@@ -139,9 +139,12 @@ export function preserveCustomHtmlBlocks(content: string): string {
 
         if (!insideTag) {
             // Check for custom element opening tag (tag name contains hyphen)
-            const match = line.match(/^\s*<([a-z][a-z0-9]*-[a-z0-9-]*)/i);
+            const match = line.match(/^(\s*<[a-z][a-z0-9]*-[a-z0-9-]*(?:\s[^>]*)?>)(.*)/i);
             if (match) {
-                insideTag = match[1];
+                const tagOnly = match[1];
+                const afterTag = match[2];
+                const tagNameMatch = tagOnly.match(/<([a-z][a-z0-9]*-[a-z0-9-]*)/i);
+                insideTag = tagNameMatch![1];
                 // Ensure a blank line precedes the custom element so remark
                 // treats it as a standalone HTML block instead of merging it
                 // into the preceding paragraph (e.g. a <dfn> line).
@@ -150,12 +153,22 @@ export function preserveCustomHtmlBlocks(content: string): string {
                 if (result.length > 0 && needsBlankLineBefore(result[result.length - 1])) {
                     result.push('');
                 }
-                // Check if this line also has the closing tag
+                // Check if this line also has the closing tag (self-closing on one line)
                 if (line.includes(`</${insideTag}>`)) {
                     insideTag = null;
+                    result.push(line);
+                } else if (afterTag.trim()) {
+                    // Content after the opening tag on the same line prevents
+                    // CommonMark type-7 HTML block recognition. Split it so the
+                    // tag is on its own line and content follows.
+                    result.push(tagOnly);
+                    result.push(afterTag);
+                } else {
+                    result.push(line);
                 }
+            } else {
+                result.push(line);
             }
-            result.push(line);
         } else {
             // Inside a custom element block
             if (line.includes(`</${insideTag}>`)) {

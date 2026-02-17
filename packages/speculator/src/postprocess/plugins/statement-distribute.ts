@@ -46,10 +46,9 @@ function distributeToTable(table: BlockTable, stmt: BlockSpecStatement | BlockSp
     let modified = false;
     for (const row of table.children) {
         if (row.type !== 'tableRow') continue;
+        const isHeader = row.children.some((cell: TableCell) => cell.header)
+        if(isHeader) continue;
         const tableRow = row as TableRow;
-        
-        // Skip header rows (using heuristic or checking specific properties if available)
-        // For now, we process all rows.
         
         const rowText = tableRow.children
             .map((cell: TableCell) => toPlainText([cell]).trim())
@@ -59,6 +58,7 @@ function distributeToTable(table: BlockTable, stmt: BlockSpecStatement | BlockSp
         if (!rowText) continue;
 
         const fullText = prefix + (prefix ? ' ' : '') + rowText;
+    
         const level = inferLevel(fullText);
         
         tableRow.level = level;
