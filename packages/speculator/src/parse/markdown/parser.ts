@@ -84,7 +84,6 @@ export class MarkdownUnitParser implements UnitParser {
         content = escapeShorthandPipesInTables(content);
         content = preserveCustomHtmlBlocks(content);
         const tree = this.processor.parse(content);
-        console.log('[Speculator] MarkdownUnitParser tree!:', tree);
         
         // Create context for handlers
         const ctx = this.createContext(unit);
@@ -92,11 +91,8 @@ export class MarkdownUnitParser implements UnitParser {
         const blocks: (Section | Block)[] = [];
 
         for (const child of tree.children) {
-
-            const blocksResult = this.transformBlock(child, ctx);
-            console.log('[Speculator] MarkdownUnitParser blocksResult!:', blocksResult);
-            
-            blocks.push(...blocksResult);
+          const blocksResult = this.transformBlock(child, ctx);                        
+          blocks.push(...blocksResult);
         }
 
         return blocks;

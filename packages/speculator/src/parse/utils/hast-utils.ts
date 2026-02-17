@@ -176,8 +176,26 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
                 if (child.type === 'text') {
                     // Re-parse text as Markdown to handle core markup (**bold**, `code`) and shorthands.
                     // We use originalTransformInlines to break the chain.
-                    const mdastNodes = parseMarkdownInlines((child as HastText).value);
-                    results.push(...originalTransformInlines(mdastNodes));
+                    const raw = (child as HastText).value;
+                    // Capture boundary whitespace that remark will strip
+                    const leadingWs = raw.match(/^\s+/)?.[0] || '';
+                    const trailingWs = raw.match(/\s+$/)?.[0] || '';
+                    const mdastNodes = parseMarkdownInlines(raw);
+                    const inlines = originalTransformInlines(mdastNodes);
+                    // Restore whitespace stripped by remark to preserve spaces
+                    // around sibling inline HTML elements (e.g. <dfn>)
+                    if (leadingWs && inlines.length > 0 && inlines[0].type === 'text') {
+                        inlines[0] = { ...inlines[0], value: leadingWs + (inlines[0] as { value: string }).value };
+                    } else if (leadingWs) {
+                        inlines.unshift({ type: 'text', value: leadingWs } as Inline);
+                    }
+                    if (trailingWs && inlines.length > 0 && inlines[inlines.length - 1].type === 'text') {
+                        const last = inlines[inlines.length - 1] as { value: string };
+                        inlines[inlines.length - 1] = { ...inlines[inlines.length - 1], value: last.value + trailingWs } as Inline;
+                    } else if (trailingWs) {
+                        inlines.push({ type: 'text', value: trailingWs } as Inline);
+                    }
+                    results.push(...inlines);
                 } else if (child.type === 'element') {
                     const res = transformHastInline(child, hastCtx);
                     if (res) {
