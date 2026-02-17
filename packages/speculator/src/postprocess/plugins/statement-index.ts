@@ -5,7 +5,7 @@
  */
 
 import type { Plugin, IndexContext } from '#src/pipeline/types';
-import type { Document, BlockSpecStatement, IndexStatementEntry, Section, Block, BlockHeading } from '#src/types/ast.generated';
+import type { Document, IndexStatementEntry, Section, Block, Inline, ListItem, TableRow, TableCell } from '#src/types/ast.generated';
 import { walkDocument } from '#src/postprocess/walk-ast';
 
 /**
@@ -45,6 +45,7 @@ function resolveCop(cop: string, baseIri: string): string | undefined {
  * Build statement index from document into document.indexes
  */
 function buildStatementIndex(document: Document, baseIri: string): void {
+
     // Initialize indexes structure
     if (!document.indexes) {
         document.indexes = {};
@@ -58,35 +59,42 @@ function buildStatementIndex(document: Document, baseIri: string): void {
 
     // Pass 1: Collect all explicit IDs to avoid collisions
     walkDocument(document, {
-        visitBlock: (block) => {
-            if (block.type === 'specStatement') {
-                const stmt = block as BlockSpecStatement;
-                if (stmt.id) {
-                    usedIds.add(stmt.id);
+        visitBlock: (block: Block) => {
+            if (block.type === 'specStatement' || block.type === 'specStatementGroup') {
+                if (block.id) {
+                    usedIds.add(block.id);
                 }
             }
+        },
+        visitListItem: (item) => {
+            if (item.id) usedIds.add(item.id);
+        },
+        visitTableRow: (row) => {
+            if (row.id) usedIds.add(row.id);
         }
     });
 
-    const walk = (nodes: (Section | Block)[], currentCop?: string) => {
+    const walk = (nodes: (Section | Block | Inline | ListItem | TableRow | TableCell)[], currentCop?: string) => {
         for (const node of nodes) {
             let nextCop = currentCop;
             
             // Sections and Headings can provide dataCopConcept
             if (node.type === 'section') {
-                const section = node as Section;
-                if (section.dataCopConcept) {
-                    nextCop = section.dataCopConcept;
+                if (node.dataCopConcept) {
+                    nextCop = node.dataCopConcept;
                 }
             } else if (node.type === 'heading') {
-                const heading = node as BlockHeading;
-                if (heading.dataCopConcept) {
-                    nextCop = heading.dataCopConcept;
+                if (node.dataCopConcept) {
+                    nextCop = node.dataCopConcept;
                 }
             }
 
-            if (node.type === 'specStatement') {
-                const stmt = node as BlockSpecStatement;
+            // A node is a statement if it has type 'specStatement' OR is a listItem/tableRow with a level
+            const isStatement = node.type === 'specStatement' || 
+                                ((node.type === 'listItem' || node.type === 'tableRow') && !!node.level);
+
+            if (isStatement) {
+                const stmt = node;
                 
                 // If statement has its own dataCopConcept, it takes precedence
                 const effectiveCop = stmt.dataCopConcept || nextCop;
@@ -108,7 +116,7 @@ function buildStatementIndex(document: Document, baseIri: string): void {
                 const entry: IndexStatementEntry = {
                     id: stmt.id,
                     level: stmt.level || 'NONE',
-                    contentText: stmt.contentText,
+                    contentText: stmt.contentText || '',
                     subject: resolvedSubject,
                     sourcePos: stmt.sourcePos || {
                         file: document.sourcePos?.file || 'unknown',
@@ -126,12 +134,7 @@ function buildStatementIndex(document: Document, baseIri: string): void {
             }
 
             if ('children' in node && Array.isArray(node.children)) {
-                walk(node.children as (Section | Block)[], nextCop);
-            }
-            if (node.type === 'section' && node.heading) {
-                // Headings are handled together with the section they belong to?
-                // Actually, if we are in a section, we already looked at node.dataCop.
-                // We don't need to walk heading children separately for COP, as they are inline.
+                walk(node.children, nextCop);
             }
         }
     };

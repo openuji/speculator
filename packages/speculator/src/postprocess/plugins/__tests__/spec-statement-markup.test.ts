@@ -21,11 +21,14 @@ describe('SpecStatement markup separation', () => {
         const stmt = (blocks[0].type === 'paragraph' ? (blocks[0] as BlockParagraph).children[0] : blocks[0]) as BlockSpecStatement;
         
         expect(stmt.type).toBe('specStatement');
-        expect(stmt.children).toHaveLength(7); 
+        // Children are now block-level: one paragraph wrapping the inlines
+        expect(stmt.children).toHaveLength(1);
+        const para = stmt.children[0] as unknown as BlockParagraph;
+        expect(para.type).toBe('paragraph');
         
-        const hasStrong = stmt.children.some((c: Inline) => c.type === 'strong');
-        const hasCode = stmt.children.some((c: Inline) => c.type === 'inlineCode');
-        const hasLink = stmt.children.some((c: Inline) => c.type === 'link');
+        const hasStrong = para.children.some((c: Inline) => c.type === 'strong');
+        const hasCode = para.children.some((c: Inline) => c.type === 'inlineCode');
+        const hasLink = para.children.some((c: Inline) => c.type === 'link');
         
         expect(hasStrong).toBe(true);
         expect(hasCode).toBe(true);

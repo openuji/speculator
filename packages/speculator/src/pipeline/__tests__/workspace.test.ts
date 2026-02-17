@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SpeculatorPipeline } from '../runner.js';
 import { MemoryFileProvider } from '#src/file-provider/memory';
-import { corePlugins } from '#src/postprocess/index.js';
+import { corePlugins } from '#src/postprocess/index';
 
 describe('Workspace processing', () => {
     it('should resolve cross-document references between HTML documents', async () => {

@@ -298,6 +298,20 @@ const getSectionNumber = (sectionId?: string): string | undefined => {
           </p>
         );
 
+      case "specStatementGroup":
+        const group = node as any;
+        return (
+          <div
+            class="spec-statement-group"
+            id={group.id}
+            data-cop-concept={group.dataCopConcept}
+          >
+            {group.children.map((child: any) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </div>
+        );
+
       default:
         return (
           <div style="border:1px solid red">

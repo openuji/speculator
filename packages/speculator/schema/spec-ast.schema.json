@@ -335,6 +335,7 @@
             },
             "required": ["targetTerm", "xrefSpec", "children"]
         },
+
         "InlineWorkspaceDfnReference": {
             "allOf": [
                 { "$ref": "#/definitions/BaseNode" },
@@ -859,13 +860,32 @@
                             ],
                             "description": "For task lists: true/false/null"
                         },
+                        "id": {
+                            "type": "string"
+                        },
                         "children": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/Block"
                             }
+                        },
+                        "level": {
+                            "$ref": "#/definitions/NormativeLevel"
+                        },
+                        "subject": {
+                            "type": "string"
+                        },
+                        "contentText": {
+                            "type": "string"
+                        },
+                        "tempId": {
+                            "type": "string"
+                        },
+                        "dataCopConcept": {
+                            "type": "string"
                         }
-                    },
+                    }
+,
                     "required": [
                         "type",
                         "children"
@@ -964,13 +984,32 @@
                         "type": {
                             "const": "tableRow"
                         },
+                        "id": {
+                            "type": "string"
+                        },
                         "children": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/TableCell"
                             }
+                        },
+                        "level": {
+                            "$ref": "#/definitions/NormativeLevel"
+                        },
+                        "subject": {
+                            "type": "string"
+                        },
+                        "contentText": {
+                            "type": "string"
+                        },
+                        "tempId": {
+                            "type": "string"
+                        },
+                        "dataCopConcept": {
+                            "type": "string"
                         }
-                    },
+                    }
+,
                     "required": [
                         "type",
                         "children"
@@ -1183,7 +1222,10 @@
                         "children": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/Inline"
+                                "oneOf": [
+                                    { "$ref": "#/definitions/Block" },
+                                    { "$ref": "#/definitions/Inline" }
+                                ]
                             }
                         },
                         "dataCopConcept": {
@@ -1194,6 +1236,43 @@
                     "required": [
                         "type",
                         "contentText",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockSpecStatementGroup": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "A structural container for a group of spec statements (e.g. derived from a list). Does not carry a normative level itself.",
+                    "properties": {
+                        "type": {
+                            "const": "specStatementGroup"
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional unique identifier for the group container."
+                        },
+                        "level": {
+                            "$ref": "#/definitions/NormativeLevel"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        },
+                        "dataCopConcept": {
+                            "type": "string",
+                            "description": "Optional explicit Class of Products (COP) identifier for this group scope."
+                        }
+                    },
+                    "required": [
+                        "type",
                         "children"
                     ]
                 }
@@ -1239,6 +1318,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockSpecStatement"
+                },
+                {
+                    "$ref": "#/definitions/BlockSpecStatementGroup"
                 }
             ]
         },

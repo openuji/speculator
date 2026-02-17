@@ -27,6 +27,16 @@ export function parseMarkdownInlines(text: string): RootContent[] {
     
     return inlines;
 }
+/**
+ * Parse a string as Markdown blocks.
+ */
+export function parseMarkdownBlocks(text: string): RootContent[] {
+    if (!text || !text.trim()) return [];
+
+    const processor = unified().use(remarkParse).use(remarkGfm);
+    const tree = processor.parse(text) as Root;
+    return tree.children;
+}
 
 const FENCED_CODE_START = /^(\s{0,3})(?:```|~~~)/;
 const TABLE_SEPARATOR = /^\s*\|?[\s:|-]+\|[\s:|-]*\|?\s*$/;
@@ -104,3 +114,103 @@ export function escapeShorthandPipesInTables(content: string): string {
     return result.join('\n');
 }
 
+/**
+ * Preserve custom HTML element blocks across blank lines.
+ *
+ * CommonMark type-7 HTML blocks (custom tags like <spec-statement>)
+ * terminate at blank lines. This replaces blank lines inside such blocks
+ * with <!-- --> comments, preventing remark from splitting the block.
+ * Custom elements are identified by tag names containing a hyphen
+ * (web component naming convention).
+ *
+ * Also ensures a blank line is inserted before a custom element when
+ * it immediately follows paragraph-level content (e.g. a <dfn> line)
+ * to prevent remark from merging both into a single paragraph.
+ */
+export function preserveCustomHtmlBlocks(content: string): string {
+   
+
+    const lines = content.split('\n');
+    const result: string[] = [];
+    let insideTag: string | null = null;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (!insideTag) {
+            // Check for custom element opening tag (tag name contains hyphen)
+            const match = line.match(/^\s*<([a-z][a-z0-9]*-[a-z0-9-]*)/i);
+            if (match) {
+                insideTag = match[1];
+                // Ensure a blank line precedes the custom element so remark
+                // treats it as a standalone HTML block instead of merging it
+                // into the preceding paragraph (e.g. a <dfn> line).
+                // Only insert when the previous line is paragraph-level content
+                // (not an HTML block tag, not another custom element, not blank).
+                if (result.length > 0 && needsBlankLineBefore(result[result.length - 1])) {
+                    result.push('');
+                }
+                // Check if this line also has the closing tag
+                if (line.includes(`</${insideTag}>`)) {
+                    insideTag = null;
+                }
+            }
+            result.push(line);
+        } else {
+            // Inside a custom element block
+            if (line.includes(`</${insideTag}>`)) {
+                insideTag = null;
+                result.push(line);
+            } else if (line.trim() === '') {
+                // Replace blank line with magic token to prevent remark from splitting the block.
+                // We use a text string that won't trigger any block start.
+                result.push('__SPECULATOR_BLANK_LINE__');
+            } else {
+                result.push(line);
+            }
+        }
+    }
+
+    return result.join('\n');
+}
+
+/**
+ * CommonMark type-6 block-level HTML tags that start their own HTML block.
+ * Lines starting with these tags are already treated as HTML blocks by remark,
+ * so we must not insert a blank line between them and a following custom element.
+ */
+const HTML_BLOCK_TAGS = new Set([
+    'address', 'article', 'aside', 'base', 'basefont', 'blockquote', 'body',
+    'caption', 'center', 'col', 'colgroup', 'dd', 'details', 'dialog', 'dir',
+    'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form',
+    'frame', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header',
+    'hr', 'html', 'iframe', 'legend', 'li', 'link', 'main', 'menu', 'menuitem',
+    'nav', 'noframes', 'ol', 'optgroup', 'option', 'p', 'param', 'search',
+    'section', 'summary', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead',
+    'title', 'tr', 'track', 'ul',
+]);
+
+/**
+ * Check if the line before a custom element needs a blank line inserted.
+ * Returns true only when the previous line is paragraph-level content
+ * (not an HTML block start, not a custom element, not blank/closing tag).
+ */
+function needsBlankLineBefore(prevLine: string): boolean {
+    const trimmed = prevLine.trim();
+    if (trimmed === '') return false;
+
+    // Check if it starts with an HTML tag
+    const tagMatch = trimmed.match(/^<\/?([a-z][a-z0-9-]*)/i);
+    if (tagMatch) {
+        const tagName = tagMatch[1].toLowerCase();
+        // CommonMark type-6 block tags — already an HTML block, don't split
+        if (HTML_BLOCK_TAGS.has(tagName)) return false;
+        // Custom element (hyphenated) — already an HTML block, don't split
+        if (tagName.includes('-')) return false;
+        // Closing tags (</...>) — part of an HTML block, don't split
+        if (trimmed.startsWith('</')) return false;
+    }
+
+    // The line is paragraph-level content (e.g. "<dfn>Phase</dfn> is ...")
+    return true;
+}
