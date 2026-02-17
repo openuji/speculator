@@ -6,9 +6,32 @@
  */
 
 import type { Element, Text as HastText, RootContent as HastRootContent, ElementContent } from 'hast';
-import type { Text } from 'mdast';
+import type { Text, RootContent as MdastRootContent, Root as MdastRoot } from 'mdast';
 import type { ParseContext, NodeWithPosition } from '#src/parse/registry';
 import type { Inline, SourcePos, Block, Section, BlockParagraph } from '#src/types/ast.generated';
+import { visit } from 'unist-util-visit';
+
+
+/**
+ * Offset the position of mdast nodes by a given number of lines.
+ * This is used when parsing markdown content inside HTML blocks,
+ * to ensure error reporting uses correct file line numbers.
+ */
+function offsetMdastNodes(nodes: MdastRootContent[], offsetLine: number) {
+    if (offsetLine === 0) return;
+    
+    const root: MdastRoot = { type: 'root', children: nodes };
+    
+    visit(root, (node) => {
+        const n = node as NodeWithPosition;
+        if (n.position) {
+            n.position.start.line += offsetLine;
+            if (n.position.end) {
+                n.position.end.line += offsetLine;
+            }
+        }
+    });
+}
 
 /**
  * Get element attribute value from hast element.
@@ -181,6 +204,13 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
                     const leadingWs = raw.match(/^\s+/)?.[0] || '';
                     const trailingWs = raw.match(/\s+$/)?.[0] || '';
                     const mdastNodes = parseMarkdownInlines(raw);
+                    
+                    // Offset line numbers to match original file position
+                    const sourcePos = hastCtx.createSourcePos(child as unknown as NodeWithPosition);
+                    if (sourcePos) {
+                       offsetMdastNodes(mdastNodes, sourcePos.line - 1);
+                    }
+
                     const inlines = originalTransformInlines(mdastNodes);
                     // Restore whitespace stripped by remark to preserve spaces
                     // around sibling inline HTML elements (e.g. <dfn>)
@@ -244,7 +274,13 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
                         // (preserving paragraph assembly for inline HTML contexts).
                         // If it produces block structures (lists, tables, etc.),
                         // flush and delegate to the markdown block transformer.
-                        const mdastNodes = parseMarkdownBlocks(text);            
+                        const mdastNodes = parseMarkdownBlocks(text);
+                        
+                        // Offset line numbers to match original file position
+                        const sourcePos = hastCtx.createSourcePos(child as unknown as NodeWithPosition);
+                        if (sourcePos) {
+                           offsetMdastNodes(mdastNodes, sourcePos.line - 1);
+                        }
                         const hasBlockContent = mdastNodes.some(
                             n => n.type !== 'paragraph'
                         ) || mdastNodes.length > 1;

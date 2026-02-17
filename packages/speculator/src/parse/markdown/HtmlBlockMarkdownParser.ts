@@ -36,7 +36,7 @@ export const HtmlBlockMarkdownParser: MarkdownParserModule = {
         // Parse HTML to get proper element structure
         const processor = unified().use(rehypeParse, { fragment: true });
         const tree = processor.parse(html) as Root;
-
+        
         if (tree.children.length === 0) return null;
 
         const sourcePos = ctx.createSourcePos(node);
