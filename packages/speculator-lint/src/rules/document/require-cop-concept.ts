@@ -1,4 +1,5 @@
 
+import { Parse } from '@openuji/speculator';
 import type { LintRule, LintContext } from '../../types.js';
 
 /**
@@ -23,9 +24,8 @@ export const requireCopConceptRule: LintRule = {
                 
                 for (const stmt of statements) {
                     // Only check normative statements
-                    // Levels: MUST, MUST NOT, SHOULD, SHOULD NOT, MAY
-                    // Non-normative: NONE, AMBIGUOUS (ambiguous is flagged by parser separately usually, but here we treat it non-normative or maybe we should check it? Parser flags it as AMBIGUOUS level. Let's stick to known normative levels for now to avoid noise.)
-                    const isNormative = ['MUST', 'MUST NOT', 'SHOULD', 'SHOULD NOT', 'MAY'].includes(stmt.level);
+                    // Check normative level
+                    const isNormative = Parse.isRequirement(stmt.level);
                     
                     if (isNormative) {
                         if (!stmt.subject) {
