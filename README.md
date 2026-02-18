@@ -19,7 +19,6 @@ This monorepo contains several specialized packages that form the Speculator eco
 | Package                                                    | Purpose                                                                                 |
 | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
 | [`@openuji/speculator`](packages/speculator)               | **Core Engine**: The AST-first parser, indexer, and resolution pipeline.                |
-| [`@openuji/render-respec`](packages/render-respec)         | **Renderer**: Generates 1:1 ReSpec-compatible HTML from the Speculator AST.             |
 | [`@openuji/speculator-lint`](packages/speculator-lint)     | **Linter**: Enforces semantic and structural rules across your specification workspace. |
 | [`@openuji/speculator-search`](packages/speculator-search) | **Search**: Extracts searchable content and builds static search indexes.               |
 | [`@openuji/vocab-build`](packages/vocab-build)             | **Vocab Tool**: Automates the generation of vocabulary definitions and reference docs.  |

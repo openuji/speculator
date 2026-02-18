@@ -73,57 +73,11 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  apps/demo:
-    dependencies:
-      '@astrojs/react':
-        specifier: ^4.4.0
-        version: 4.4.2(@types/node@20.19.25)(@types/react-dom@19.2.3(@types/react@19.2.13))(@types/react@19.2.13)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yaml@2.8.2)
-      '@likec4/core':
-        specifier: ^1.48.0
-        version: 1.48.0
-      '@likec4/diagram':
-        specifier: ^1.48.0
-        version: 1.48.0(@pandacss/dev@1.8.1(typescript@5.9.3))(@pandacss/types@1.8.1)(@types/react-dom@19.2.3(@types/react@19.2.13))(@types/react@19.2.13)(prop-types@15.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@openuji/render-respec':
-        specifier: workspace:*
-        version: link:../../packages/render-respec
-      '@openuji/speculator':
-        specifier: workspace:*
-        version: link:../../packages/speculator
-      '@openuji/speculator-lint':
-        specifier: workspace:*
-        version: link:../../packages/speculator-lint
-      '@openuji/speculator-search':
-        specifier: workspace:*
-        version: link:../../packages/speculator-search
-      '@openuji/vocab-build':
-        specifier: workspace:*
-        version: link:../../packages/vocab-build
-      astro:
-        specifier: ^5.16.4
-        version: 5.16.4(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.57.1)(typescript@5.9.3)(yaml@2.8.2)
-      mermaid:
-        specifier: ^11.12.2
-        version: 11.12.2
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      likec4:
-        specifier: ^1.48.0
-        version: 1.49.0(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(picomatch@4.0.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yaml@2.8.2)
-
   apps/docs:
     dependencies:
       '@astrojs/starlight':
         specifier: ^0.37.1
         version: 0.37.1(astro@5.16.4(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.57.1)(typescript@5.9.3)(yaml@2.8.2))
-      '@openuji/render-respec':
-        specifier: workspace:*
-        version: link:../../packages/render-respec
       '@openuji/speculator':
         specifier: workspace:*
         version: link:../../packages/speculator
@@ -151,49 +105,6 @@ importers:
       typedoc-plugin-markdown:
         specifier: ^4.9.0
         version: 4.9.0(typedoc@0.28.15(typescript@5.9.3))
-
-  packages/render-respec:
-    dependencies:
-      '@openuji/speculator':
-        specifier: workspace:*
-        version: link:../speculator
-      '@openuji/speculator-lint':
-        specifier: workspace:*
-        version: link:../speculator-lint
-      commander:
-        specifier: ^12.0.0
-        version: 12.1.0
-      nunjucks:
-        specifier: ^3.2.4
-        version: 3.2.4
-      prettier:
-        specifier: ^3.1.0
-        version: 3.7.4
-      zod:
-        specifier: ^3.22.0
-        version: 3.25.76
-    devDependencies:
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.19.25
-      '@types/nunjucks':
-        specifier: ^3.2.6
-        version: 3.2.6
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^7.0.0
-        version: 7.18.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: ^7.0.0
-        version: 7.18.0(eslint@8.57.1)(typescript@5.9.3)
-      eslint:
-        specifier: ^8.57.0
-        version: 8.57.1
-      typescript:
-        specifier: ^5.3.0
-        version: 5.9.3
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.25)(lightningcss@1.30.2)
 
   packages/speculator:
     dependencies:

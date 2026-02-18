@@ -1,5 +1,8 @@
 # Speculator Studio Theme (`apps/astro-demo`)
 
+> [!WARNING]  
+> This demo is still WIP, it will change.
+
 Astro showcase app for the Speculator ecosystem with:
 
 - Two isolated workspaces (`ed-clean`, `ed-to-lint`)

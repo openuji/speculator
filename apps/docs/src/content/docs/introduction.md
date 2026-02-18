@@ -12,7 +12,6 @@ Built with the modern web in mind, it provides a set of modular packages that ca
 - **`@openuji/speculator`**: The core pipeline for parsing and processing specifications.
 - **`@openuji/speculator-lint`**: A powerful linter to ensure consistency and correctness across your documents.
 - **`@openuji/speculator-search`**: A search engine integration to make your specifications easily discoverable.
-- **`@openuji/render-respec`**: Generate ReSpec-compatible HTML from your specification source.
 - **`@openuji/vocab-build`**: Build and manage vocabularies for your projects.
 
 ## Key Features

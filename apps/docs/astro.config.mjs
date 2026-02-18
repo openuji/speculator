@@ -62,20 +62,6 @@ export default defineConfig({
 					}
 				}),
 				starlightTypedoc({
-					entryPoints: [entry('render-respec')],
-					output: 'api/render-respec',
-					tsconfig: tsconfig('render-respec'),
-					sidebar: {
-						collapsed: true,
-					},
-					typeDoc: {
-						flattenOutputFiles: true,
-						entryFileName: 'index.md',
-						hideBreadcrumbs: true,
-						hidePageTitle: true,
-					}
-				}),
-				starlightTypedoc({
 					entryPoints: [entry('vocab-build')],
 					output: 'api/vocab-build',
 					tsconfig: tsconfig('vocab-build'),
@@ -118,7 +104,6 @@ export default defineConfig({
 						{ label: '@openuji/speculator', autogenerate: { directory: 'api/speculator', collapsed: true } },
 						{ label: '@openuji/speculator-lint', autogenerate: { directory: 'api/speculator-lint', collapsed: true } },
 						{ label: '@openuji/speculator-search', autogenerate: { directory: 'api/speculator-search', collapsed: true } },
-						{ label: '@openuji/render-respec', autogenerate: { directory: 'api/render-respec', collapsed: true } },
 						{ label: '@openuji/vocab-build', autogenerate: { directory: 'api/vocab-build', collapsed: true } },
 					],
 				},

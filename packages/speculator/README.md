@@ -35,7 +35,7 @@ A plugin-based pipeline that refines the AST:
 
 ## 💎 Schema-Central Design
 
-The **Speculator AST JSON Schema** is the single source of truth. All pipeline outputs are validated against this schema, ensuring that downstream tools (like `@openuji/render-respec`) can rely on a stable, typed data model.
+The **Speculator AST JSON Schema** is the single source of truth. All pipeline outputs are validated against this schema, ensuring that downstream tools can rely on a stable, typed data model.
 
 ### Core Node Types
 
