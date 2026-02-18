@@ -3,7 +3,18 @@ title: Spec Statements
 description: Machine-readable normative requirements with JSON-LD output.
 ---
 
-The `<spec-statement>` element marks normative requirements in your specification, enabling automatic extraction of requirements into machine-readable JSON-LD format.
+The `<spec-statement>` element marks normative requirements in your specification, enabling automatic extraction of requirements into machine-readable JSON-LD.
+
+## Vocabulary
+
+Speculator’s JSON-LD output for `<spec-statement>` is modeled using the **Spec Terms** vocabulary (prefix `spec:`, namespace `http://www.w3.org/ns/spec#`). This vocabulary is used to represent specification requirements, their requirement level (e.g., MUST/SHOULD/MAY), and their requirement subject (“classes of products”), and is used in ecosystems like Solid QA and related conformance tooling.
+
+In particular, Speculator emits:
+
+- `spec:Requirement` resources for requirements
+- `spec:requirementLevel` (e.g., `spec:MUST`, `spec:SHOULD`, `spec:MAY`)
+- `spec:requirementSubject` for the class of product the requirement applies to
+- `spec:statement` for the requirement text
 
 ## Basic Syntax
 
@@ -25,16 +36,16 @@ Embed the HTML element directly in your Markdown:
 
 ## Normative Levels
 
-The requirement level is automatically detected from RFC 2119 keywords:
+The requirement level is automatically detected from **BCP 14** keywords (RFC 2119 + RFC 8174) when they appear in ALL CAPS:
 
-| Keyword      | JSON-LD Type       |
-| ------------ | ------------------ |
-| `MUST`       | `spec:Requirement` |
-| `MUST NOT`   | `spec:Requirement` |
-| `SHOULD`     | `spec:Requirement` |
-| `SHOULD NOT` | `spec:Requirement` |
-| `MAY`        | `spec:Requirement` |
-| (else)       | not rendered       |
+| Keyword      | Emitted JSON-LD                                                   |
+| ------------ | ----------------------------------------------------------------- |
+| `MUST`       | `type: spec:Requirement`, `spec:requirementLevel: spec:MUST`      |
+| `MUST NOT`   | `type: spec:Requirement`, `spec:requirementLevel: spec:MUSTNOT`   |
+| `SHOULD`     | `type: spec:Requirement`, `spec:requirementLevel: spec:SHOULD`    |
+| `SHOULD NOT` | `type: spec:Requirement`, `spec:requirementLevel: spec:SHOULDNOT` |
+| `MAY`        | `type: spec:Requirement`, `spec:requirementLevel: spec:MAY`       |
+| (else)       | not rendered                                                      |
 
 You can also set the level explicitly:
 
@@ -197,8 +208,6 @@ Spec statements can contain block-level Markdown elements, such as lists and tab
 
 ### Lists
 
-Use standard Markdown list syntax inside the statement:
-
 ```markdown
 <spec-statement>
 The server MUST validate the request by checking:
@@ -210,8 +219,6 @@ The server MUST validate the request by checking:
 ```
 
 ### Recursive Lists
-
-Complex requirements can use nested or recursive lists:
 
 ```markdown
 <spec-statement>
@@ -225,8 +232,6 @@ The configuration object MUST contain:
 ```
 
 ### Tables
-
-You can also include tables for structured requirements:
 
 ```markdown
 <spec-statement>
@@ -268,9 +273,12 @@ Statements can contain rich Markdown formatting:
 ```
 
 - **HTML output** preserves the rich formatting (`<strong>`, `<code>`)
-- **JSON-LD output** uses plain text: `"the client must send a content-type header."`
+- **JSON-LD output** uses plain text: `"The client MUST send a Content-Type header."`
 
 ## Related
 
 - [Section Attributes](/features/section-attributes) – `data-cop-concept` inheritance and `.unnumbered`
 - [Configuration](/configuration) – `baseUrl` and spec metadata
+- [Solid QA](https://solidproject.org/ED/qa)
+- [solid-contrib/specification-tests](https://github.com/solid-contrib/specification-tests) Test coverage report
+- [URIs for W3C Namespaces](https://www.w3.org/guide/editor/namespaces)
