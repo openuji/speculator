@@ -9,16 +9,16 @@ export function generateContext(source: VocabSource): object {
         '@version': 0.1,
     };
 
-    // Add custom context mappings if provided
+    // 1. Auto-generate context from terms
+    for (const term of source.terms) {
+        context[term.id] = {
+            '@id': `${source.namespace}${term.id}`,
+        };
+    }
+
+    // 2. Merge custom context mappings if provided (overrides auto-generated)
     if (source.context) {
         Object.assign(context, source.context);
-    } else {
-        // Auto-generate context from terms if not provided
-        for (const term of source.terms) {
-            context[term.id] = {
-                '@id': `${source.namespace}${term.id}`,
-            };
-        }
     }
 
     // Sort keys for deterministic output

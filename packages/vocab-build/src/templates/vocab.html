@@ -6,6 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <style>
+        :root {
+            --bg-soft: #eef3f9;
+            --surface: #ffffff;
+            --surface-subtle: #f7f9fc;
+            --ink-strong: #1d2e44;
+            --ink: #2b3d52;
+            --ink-soft: #5b6f86;
+            --border: #d8e2ef;
+            --accent: #2372ba;
+            --accent-strong: #14548e;
+            --success: #1f9f5f;
+            --warning: #cf8a1d;
+            --danger: #cf4d44;
+            --row-hover: #f3f8fd;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,27 +29,31 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: "Avenir Next", "Segoe UI", "Noto Sans", sans-serif;
             line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
+            color: var(--ink);
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 2rem;
-            background: #f9f9f9;
+            padding: 2rem 1.5rem 3rem;
+            background:
+                radial-gradient(circle at top right, #e9f3ff 0%, transparent 55%),
+                linear-gradient(180deg, #f4f7fb 0%, var(--bg-soft) 100%);
         }
 
         header {
-            background: white;
+            background: var(--surface);
             padding: 2rem;
-            border-radius: 8px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 24px rgba(19, 38, 66, 0.07);
         }
 
         h1 {
-            color: #2c3e50;
+            color: var(--ink-strong);
             margin-bottom: 0.5rem;
-            font-size: 2rem;
+            font-size: clamp(1.8rem, 2.5vw, 2.25rem);
+            letter-spacing: -0.02em;
         }
 
         .meta {
@@ -46,32 +66,33 @@
         .badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
-            border-radius: 4px;
+            border-radius: 999px;
             font-size: 0.875rem;
             font-weight: 600;
         }
 
         .badge-tr {
-            background: #27ae60;
-            color: white;
+            background: var(--success);
+            color: #ffffff;
         }
 
         .badge-ed {
-            background: #f39c12;
-            color: white;
+            background: var(--warning);
+            color: #ffffff;
         }
 
         .badge-deprecated {
-            background: #e74c3c;
-            color: white;
+            background: var(--danger);
+            color: #ffffff;
             font-size: 0.75rem;
         }
 
         main {
-            background: white;
+            background: var(--surface);
             padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(19, 38, 66, 0.07);
         }
 
         section {
@@ -79,80 +100,192 @@
         }
 
         h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
+            color: var(--ink-strong);
+            border-bottom: 2px solid var(--accent);
             padding-bottom: 0.5rem;
             margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 56rem;
         }
 
         th,
         td {
             text-align: left;
-            padding: 0.75rem;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
         }
 
         th {
-            background: #f5f5f5;
+            background: var(--surface-subtle);
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--ink-strong);
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
 
         tr:hover {
-            background: #f9f9f9;
+            background: var(--row-hover);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
         }
 
         .term-id {
             font-family: 'Courier New', monospace;
             font-weight: 600;
-            color: #3498db;
+            color: var(--accent);
         }
 
         .term-iri {
             font-family: 'Courier New', monospace;
             font-size: 0.875rem;
-            color: #7f8c8d;
+            color: var(--ink-soft);
             margin-top: 0.25rem;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
         .copy-btn {
             cursor: pointer;
-            color: #3498db;
+            color: var(--accent);
             font-size: 0.75rem;
             margin-left: 0.5rem;
             text-decoration: underline;
         }
 
         .copy-btn:hover {
-            color: #2980b9;
+            color: var(--accent-strong);
         }
 
         code {
-            background: #f5f5f5;
+            background: var(--surface-subtle);
             padding: 0.125rem 0.25rem;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
+            overflow-wrap: anywhere;
         }
 
-        @media (max-width: 768px) {
+        .is-iri {
+            font-family: 'Courier New', monospace;
+            font-size: 0.84rem;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .see-also {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        a {
+            color: var(--accent-strong);
+        }
+
+        @media (max-width: 860px) {
             body {
-                padding: 1rem;
+                padding: 1rem 0.75rem 2rem;
+            }
+
+            header,
+            main {
+                padding: 1.25rem;
+            }
+
+            section {
+                margin-bottom: 2.25rem;
             }
 
             table {
-                font-size: 0.875rem;
+                min-width: 48rem;
             }
 
             th,
             td {
-                padding: 0.5rem;
+                padding: 0.7rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .table-wrap {
+                border: none;
+                background: transparent;
+            }
+
+            table {
+                min-width: 0;
+                width: 100%;
+            }
+
+            thead {
+                border: 0;
+                clip: rect(0 0 0 0);
+                height: 1px;
+                margin: -1px;
+                overflow: hidden;
+                padding: 0;
+                position: absolute;
+                width: 1px;
+            }
+
+            tbody tr {
+                display: block;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                margin-bottom: 0.875rem;
+                background: var(--surface);
+                overflow: hidden;
+            }
+
+            tr:hover {
+                background: var(--surface);
+            }
+
+            tbody tr td {
+                display: grid;
+                grid-template-columns: minmax(6.5rem, 38%) minmax(0, 1fr);
+                align-items: start;
+                gap: 0.75rem;
+                border-bottom: 1px solid var(--border);
+                padding: 0.75rem 0.875rem;
+            }
+
+            tbody tr td:last-child {
+                border-bottom: none;
+            }
+
+            td::before {
+                content: attr(data-label);
+                font-size: 0.72rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-weight: 700;
+                color: var(--ink-soft);
+            }
+
+            .term-iri {
+                font-size: 0.8rem;
+            }
+
+            .copy-btn {
+                display: inline-block;
+                margin-left: 0;
             }
         }
     </style>
@@ -179,18 +312,19 @@
         {% if classes.length > 0 %}
         <section id="classes">
             <h2>Classes</h2>
+            <div class="table-wrap" role="region" aria-label="Classes table" tabindex="0">
             <table>
                 <thead>
                     <tr>
-                        <th>Term</th>
-                        <th>Label</th>
-                        <th>Description</th>
+                        <th scope="col">Term</th>
+                        <th scope="col">Label</th>
+                        <th scope="col">Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for term in classes %}
                     <tr id="{{ term.id }}">
-                        <td>
+                        <td data-label="Term">
                             <div class="term-id">{{ term.id }}</div>
                             <div class="term-iri">
                                 {{ namespace }}{{ term.id }}
@@ -201,11 +335,11 @@
                             <span class="badge badge-deprecated">DEPRECATED</span>
                             {% endif %}
                         </td>
-                        <td>{{ term.label }}</td>
-                        <td>
+                        <td data-label="Label">{{ term.label }}</td>
+                        <td data-label="Description">
                             {{ term.comment }}
                             {% if term.seeAlso %}
-                            <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <div class="see-also">
                                 See also:
                                 {% for url in term.seeAlso %}
                                 <a href="{{ url }}" target="_blank">{{ url }}</a>{% if not loop.last %}, {% endif %}
@@ -217,26 +351,28 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         </section>
         {% endif %}
 
         {% if properties.length > 0 %}
         <section id="properties">
             <h2>Properties</h2>
+            <div class="table-wrap" role="region" aria-label="Properties table" tabindex="0">
             <table>
                 <thead>
                     <tr>
-                        <th>Term</th>
-                        <th>Label</th>
-                        <th>Description</th>
-                        <th>Domain</th>
-                        <th>Range</th>
+                        <th scope="col">Term</th>
+                        <th scope="col">Label</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Domain</th>
+                        <th scope="col">Range</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for term in properties %}
                     <tr id="{{ term.id }}">
-                        <td>
+                        <td data-label="Term">
                             <div class="term-id">{{ term.id }}</div>
                             <div class="term-iri">
                                 {{ namespace }}{{ term.id }}
@@ -247,11 +383,11 @@
                             <span class="badge badge-deprecated">DEPRECATED</span>
                             {% endif %}
                         </td>
-                        <td>{{ term.label }}</td>
-                        <td>
+                        <td data-label="Label">{{ term.label }}</td>
+                        <td data-label="Description">
                             {{ term.comment }}
                             {% if term.seeAlso %}
-                            <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <div class="see-also">
                                 See also:
                                 {% for url in term.seeAlso %}
                                 <a href="{{ url }}" target="_blank">{{ url }}</a>{% if not loop.last %}, {% endif %}
@@ -259,12 +395,13 @@
                             </div>
                             {% endif %}
                         </td>
-                        <td>{{ term.domain or '—' }}</td>
-                        <td>{{ term.range or '—' }}</td>
+                        <td data-label="Domain" class="is-iri">{{ term.domain or '—' }}</td>
+                        <td data-label="Range" class="is-iri">{{ term.range or '—' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         </section>
         {% endif %}
     </main>

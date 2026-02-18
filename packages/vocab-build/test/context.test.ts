@@ -28,20 +28,20 @@ describe('Context Generator', () => {
     };
 
     it('should generate valid JSON-LD context', () => {
-        const context = generateContext(mockSource);
+        const context = generateContext(mockSource) as any;
 
         expect(context).toHaveProperty('@context');
         expect(context['@context']).toHaveProperty('@version', 0.1);
     });
 
     it('should include @version 0.1', () => {
-        const context = generateContext(mockSource);
+        const context = generateContext(mockSource) as any;
 
         expect(context['@context']['@version']).toBe(0.1);
     });
 
     it('should auto-generate term mappings when not provided', () => {
-        const context = generateContext(mockSource);
+        const context = generateContext(mockSource) as any;
 
         expect(context['@context']['TestClass']).toEqual({
             '@id': 'https://example.org/ns#TestClass',
@@ -62,7 +62,7 @@ describe('Context Generator', () => {
             },
         };
 
-        const context = generateContext(sourceWithContext);
+        const context = generateContext(sourceWithContext) as any;
 
         expect(context['@context']['TestClass']).toEqual({
             '@id': 'https://example.org/ns#TestClass',
@@ -71,7 +71,7 @@ describe('Context Generator', () => {
     });
 
     it('should maintain deterministic ordering', () => {
-        const context = generateContext(mockSource);
+        const context = generateContext(mockSource) as any;
         const keys = Object.keys(context['@context']);
 
         // @version should be first
@@ -90,5 +90,35 @@ describe('Context Generator', () => {
         expect(formatted).toContain('"@context"');
         expect(formatted).toContain('"@version": 0.1');
         expect(typeof formatted).toBe('string');
+    });
+    it('should merge custom context with auto-generated terms', () => {
+        const sourceWithContext: VocabSource = {
+            ...mockSource,
+            context: {
+                'ex': 'https://example.org/ns#'
+            },
+        };
+
+        const context = generateContext(sourceWithContext) as any;
+
+        // Expect 'ex' to be there
+        expect(context['@context']).toHaveProperty('ex', 'https://example.org/ns#');
+        
+        // Expect 'TestClass' to be PRESENT because we now merge context
+        expect(context['@context']).toHaveProperty('TestClass'); 
+    });
+
+    it('should allow custom context to overwrite auto-generated terms', () => {
+        const sourceWithOverride: VocabSource = {
+            ...mockSource,
+            context: {
+                'TestClass': 'http://custom.uri/TestClass'
+            },
+        };
+
+        const context = generateContext(sourceWithOverride) as any;
+        
+        // Expect 'TestClass' to be overwritten
+        expect(context['@context']).toHaveProperty('TestClass', 'http://custom.uri/TestClass');
     });
 });
