@@ -74,6 +74,7 @@ if (!document) {
 
 const metadata = document.metadata || {};
 
+console.log("document statements", document.indexes?.statements);
 // Run linter if workspace was successfully created
 let lintResult;
 if (workspace) {
@@ -98,7 +99,7 @@ if (workspace) {
 // Combine pipeline and lint diagnostics
 const allDiagnostics = lintResult?.diagnostics || [];
 console.log(`[LINTER] Found ${allDiagnostics.length} diagnostics for ${pkg}`);
-allDiagnostics.forEach((d) => console.log(`[LINTER] [${d.code}] ${d.message}`));
+//allDiagnostics.forEach((d) => console.log(`[LINTER] [${d.code}] ${d.message}`));
 const toc = document.computed?.toc || [];
 const statementsJsonLd = document.computed?.statementsJsonLd;
 ---

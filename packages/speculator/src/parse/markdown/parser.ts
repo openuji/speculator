@@ -23,7 +23,7 @@ import {
     type ParseContext,
     type NodeWithPosition,
 } from '#src/parse/registry';
-import { escapeShorthandPipesInTables } from '../utils/markdown-utils.js';
+import { escapeShorthandPipesInTables, preserveCustomHtmlBlocks } from '../utils/markdown-utils.js';
 
 /**
  * Create source position from mdast node position
@@ -76,18 +76,23 @@ export class MarkdownUnitParser implements UnitParser {
      * Parse markdown unit to AST blocks
      */
     parse(unit: SourceUnit): (Section | Block)[] {
-        // Escape shorthand pipes in table lines before GFM splits them into cells
-        const content = escapeShorthandPipesInTables(unit.content);
-        const tree = this.processor.parse(content);
 
+        // Escape shorthand pipes in table lines before GFM splits them into cells
+        //let content = escapeShorthandPipesInTables(unit.content);
+        let content = unit.content;
+        // Prevent remark from splitting custom HTML blocks at blank lines
+        content = escapeShorthandPipesInTables(content);
+        content = preserveCustomHtmlBlocks(content);
+        const tree = this.processor.parse(content);
+        
         // Create context for handlers
         const ctx = this.createContext(unit);
 
         const blocks: (Section | Block)[] = [];
 
         for (const child of tree.children) {
-            const blocksResult = this.transformBlock(child, ctx);
-            blocks.push(...blocksResult);
+          const blocksResult = this.transformBlock(child, ctx);                        
+          blocks.push(...blocksResult);
         }
 
         return blocks;

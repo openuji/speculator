@@ -16,6 +16,7 @@ description: Developer-grade linting for technical specifications.
 ### Document Rules
 
 - **`document/no-duplicate-definition`** (Error): A single document must not define the same term or alias multiple times.
+- **`document/require-cop-concept`** (Error): Enforces that all normative statements (`MUST`, `SHOULD`, etc.) that wrapped within `<spec-statement/>` elements have a CoP Concept assigned via explicit or inherited `data-cop-concept` attribute. Informative statements are ignored.
 
 ### Reference Rules
 
@@ -66,6 +67,7 @@ The `recommended` preset includes the following rules:
 | `reference/no-id-reference`         | `warning` |
 | `reference/no-unresolved-reference` | `error`   |
 | `vocab/validate-spec-terms`         | `warning` |
+| `document/require-cop-concept`      | `error`   |
 
 ## 📁 Workspace Configuration
 

@@ -51,6 +51,7 @@ function getJsonLdType(level: string): string | null {
         case 'SHOULD':
         case 'SHOULD NOT':
         case 'MAY':
+        case 'AMBIGUOUS':
             return 'spec:Requirement';
         default:
             // currently we only support normative statements
