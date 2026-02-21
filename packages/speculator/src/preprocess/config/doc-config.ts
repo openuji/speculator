@@ -58,18 +58,22 @@ export function getConfigPath(entryPath: string): string {
  * Load document configuration from config.json sibling to entry
  * 
  * If config.json doesn't exist, returns a resolved config with auto-generated ID.
+ * If configPath is provided, that file is used instead of sibling discovery.
  * 
  * @param fileProvider - File provider to read from
  * @param entryPath - Path to the spec entry file (e.g., index.html)
+ * @param env - Optional environment object for variable interpolation
+ * @param configPath - Optional explicit path to the config file
  * @returns Resolved config with ID and dependencies
  */
 export async function loadDocConfig(
     fileProvider: FileProvider,
     entryPath: string,
-    env?: Record<string, string | undefined>
+    env?: Record<string, string | undefined>,
+    configPath?: string
 ): Promise<ResolvedDocumentConfig> {
-    const configPath = getConfigPath(entryPath);
-    const canonicalPath = fileProvider.canonicalize(configPath);
+    const resolvedConfigPath = configPath ?? getConfigPath(entryPath);
+    const canonicalPath = fileProvider.canonicalize(resolvedConfigPath);
 
     try {
         const content = await fileProvider.readText(canonicalPath);

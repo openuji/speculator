@@ -121,6 +121,29 @@ describe('Config Priority Rules', () => {
 
             expect(result.config.lastUpdateDate).toBe('2026-01-10');
         });
+
+        it('uses explicit configPath instead of sibling config', async () => {
+            const fp = new MemoryFileProvider({
+                '/spec/index.md': '# Title',
+                '/spec/config.json': JSON.stringify({
+                    id: 'sibling-id',
+                    title: 'Sibling Title',
+                }),
+                '/shared/custom-config.json': JSON.stringify({
+                    id: 'custom-id',
+                    title: 'Custom Title',
+                }),
+            });
+
+            const result = await preprocess({
+                entry: '/spec/index.md',
+                configPath: '/shared/custom-config.json',
+                fileProvider: fp,
+            });
+
+            expect(result.config.id).toBe('custom-id');
+            expect(result.config.title).toBe('Custom Title');
+        });
     });
 
     describe('maturityLevel priority', () => {

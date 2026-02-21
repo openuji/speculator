@@ -52,5 +52,6 @@ export async function speculate(options: SpeculateOptions): Promise<SpeculateRes
         entry: options.entry,
         configPath: options.configPath,
         fileProvider,
+        env: options.env,
     });
 }

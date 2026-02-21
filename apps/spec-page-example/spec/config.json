@@ -1,0 +1,17 @@
+{
+  "id": "single-spec-page",
+  "title": "Single Spec Page Example",
+  "respec": {
+    "title": "Single Spec Page Example",
+    "subtitle": "Path A static publishing sample",
+    "specStatus": "ED",
+    "publishDate": "2026-02-20",
+    "abstract": "Example used to demonstrate static single-document publishing.",
+    "localBiblio": {
+      "RFC2119": {
+        "title": "Key words for use in RFCs",
+        "url": "https://www.rfc-editor.org/rfc/rfc2119"
+      }
+    }
+  }
+}

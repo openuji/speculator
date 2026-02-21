@@ -43,6 +43,26 @@ describe('speculate', () => {
 
     });
 
+    it('passes env through speculate() to config interpolation', async () => {
+        const fileProvider = new MemoryFileProvider({
+            '/spec/index.md': '# Title\n\nContent',
+            '/spec/config.json': JSON.stringify({
+                title: '${SPEC_TITLE}',
+            }),
+        });
+
+        const result = await speculate({
+            entry: '/spec/index.md',
+            plugins: corePlugins,
+            fileProvider,
+            env: {
+                SPEC_TITLE: 'Interpolated Spec Title',
+            },
+        });
+
+        expect(result.workspace?.documents[0].metadata?.title).toBe('Interpolated Spec Title');
+    });
+
     it('processes HTML spec with sections', async () => {
         const fileProvider = new MemoryFileProvider({
             '/spec/index.html': `

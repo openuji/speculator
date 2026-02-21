@@ -1,0 +1,20 @@
+{
+  "name": "apps-spec-page-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@openuji/spec-page": "workspace:*"
+  },
+  "devDependencies": {
+    "@likec4/core": "^1.49.0",
+    "likec4": "^1.49.0",
+    "mermaid": "^11.12.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^6.1.1"
+  }
+}

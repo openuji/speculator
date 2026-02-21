@@ -1,0 +1,13 @@
+specification {
+  element system
+}
+
+model {
+  interop = system 'Interop Service'
+}
+
+views {
+  view interop-flow {
+    include *
+  }
+}

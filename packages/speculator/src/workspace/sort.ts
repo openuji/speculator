@@ -56,7 +56,7 @@ export async function sortEntriesByDeps(
     // Load configs for all entries
     const entriesWithConfig: EntryWithConfig[] = await Promise.all(
         entries.map(async (e) => {
-            const config = await loadDocConfig(fileProvider, e.entry);
+            const config = await loadDocConfig(fileProvider, e.entry, undefined, e.configPath);
             return { ...e, config };
         })
     );

@@ -1,0 +1,89 @@
+{
+  "name": "@openuji/spec-page",
+  "version": "0.1.0",
+  "description": "Static HTML renderer for Speculator AST runtime",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "imports": {
+    "#src/*": "./dist/*.js"
+  },
+  "bin": {
+    "speculator-render": "bin/speculator-render.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./runtime/mermaid": {
+      "import": "./dist/runtime/mermaid.js"
+    },
+    "./runtime/likec4": {
+      "import": "./dist/runtime/likec4.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepack": "pnpm build",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "keywords": [
+    "speculator",
+    "renderer",
+    "html",
+    "mermaid",
+    "likec4"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@openuji/speculator": "workspace:*",
+    "commander": "^12.1.0"
+  },
+  "peerDependencies": {
+    "@likec4/core": "^1.49.0",
+    "likec4": "^1.49.0",
+    "mermaid": "^11.12.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "peerDependenciesMeta": {
+    "@likec4/core": {
+      "optional": true
+    },
+    "likec4": {
+      "optional": true
+    },
+    "mermaid": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.3.0",
+    "vite": "^6.1.1",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^1.6.1"
+  }
+}

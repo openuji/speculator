@@ -146,4 +146,38 @@ describe('sortEntriesByDeps', () => {
         expect(result.entries[1].entry).toBe('/spec/b/index.html');
         expect(result.entries[2].entry).toBe('/spec/c/index.html');
     });
+
+    it('should use explicit configPath for dependency sorting', async () => {
+        const fileProvider = new MemoryFileProvider();
+
+        fileProvider.setFile('/configs/core.json', JSON.stringify({
+            id: 'core',
+            deps: ['overview']
+        }));
+        fileProvider.setFile('/configs/overview.json', JSON.stringify({
+            id: 'overview',
+            deps: []
+        }));
+
+        // Sibling configs are intentionally conflicting to verify explicit configPath precedence.
+        fileProvider.setFile('/spec/core/config.json', JSON.stringify({
+            id: 'core-sibling',
+            deps: []
+        }));
+        fileProvider.setFile('/spec/overview/config.json', JSON.stringify({
+            id: 'overview-sibling',
+            deps: []
+        }));
+
+        const result = await sortEntriesByDeps([
+            { entry: '/spec/core/index.html', configPath: '/configs/core.json' },
+            { entry: '/spec/overview/index.html', configPath: '/configs/overview.json' },
+        ], fileProvider);
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.entries[0].entry).toBe('/spec/overview/index.html');
+        expect(result.entries[1].entry).toBe('/spec/core/index.html');
+        expect(result.entries[0].config.id).toBe('overview');
+        expect(result.entries[1].config.id).toBe('core');
+    });
 });
