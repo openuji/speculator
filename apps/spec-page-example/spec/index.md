@@ -14,3 +14,10 @@ graph LR
 ```
 
 <likec4-view view-id="example-flow"></likec4-view>
+
+```mermaid
+graph LR
+  A[Server] --> B[Client]
+```
+
+<likec4-view view-id="example-flow"></likec4-view>

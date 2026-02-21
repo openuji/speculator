@@ -16,11 +16,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./runtime/mermaid": {
-      "import": "./dist/runtime/mermaid.js"
-    },
-    "./runtime/likec4": {
-      "import": "./dist/runtime/likec4.js"
+    "./components/*": {
+      "import": "./dist/components/*.js"
     },
     "./vite": {
       "types": "./dist/vite.d.ts",

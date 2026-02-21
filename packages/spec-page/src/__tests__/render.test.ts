@@ -94,11 +94,11 @@ describe('renderDocument', () => {
       },
     });
 
-    expect(result.html).toContain('class="mermaid-shell"');
-    expect(result.html).toContain('class="likec4-shell"');
+    expect(result.html).toContain('<spec-mermaid>');
+    expect(result.html).toContain('<spec-likec4');
     expect(result.html).toContain('id="spec-page-likec4-dump"');
-    expect(result.html).toContain(`import '@openuji/spec-page/runtime/mermaid';`);
-    expect(result.html).toContain(`import '@openuji/spec-page/runtime/likec4';`);
+    expect(result.html).toContain(`import '@openuji/spec-page/components/mermaid';`);
+    expect(result.html).toContain(`import '@openuji/spec-page/components/likec4';`);
   });
 });
 
