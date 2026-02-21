@@ -1,10 +1,10 @@
 import path from 'node:path';
+import type { Document } from '@openuji/speculator';
 import type { ClientRuntimeOptions } from '#src/types';
-import type { RenderUsageFlags } from '#src/render/block';
 
 export interface LikeC4DumpInput {
   client: ClientRuntimeOptions;
-  usage: RenderUsageFlags;
+  document: Document;
   fallbackWorkspacePath?: string;
 }
 
@@ -13,10 +13,16 @@ export interface LikeC4DumpResult {
   data?: string;
 }
 
+function hasLikeC4(node: any): boolean {
+  if (node?.type === 'likeC4View') return true;
+  if (Array.isArray(node?.children)) return node.children.some(hasLikeC4);
+  return false;
+}
+
 export async function buildLikeC4Dump(
   input: LikeC4DumpInput
 ): Promise<LikeC4DumpResult> {
-  if (!input.usage.likec4) {
+  if (!hasLikeC4(input.document)) {
     return { dumpScript: '', data: '' };
   }
 

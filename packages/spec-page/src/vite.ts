@@ -3,7 +3,6 @@ import type { Plugin, HtmlTagDescriptor } from 'vite';
 import { speculate, corePlugins, NodeFileProvider } from '@openuji/speculator';
 import { renderDocumentFragment } from '#src/render/page';
 import { escapeHtml } from '#src/render/utils';
-import { getRuntimeInjectionModules } from '#src/runtime/inject';
 import { buildLikeC4Dump } from '#src/runtime/likec4-dump';
 import { BASE_PAGE_CSS } from '#src/styles/base-css';
 import type { RenderOptions } from '#src/types';
@@ -52,7 +51,7 @@ export function specPagePlugin(pluginOptions: SpecPagePluginOptions): Plugin {
 
         const likec4Dump = await buildLikeC4Dump({
           client: pluginOptions.options?.client || {},
-          usage: fragmentResult.usage,
+          document,
           fallbackWorkspacePath: path.dirname(path.resolve(pluginOptions.entry)),
         });
 
@@ -91,15 +90,6 @@ export function specPagePlugin(pluginOptions: SpecPagePluginOptions): Plugin {
             children: likec4Dump.data,
             injectTo: 'body',
           });
-        }
-
-        const modules = getRuntimeInjectionModules(fragmentResult.usage);
-        if (modules.length > 0) {
-          const injectedScripts = modules.map((mod) => `import '${mod}';`).join('\n');
-          newHtml = newHtml.replace(
-            '</body>',
-            `<script type="module">\n${injectedScripts}\n</script>\n</body>`
-          );
         }
 
         return {

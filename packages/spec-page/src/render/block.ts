@@ -9,14 +9,8 @@ import type {
 import { renderInlines, type InlineRenderContext } from '#src/render/inline';
 import { escapeAttr, escapeHtml, joinHref } from '#src/render/utils';
 
-export interface RenderUsageFlags {
-  mermaid: boolean;
-  likec4: boolean;
-}
-
 export interface BlockRenderContext extends InlineRenderContext {
   headingNumbers?: Record<string, string | undefined>;
-  usage: RenderUsageFlags;
 }
 
 function headingTag(depth: number): 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' {
@@ -129,8 +123,7 @@ export function renderBlock(node: Block | Section, ctx: BlockRenderContext): str
 
     case 'codeBlock':
       if (node.lang === 'mermaid') {
-        ctx.usage.mermaid = true;
-        return `<div class="mermaid-shell"${idAttr(node.id)}><pre class="mermaid">${escapeHtml(node.value)}</pre></div>`;
+        return `<div class="mermaid-shell"${idAttr(node.id)}><pre class="mermaid">${escapeHtml(node.value)}</pre></div><script type="module">import '@openuji/spec-page/runtime/mermaid';</script>`;
       }
       return `<div class="ui-code-block"${idAttr(node.id)}><div class="ui-code-header"><span>${escapeHtml(node.lang || 'text')}</span></div><pre><code class="language-${escapeAttr(node.lang || 'text')}">${escapeHtml(node.value)}</code></pre></div>`;
 
@@ -175,8 +168,7 @@ export function renderBlock(node: Block | Section, ctx: BlockRenderContext): str
       return `<hr${idAttr(node.id)} />`;
 
     case 'likeC4View': {
-      ctx.usage.likec4 = true;
-      return `<div class="likec4-shell"${idAttr(node.id)} data-likec4-view-id="${escapeAttr(node.viewId)}"${node.dynamicVariant ? ` data-likec4-dynamic-variant="${escapeAttr(node.dynamicVariant)}"` : ''}></div>`;
+      return `<div class="likec4-shell"${idAttr(node.id)} data-likec4-view-id="${escapeAttr(node.viewId)}"${node.dynamicVariant ? ` data-likec4-dynamic-variant="${escapeAttr(node.dynamicVariant)}"` : ''}></div><script type="module">import '@openuji/spec-page/runtime/likec4';</script>`;
     }
 
     case 'idl': {

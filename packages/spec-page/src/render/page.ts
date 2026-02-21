@@ -1,13 +1,12 @@
 import type { Document, TocEntry } from '@openuji/speculator';
 import type { RenderOptions } from '#src/types';
 import { renderMetadataRows } from '#src/render/metadata';
-import { renderBlock, type RenderUsageFlags } from '#src/render/block';
+import { renderBlock } from '#src/render/block';
 import { escapeAttr, escapeHtml } from '#src/render/utils';
 import { BASE_PAGE_CSS } from '#src/styles/base-css';
 
 export interface RenderPageResult {
   html: string;
-  usage: RenderUsageFlags;
 }
 
 interface RenderPageInput {
@@ -53,16 +52,10 @@ export function renderDocumentFragment({
   const abstract = metadata.abstract || '';
   const headingNumbers = document.computed?.headingNumbers || {};
 
-  const usage: RenderUsageFlags = {
-    mermaid: false,
-    likec4: false,
-  };
-
   const blockCtx = {
     basePath: options?.basePath,
     currentDocumentId: document.id,
     headingNumbers,
-    usage,
   };
 
   const metadataRows = renderMetadataRows(metadata, options?.metadata);
@@ -84,7 +77,7 @@ export function renderDocumentFragment({
     </div>
   </div>`;
 
-  return { html, usage };
+  return { html };
 }
 
 export function renderDocumentPage({
@@ -120,5 +113,5 @@ export function renderDocumentPage({
 </body>
 </html>`;
 
-  return { html, usage: fragment.usage };
+  return { html };
 }

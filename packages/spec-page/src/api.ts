@@ -9,7 +9,6 @@ import {
   type FileProvider,
 } from '@openuji/speculator';
 import { renderDocumentPage } from '#src/render/page';
-import { getRuntimeInjectionScripts } from '#src/runtime/inject';
 import { buildLikeC4Dump } from '#src/runtime/likec4-dump';
 import type {
   RenderAstInput,
@@ -61,24 +60,15 @@ async function renderFromWorkspace(input: RenderWorkspaceInput): Promise<RenderR
   const document = pickDocument(input.workspace, input.documentId);
   const options = input.options || {};
 
-  const firstPass = renderDocumentPage({
-    document,
-    options,
-  });
-
   const likec4Dump = await buildLikeC4Dump({
     client: options.client || {},
-    usage: firstPass.usage,
+    document,
     fallbackWorkspacePath: input.fallbackLikeC4WorkspacePath || inferLikeC4WorkspacePath(document),
   });
-
-  const scripts = getRuntimeInjectionScripts(firstPass.usage);
 
   const finalRender = renderDocumentPage({
     document,
     options,
-    runtimeHeadHtml: scripts.headHtml,
-    runtimeBodyHtml: scripts.bodyHtml,
     likec4DumpScript: likec4Dump.dumpScript,
   });
 
