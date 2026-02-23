@@ -49,8 +49,16 @@ function parseUnit(
         const parser = getParser(parsers, unit.format);
         return parser.parse(unit);
     } catch (error) {
-        // Fallback or error handling if needed, but for now just returning empty if parser fails
-        console.error(`Failed to parse ${unit.file}: ${error instanceof Error ? error.message : String(error)}`);
+        const message = error instanceof Error ? error.message : String(error);
+        
+        // Extract position from message if adjusted by parser (e.g. "(99:1)")
+        const posMatch = message.match(/\((\d+):(\d+)(?:-[\d:]+)?\)/);
+        let posSuffix = "";
+        if (posMatch) {
+            posSuffix = `:${posMatch[1]}:${posMatch[2]}`;
+        }
+
+        console.error(`${unit.file}${posSuffix}: ${message}`);
         return [];
     }
 }

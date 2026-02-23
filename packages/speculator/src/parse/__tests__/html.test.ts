@@ -5,7 +5,13 @@
 import { describe, it, expect } from 'vitest';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { Section, BlockParagraph, BlockList } from '#src/types/ast.generated';
+import type {
+    Section,
+    BlockParagraph,
+    BlockList,
+    BlockHtmlElement,
+    InlineHtmlElement,
+} from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.html'): SourceUnit {
     return { file, format: 'html', content, startLine: 1 };
@@ -196,6 +202,35 @@ describe('HtmlUnitParser', () => {
 
             expect(blocks).toHaveLength(1);
             expect(blocks[0]).toMatchObject({ type: 'paragraph' });
+        });
+    });
+
+    describe('generic html elements', () => {
+        it('preserves unhandled block tags as htmlElement', () => {
+            const unit = createUnit('<figure id="f-1"><figcaption>Caption</figcaption></figure>');
+            const blocks = parser.parse(unit);
+
+            const figure = blocks[0] as BlockHtmlElement;
+            expect(figure.type).toBe('htmlElement');
+            expect(figure.tagName).toBe('figure');
+            expect(figure.id).toBe('f-1');
+            expect(figure.children).toHaveLength(1);
+            expect((figure.children[0] as BlockHtmlElement).type).toBe('htmlElement');
+            expect((figure.children[0] as BlockHtmlElement).tagName).toBe('figcaption');
+        });
+
+        it('preserves unhandled inline tags as htmlInlineElement', () => {
+            const unit = createUnit('<p>Press <kbd class="keycap">Ctrl</kbd>.</p>');
+            const blocks = parser.parse(unit);
+
+            const para = blocks[0] as BlockParagraph;
+            const kbd = para.children.find(
+                (child): child is InlineHtmlElement => child.type === 'htmlInlineElement'
+            );
+            expect(kbd).toBeDefined();
+            expect(kbd?.tagName).toBe('kbd');
+            expect(kbd?.attributes?.class).toBe('keycap');
+            expect(kbd?.children[0]).toMatchObject({ type: 'text', value: 'Ctrl' });
         });
     });
 });

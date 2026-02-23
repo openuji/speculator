@@ -115,97 +115,60 @@ export function escapeShorthandPipesInTables(content: string): string {
 }
 
 /**
- * Preserve custom HTML element blocks across blank lines.
- *
- * CommonMark type-7 HTML blocks (custom tags like <spec-statement>)
- * terminate at blank lines. This replaces blank lines inside such blocks
- * with <!-- --> comments, preventing remark from splitting the block.
- * Custom elements are identified by tag names containing a hyphen
- * (web component naming convention).
- *
- * Also ensures a blank line is inserted before a custom element when
- * it immediately follows paragraph-level content (e.g. a <dfn> line)
- * to prevent remark from merging both into a single paragraph.
+ * Formats custom MDX tags (like <spec-statement>) so they are correctly
+ * recognized as "Flow" elements by MDX-JSX.
+ * 
+ * If a tag starts at the beginning of a line (perhaps with a list marker)
+ * but has content on the same line, MDX treats it as a phrasing element.
+ * If that phrasing element crosses a block boundary (e.g. at the next newline
+ * or col-1 transition for the closer), it fails to parse.
+ * 
+ * This ensures the tag is on its own line.
+ * It also ensures a blank line precedes tags that follow paragraphs.
  */
-export function preserveCustomHtmlBlocks(content: string): string {
-   
-
+export function normalizeMdxTags(content: string): string {
     const lines = content.split('\n');
     const result: string[] = [];
-    let insideTag: string | null = null;
-
+    
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-
-        if (!insideTag) {
-            // Check for custom element opening tag (tag name contains hyphen)
-            // Allow list markers (-, *, +, 1.) before the tag
-            const match = line.match(/^(\s*(?:[-*+]|\d+\.)?\s*<[a-z][a-z0-9]*-[a-z0-9-]*(?:\s[^>]*)?>)(.*)/i);
-            if (match) {
-                const tagOnly = match[1];
-                const afterTag = match[2];
-                const tagNameMatch = tagOnly.match(/<([a-z][a-z0-9]*-[a-z0-9-]*)/i);
-                const tagName = tagNameMatch![1];
-                
-                // Assumption: we are entering a block
-                insideTag = tagName;
-
-                // Check if the block closes on the same line (inline usage)
-                // The closing tag could be in afterTag
-                if (afterTag.includes(`</${tagName}>`)) {
-                    insideTag = null;
-                }
-                
-                // Ensure a blank line precedes the custom element so remark
-                // treats it as a standalone HTML block instead of merging it
-                // into the preceding paragraph (e.g. a <dfn> line).
-                // Only insert when the previous line is paragraph-level content
-                // (not an HTML block tag, not another custom element, not blank).
-                if (result.length > 0 && needsBlankLineBefore(result[result.length - 1])) {
-                    result.push('');
-                }
-                // Check if this line also has the closing tag (self-closing on one line)
-                if (line.includes(`</${insideTag}>`)) {
-                    insideTag = null;
-                    result.push(line);
-                } else if (afterTag.trim()) {
-                    // Content after the opening tag on the same line prevents
-                    // CommonMark type-7 HTML block recognition. Split it so the
-                    // tag is on its own line and content follows.
-                    
-                    // We must indent the content to keep it within the parent list item (if any).
-                    // A safe heuristic is to indent to the same level as the tag's start,
-                    // plus a standard indent (e.g. 2 spaces) or simply align with the tag.
-                    // Actually, for list items, we want to align with the *content* start.
-                    // If the line starts with `- <tag>`, indentation should match `<tag>`.
-                    
-                    // Match indentation and marker
-                    const prefixMatch = tagOnly.match(/^(\s*(?:[-*+]|\d+\.)?\s*)/);
-                    const prefix = prefixMatch ? prefixMatch[1] : '';
-                    
-                    // Use a string of spaces equal to length of prefix (replacing marker with spaces)
-                    const indentation = ' '.repeat(prefix.length);
-
-                    result.push(tagOnly);
-                    result.push(indentation + afterTag);
-                } else {
-                    result.push(line);
-                }
-            } else {
+        
+        // Match custom element opening tag (tag name contains hyphen)
+        // Allow list markers (-, *, +, 1.) before the tag
+        const match = line.match(/^(\s*(?:[-*+]|\d+\.)?\s*<[a-z][a-z0-9]*-[a-z0-9-]*(?:\s[^>]*)?>)(.+)$/i);
+        
+        if (match) {
+            const tagPart = match[1];
+            const afterTag = match[2];
+            
+            const tagNameMatch = tagPart.match(/<([a-z][a-z0-9]*-[a-z0-9-]*)/i);
+            const tagName = tagNameMatch![1];
+            
+            // If it's closed on the same line, it's a true inline, don't split.
+            if (afterTag.includes(`</${tagName}>`)) {
                 result.push(line);
+                continue;
             }
+
+            // Ensure a blank line precedes the block-to-be if it follows a paragraph
+            if (result.length > 0 && needsBlankLineBefore(result[result.length - 1])) {
+                result.push('');
+            }
+
+            // Split tag from content to force "Flow" mode in MDX
+            result.push(tagPart);
+            
+            // Indent the content to stay within the parent list item (if any)
+            const prefixMatch = tagPart.match(/^(\s*(?:[-*+]|\d+\.)?\s*)/);
+            const prefix = prefixMatch ? prefixMatch[1] : '';
+            result.push(' '.repeat(prefix.length) + afterTag);
         } else {
-            // Inside a custom element block
-            if (line.includes(`</${insideTag}>`)) {
-                insideTag = null;
-                result.push(line);
-            } else if (line.trim() === '') {
-                // Replace blank line with magic token to prevent remark from splitting the block.
-                // We use a text string that won't trigger any block start.
-                result.push('__SPECULATOR_BLANK_LINE__');
-            } else {
-                result.push(line);
+            // Check if we need a blank line before a col-1 tag that doesn't have trailing content
+            const pureTagMatch = line.match(/^(\s*(?:[-*+]|\d+\.)?\s*<[a-z][a-z0-9]*-[a-z0-9-]*(?:\s[^>]*)?>)\s*$/i);
+            if (pureTagMatch && result.length > 0 && needsBlankLineBefore(result[result.length - 1])) {
+                result.push('');
             }
+            result.push(line);
         }
     }
 
@@ -217,7 +180,7 @@ export function preserveCustomHtmlBlocks(content: string): string {
  * Lines starting with these tags are already treated as HTML blocks by remark,
  * so we must not insert a blank line between them and a following custom element.
  */
-const HTML_BLOCK_TAGS = new Set([
+export const HTML_BLOCK_TAGS = new Set([
     'address', 'article', 'aside', 'base', 'basefont', 'blockquote', 'body',
     'caption', 'center', 'col', 'colgroup', 'dd', 'details', 'dialog', 'dir',
     'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form',
@@ -227,6 +190,10 @@ const HTML_BLOCK_TAGS = new Set([
     'section', 'summary', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead',
     'title', 'tr', 'track', 'ul',
 ]);
+
+export function isHtmlBlockTag(tagName: string): boolean {
+    return HTML_BLOCK_TAGS.has(tagName.toLowerCase());
+}
 
 /**
  * Check if the line before a custom element needs a blank line inserted.

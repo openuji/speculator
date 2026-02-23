@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/parser';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import { ParseHandlerRegistry } from '#src/parse/registry';
-import { HtmlBlockMarkdownParser } from '#src/parse/markdown/HtmlBlockMarkdownParser';
+import { MdxMarkdownParser } from '#src/parse/markdown/MdxMarkdownParser';
 import { LikeC4ViewHtmlParser } from '#src/parse/html/LikeC4ViewHtmlParser';
 import { parse } from '#src/parse/pipeline';
 import type { BlockLikeC4View } from '#src/types/ast.generated';
@@ -10,7 +10,7 @@ import type { BlockLikeC4View } from '#src/types/ast.generated';
 describe('LikeC4 view parsing', () => {
     it('parses <likec4-view> into BlockLikeC4View AST node', () => {
         const registry = new ParseHandlerRegistry();
-        registry.registerMarkdownParser(HtmlBlockMarkdownParser);
+        registry.registerMarkdownParser(MdxMarkdownParser);
         registry.registerHtmlParser(LikeC4ViewHtmlParser);
 
         const parser = new MarkdownUnitParser(registry);

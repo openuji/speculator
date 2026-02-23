@@ -164,7 +164,7 @@ async function resolveFile(
             // Add content before this include
             if (include.startOffset > lastEnd) {
                 const beforeContent = content.slice(lastEnd, include.startOffset);
-                if (beforeContent.trim()) {
+                if (beforeContent.length > 0) { // Keep even blank units to preserve line numbering flow
                     units.push({
                         file,
                         format,
@@ -192,7 +192,7 @@ async function resolveFile(
         // Add remaining content after last include
         if (lastEnd < content.length) {
             const afterContent = content.slice(lastEnd);
-            if (afterContent.trim()) {
+            if (afterContent.length > 0) {
                 units.push({
                     file,
                     format,

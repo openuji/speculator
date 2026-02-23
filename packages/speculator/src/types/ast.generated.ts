@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-17T12:07:40.739Z
+ * Generated at: 2026-02-23T15:09:42.882Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -56,6 +56,7 @@ export type Inline =
   | InlineIssue
   | InlineCite
   | InlineVariable
+  | InlineHtmlElement
   | InlineSectionReference;
 export type InlineText = BaseNode & {
   type: 'text';
@@ -250,6 +251,14 @@ export type InlineVariable = BaseNode & {
    */
   value: string;
 };
+export type InlineHtmlElement = BaseNode & {
+  type: 'htmlInlineElement';
+  id?: string;
+  tagName: string;
+  attributes?: HtmlAttributes;
+  children: Inline[];
+};
+export type HtmlAttributeValue = (string | number | boolean | null) | undefined;
 export type Block =
   | BlockParagraph
   | BlockHeading
@@ -260,6 +269,7 @@ export type Block =
   | BlockTable
   | BlockThematicBreak
   | BlockHtml
+  | BlockHtmlElement
   | BlockLikeC4View
   | BlockIdl
   | BlockNote
@@ -380,6 +390,13 @@ export type BlockHtml = BaseNode & {
    * @maxItems 0
    */
   children: [];
+};
+export type BlockHtmlElement = BaseNode & {
+  type: 'htmlElement';
+  id?: string;
+  tagName: string;
+  attributes?: HtmlAttributes;
+  children: Block[];
 };
 export type BlockLikeC4View = BaseNode & {
   type: 'likeC4View';
@@ -607,6 +624,9 @@ export interface ExternalReferenceBase {
   url?: string;
   children: Inline[];
 }
+export interface HtmlAttributes {
+  [k: string]: HtmlAttributeValue | undefined;
+}
 /**
  * Indexes extracted from marker nodes during indexing
  */
@@ -830,8 +850,8 @@ export function isBlock(node: unknown): node is Block {
   const type = (node as any).type;
   return [
     'paragraph', 'heading', 'codeBlock', 'example',
-    'blockquote', 'list', 'table', 'thematicBreak', 'html', 'likeC4View',
-    'note', 'specStatement'
+    'blockquote', 'list', 'table', 'thematicBreak', 'html', 'htmlElement', 'likeC4View',
+    'note', 'specStatement', 'specStatementGroup', 'idl'
   ].includes(type);
 }
 
@@ -843,7 +863,7 @@ export function isInline(node: unknown): node is Inline {
   const type = (node as any).type;
   return [
     'text', 'emphasis', 'strong', 'inlineCode', 'link',
-    'image', 'definition', 'requirement', 'issue', 'cite', 'variable',
+    'image', 'htmlInlineElement', 'definition', 'requirement', 'issue', 'cite', 'variable',
     'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
     'externalDfnReference', 'externalIdlReference', 'externalElementReference',
     'sectionReference'

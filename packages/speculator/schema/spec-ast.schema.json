@@ -87,6 +87,20 @@
                 }
             }
         },
+        "HtmlAttributeValue": {
+            "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+            ]
+        },
+        "HtmlAttributes": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/HtmlAttributeValue"
+            }
+        },
         "InlineText": {
             "allOf": [
                 {
@@ -586,6 +600,42 @@
                 }
             ]
         },
+        "InlineHtmlElement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Generic inline HTML element preserved in AST for renderer-level passthrough.",
+                    "properties": {
+                        "type": {
+                            "const": "htmlInlineElement"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "tagName": {
+                            "type": "string"
+                        },
+                        "attributes": {
+                            "$ref": "#/definitions/HtmlAttributes"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "tagName",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "Inline": {
             "oneOf": [
                 {
@@ -623,6 +673,9 @@
                 },
                 {
                     "$ref": "#/definitions/InlineVariable"
+                },
+                {
+                    "$ref": "#/definitions/InlineHtmlElement"
                 },
                 {
                     "$ref": "#/definitions/InlineSectionReference"
@@ -1146,6 +1199,42 @@
                 }
             ]
         },
+        "BlockHtmlElement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Generic HTML element preserved as a structural block for renderer-level passthrough.",
+                    "properties": {
+                        "type": {
+                            "const": "htmlElement"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "tagName": {
+                            "type": "string"
+                        },
+                        "attributes": {
+                            "$ref": "#/definitions/HtmlAttributes"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "tagName",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "BlockNote": {
             "allOf": [
                 {
@@ -1306,6 +1395,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockHtml"
+                },
+                {
+                    "$ref": "#/definitions/BlockHtmlElement"
                 },
                 {
                     "$ref": "#/definitions/BlockLikeC4View"

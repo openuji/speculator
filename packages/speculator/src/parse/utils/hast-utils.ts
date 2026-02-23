@@ -10,6 +10,7 @@ import type { Text, RootContent as MdastRootContent, Root as MdastRoot } from 'm
 import type { ParseContext, NodeWithPosition } from '#src/parse/registry';
 import type { Inline, SourcePos, Block, Section, BlockParagraph } from '#src/types/ast.generated';
 import { visit } from 'unist-util-visit';
+import { createBlockHtmlElement, createInlineHtmlElement } from './html-element-utils.js';
 
 
 /**
@@ -70,7 +71,7 @@ export function getTextContent(element: Element): string {
     return text;
 }
 
-import { parseMarkdownInlines, parseMarkdownBlocks } from './markdown-utils.js';
+import { isHtmlBlockTag, parseMarkdownInlines, parseMarkdownBlocks } from './markdown-utils.js';
 
 /**
  * Transform a hast node to Speculator inline(s) using HTML handlers.
@@ -97,8 +98,11 @@ export function transformHastInline(node: HastRootContent, ctx: ParseContext): I
         return handler.handleInline(element, ctx);
     }
 
-    // Fallback: recurse into children if no handler for this tag
-    return ctx.transformInlineChildren(element.children);
+    return createInlineHtmlElement(
+        element,
+        ctx,
+        ctx.transformInlineChildren(element.children),
+    );
 }
 
 /**
@@ -119,19 +123,22 @@ export function transformHastBlock(node: HastRootContent, ctx: ParseContext): (S
         return [result];
     }
 
-    // Fallback: wrap as paragraph if it has inline content
-    const sourcePos = ctx.createSourcePos(element);
-    const inlines = ctx.transformInlineChildren(element.children);
-    if (inlines.length > 0) {
-        const result: BlockParagraph = {
+    const inlineHandler = ctx.registry.getHtmlInlineHandler(tagName);
+    if (inlineHandler?.handleInline) {
+        const inlineResult = inlineHandler.handleInline(element, ctx);
+        if (inlineResult === null) return [];
+
+        const sourcePos = ctx.createSourcePos(element);
+        const inlines = Array.isArray(inlineResult) ? inlineResult : [inlineResult];
+        const paragraph: BlockParagraph = {
             type: 'paragraph',
             children: inlines,
         };
-        if (sourcePos) result.sourcePos = sourcePos;
-        return [result];
+        if (sourcePos) paragraph.sourcePos = sourcePos;
+        return [paragraph];
     }
 
-    return [];
+    return [createBlockHtmlElement(element, ctx, ctx.transformBlockChildren(element.children))];
 }
 
 /**
@@ -260,8 +267,10 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
                 if (child.type === 'element') {
                     // We know it's an element, but TS needs help differentiating from the generic object
                     const element = child as Element;
-                    const handler = hastCtx.registry.getHtmlBlockHandler(element.tagName.toLowerCase());
-                    if (handler?.handleBlock) {
+                    const tagName = element.tagName.toLowerCase();
+                    const handler = hastCtx.registry.getHtmlBlockHandler(tagName);
+                    const shouldTreatAsBlock = !!handler?.handleBlock || isHtmlBlockTag(tagName);
+                    if (shouldTreatAsBlock) {
                         flushInlines();
                         results.push(...transformHastBlock(child as unknown as HastRootContent, hastCtx));
                         continue;

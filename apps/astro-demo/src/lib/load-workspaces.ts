@@ -295,9 +295,5 @@ const buildWorkspaceViews = async (): Promise<LoadedWorkspaces> => {
 };
 
 export const loadWorkspaces = async (): Promise<LoadedWorkspaces> => {
-  if (!cachedPromise) {
-    cachedPromise = buildWorkspaceViews();
-  }
-
-  return cachedPromise;
+return buildWorkspaceViews();
 };

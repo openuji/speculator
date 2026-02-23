@@ -24,6 +24,8 @@ import {
     type NodeWithPosition,
 } from '#src/parse/registry';
 import { getAttr, getTextContent } from '#src/parse/utils/hast-utils';
+import { isHtmlBlockTag } from '#src/parse/utils/markdown-utils';
+import { createBlockHtmlElement, createInlineHtmlElement } from '#src/parse/utils/html-element-utils';
 
 /**
  * Create source position from hast node position
@@ -95,21 +97,18 @@ export class HtmlUnitParser implements UnitParser {
      * Create parse context for handlers
      */
     private createContext(unit: SourceUnit): ParseContext {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-
         return {
             unit,
             createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            transformInlineChildren: (children) => self.transformInlineChildren(children as RootContent[], unit),
+            transformInlineChildren: (children) => this.transformInlineChildren(children as RootContent[], unit),
             transformBlockChildren: (children) => {
                 const results: (Section | Block)[] = [];
-                const ctx = self.createContext(unit);
+                const ctx = this.createContext(unit);
                 let currentInlines: RootContent[] = [];
 
                 const flushInlines = () => {
                     if (currentInlines.length > 0) {
-                        const inlines = self.transformInlineChildren(currentInlines, unit);
+                        const inlines = this.transformInlineChildren(currentInlines, unit);
                         if (inlines.length > 0) {
                             results.push({
                                 type: 'paragraph',
@@ -123,10 +122,12 @@ export class HtmlUnitParser implements UnitParser {
                 for (const child of children as RootContent[]) {
                     if (child.type === 'element') {
                         const element = child as Element;
-                        const handler = self.registry.getHtmlBlockHandler(element.tagName.toLowerCase());
-                        if (handler?.handleBlock) {
+                        const tagName = element.tagName.toLowerCase();
+                        const handler = this.registry.getHtmlBlockHandler(tagName);
+                        const shouldTreatAsBlock = !!handler?.handleBlock || isHtmlBlockTag(tagName);
+                        if (shouldTreatAsBlock) {
                             flushInlines();
-                            results.push(...self.transformBlock(child, ctx));
+                            results.push(...this.transformBlock(child, ctx));
                             continue;
                         }
                     }
@@ -140,7 +141,7 @@ export class HtmlUnitParser implements UnitParser {
             },
             getTextContent,
             getAttr,
-            registry: self.registry,
+            registry: this.registry,
         };
     }
 
@@ -163,32 +164,22 @@ export class HtmlUnitParser implements UnitParser {
             return [result];
         }
 
-        // Fallback: try to handle as inline (e.g., <dfn> or <span> at top level)
-        const inline = this.transformInline(element, ctx.unit);
-        if (inline) {
+        const inlineHandler = this.registry.getHtmlInlineHandler(tagName);
+        if (inlineHandler?.handleInline) {
+            const inlineResult = inlineHandler.handleInline(element, ctx);
+            if (inlineResult === null) return [];
+
             const sourcePos = ctx.createSourcePos(element);
             const result: BlockParagraph = {
                 type: 'paragraph',
-                children: Array.isArray(inline) ? inline : [inline],
+                children: Array.isArray(inlineResult) ? inlineResult : [inlineResult],
             };
             if (sourcePos) result.sourcePos = sourcePos;
             return [result];
         }
 
-        // Deep fallback: wrap children in paragraph
-        const sourcePos = ctx.createSourcePos(element);
-        const inlines = ctx.transformInlineChildren(element.children);
-        if (inlines.length > 0) {
-            const result: BlockParagraph = {
-                type: 'paragraph',
-                children: inlines,
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return [result];
-        }
-
-
-        return [];
+        const children = ctx.transformBlockChildren(element.children);
+        return [createBlockHtmlElement(element, ctx, children)];
     }
 
     /**
@@ -222,13 +213,8 @@ export class HtmlUnitParser implements UnitParser {
             return result;
         }
 
-        // Fallback: extract text content
-        const text = getTextContent(element);
-        if (text.trim()) {
-            return { type: 'text', value: text };
-        }
-
-        return null;
+        const children = this.transformInlineChildren(element.children, unit);
+        return createInlineHtmlElement(element, ctx, children);
     }
 
     /**
