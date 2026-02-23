@@ -34,10 +34,7 @@ describe('MDX Line Reporting Precise Check', () => {
 
 
         try {
-            const ast = parser.parse(unit);
-
-            expect(ast).toMatchSnapshot();
-
+            parser.parse(unit);
             
             expect.fail('Should have failed parsing');
         } catch (error: unknown) {

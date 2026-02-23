@@ -17,6 +17,7 @@ export { DfnHtmlParser } from './html/DfnHtmlParser.js';
 export { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 export { AsideHtmlParser } from './html/AsideHtmlParser.js';
 export { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
+export { VocabHtmlParser } from './html/VocabHtmlParser.js';
 export { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 export { MiscHtmlParser } from './html/MiscHtmlParser.js';
 export { IdlHtmlParser } from './html/IdlHtmlParser.js';
@@ -46,6 +47,7 @@ import { DfnHtmlParser } from './html/DfnHtmlParser.js';
 import { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 import { AsideHtmlParser } from './html/AsideHtmlParser.js';
 import { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
+import { VocabHtmlParser } from './html/VocabHtmlParser.js';
 import { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 import { MiscHtmlParser } from './html/MiscHtmlParser.js';
 import { IdlHtmlParser } from './html/IdlHtmlParser.js';
@@ -71,6 +73,7 @@ export const coreHtmlParsers: HtmlParserModule[] = [
     // ReSpec-specific parsers (higher priority)
     DfnHtmlParser,       // order: 5
     ReferenceHtmlParser,      // order: 5
+    VocabHtmlParser,          // order: 4
     SpecStatementHtmlParser,  // order: 5
     AsideHtmlParser,     // order: 8
     LikeC4ViewHtmlParser,     // order: 9
