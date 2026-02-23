@@ -82,6 +82,15 @@ export interface SourceUnit {
      * Used to compute accurate sourcePos for parsed AST nodes.
      */
     startLine: number;
+
+    /**
+     * Pre-read sibling files keyed by canonical path.
+     * 
+     * Populated by the preprocess stage for files relevant to the parser
+     * (e.g. `.ttl`, `.jsonld` vocabulary files next to the source file).
+     * Allows parsers to remain isomorphic without accessing the filesystem directly.
+     */
+    sideFiles?: Record<string, string>;
 }
 
 // ============================================================================

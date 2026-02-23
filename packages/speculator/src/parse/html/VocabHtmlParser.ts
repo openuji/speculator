@@ -2,12 +2,12 @@
  * Vocab HTML Parser
  *
  * Handles <spec-vocab> custom elements.
- * Scans for sibling metadata files (*.ttl, *.jsonld, *.schema.json)
- * and generates normative prose (Tables, Statements) from them.
+ * Reads pre-loaded sibling metadata from `unit.sideFiles` (populated at preprocess time)
+ * to generate normative prose (Tables, Statements) from vocabulary files.
+ *
+ * This parser is fully isomorphic — it does NOT access the filesystem directly.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import * as N3 from 'n3';
 import type { Element } from 'hast';
 import type { HtmlParserModule, ParseContext, BlockHandlerResult } from '#src/parse/registry';
@@ -23,81 +23,16 @@ export const VocabHtmlParser: HtmlParserModule = {
         if (!term) return null;
 
         const sourcePos = ctx.createSourcePos(element);
-        const sourceFile = ctx.unit.file;
-        const dir = path.dirname(sourceFile);
+        const sideFiles = ctx.unit.sideFiles;
+        if (!sideFiles || Object.keys(sideFiles).length === 0) return null;
 
-        let siblings: string[];
-        try {
-            siblings = fs.readdirSync(dir) as string[];
-        } catch {
-            return null;
-        }
-
-        const metadataFiles = siblings.filter(f => 
-            f.endsWith('.ttl') || f.endsWith('.jsonld') || f.endsWith('.schema.json')
-        ).map(f => path.join(dir, f));
-
-        for (const file of metadataFiles) {
-            if (file.endsWith('.ttl')) {
-                const content = fs.readFileSync(file, 'utf-8');
-                try {
-                    const store = new N3.Store();
-                    const prefixes: Record<string, string> = {};
-
-                    // N3 synchronous parse with prefix callback (3rd arg)
-                    const parser = new N3.Parser();
-                    const quads = parser.parse(content, null, (prefix, ns) => {
-                        if (prefix && ns) prefixes[prefix] = ns.value ?? ns;
-                    });
-                    store.addQuads(quads);
-
-                    // Resolve IRI from prefixed term like "ujg:Node"
-                    let termIri: string | undefined;
-                    if (term.includes(':')) {
-                        const colonIdx = term.indexOf(':');
-                        const prefix = term.slice(0, colonIdx);
-                        const local = term.slice(colonIdx + 1);
-                        const ns = prefixes[prefix];
-                        if (ns) {
-                            termIri = ns + local;
-                        }
-                    }
-
-                    // Fallback: local name search
-                    if (!termIri) {
-                        const localName = term.includes(':') ? term.split(':').pop()! : term;
-                        const subject = store.getSubjects(null, null, null).find(s =>
-                            s.termType === 'NamedNode' &&
-                            (s.value.endsWith('#' + localName) || s.value.endsWith('/' + localName))
-                        );
-                        termIri = subject?.value;
-                    }
-
-                    if (termIri) {
-                        return generateClassProse(termIri, store, ctx, sourcePos);
-                    }
-                } catch (e) {
-                    console.warn(`VocabHtmlParser: Failed to parse TTL file ${file}:`, e);
-                }
-            } else if (file.endsWith('.jsonld')) {
-                try {
-                    const content = JSON.parse(fs.readFileSync(file, 'utf-8'));
-                    const graph = content['@graph'] || (Array.isArray(content) ? content : [content]);
-                    const localName = term.includes(':') ? term.split(':').pop()! : term;
-
-                    const termNode = graph.find((node: Record<string, unknown>) =>
-                        typeof node['@id'] === 'string' &&
-                        (node['@id'] === term ||
-                         (node['@id'] as string).endsWith('#' + localName) ||
-                         (node['@id'] as string).endsWith('/' + localName))
-                    );
-
-                    if (termNode) {
-                        return generateClassProseFromJson(termNode, sourcePos);
-                    }
-                } catch (e) {
-                    console.warn(`VocabHtmlParser: Failed to parse JSON-LD file ${file}:`, e);
-                }
+        for (const [filePath, content] of Object.entries(sideFiles)) {
+            if (filePath.endsWith('.ttl')) {
+                const result = parseTtl(content, filePath, term, ctx, sourcePos);
+                if (result) return result;
+            } else if (filePath.endsWith('.jsonld')) {
+                const result = parseJsonLd(content, term, sourcePos);
+                if (result) return result;
             }
         }
 
@@ -105,19 +40,108 @@ export const VocabHtmlParser: HtmlParserModule = {
     }
 };
 
+// ============================================================================
+// TTL Parsing
+// ============================================================================
+
+function parseTtl(
+    content: string,
+    filePath: string,
+    term: string,
+    ctx: ParseContext,
+    sourcePos: SourcePos
+): BlockHandlerResult {
+    try {
+        const store = new N3.Store();
+        const prefixes: Record<string, string> = {};
+
+        const parser = new N3.Parser();
+        const quads = parser.parse(content, null, (prefix, ns) => {
+            if (prefix && ns) prefixes[prefix] = ns.value ?? ns;
+        });
+        store.addQuads(quads);
+
+        const termIri = resolveTermIri(term, prefixes, store);
+        if (termIri) {
+            return generateClassProse(termIri, store, ctx, sourcePos);
+        }
+    } catch (e) {
+        console.warn(`VocabHtmlParser: Failed to parse TTL file ${filePath}:`, e);
+    }
+    return null;
+}
+
+function resolveTermIri(term: string, prefixes: Record<string, string>, store: N3.Store): string | undefined {
+    // Try prefix expansion first (e.g. "ujg:Node")
+    if (term.includes(':')) {
+        const colonIdx = term.indexOf(':');
+        const prefix = term.slice(0, colonIdx);
+        const local = term.slice(colonIdx + 1);
+        const ns = prefixes[prefix];
+        if (ns) return ns + local;
+    }
+
+    // Fallback: match local name in store subjects
+    const localName = term.includes(':') ? term.split(':').pop()! : term;
+    const subject = store.getSubjects(null, null, null).find(s =>
+        s.termType === 'NamedNode' &&
+        (s.value.endsWith('#' + localName) || s.value.endsWith('/' + localName))
+    );
+    return subject?.value;
+}
+
+// ============================================================================
+// JSON-LD Parsing
+// ============================================================================
+
+function parseJsonLd(
+    content: string,
+    term: string,
+    sourcePos: SourcePos
+): BlockHandlerResult {
+    try {
+        const parsed: unknown = JSON.parse(content);
+        const graph = Array.isArray((parsed as Record<string, unknown>)['@graph'])
+            ? ((parsed as Record<string, unknown>)['@graph'] as unknown[])
+            : Array.isArray(parsed)
+                ? (parsed as unknown[])
+                : [parsed];
+
+        const localName = term.includes(':') ? term.split(':').pop()! : term;
+
+        const termNode = graph.find((node): node is Record<string, unknown> =>
+            typeof (node as Record<string, unknown>)['@id'] === 'string' &&
+            (
+                (node as Record<string, unknown>)['@id'] === term ||
+                ((node as Record<string, unknown>)['@id'] as string).endsWith('#' + localName) ||
+                ((node as Record<string, unknown>)['@id'] as string).endsWith('/' + localName)
+            )
+        );
+
+        if (termNode) {
+            return generateClassProseFromJson(termNode, sourcePos);
+        }
+    } catch (e) {
+        console.warn(`VocabHtmlParser: Failed to parse JSON-LD:`, e);
+    }
+    return null;
+}
+
+// ============================================================================
+// Prose Generation
+// ============================================================================
+
 const RDFS = {
     label: 'http://www.w3.org/2000/01/rdf-schema#label',
     comment: 'http://www.w3.org/2000/01/rdf-schema#comment',
     domain: 'http://www.w3.org/2000/01/rdf-schema#domain',
-    range: 'http://www.w3.org/2000/01/rdf-schema#range'
 };
 
 function generateClassProse(iri: string, store: N3.Store, ctx: ParseContext, sourcePos: SourcePos): Block[] {
+    void ctx; // ctx reserved for future use (e.g. xref linking)
     const blocks: Block[] = [];
 
-    // 1. Heading or Label
     const comment = store.getObjects(N3.DataFactory.namedNode(iri), N3.DataFactory.namedNode(RDFS.comment), null)[0]?.value;
-
     if (comment) {
         blocks.push({
             type: 'paragraph',
@@ -126,7 +150,6 @@ function generateClassProse(iri: string, store: N3.Store, ctx: ParseContext, sou
         });
     }
 
-    // 2. Requirement Sentence
     blocks.push({
         type: 'paragraph',
         children: [
@@ -137,10 +160,7 @@ function generateClassProse(iri: string, store: N3.Store, ctx: ParseContext, sou
         sourcePos
     });
 
-    // 3. Property Table
-    // Properties are those having rdfs:domain the current IRI
     const properties = store.getQuads(null, N3.DataFactory.namedNode(RDFS.domain), N3.DataFactory.namedNode(iri), null);
-    
     if (properties.length > 0) {
         const rows: TableRow[] = [
             {
@@ -157,16 +177,15 @@ function generateClassProse(iri: string, store: N3.Store, ctx: ParseContext, sou
             const propNode = quad.subject;
             const propIri = propNode.value;
             const propName = propIri.split(/[#/]/).pop() || propIri;
-            
             const pComment = store.getObjects(propNode, N3.DataFactory.namedNode(RDFS.comment), null)[0]?.value || '';
-            const pLabel = store.getObjects(propNode, N3.DataFactory.namedNode(RDFS.label), null)[0]?.value;
+            const pLabel = store.getObjects(propNode, N3.DataFactory.namedNode(RDFS.label), null)[0]?.value || '';
 
             rows.push({
                 type: 'tableRow',
                 children: [
                     createCell(propName, true),
-                    createCell('required'), // Default to required for now
-                    createCell(pComment || pLabel || '')
+                    createCell('required'),
+                    createCell(pComment || pLabel)
                 ]
             });
         }
@@ -187,8 +206,8 @@ function generateClassProseFromJson(node: Record<string, unknown>, sourcePos: So
     const comment = node['rdfs:comment'] || node['comment'] || node['description'];
 
     if (comment) {
-        const commentText = typeof comment === 'string' 
-            ? comment 
+        const commentText = typeof comment === 'string'
+            ? comment
             : (comment as Record<string, string>)['@value'] || '';
         blocks.push({
             type: 'paragraph',
@@ -205,9 +224,12 @@ function generateClassProseFromJson(node: Record<string, unknown>, sourcePos: So
         sourcePos
     });
 
-    // TODO: Handle properties from JSON-LD if present (e.g. if graph contains them)
     return blocks;
 }
+
+// ============================================================================
+// Cell helpers
+// ============================================================================
 
 function createHeaderCell(text: string): TableCell {
     return {
@@ -221,8 +243,8 @@ function createCell(text: string, code: boolean = false): TableCell {
     return {
         type: 'tableCell',
         children: [
-            code 
-                ? { type: 'inlineCode', value: text } 
+            code
+                ? { type: 'inlineCode', value: text }
                 : { type: 'text', value: text }
         ]
     };
