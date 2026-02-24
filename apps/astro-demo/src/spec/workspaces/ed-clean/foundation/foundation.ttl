@@ -1,0 +1,40 @@
+@prefix fnd:  <https://specs.openuji.org/ed/foundation#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# ──────────────────────────────────────────────
+# Classes
+# ──────────────────────────────────────────────
+
+fnd:SessionToken a owl:Class ;
+    rdfs:label "Session Token" ;
+    rdfs:comment "An opaque bearer credential that binds a client session to its request context. Issued on successful authentication and invalidated on logout or expiry." .
+
+# ──────────────────────────────────────────────
+# Properties of SessionToken
+# ──────────────────────────────────────────────
+
+fnd:tokenId a owl:DatatypeProperty ;
+    rdfs:domain fnd:SessionToken ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "token id" ;
+    rdfs:comment "Unique opaque identifier for this token. MUST be cryptographically random (≥128 bits)." .
+
+fnd:issuedAt a owl:DatatypeProperty ;
+    rdfs:domain fnd:SessionToken ;
+    rdfs:range  xsd:dateTimeStamp ;
+    rdfs:label  "issued at" ;
+    rdfs:comment "ISO-8601 timestamp recording when the token was minted." .
+
+fnd:expiresAt a owl:DatatypeProperty ;
+    rdfs:domain fnd:SessionToken ;
+    rdfs:range  xsd:dateTimeStamp ;
+    rdfs:label  "expires at" ;
+    rdfs:comment "ISO-8601 timestamp after which the token MUST be considered invalid." .
+
+fnd:scope a owl:DatatypeProperty ;
+    rdfs:domain fnd:SessionToken ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "scope" ;
+    rdfs:comment "Space-delimited list of permission scopes granted to this token." .

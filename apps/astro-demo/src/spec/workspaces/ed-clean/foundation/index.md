@@ -6,12 +6,17 @@
 
 A <dfn id="session-token">session token</dfn> binds a client session to its request context.
 
-## Client Requirements {#client-requirements}
+## Data Model {#data-model}
 
-<section data-cop-concept="client">
-  <spec-statement id="client-auth">A client MUST send credentials before calling protected endpoints.</spec-statement>
-  <spec-statement>A client SHOULD rotate a [=session token=] after privileged actions.</spec-statement>
-</section>
+The following section is auto-generated from the vocabulary defined in `foundation.ttl`.
+<spec-statement>
+<spec-vocab class="fnd:SessionToken"></spec-vocab>
+</spec-statement>
+
+## Client Requirements {#client-requirements data-cop-concept="client-requirements"}
+
+<spec-statement id="client-auth">A client MUST send credentials before calling protected endpoints.</spec-statement>
+<spec-statement>A client SHOULD rotate a [=session token=] after privileged actions.</spec-statement>
 
 :::include ./partials/client-flow.html :::
 
