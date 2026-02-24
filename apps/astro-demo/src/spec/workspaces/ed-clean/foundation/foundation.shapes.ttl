@@ -1,0 +1,14 @@
+@prefix fnd:  <https://specs.openuji.org/ed/foundation#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+
+# ──────────────────────────────────────────────
+# Shapes
+# ──────────────────────────────────────────────
+
+fnd:SessionTokenShape a sh:NodeShape ;
+  sh:targetClass fnd:SessionToken ;
+  sh:property [
+    sh:path fnd:tokenId ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ] .

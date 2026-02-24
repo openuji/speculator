@@ -28,7 +28,8 @@ describe('Refactored MarkdownUnitParser', () => {
         expect(heading.id).toBe('node');
         expect(heading.dataCopConcept).toBe('node');
         // Check that the { #node ... } part is NOT in the text
-        const text = heading.children[0].value;
+        const child = heading.children[0];
+        const text = 'value' in child ? child.value : '';
         expect(text).not.toContain('{');
         expect(text).toBe('The Universal Node');
     });
