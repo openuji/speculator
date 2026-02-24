@@ -19,13 +19,13 @@ fnd:tokenId a owl:DatatypeProperty ;
     rdfs:domain fnd:SessionToken ;
     rdfs:range  xsd:string ;
     rdfs:label  "token id" ;
-    rdfs:comment "Unique opaque identifier for this token. MUST be cryptographically random (≥128 bits)." .
+    rdfs:comment "Unique opaque identifier for this token MUST be presented and cryptographically random (≥128 bits)." .
 
 fnd:issuedAt a owl:DatatypeProperty ;
     rdfs:domain fnd:SessionToken ;
     rdfs:range  xsd:dateTimeStamp ;
     rdfs:label  "issued at" ;
-    rdfs:comment "ISO-8601 timestamp recording when the token was minted." .
+    rdfs:comment "ISO-8601 timestamp recording when the token was minted. MUST be presented." .
 
 fnd:expiresAt a owl:DatatypeProperty ;
     rdfs:domain fnd:SessionToken ;
@@ -37,4 +37,4 @@ fnd:scope a owl:DatatypeProperty ;
     rdfs:domain fnd:SessionToken ;
     rdfs:range  xsd:string ;
     rdfs:label  "scope" ;
-    rdfs:comment "Space-delimited list of permission scopes granted to this token." .
+    rdfs:comment "Space-delimited list of permission scopes granted to this token. MAY be presented." .

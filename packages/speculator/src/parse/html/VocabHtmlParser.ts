@@ -742,15 +742,15 @@ function generateClassProse(iri: string, store: N3.Store, ctx: ParseContext, sou
         });
     }
 
-    blocks.push({
-        type: 'paragraph',
-        children: [
-            { type: 'text', value: 'It ' },
-            { type: 'requirement', keyword: 'MUST' },
-            { type: 'text', value: ' satisfy the following schema:' }
-        ],
-        sourcePos
-    });
+    // blocks.push({
+    //     type: 'paragraph',
+    //     children: [
+    //         { type: 'text', value: 'It ' },
+    //         { type: 'requirement', keyword: 'MUST' },
+    //         { type: 'text', value: ' satisfy the following schema:' }
+    //     ],
+    //     sourcePos
+    // });
 
     const propertyModels = buildClassPropertyModels(iri, store);
     if (propertyModels.length > 0) {

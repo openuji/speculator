@@ -1,0 +1,52 @@
+@prefix ex:   <https://example.org/ns#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+# ──────────────────────────────────────────────
+# ClassOne Definitions
+# ──────────────────────────────────────────────
+
+ex:classOneProp a rdf:Property ;
+    rdfs:domain ex:ClassOne ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "first property" ;
+    rdfs:comment "A required string property for ClassOne." .
+
+ex:ClassOneShape a sh:NodeShape ;
+  sh:targetClass ex:ClassOne ;
+  sh:property [
+    sh:path ex:classOneProp ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+# ──────────────────────────────────────────────
+# ClassTwo Definitions
+# ──────────────────────────────────────────────
+
+ex:classTwoPropA a rdf:Property ;
+    rdfs:domain ex:ClassTwo ;
+    rdfs:range  xsd:integer ;
+    rdfs:label  "priority" ;
+    rdfs:comment "Numeric priority for ClassTwo." .
+
+ex:classTwoPropB a rdf:Property ;
+    rdfs:domain ex:ClassTwo ;
+    rdfs:label  "optional context" ;
+    rdfs:comment "Optional text context." .
+
+ex:ClassTwoShape a sh:NodeShape ;
+  sh:targetClass ex:ClassTwo ;
+  sh:property [
+    sh:path ex:classTwoPropA ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path ex:classTwoPropB ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+  ] .

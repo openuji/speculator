@@ -1,4 +1,4 @@
-# Foundation Protocol {#foundation-protocol}
+# Foundation Protocol {#foundation-protocol data-cop-concept="protocol"}
 
 :::include ./partials/intro.md :::
 
@@ -31,6 +31,28 @@ The following section is auto-generated from the vocabulary defined in `foundati
 <spec-statement>A client SHOULD rotate a [=session token=] after privileged actions.</spec-statement>
 
 :::include ./partials/client-flow.html :::
+
+## JSON-LD Term Extraction Fallback {#json-ld-term-fallback}
+
+The following examples demonstrate the fallback to JSON-LD term extraction when a term is not found in Turtle definitions but exists in a `.jsonld` file (like `foundation.terms.jsonld`).
+
+### Using `rdfs:comment`
+
+<spec-statement>
+<spec-vocab term="ex:ClassOne"></spec-vocab>
+</spec-statement>
+
+### Using `comment`
+
+<spec-statement>
+<spec-vocab term="ex:ClassTwo"></spec-vocab>
+</spec-statement>
+
+### Using `description`
+
+<spec-statement>
+<spec-vocab term="ex:ClassThree"></spec-vocab>
+</spec-statement>
 
 ## References {#references-foundation}
 

@@ -11,4 +11,19 @@ fnd:SessionTokenShape a sh:NodeShape ;
     sh:path fnd:tokenId ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
+  ] ;
+  sh:property [
+    sh:path fnd:issuedAt ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ] ;
+  sh:property [
+    sh:path fnd:expiresAt ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ] ;
+  sh:property [
+    sh:path fnd:scope ;
+    sh:minCount 0 ;
+    sh:maxCount 1 ;
   ] .
