@@ -11,18 +11,6 @@ fnd:SessionToken a owl:Class ;
     rdfs:label "Session Token" ;
     rdfs:comment "An opaque bearer credential that binds a client session to its request context. Issued on successful authentication and invalidated on logout or expiry." .
 
-ujg:UJGDocument a owl:Class .
-ujg:Node        a owl:Class .
-
-ujg:documentImports a owl:ObjectProperty ;
-  rdfs:domain ujg:UJGDocument ; 
-  rdfs:range ujg:UJGDocument .
-
-ujg:documentNodes a owl:ObjectProperty;
-  rdfs:domain ujg:UJGDocument ; 
-  rdfs:range ujg:Node .
-
-
 # ──────────────────────────────────────────────
 # Properties of SessionToken
 # ──────────────────────────────────────────────

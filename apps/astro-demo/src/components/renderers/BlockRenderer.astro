@@ -52,7 +52,9 @@ type HtmlAttrs = Record<string, string | number | boolean>;
 const toHtmlAttrs = (raw: unknown, id?: string): HtmlAttrs => {
   const attrs: HtmlAttrs = {};
   if (raw && typeof raw === "object") {
-    for (const [name, value] of Object.entries(raw as Record<string, unknown>)) {
+    for (const [name, value] of Object.entries(
+      raw as Record<string, unknown>,
+    )) {
       if (value === null || value === false || value === undefined) continue;
       if (
         typeof value === "string" ||
@@ -208,7 +210,7 @@ const renderIdlInline = (node: Inline): string => {
           // @ts-ignore dynamic list tag
           <ListTag id={node.id} start={node.ordered ? node.start : undefined}>
             {node.children.map((item) => (
-              <li>
+              <li id={item.id}>
                 {item.children.map((child) => (
                   <RecursiveBlockRenderer node={child} {...blockProps} />
                 ))}
@@ -223,7 +225,7 @@ const renderIdlInline = (node: Inline): string => {
           <table id={node.id}>
             <tbody>
               {node.children.map((row) => (
-                <tr>
+                <tr id={row.id}>
                   {row.children.map((cell) =>
                     cell.header ? (
                       <th style={{ textAlign: cell.align || "left" }}>
@@ -329,7 +331,7 @@ const renderIdlInline = (node: Inline): string => {
         );
       }
 
-      case "specStatementGroup":
+      case "specStatementGroup": {
         return (
           <div
             class="spec-statement-group"
@@ -341,6 +343,7 @@ const renderIdlInline = (node: Inline): string => {
             ))}
           </div>
         );
+      }
 
       case "htmlElement": {
         const element = node as any;

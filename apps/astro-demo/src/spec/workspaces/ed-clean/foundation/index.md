@@ -9,13 +9,13 @@ A <dfn id="session-token">session token</dfn> binds a client session to its requ
 ## Data Model {#data-model}
 
 The following section is auto-generated from the vocabulary defined in `foundation.ttl`.
-<spec-statement>
+<spec-statement data-id-pattern="session-token-stmt-{\d}">
 <spec-vocab class="fnd:SessionToken"></spec-vocab>
 </spec-statement>
 
 ## JSON-LD formatting {#data-serialization}
 
-<spec-statement>
+<spec-statement data-id-pattern="json-ld-stmt-{\d}">
 <spec-vocab context></spec-vocab>
 </spec-statement>
 

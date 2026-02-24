@@ -83,6 +83,7 @@ exports[`Granular Markdown Parser Tests > shows project own ast with inline-like
         {
           "children": [],
           "dataCopConcept": undefined,
+          "dataIdPattern": undefined,
           "id": "stmt1",
           "level": "NONE",
           "sourcePos": {
