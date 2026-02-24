@@ -19,21 +19,50 @@ export const VocabHtmlParser: HtmlParserModule = {
     order: 4,
 
     handleBlock(element: Element, ctx: ParseContext): BlockHandlerResult {
-        const term = ctx.getAttr(element, 'class') || ctx.getAttr(element, 'property');
-        if (!term) return null;
-
         const sourcePos = ctx.createSourcePos(element);
         const sideFiles = ctx.unit.sideFiles;
         if (!sideFiles || Object.keys(sideFiles).length === 0) return null;
 
-        for (const [filePath, content] of Object.entries(sideFiles)) {
-            if (filePath.endsWith('.ttl')) {
-                const result = parseTtl(content, filePath, term, ctx, sourcePos);
-                if (result) return result;
-            } else if (filePath.endsWith('.jsonld')) {
-                const result = parseJsonLd(content, term, sourcePos);
-                if (result) return result;
+        const term = ctx.getAttr(element, 'class') || ctx.getAttr(element, 'property');
+        if (term) {
+            for (const [filePath, content] of Object.entries(sideFiles)) {
+                if (filePath.endsWith('.ttl')) {
+                    const result = parseTtl(content, filePath, term, ctx, sourcePos);
+                    if (result) return result;
+                } else if (filePath.endsWith('.jsonld')) {
+                    const result = parseJsonLd(content, term, sourcePos);
+                    if (result) return result;
+                }
             }
+            return null;
+        }
+
+        const contextAttr = ctx.getAttr(element, 'context');
+        if (contextAttr !== undefined) {
+            const isDefault = contextAttr === 'context' || contextAttr === '';
+            const folderName = ctx.unit.file ? ctx.unit.file.split('/').slice(-2, -1)[0] : '';
+
+            if (isDefault) {
+                // Try strictly matching the folder name first
+                for (const [filePath, content] of Object.entries(sideFiles)) {
+                    if (folderName && filePath.endsWith(`/${folderName}.context.jsonld`)) {
+                        return parseContextJsonLd(content, folderName, sourcePos, sideFiles);
+                    }
+                }
+                // Fallback: if exactly 1 context file is present
+                const contextFiles = Object.entries(sideFiles).filter(([f]) => f.endsWith('.context.jsonld'));
+                if (contextFiles.length === 1) {
+                    return parseContextJsonLd(contextFiles[0][1], folderName || 'default', sourcePos, sideFiles);
+                }
+            } else {
+                for (const [filePath, content] of Object.entries(sideFiles)) {
+                    if (filePath.endsWith('.context.jsonld') && (contextAttr === 'core' || filePath.includes(contextAttr))) {
+                        return parseContextJsonLd(content, contextAttr, sourcePos, sideFiles);
+                    }
+                }
+            }
+
+            return null;
         }
 
         return null;
@@ -125,6 +154,138 @@ function parseJsonLd(
         console.warn(`VocabHtmlParser: Failed to parse JSON-LD:`, e);
     }
     return null;
+}
+
+type ContextTermRule = {
+    term: string;
+    iri?: string;
+    typeCoercion?: string;
+    container?: string;
+    isNest?: boolean;
+    isAlias?: boolean;
+    targetKeyword?: string;
+};
+
+type ContextModel = {
+    vocab?: string;
+    name: string;
+    terms: ContextTermRule[];
+};
+
+function parseContextJsonLd(
+    content: string,
+    contextName: string,
+    sourcePos: SourcePos,
+    sideFiles?: Record<string, string>
+): BlockHandlerResult {
+    try {
+        const parsed: unknown = JSON.parse(content);
+        const doc = parsed as Record<string, unknown>;
+        const ctxNode = doc['@context'] || doc;
+
+        const flattenedContext = normalizeContext(ctxNode, sideFiles || {});
+
+        const model = extractContextModel(flattenedContext, contextName);
+        return generateContextProse(model, sourcePos);
+    } catch (e) {
+        console.warn(`VocabHtmlParser: Failed to parse JSON-LD Context:`, e);
+    }
+    return null;
+}
+
+function normalizeContext(ctxNode: unknown, sideFiles: Record<string, string>): Record<string, unknown> {
+    const flat: Record<string, unknown> = {};
+
+    const processNode = (node: unknown) => {
+        if (typeof node === 'string') {
+            // It could be an @import string instead of an object
+            const importedContent = findImportedContext(node, sideFiles);
+            if (importedContent) {
+                processNode(importedContent);
+            }
+        } else if (Array.isArray(node)) {
+            for (const item of node) {
+                processNode(item);
+            }
+        } else if (typeof node === 'object' && node !== null) {
+            const obj = node as Record<string, unknown>;
+            
+            // Handle @import
+            if (typeof obj['@import'] === 'string') {
+                const importUrl = obj['@import'];
+                const importedContent = findImportedContext(importUrl, sideFiles);
+                if (importedContent) {
+                    processNode(importedContent);
+                }
+            }
+
+            // Merge keys (overriding earlier ones, matching JSON-LD behavior)
+            for (const [k, v] of Object.entries(obj)) {
+                if (k !== '@import') {
+                    flat[k] = v;
+                }
+            }
+        }
+    };
+
+    processNode(ctxNode);
+    return flat;
+}
+
+function findImportedContext(url: string, sideFiles: Record<string, string>): unknown {
+    // Attempt to match the filename part of the URL (e.g. core.context.jsonld)
+    const targetFilename = url.split('/').pop() || url;
+    
+    for (const [filePath, content] of Object.entries(sideFiles)) {
+        if (filePath.endsWith(targetFilename)) {
+            try {
+                const parsed = JSON.parse(content) as Record<string, unknown>;
+                return parsed['@context'] || parsed;
+            } catch (e) {
+                console.warn(`VocabHtmlParser: Failed to parse imported JSON-LD context from ${filePath}:`, e);
+            }
+        }
+    }
+    return null;
+}
+
+function extractContextModel(ctxNode: Record<string, unknown>, contextName: string): ContextModel {
+    const model: ContextModel = {
+        name: contextName,
+        terms: []
+    };
+
+    if (typeof ctxNode['@vocab'] === 'string') {
+        model.vocab = ctxNode['@vocab'];
+    }
+
+    for (const [key, value] of Object.entries(ctxNode)) {
+        if (key.startsWith('@')) continue; // Skip keywords like @vocab, @version
+
+        if (typeof value === 'string') {
+            if (value === '@nest') { // e.g. "meta": "@nest"
+                model.terms.push({ term: key, isNest: true });
+            } else if (value.startsWith('@')) {
+                model.terms.push({ term: key, isAlias: true, targetKeyword: value });
+            } else {
+                model.terms.push({ term: key, iri: value });
+            }
+        } else if (typeof value === 'object' && value !== null) {
+            const termDef = value as Record<string, unknown>;
+            if (typeof termDef['@id'] === 'string') {
+                const rule: ContextTermRule = { term: key, iri: termDef['@id'] };
+                if (typeof termDef['@type'] === 'string') {
+                    rule.typeCoercion = termDef['@type'];
+                }
+                if (typeof termDef['@container'] === 'string') {
+                    rule.container = termDef['@container'];
+                }
+                model.terms.push(rule);
+            }
+        }
+    }
+
+    return model;
 }
 
 // ============================================================================
@@ -223,6 +384,140 @@ function generateClassProseFromJson(node: Record<string, unknown>, sourcePos: So
         ],
         sourcePos
     });
+
+    return blocks;
+}
+
+function generateContextProse(model: ContextModel, sourcePos: SourcePos): Block[] {
+    const blocks: Block[] = [];
+
+    // @vocab
+    if (model.vocab) {
+        blocks.push({
+            type: 'paragraph',
+            children: [
+                { type: 'text', value: 'The ' },
+                { type: 'inlineCode', value: model.name },
+                { type: 'text', value: ' JSON-LD context ' },
+                { type: 'requirement', keyword: 'MUST' },
+                { type: 'text', value: ' set ' },
+                { type: 'inlineCode', value: '@vocab' },
+                { type: 'text', value: ' to the ' },
+                { type: 'inlineCode', value: model.vocab },
+                { type: 'text', value: ' namespace.' }
+            ],
+            sourcePos
+        });
+    }
+
+    // Term mappings
+    for (const rule of model.terms) {
+        if (rule.isNest) {
+            blocks.push({
+                type: 'paragraph',
+                children: [
+                    { type: 'text', value: 'The ' },
+                    { type: 'inlineCode', value: rule.term },
+                    { type: 'text', value: ' term is an ' },
+                    { type: 'inlineCode', value: '@nest' },
+                    { type: 'text', value: ' alias; nested members ' },
+                    { type: 'requirement', keyword: 'MUST' },
+                    { type: 'text', value: ' be interpreted as direct properties.' }
+                ],
+                sourcePos
+            });
+        } else if (rule.isAlias) {
+            blocks.push({
+                type: 'paragraph',
+                children: [
+                    { type: 'text', value: 'The ' },
+                    { type: 'inlineCode', value: rule.term },
+                    { type: 'text', value: ' term ' },
+                    { type: 'requirement', keyword: 'MUST' },
+                    { type: 'text', value: ' be an alias for the JSON-LD ' },
+                    { type: 'inlineCode', value: rule.targetKeyword! },
+                    { type: 'text', value: ' keyword.' }
+                ],
+                sourcePos
+            });
+        } else if (rule.iri) {
+            if (rule.typeCoercion === '@id') {
+                blocks.push({
+                    type: 'paragraph',
+                    children: [
+                        { type: 'text', value: 'The ' },
+                        { type: 'inlineCode', value: rule.term },
+                        { type: 'text', value: ' term maps to ' },
+                        { type: 'inlineCode', value: rule.iri },
+                        { type: 'text', value: ' and values ' },
+                        { type: 'requirement', keyword: 'MUST' },
+                        { type: 'text', value: ' be interpreted as IRIs.' }
+                    ],
+                    sourcePos
+                });
+            } else if (rule.typeCoercion === '@json') {
+                blocks.push({
+                    type: 'paragraph',
+                    children: [
+                        { type: 'text', value: 'The ' },
+                        { type: 'inlineCode', value: rule.term },
+                        { type: 'text', value: ' term ' },
+                        { type: 'requirement', keyword: 'MAY' },
+                        { type: 'text', value: ' be represented as an ' },
+                        { type: 'inlineCode', value: '@json' },
+                        { type: 'text', value: ' literal.' }
+                    ],
+                    sourcePos
+                });
+            } else if (rule.typeCoercion) {
+                blocks.push({
+                    type: 'paragraph',
+                    children: [
+                        { type: 'text', value: 'The ' },
+                        { type: 'inlineCode', value: rule.term },
+                        { type: 'text', value: ' term maps to ' },
+                        { type: 'inlineCode', value: rule.iri },
+                        { type: 'text', value: ' and values ' },
+                        { type: 'requirement', keyword: 'MUST' },
+                        { type: 'text', value: ' be of type ' },
+                        { type: 'inlineCode', value: rule.typeCoercion },
+                        { type: 'text', value: '.' }
+                    ],
+                    sourcePos
+                });
+            } else {
+                blocks.push({
+                    type: 'paragraph',
+                    children: [
+                        { type: 'text', value: 'The ' },
+                        { type: 'inlineCode', value: rule.term },
+                        { type: 'text', value: ' term ' },
+                        { type: 'requirement', keyword: 'MUST' },
+                        { type: 'text', value: ' map to ' },
+                        { type: 'inlineCode', value: rule.iri },
+                        { type: 'text', value: '.' }
+                    ],
+                    sourcePos
+                });
+            }
+
+            if (rule.container === '@set') {
+                blocks.push({
+                    type: 'paragraph',
+                    children: [
+                        { type: 'text', value: 'The ' },
+                        { type: 'inlineCode', value: rule.term },
+                        { type: 'text', value: ' term uses ' },
+                        { type: 'inlineCode', value: '@set' },
+                        { type: 'text', value: '; values ' },
+                        { type: 'requirement', keyword: 'MUST' },
+                        { type: 'text', value: ' be handled as set/array form.' }
+                    ],
+                    sourcePos
+                });
+            }
+        }
+    }
 
     return blocks;
 }

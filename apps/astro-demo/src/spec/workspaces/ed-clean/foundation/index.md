@@ -13,6 +13,18 @@ The following section is auto-generated from the vocabulary defined in `foundati
 <spec-vocab class="fnd:SessionToken"></spec-vocab>
 </spec-statement>
 
+## JSON-LD formatting {#data-serialization}
+
+<spec-statement>
+<spec-vocab context></spec-vocab>
+</spec-statement>
+
+## Extended JSON-LD formatting {#extended-serialization}
+
+<spec-statement>
+<spec-vocab context="extended"></spec-vocab>
+</spec-statement>
+
 ## Client Requirements {#client-requirements data-cop-concept="client-requirements"}
 
 <spec-statement id="client-auth">A client MUST send credentials before calling protected endpoints.</spec-statement>
