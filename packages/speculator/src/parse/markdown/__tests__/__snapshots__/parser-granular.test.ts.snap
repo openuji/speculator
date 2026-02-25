@@ -1,0 +1,121 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Granular Markdown Parser Tests > shows project own ast with inline-like statement 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "sourcePos": {
+                "column": 18,
+                "endColumn": 33,
+                "endLine": 3,
+                "endOffset": 34,
+                "file": "test.md",
+                "line": 3,
+                "offset": 19,
+              },
+              "type": "text",
+              "value": "Some Definition",
+            },
+          ],
+          "dfnType": "dfn",
+          "forContexts": [
+            null,
+          ],
+          "linkTexts": [
+            "some definition",
+          ],
+          "sourcePos": {
+            "column": 13,
+            "endColumn": 39,
+            "endLine": 3,
+            "endOffset": 40,
+            "file": "test.md",
+            "line": 3,
+            "offset": 14,
+          },
+          "term": "some definition",
+          "type": "definition",
+        },
+        {
+          "sourcePos": {
+            "column": 39,
+            "endColumn": 51,
+            "endLine": 3,
+            "endOffset": 52,
+            "file": "test.md",
+            "line": 3,
+            "offset": 40,
+          },
+          "type": "text",
+          "value": " means some ",
+        },
+        {
+          "sourcePos": {
+            "column": 51,
+            "endColumn": 57,
+            "endLine": 3,
+            "endOffset": 58,
+            "file": "test.md",
+            "line": 3,
+            "offset": 52,
+          },
+          "type": "inlineCode",
+          "value": "very",
+        },
+        {
+          "sourcePos": {
+            "column": 57,
+            "endColumn": 1,
+            "endLine": 4,
+            "endOffset": 68,
+            "file": "test.md",
+            "line": 3,
+            "offset": 58,
+          },
+          "type": "text",
+          "value": " specific
+",
+        },
+        {
+          "children": [],
+          "dataCopConcept": undefined,
+          "dataIdPattern": undefined,
+          "id": "stmt1",
+          "level": "NONE",
+          "sourcePos": {
+            "column": 13,
+            "endColumn": 90,
+            "endLine": 4,
+            "endOffset": 157,
+            "file": "test.md",
+            "line": 4,
+            "offset": 80,
+          },
+          "type": "specStatementGroup",
+        },
+      ],
+      "sourcePos": {
+        "column": 13,
+        "endColumn": 90,
+        "endLine": 4,
+        "endOffset": 157,
+        "file": "test.md",
+        "line": 3,
+        "offset": 14,
+      },
+      "type": "paragraph",
+    },
+  ],
+  "id": "test-inline",
+  "sourcePos": {
+    "column": 1,
+    "file": "test.md",
+    "line": 1,
+  },
+  "type": "document",
+}
+`;

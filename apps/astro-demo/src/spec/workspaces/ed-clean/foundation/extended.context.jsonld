@@ -1,0 +1,14 @@
+{
+  "@context": {
+    "@import": "foundation.context.jsonld",
+      "extendedField": {
+        "@id": "fnd:extendedField",
+        "@type": "xsd:string"
+      },
+      "tags": {
+        "@id": "fnd:tags",
+        "@type": "@json"
+      }
+    }
+  
+}

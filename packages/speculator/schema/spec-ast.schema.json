@@ -87,6 +87,20 @@
                 }
             }
         },
+        "HtmlAttributeValue": {
+            "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+            ]
+        },
+        "HtmlAttributes": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/HtmlAttributeValue"
+            }
+        },
         "InlineText": {
             "allOf": [
                 {
@@ -586,6 +600,42 @@
                 }
             ]
         },
+        "InlineHtmlElement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Generic inline HTML element preserved in AST for renderer-level passthrough.",
+                    "properties": {
+                        "type": {
+                            "const": "htmlInlineElement"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "tagName": {
+                            "type": "string"
+                        },
+                        "attributes": {
+                            "$ref": "#/definitions/HtmlAttributes"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "tagName",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "Inline": {
             "oneOf": [
                 {
@@ -625,6 +675,9 @@
                     "$ref": "#/definitions/InlineVariable"
                 },
                 {
+                    "$ref": "#/definitions/InlineHtmlElement"
+                },
+                {
                     "$ref": "#/definitions/InlineSectionReference"
                 }
             ]
@@ -642,6 +695,13 @@
                         },
                         "id": {
                             "type": "string"
+                        },
+                        "tempId": {
+                            "type": "string"
+                        },
+                        "dataCopConcept": {
+                            "type": "string",
+                            "description": "Optional Class of Products (COP) identifier for this paragraph scope."
                         },
                         "children": {
                             "type": "array",
@@ -1146,6 +1206,42 @@
                 }
             ]
         },
+        "BlockHtmlElement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "description": "Generic HTML element preserved as a structural block for renderer-level passthrough.",
+                    "properties": {
+                        "type": {
+                            "const": "htmlElement"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "tagName": {
+                            "type": "string"
+                        },
+                        "attributes": {
+                            "$ref": "#/definitions/HtmlAttributes"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "tagName",
+                        "children"
+                    ]
+                }
+            ]
+        },
         "BlockNote": {
             "allOf": [
                 {
@@ -1231,6 +1327,10 @@
                         "dataCopConcept": {
                             "type": "string",
                             "description": "Optional explicit Class of Products (COP) identifier for this statement."
+                        },
+                        "dataIdPattern": {
+                            "type": "string",
+                            "description": "Optional pattern (e.g. `req-{\\d}`, `req-{\\a}`) to assign deterministic IDs to generated nested statements."
                         }
                     },
                     "required": [
@@ -1269,6 +1369,10 @@
                         "dataCopConcept": {
                             "type": "string",
                             "description": "Optional explicit Class of Products (COP) identifier for this group scope."
+                        },
+                        "dataIdPattern": {
+                            "type": "string",
+                            "description": "Optional pattern (e.g. `req-{\\d}`, `req-{\\a}`) to assign deterministic IDs to generated nested statements."
                         }
                     },
                     "required": [
@@ -1306,6 +1410,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockHtml"
+                },
+                {
+                    "$ref": "#/definitions/BlockHtmlElement"
                 },
                 {
                     "$ref": "#/definitions/BlockLikeC4View"

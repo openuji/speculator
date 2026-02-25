@@ -96,8 +96,8 @@ export function isBlock(node: unknown): node is Block {
   const type = (node as any).type;
   return [
     'paragraph', 'heading', 'codeBlock', 'example',
-    'blockquote', 'list', 'table', 'thematicBreak', 'html', 'likeC4View',
-    'note', 'specStatement'
+    'blockquote', 'list', 'table', 'thematicBreak', 'html', 'htmlElement', 'likeC4View',
+    'note', 'specStatement', 'specStatementGroup', 'idl'
   ].includes(type);
 }
 
@@ -109,7 +109,7 @@ export function isInline(node: unknown): node is Inline {
   const type = (node as any).type;
   return [
     'text', 'emphasis', 'strong', 'inlineCode', 'link',
-    'image', 'definition', 'requirement', 'issue', 'cite', 'variable',
+    'image', 'htmlInlineElement', 'definition', 'requirement', 'issue', 'cite', 'variable',
     'workspaceDfnReference', 'workspaceIdlReference', 'workspaceElementReference',
     'externalDfnReference', 'externalIdlReference', 'externalElementReference',
     'sectionReference'

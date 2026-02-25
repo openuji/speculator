@@ -9,6 +9,28 @@ interface Props {
 
 const { nodes, basePath } = Astro.props;
 const sharedProps = { basePath };
+
+type HtmlAttrs = Record<string, string | number | boolean>;
+
+const toHtmlAttrs = (raw: unknown, id?: string): HtmlAttrs => {
+  const attrs: HtmlAttrs = {};
+  if (raw && typeof raw === "object") {
+    for (const [name, value] of Object.entries(raw as Record<string, unknown>)) {
+      if (value === null || value === false || value === undefined) continue;
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        attrs[name] = value;
+      }
+    }
+  }
+  if (id && attrs.id === undefined) {
+    attrs.id = id;
+  }
+  return attrs;
+};
 ---
 
 {
@@ -176,7 +198,8 @@ const sharedProps = { basePath };
             ? "ui-badge ui-badge-neutral"
             : "ui-badge ui-badge-neutral";
 
-        const citeHref = cite.url || (cite.targetId ? `#${cite.targetId}` : undefined);
+        const citeHref =
+          cite.url || (cite.targetId ? `#${cite.targetId}` : undefined);
         const citeContent =
           cite.children && cite.children.length > 0 ? (
             <RecursiveInlineRenderer nodes={cite.children} {...sharedProps} />
@@ -208,11 +231,18 @@ const sharedProps = { basePath };
       case "sectionReference": {
         const ref = node;
         return (
-          <a href={`#${ref.targetId}`} class="sec-ref" title={ref.targetTitle || undefined}>
+          <a
+            href={`#${ref.targetId}`}
+            class="sec-ref"
+            title={ref.targetTitle || undefined}
+          >
             {ref.children && ref.children.length > 0 ? (
               <>
                 <span class="toc-number">{`\u00a7${ref.targetNumber || ""}`}</span>{" "}
-                <RecursiveInlineRenderer nodes={ref.children} {...sharedProps} />
+                <RecursiveInlineRenderer
+                  nodes={ref.children}
+                  {...sharedProps}
+                />
               </>
             ) : (
               <span class="toc-number">{`\u00a7${ref.targetNumber || ""}`}</span>
@@ -221,8 +251,24 @@ const sharedProps = { basePath };
         );
       }
 
+      case "htmlInlineElement": {
+        const element = node as any;
+        const Tag = element.tagName as any;
+        const attrs = toHtmlAttrs(element.attributes, element.id);
+
+        return (
+          <Tag {...attrs}>
+            <RecursiveInlineRenderer nodes={element.children} {...sharedProps} />
+          </Tag>
+        );
+      }
+
       default:
-        return <span class="ui-badge ui-badge-danger">Unknown inline: {(node as Inline).type}</span>;
+        return (
+          <span class="ui-badge ui-badge-danger">
+            Unknown inline: {(node as Inline).type}
+          </span>
+        );
     }
   })
 }

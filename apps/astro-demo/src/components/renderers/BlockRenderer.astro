@@ -33,8 +33,43 @@ const escapeHtml = (value: string): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
+const serializeHtmlAttributes = (
+  attributes: Record<string, string | number | boolean | null> = {},
+): string =>
+  Object.entries(attributes)
+    .flatMap(([name, value]) => {
+      if (value === null || value === false || value === undefined) return [];
+      if (value === true) return [` ${name}`];
+      return [` ${name}="${escapeHtml(String(value))}"`];
+    })
+    .join("");
+
 const renderIdlInlines = (nodes: Inline[]): string =>
   nodes.map((inline) => renderIdlInline(inline)).join("");
+
+type HtmlAttrs = Record<string, string | number | boolean>;
+
+const toHtmlAttrs = (raw: unknown, id?: string): HtmlAttrs => {
+  const attrs: HtmlAttrs = {};
+  if (raw && typeof raw === "object") {
+    for (const [name, value] of Object.entries(
+      raw as Record<string, unknown>,
+    )) {
+      if (value === null || value === false || value === undefined) continue;
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        attrs[name] = value;
+      }
+    }
+  }
+  if (id && attrs.id === undefined) {
+    attrs.id = id;
+  }
+  return attrs;
+};
 
 const renderIdlInline = (node: Inline): string => {
   switch (node.type) {
@@ -44,8 +79,12 @@ const renderIdlInline = (node: Inline): string => {
     case "definition": {
       const id = node.explicitId || node.id;
       const dfnFor = node.forContexts?.filter(Boolean).join(", ");
-      const dfnType = node.dfnType && node.dfnType !== "dfn" ? node.dfnType : "";
-      const text = node.children.length > 0 ? renderIdlInlines(node.children) : escapeHtml(node.term);
+      const dfnType =
+        node.dfnType && node.dfnType !== "dfn" ? node.dfnType : "";
+      const text =
+        node.children.length > 0
+          ? renderIdlInlines(node.children)
+          : escapeHtml(node.term);
       return `<dfn${id ? ` id="${escapeHtml(id)}"` : ""}${dfnFor ? ` data-dfn-for="${escapeHtml(dfnFor)}"` : ""}${dfnType ? ` data-dfn-type="${escapeHtml(dfnType)}"` : ""}>${text}</dfn>`;
     }
 
@@ -57,14 +96,18 @@ const renderIdlInline = (node: Inline): string => {
             ? `#${node.targetId}`
             : "#";
       const text =
-        node.children.length > 0 ? renderIdlInlines(node.children) : escapeHtml(node.targetTerm);
+        node.children.length > 0
+          ? renderIdlInlines(node.children)
+          : escapeHtml(node.targetTerm);
       return `<a href="${escapeHtml(href)}" class="xref" title="${escapeHtml(node.targetTerm)}">${text}</a>`;
     }
 
     case "externalIdlReference": {
       const href = node.url || "#";
       const text =
-        node.children.length > 0 ? renderIdlInlines(node.children) : escapeHtml(node.targetTerm);
+        node.children.length > 0
+          ? renderIdlInlines(node.children)
+          : escapeHtml(node.targetTerm);
       return `<a href="${escapeHtml(href)}" class="xref external" title="${escapeHtml(node.targetTerm)}" target="_blank" rel="noreferrer">${text}</a>`;
     }
 
@@ -77,11 +120,19 @@ const renderIdlInline = (node: Inline): string => {
     case "inlineCode":
       return `<code>${escapeHtml(node.value)}</code>`;
 
+    case "htmlInlineElement": {
+      const attrs = serializeHtmlAttributes((node as any).attributes || {});
+      return `<${(node as any).tagName}${attrs}>${renderIdlInlines(node.children || [])}</${(node as any).tagName}>`;
+    }
+
     default:
       if ("children" in node && Array.isArray(node.children)) {
         return renderIdlInlines(node.children as Inline[]);
       }
-      if ("value" in node && typeof (node as { value?: unknown }).value === "string") {
+      if (
+        "value" in node &&
+        typeof (node as { value?: unknown }).value === "string"
+      ) {
         return escapeHtml(String((node as { value: string }).value));
       }
       return "";
@@ -103,7 +154,10 @@ const renderIdlInline = (node: Inline): string => {
                 {sectionNumber && (
                   <span class="section-number">{sectionNumber}</span>
                 )}
-                <InlineRenderer nodes={node.heading.children} {...inlineProps} />
+                <InlineRenderer
+                  nodes={node.heading.children}
+                  {...inlineProps}
+                />
               </HeadingTag>
             )}
             {node.children.map((child) => (
@@ -133,7 +187,13 @@ const renderIdlInline = (node: Inline): string => {
         if (node.lang === "mermaid") {
           return <Mermaid code={node.value} id={node.id} />;
         }
-        return <CodeBlock code={node.value} language={node.lang || "text"} id={node.id} />;
+        return (
+          <CodeBlock
+            code={node.value}
+            language={node.lang || "text"}
+            id={node.id}
+          />
+        );
 
       case "blockquote":
         return (
@@ -150,7 +210,7 @@ const renderIdlInline = (node: Inline): string => {
           // @ts-ignore dynamic list tag
           <ListTag id={node.id} start={node.ordered ? node.start : undefined}>
             {node.children.map((item) => (
-              <li>
+              <li id={item.id}>
                 {item.children.map((child) => (
                   <RecursiveBlockRenderer node={child} {...blockProps} />
                 ))}
@@ -165,16 +225,24 @@ const renderIdlInline = (node: Inline): string => {
           <table id={node.id}>
             <tbody>
               {node.children.map((row) => (
-                <tr>
-                  {row.children.map((cell) => {
-                    const Cell = cell.header ? "th" : "td";
-                    return (
-                      // @ts-ignore dynamic cell tag
-                      <Cell style={{ textAlign: cell.align || "left" }}>
-                        <InlineRenderer nodes={cell.children} {...inlineProps} />
-                      </Cell>
-                    );
-                  })}
+                <tr id={row.id}>
+                  {row.children.map((cell) =>
+                    cell.header ? (
+                      <th style={{ textAlign: cell.align || "left" }}>
+                        <InlineRenderer
+                          nodes={cell.children}
+                          {...inlineProps}
+                        />
+                      </th>
+                    ) : (
+                      <td style={{ textAlign: cell.align || "left" }}>
+                        <InlineRenderer
+                          nodes={cell.children}
+                          {...inlineProps}
+                        />
+                      </td>
+                    ),
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -185,7 +253,13 @@ const renderIdlInline = (node: Inline): string => {
         return <hr id={node.id} />;
 
       case "likeC4View":
-        return <LikeC4 viewId={node.viewId} dynamicVariant={node.dynamicVariant} id={node.id} />;
+        return (
+          <LikeC4
+            viewId={node.viewId}
+            dynamicVariant={node.dynamicVariant}
+            id={node.id}
+          />
+        );
 
       case "idl": {
         const idlMarkup = renderIdlInlines(node.children);
@@ -244,17 +318,53 @@ const renderIdlInline = (node: Inline): string => {
         const statement = node as any;
         const level = String(statement.level || "statement").toUpperCase();
         const kind = level.includes("MUST") ? "warning" : "note";
+        const statementChildren = node.children as Inline[];
         return (
-          <Callout kind={kind} title={`Spec Statement ${level === "STATEMENT" ? "" : `(${level})`}`}>
+          <Callout
+            kind={kind}
+            title={`Spec Statement ${level === "STATEMENT" ? "" : `(${level})`}`}
+          >
             <p id={node.id}>
-              <InlineRenderer nodes={node.children} {...inlineProps} />
+              <InlineRenderer nodes={statementChildren} {...inlineProps} />
             </p>
           </Callout>
         );
       }
 
+      case "specStatementGroup": {
+        return (
+          <div
+            class="spec-statement-group"
+            id={node.id}
+            data-cop-concept={node.dataCopConcept}
+          >
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </div>
+        );
+      }
+
+      case "htmlElement": {
+        const element = node as any;
+        const Tag = element.tagName as any;
+        const attrs = toHtmlAttrs(element.attributes, element.id);
+
+        return (
+          <Tag {...attrs}>
+            {element.children.map((child: Block) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </Tag>
+        );
+      }
+
       default:
-        return <Callout kind="issue" title="Unknown block">{(node as any).type}</Callout>;
+        return (
+          <Callout kind="issue" title="Unknown block">
+            {(node as any).type}
+          </Callout>
+        );
     }
   })()
 }

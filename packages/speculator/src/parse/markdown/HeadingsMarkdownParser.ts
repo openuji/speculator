@@ -8,6 +8,18 @@ import type { Heading, RootContent as MdastRootContent } from 'mdast';
 import type { MarkdownParserModule, ParseContext } from '#src/parse/registry';
 import type { BlockHeading } from '#src/types/ast.generated';
 
+type HeadingProperties = {
+    id?: string;
+    unnumbered?: string | boolean;
+    'data-cop-concept'?: string;
+};
+
+type HeadingWithData = Heading & {
+    data?: {
+        hProperties?: HeadingProperties;
+    };
+};
+
 /**
  * Markdown parser module for heading nodes.
  */
@@ -17,45 +29,15 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
     order: 10,
 
     handleBlock(node: MdastRootContent, ctx: ParseContext): BlockHeading | null {
-        const headingNode = node as Heading;
+        const headingNode = node as HeadingWithData;
         const sourcePos = ctx.createSourcePos(node);
 
-        // Detect attribute block { .unnumbered #id data-cop-concept="..." }
-        let unnumbered = false;
-        let explicitId: string | undefined;
-        let dataCopConcept: string | undefined;
-
-        const children = headingNode.children;
-        if (children.length > 0) {
-            const lastChild = children[children.length - 1];
-            if (lastChild.type === 'text') {
-                const attrRegex = /\s*\{([^}]+)\}\s*$/;
-                const match = attrRegex.exec(lastChild.value);
-                if (match) {
-                    const attrContent = match[1];
-                    
-                    // Parse .unnumbered
-                    if (/\.unnumbered\b/.test(attrContent)) {
-                        unnumbered = true;
-                    }
-
-                    // Parse #id
-                    const idMatch = /#([^\s}]+)/.exec(attrContent);
-                    if (idMatch) {
-                        explicitId = idMatch[1];
-                    }
-
-                    // Parse data-cop-concept
-                    const dataCopMatch = /data-cop-concept=(?:"([^"]+)"|'([^']+)'|([^\s}]+))/.exec(attrContent);
-                    if (dataCopMatch) {
-                        dataCopConcept = dataCopMatch[1] || dataCopMatch[2] || dataCopMatch[3];
-                    }
-
-                    // Remove the attribute block from text
-                    lastChild.value = lastChild.value.replace(attrRegex, '');
-                }
-            }
-        }
+        // Read attributes from data (populated by remarkHeadingAttrBlocks)
+        const props = headingNode.data?.hProperties ?? {};
+        
+        const unnumbered = props.unnumbered === 'true' || props.unnumbered === true;
+        const explicitId = props.id as string | undefined;
+        const dataCopConcept = props['data-cop-concept'] as string | undefined;
 
         const result: BlockHeading = {
             type: 'heading',

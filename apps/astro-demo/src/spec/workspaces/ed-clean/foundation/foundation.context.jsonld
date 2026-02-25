@@ -1,0 +1,32 @@
+{
+  "@context": {
+    "@vocab": "https://specs.openuji.org/ed/foundation#",
+    "id": "@id",
+    "type": "@type",
+    "tokenId": {
+      "@id": "fnd:tokenId",
+      "@type": "xsd:string"
+    },
+    "issuedAt": {
+      "@id": "fnd:issuedAt",
+      "@type": "xsd:dateTimeStamp"
+    },
+    "expiresAt": {
+      "@id": "fnd:expiresAt",
+      "@type": "xsd:dateTimeStamp"
+    },
+    "scope": {
+      "@id": "fnd:scope",
+      "@type": "xsd:string"
+    },
+    "extensions": {
+      "@id": "fnd:extensions",
+      "@type": "@json"
+    },
+    "tags": {
+      "@id": "fnd:tags",
+      "@container": "@set"
+    },
+    "meta": "@nest"
+  }
+}

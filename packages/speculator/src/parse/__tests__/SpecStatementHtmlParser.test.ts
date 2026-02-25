@@ -55,6 +55,13 @@ describe('SpecStatementHtmlParser', () => {
         expect(stmt.id).toBeUndefined();
     });
 
+    it('extracts data-id-pattern', () => {
+        const unit = createUnit('<spec-statement data-id-pattern="req-{\\d}">The server MUST NOT disclose the secret.</spec-statement>');
+        const blocks = parser.parse(unit);
+        const stmt = blocks[0] as BlockSpecStatement;
+        expect(stmt.dataIdPattern).toBe('req-{\\d}');
+    });
+
     it('detects AMBIGUOUS if multiple keywords are present', () => {
         const unit = createUnit('<spec-statement>The server MUST NOT disclose the secret, but MAY log it.</spec-statement>');
         const blocks = parser.parse(unit);

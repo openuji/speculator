@@ -17,6 +17,7 @@ export { DfnHtmlParser } from './html/DfnHtmlParser.js';
 export { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 export { AsideHtmlParser } from './html/AsideHtmlParser.js';
 export { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
+export { VocabHtmlParser } from './html/VocabHtmlParser.js';
 export { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 export { MiscHtmlParser } from './html/MiscHtmlParser.js';
 export { IdlHtmlParser } from './html/IdlHtmlParser.js';
@@ -30,8 +31,7 @@ export { BlockquoteMarkdownParser } from './markdown/BlockquoteMarkdownParser.js
 export { TablesMarkdownParser } from './markdown/TablesMarkdownParser.js';
 export { InlinesMarkdownParser } from './markdown/InlinesMarkdownParser.js';
 export { ShorthandsMarkdownParser } from './markdown/ShorthandsMarkdownParser.js';
-export { HtmlParagraphMarkdownParser } from './markdown/HtmlParagraphMarkdownParser.js';
-export { HtmlBlockMarkdownParser } from './markdown/HtmlBlockMarkdownParser.js';
+export { MdxMarkdownParser } from './markdown/MdxMarkdownParser.js';
 export { MiscMarkdownParser } from './markdown/MiscMarkdownParser.js';
 
 // Import for aggregation
@@ -47,6 +47,7 @@ import { DfnHtmlParser } from './html/DfnHtmlParser.js';
 import { ReferenceHtmlParser } from './html/ReferenceHtmlParser.js';
 import { AsideHtmlParser } from './html/AsideHtmlParser.js';
 import { SpecStatementHtmlParser } from './html/SpecStatementHtmlParser.js';
+import { VocabHtmlParser } from './html/VocabHtmlParser.js';
 import { LikeC4ViewHtmlParser } from './html/LikeC4ViewHtmlParser.js';
 import { MiscHtmlParser } from './html/MiscHtmlParser.js';
 import { IdlHtmlParser } from './html/IdlHtmlParser.js';
@@ -59,8 +60,7 @@ import { BlockquoteMarkdownParser } from './markdown/BlockquoteMarkdownParser.js
 import { TablesMarkdownParser } from './markdown/TablesMarkdownParser.js';
 import { InlinesMarkdownParser } from './markdown/InlinesMarkdownParser.js';
 import { ShorthandsMarkdownParser } from './markdown/ShorthandsMarkdownParser.js';
-import { HtmlParagraphMarkdownParser } from './markdown/HtmlParagraphMarkdownParser.js';
-import { HtmlBlockMarkdownParser } from './markdown/HtmlBlockMarkdownParser.js';
+import { MdxMarkdownParser } from './markdown/MdxMarkdownParser.js';
 import { MiscMarkdownParser } from './markdown/MiscMarkdownParser.js';
 
 import type { HtmlParserModule, MarkdownParserModule } from './registry.js';
@@ -73,6 +73,7 @@ export const coreHtmlParsers: HtmlParserModule[] = [
     // ReSpec-specific parsers (higher priority)
     DfnHtmlParser,       // order: 5
     ReferenceHtmlParser,      // order: 5
+    VocabHtmlParser,          // order: 4
     SpecStatementHtmlParser,  // order: 5
     AsideHtmlParser,     // order: 8
     LikeC4ViewHtmlParser,     // order: 9
@@ -97,8 +98,7 @@ export const coreHtmlParsers: HtmlParserModule[] = [
 export const coreMarkdownParsers: MarkdownParserModule[] = [
     // Shorthands and HTML (highest priority)
     ShorthandsMarkdownParser,     // order: 5
-    HtmlParagraphMarkdownParser,  // order: 4
-    HtmlBlockMarkdownParser,      // order: 4
+    MdxMarkdownParser,            // order: 5
     // Standard parsers
     HeadingsMarkdownParser,  // order: 10
     ParagraphsMarkdownParser,// order: 10

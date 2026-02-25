@@ -37,6 +37,7 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement | Bl
     const level = getLevel(element, rawText, ctx);
     const { id, tempId } = getId(element, rawText, ctx);
     const dataCopConcept = ctx.getAttr(element, 'data-cop-concept');
+    const dataIdPattern = ctx.getAttr(element, 'data-id-pattern');
 
     const isInline = allChildren.length === 1 && allChildren[0].type === 'paragraph';
 
@@ -47,6 +48,7 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement | Bl
             tempId,
             level: level as BlockSpecStatement['level'],
             dataCopConcept,
+            dataIdPattern,
             contentText: rawText,
             children: (allChildren[0] as unknown as { children: Inline[] }).children,
             sourcePos,
@@ -57,6 +59,7 @@ function parseNode(element: Element, ctx: ParseContext): BlockSpecStatement | Bl
             id,
             level: level as BlockSpecStatement['level'],
             dataCopConcept,
+            dataIdPattern,
             children: allChildren as Block[],
             sourcePos,
         };

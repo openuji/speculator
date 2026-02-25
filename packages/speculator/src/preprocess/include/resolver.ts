@@ -60,6 +60,42 @@ function scanIncludes(content: string, file: string, format: SourceFormat): Incl
         : scanHtmlIncludes(content, file);
 }
 
+/** Extensions that vocab parsers care about */
+const SIDE_FILE_EXTENSIONS = ['.ttl', '.jsonld', '.schema.json'];
+
+/**
+ * Pre-read sibling vocabulary files (TTL, JSON-LD) from the same directory
+ * as a source file. Returns a map of canonical path → content.
+ */
+async function loadSideFiles(
+    file: string,
+    fileProvider: FileProvider
+): Promise<Record<string, string>> {
+    if (!fileProvider.readdir) return {};
+
+    const dir = fileProvider.resolve(file, '.');
+    let entries: string[];
+    try {
+        entries = await fileProvider.readdir(dir);
+    } catch {
+        return {};
+    }
+
+    const result: Record<string, string> = {};
+    await Promise.all(
+        entries
+            .filter(f => SIDE_FILE_EXTENSIONS.some(ext => f.endsWith(ext)))
+            .map(async f => {
+                try {
+                    result[f] = await fileProvider.readText(f);
+                } catch {
+                    // silently skip unreadable files
+                }
+            })
+    );
+    return result;
+}
+
 /**
  * Context for recursive resolution
  */
@@ -70,6 +106,20 @@ interface ResolveContext {
     activePath: Set<string>;
     /** All visited files (to avoid re-processing) */
     visited: Map<string, { content: string; format: SourceFormat }>;
+    /** Per-directory side-file cache (dir canonical path → file map) */
+    sideFilesCache: Map<string, Record<string, string>>;
+}
+
+/**
+ * Fetch (and cache) side-files for the directory containing `file`.
+ */
+async function getSideFiles(file: string, ctx: ResolveContext): Promise<Record<string, string>> {
+    const dir = ctx.fileProvider.resolve(file, '.');
+    const cached = ctx.sideFilesCache.get(dir);
+    if (cached) return cached;
+    const result = await loadSideFiles(file, ctx.fileProvider);
+    ctx.sideFilesCache.set(dir, result);
+    return result;
 }
 
 /**
@@ -98,12 +148,13 @@ async function resolveFile(
     // Check if already processed (for diamond includes - A includes B and C, both include D)
     const cached = visited.get(file);
     if (cached) {
-        // Return a single unit for previously visited file
+        const sideFiles = await getSideFiles(file, ctx);
         return [{
             file,
             format: cached.format,
             content: cached.content,
             startLine: 1,
+            sideFiles,
         }];
     }
 
@@ -148,11 +199,13 @@ async function resolveFile(
 
         // If no includes, return single unit
         if (includes.length === 0) {
+            const sideFiles = await getSideFiles(file, ctx);
             return [{
                 file,
                 format,
                 content,
                 startLine: 1,
+                sideFiles,
             }];
         }
 
@@ -164,12 +217,14 @@ async function resolveFile(
             // Add content before this include
             if (include.startOffset > lastEnd) {
                 const beforeContent = content.slice(lastEnd, include.startOffset);
-                if (beforeContent.trim()) {
+                if (beforeContent.length > 0) {
+                    const sideFiles = await getSideFiles(file, ctx);
                     units.push({
                         file,
                         format,
                         content: beforeContent,
                         startLine: countLinesUpTo(content, lastEnd),
+                        sideFiles,
                     });
                 }
             }
@@ -192,12 +247,14 @@ async function resolveFile(
         // Add remaining content after last include
         if (lastEnd < content.length) {
             const afterContent = content.slice(lastEnd);
-            if (afterContent.trim()) {
+            if (afterContent.length > 0) {
+                const sideFiles = await getSideFiles(file, ctx);
                 units.push({
                     file,
                     format,
                     content: afterContent,
                     startLine: countLinesUpTo(content, lastEnd),
+                    sideFiles,
                 });
             }
         }
@@ -245,6 +302,7 @@ export async function resolveIncludes(
         includeGraph: new Map(),
         activePath: new Set(),
         visited: new Map(),
+        sideFilesCache: new Map(),
     };
 
     const units = await resolveFile(canonicalEntry, format, ctx);

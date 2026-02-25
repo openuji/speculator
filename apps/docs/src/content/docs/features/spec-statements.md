@@ -65,6 +65,22 @@ By default, IDs are generated from the statement text. You can set an explicit I
 >
 ```
 
+### ID Patterns (`data-id-pattern`)
+
+You can generate sequential IDs for list items and table rows within a `spec-statement` block using the `data-id-pattern` attribute. The `{}` placeholders define the sequence format:
+
+- `{\d}` will be replaced with an auto-incrementing number (1, 2, 3...)
+- `{\a}` will be replaced with an auto-incrementing letter (a, b, c...)
+
+```html
+<spec-statement data-id-pattern="req-network-{\d}">
+  The client MUST support the following constraints: - IPv6 validation - Connect
+  within 3 seconds
+</spec-statement>
+```
+
+This distributes the normative requirements to the list items and generates `id="req-network-1"` and `id="req-network-2"` respectively.
+
 ## Requirement Subjects (`data-cop-concept`)
 
 The `data-cop-concept` attribute specifies the **class of products** that a requirement applies to:

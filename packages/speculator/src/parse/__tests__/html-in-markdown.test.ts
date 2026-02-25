@@ -2,14 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/parser';
 import { ParseHandlerRegistry } from '#src/parse/registry';
 import { ShorthandsMarkdownParser } from '#src/parse/markdown/ShorthandsMarkdownParser';
-import { HtmlParagraphMarkdownParser } from '#src/parse/markdown/HtmlParagraphMarkdownParser';
-import { HtmlBlockMarkdownParser } from '#src/parse/markdown/HtmlBlockMarkdownParser';
+import { MdxMarkdownParser } from '#src/parse/markdown/MdxMarkdownParser';
 import { ParagraphsMarkdownParser } from '#src/parse/markdown/ParagraphsMarkdownParser';
 import { DfnHtmlParser } from '#src/parse/html/DfnHtmlParser';
 import { ReferenceHtmlParser } from '#src/parse/html/ReferenceHtmlParser';
 import { IdlHtmlParser } from '#src/parse/html/IdlHtmlParser';
 import { CodeHtmlParser } from '#src/parse/html/CodeHtmlParser';
-import type { InlineDefinition, InlineCite, InlineVariable, BlockParagraph, InlineText, BlockIdl } from '#src/types/ast.generated';
+import type { InlineDefinition, InlineCite, InlineVariable, BlockParagraph, InlineText, BlockIdl, InlineHtmlElement } from '#src/types/ast.generated';
 
 describe('HTML in Markdown Parsing', () => {
     const registry = new ParseHandlerRegistry();
@@ -17,8 +16,7 @@ describe('HTML in Markdown Parsing', () => {
     // but our parsers have internal 'order' property.
     registry.registerMarkdownParser(ParagraphsMarkdownParser);
     registry.registerMarkdownParser(ShorthandsMarkdownParser);
-    registry.registerMarkdownParser(HtmlParagraphMarkdownParser);
-    registry.registerMarkdownParser(HtmlBlockMarkdownParser);
+    registry.registerMarkdownParser(MdxMarkdownParser);
     registry.registerHtmlParser(DfnHtmlParser);
     registry.registerHtmlParser(ReferenceHtmlParser);
     registry.registerHtmlParser(IdlHtmlParser);
@@ -92,8 +90,11 @@ describe('HTML in Markdown Parsing', () => {
         const blocks = parser.parse(unit);
         const para = blocks[0] as BlockParagraph;
         
-        // <span> should be transparent (fell back to its children)
-        const dfn = para.children[1] as InlineDefinition;
+        const span = para.children[1] as InlineHtmlElement;
+        expect(span.type).toBe('htmlInlineElement');
+        expect(span.tagName).toBe('span');
+
+        const dfn = span.children[0] as InlineDefinition;
         expect(dfn.type).toBe('definition');
         expect(dfn.term).toBe('term');
     });
