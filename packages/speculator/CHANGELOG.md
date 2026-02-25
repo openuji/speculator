@@ -1,5 +1,11 @@
 # @openuji/speculator
 
+## 0.7.5
+
+### Patch Changes
+
+- 88b348c: Inrtoduce <spec-vocab /> tag and enhance <spec-stateent /> api
+
 ## 0.7.4
 
 ### Patch Changes
