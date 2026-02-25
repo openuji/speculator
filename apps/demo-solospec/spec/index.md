@@ -1,6 +1,6 @@
 # Single Spec Page Example
 
-This app demonstrates static page generation with `@openuji/spec-page`.
+This app demonstrates static page generation with `@openuji/solospec`.
 
 ## Scope
 

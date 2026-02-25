@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
-import { specPagePlugin } from '@openuji/spec-page/vite';
+import { solospecPlugin } from '@openuji/solospec/vite';
 
 export default defineConfig({
   plugins: [
-    specPagePlugin({
+    solospecPlugin({
       entry: 'spec/index.md',
       configPath: 'spec/config.json',
       options: {
@@ -11,6 +11,6 @@ export default defineConfig({
           likec4Workspace: 'spec/diagrams',
         },
       },
-    }),
+    }) as any,
   ],
 });

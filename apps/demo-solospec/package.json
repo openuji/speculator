@@ -1,5 +1,5 @@
 {
-  "name": "apps-spec-page-example",
+  "name": "apps-solospec-example",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,7 +7,7 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@openuji/spec-page": "workspace:*"
+    "@openuji/solospec": "workspace:*"
   },
   "devDependencies": {
     "@likec4/core": "^1.49.0",

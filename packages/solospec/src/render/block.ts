@@ -123,7 +123,7 @@ export function renderBlock(node: Block | Section, ctx: BlockRenderContext): str
 
     case 'codeBlock':
       if (node.lang === 'mermaid') {
-        return `<spec-mermaid><pre class="mermaid">${escapeHtml(node.value)}</pre></spec-mermaid><script type="module">import '@openuji/spec-page/components/mermaid';</script>`;
+        return `<spec-mermaid><pre class="mermaid">${escapeHtml(node.value)}</pre></spec-mermaid><script type="module">import '@openuji/solospec/components/mermaid';</script>`;
       }
       return `<div class="ui-code-block"${idAttr(node.id)}><div class="ui-code-header"><span>${escapeHtml(node.lang || 'text')}</span></div><pre><code class="language-${escapeAttr(node.lang || 'text')}">${escapeHtml(node.value)}</code></pre></div>`;
 
@@ -168,7 +168,7 @@ export function renderBlock(node: Block | Section, ctx: BlockRenderContext): str
       return `<hr${idAttr(node.id)} />`;
 
     case 'likeC4View': {
-      return `<spec-likec4 view-id="${escapeAttr(node.viewId)}"${node.dynamicVariant ? ` dynamic-variant="${escapeAttr(node.dynamicVariant)}"` : ''}${idAttr(node.id)}></spec-likec4><script type="module">import '@openuji/spec-page/components/likec4';</script>`;
+      return `<spec-likec4 view-id="${escapeAttr(node.viewId)}"${node.dynamicVariant ? ` dynamic-variant="${escapeAttr(node.dynamicVariant)}"` : ''}${idAttr(node.id)}></spec-likec4><script type="module">import '@openuji/solospec/components/likec4';</script>`;
     }
 
     case 'idl': {

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { corePlugins, speculate } from '@openuji/speculator';
-import { renderAst, renderDocument } from '#src/index';
+import { renderAst, renderDocument } from '@openuji/solospec';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.resolve(testDir, 'fixtures', 'single-spec');
@@ -96,9 +96,9 @@ describe('renderDocument', () => {
 
     expect(result.html).toContain('<spec-mermaid>');
     expect(result.html).toContain('<spec-likec4');
-    expect(result.html).toContain('id="spec-page-likec4-dump"');
-    expect(result.html).toContain(`import '@openuji/spec-page/components/mermaid';`);
-    expect(result.html).toContain(`import '@openuji/spec-page/components/likec4';`);
+    expect(result.html).toContain('id="solospec-likec4-dump"');
+    expect(result.html).toContain(`import '@openuji/solospec/components/mermaid';`);
+    expect(result.html).toContain(`import '@openuji/solospec/components/likec4';`);
   });
 });
 

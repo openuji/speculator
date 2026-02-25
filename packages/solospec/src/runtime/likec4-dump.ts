@@ -53,7 +53,7 @@ export async function buildLikeC4Dump(
     const model = await likec4.layoutedModel(input.client.likec4Project);
     const serialized = JSON.stringify(model.$data).replace(/</g, '\\u003C');
     return {
-      dumpScript: `<script id="spec-page-likec4-dump" type="application/json">${serialized}</script>`,
+      dumpScript: `<script id="solospec-likec4-dump" type="application/json">${serialized}</script>`,
       data: serialized,
     };
   } finally {

@@ -1,5 +1,5 @@
 {
-  "name": "@openuji/spec-page",
+  "name": "@openuji/solospec",
   "version": "0.1.0",
   "description": "Static HTML renderer for Speculator AST runtime",
   "type": "module",
@@ -75,7 +75,7 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@types/node": "^22.10.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "typescript": "^5.3.0",

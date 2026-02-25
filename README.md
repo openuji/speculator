@@ -16,13 +16,13 @@ Speculator is a modern reimagining of ReSpec. While traditional ReSpec relies on
 
 This monorepo contains several specialized packages that form the Speculator ecosystem:
 
-| Package                                                    | Purpose                                                                                 |
-| :--------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| [`@openuji/speculator`](packages/speculator)               | **Core Engine**: The AST-first parser, indexer, and resolution pipeline.                |
-| [`@openuji/spec-page`](packages/spec-page)                 | **Static Renderer**: Reusable HTML page renderer with optional Mermaid/LikeC4 runtime.  |
-| [`@openuji/speculator-lint`](packages/speculator-lint)     | **Linter**: Enforces semantic and structural rules across your specification workspace. |
-| [`@openuji/speculator-search`](packages/speculator-search) | **Search**: Extracts searchable content and builds static search indexes.               |
-| [`@openuji/vocab-build`](packages/vocab-build)             | **Vocab Tool**: Automates the generation of vocabulary definitions and reference docs.  |
+| Package                                                    | Purpose                                                                                                                                                                                         |
+| :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`@openuji/speculator`](packages/speculator)               | **Core Engine**: The AST-first parser, indexer, and resolution pipeline.                                                                                                                        |
+| [`@openuji/solospec`](packages/solospec)                   | **Static Renderer**: Framework-agnostic static HTML renderer specifically optimized for single-document publication (e.g. CI output) with optional Mermaid/LikeC4 runtime. (formerly spec-page) |
+| [`@openuji/speculator-lint`](packages/speculator-lint)     | **Linter**: Enforces semantic and structural rules across your specification workspace.                                                                                                         |
+| [`@openuji/speculator-search`](packages/speculator-search) | **Search**: Extracts searchable content and builds static search indexes.                                                                                                                       |
+| [`@openuji/vocab-build`](packages/vocab-build)             | **Vocab Tool**: Automates the generation of vocabulary definitions and reference docs.                                                                                                          |
 
 ## 🛠️ Getting Started
 

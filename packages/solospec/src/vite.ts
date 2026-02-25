@@ -7,25 +7,25 @@ import { buildLikeC4Dump } from '#src/runtime/likec4-dump';
 import { BASE_PAGE_CSS } from '#src/styles/base-css';
 import type { RenderOptions } from '#src/types';
 
-export interface SpecPagePluginOptions {
+export interface SolospecPluginOptions {
   /** Path to the single spec markdown file */
   entry: string;
   /** Optional manual path to a workspace config */
   configPath?: string;
   /** Render configuration */
   options?: RenderOptions;
-  /** HTML Template placeholder to replace. Defaults to <!-- @openuji/spec-page --> */
+  /** HTML Template placeholder to replace. Defaults to <!-- @openuji/solospec --> */
   placeholder?: string;
 }
 
-export function specPagePlugin(pluginOptions: SpecPagePluginOptions): Plugin {
+export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
   return {
-    name: 'vite-plugin-spec-page',
+    name: 'vite-plugin-solospec',
     enforce: 'pre',
     transformIndexHtml: {
       order: 'pre',
       async handler(html, ctx) {
-        if (!html.includes(pluginOptions.placeholder || '<!-- @openuji/spec-page -->')) {
+        if (!html.includes(pluginOptions.placeholder || '<!-- @openuji/solospec -->')) {
           return html; // Allow bypassing if there's no placeholder on this page (e.g. multi-page sets)
         }
 
@@ -60,7 +60,7 @@ export function specPagePlugin(pluginOptions: SpecPagePluginOptions): Plugin {
         // Dynamically replace the title
         let newHtml = html.replace(/<title>.*?<\/title>/i, `<title>${escapeHtml(String(title))}</title>`);
 
-        const placeholder = pluginOptions.placeholder || '<!-- @openuji/spec-page -->';
+        const placeholder = pluginOptions.placeholder || '<!-- @openuji/solospec -->';
         newHtml = newHtml.replace(placeholder, fragmentResult.html);
 
         const tags: HtmlTagDescriptor[] = [];
@@ -86,7 +86,7 @@ export function specPagePlugin(pluginOptions: SpecPagePluginOptions): Plugin {
         if (likec4Dump.data) {
           tags.push({
             tag: 'script',
-            attrs: { id: 'spec-page-likec4-dump', type: 'application/json' },
+            attrs: { id: 'solospec-likec4-dump', type: 'application/json' },
             children: likec4Dump.data,
             injectTo: 'body',
           });

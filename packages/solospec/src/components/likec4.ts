@@ -8,14 +8,14 @@ let globalLikeC4Model: LikeC4Model | null = null;
 function ensureModel(): LikeC4Model | null {
   if (globalLikeC4Model) return globalLikeC4Model;
   
-  const node = document.getElementById('spec-page-likec4-dump');
+  const node = document.getElementById('solospec-likec4-dump');
   if (!node || !node.textContent) return null;
   
   try {
     globalLikeC4Model = LikeC4Model.fromDump(JSON.parse(node.textContent));
     return globalLikeC4Model;
   } catch (err) {
-    console.error('[spec-page][likec4] model parse failed:', err);
+    console.error('[solospec][likec4] model parse failed:', err);
     return null;
   }
 }

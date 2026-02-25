@@ -1,13 +1,13 @@
-# @openuji/spec-page
+# @openuji/solospec
 
 Static HTML renderer for Speculator AST without Astro.
 
-`@openuji/spec-page` is designed for CI-friendly single-document publishing flows (Path A), while keeping client enhancements (Mermaid and LikeC4) optional.
+`@openuji/solospec` is designed for CI-friendly single-document publishing flows.
 
 ## Install
 
 ```bash
-pnpm add @openuji/spec-page @openuji/speculator
+pnpm add @openuji/solospec @openuji/speculator
 ```
 
 ## API
@@ -15,7 +15,7 @@ pnpm add @openuji/spec-page @openuji/speculator
 ### `renderDocument`
 
 ```ts
-import { renderDocument } from "@openuji/spec-page";
+import { renderDocument } from "@openuji/solospec";
 
 await renderDocument({
   entry: "spec/index.md",
@@ -32,7 +32,7 @@ await renderDocument({
 ### `renderAst`
 
 ```ts
-import { renderAst } from "@openuji/spec-page";
+import { renderAst } from "@openuji/solospec";
 
 const { html } = await renderAst({
   workspace,
@@ -57,7 +57,7 @@ speculator-render \
 
 ## Client Runtime
 
-If a document contains diagram nodes like Mermaid or LikeC4, `spec-page` will automatically inject standard ES module `import` scripts into the final HTML.
+If a document contains diagram nodes like Mermaid or LikeC4, `solospec` will automatically inject standard ES module `import` scripts into the final HTML.
 Consumers are expected to process the resulting HTML file through a bundler like Vite. The target application must install the peer dependencies:
 
 ```bash

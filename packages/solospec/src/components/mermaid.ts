@@ -21,7 +21,7 @@ class SpecMermaid extends HTMLElement {
     const pre = this.querySelector('pre');
     if (pre && !pre.hasAttribute('data-processed')) {
       mermaid.run({ nodes: [pre] }).catch((err) => {
-        console.error('[spec-page][mermaid] render failed:', err);
+        console.error('[solospec][mermaid] render failed:', err);
       });
     }
   }

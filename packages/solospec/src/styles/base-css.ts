@@ -38,7 +38,7 @@ var {
   font-family: "IBM Plex Mono", "Fira Code", monospace;
 }
 
-.spec-page {
+.solospec {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.25rem;

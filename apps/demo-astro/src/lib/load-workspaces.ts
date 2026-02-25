@@ -82,24 +82,24 @@ const findWorkspaceRoot = (start: string): string | undefined => {
 const resolveAstroDemoRoot = (): string => {
   const cwd = process.cwd();
 
-  const directApp = path.resolve(cwd, "apps/astro-demo");
+  const directApp = path.resolve(cwd, "apps/demo-astro");
   if (fs.existsSync(path.join(directApp, "package.json"))) {
     return directApp;
   }
 
-  if (fs.existsSync(path.join(cwd, "package.json")) && cwd.endsWith("apps/astro-demo")) {
+  if (fs.existsSync(path.join(cwd, "package.json")) && cwd.endsWith("apps/demo-astro")) {
     return cwd;
   }
 
   const workspaceRoot = findWorkspaceRoot(cwd);
   if (workspaceRoot) {
-    const appRoot = path.join(workspaceRoot, "apps/astro-demo");
+    const appRoot = path.join(workspaceRoot, "apps/demo-astro");
     if (fs.existsSync(path.join(appRoot, "package.json"))) {
       return appRoot;
     }
   }
 
-  throw new Error("Unable to resolve apps/astro-demo root.");
+  throw new Error("Unable to resolve apps/demo-astro root.");
 };
 
 const resolveEntryMapPaths = (
