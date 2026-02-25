@@ -6,6 +6,12 @@ export default defineConfig({
     solospecPlugin({
       entry: 'spec/index.md',
       configPath: 'spec/config.json',
+      theme: {
+        name: 'bikeshed',
+        mode: 'system',
+        themeSwitcher: true,
+        w3cLogo: true,
+      },
       options: {
         client: {
           likec4Workspace: 'spec/diagrams',

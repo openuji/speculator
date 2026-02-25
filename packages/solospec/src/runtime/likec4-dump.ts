@@ -1,9 +1,11 @@
 import path from 'node:path';
 import type { Document } from '@openuji/speculator';
-import type { ClientRuntimeOptions } from '#src/types';
 
 export interface LikeC4DumpInput {
-  client: ClientRuntimeOptions;
+  client: {
+    likec4Workspace?: string;
+    likec4Project?: string;
+  };
   document: Document;
   fallbackWorkspacePath?: string;
 }

@@ -56,6 +56,8 @@ export interface ParsedSpec {
 export interface ParseResult {
     /** Parsed spec (may be partial if errors) */
     result?: ParsedSpec;
+    /** Encountered errors */
+    errors?: string[];
 }
 
 // ============================================================================

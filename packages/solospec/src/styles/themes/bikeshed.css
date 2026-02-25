@@ -1,0 +1,590 @@
+@import "tailwindcss";
+
+@theme {
+  --font-solospec-body:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-solospec-ui: var(--font-solospec-body);
+  --font-solospec-mono:
+    Menlo, Consolas, Monaco, "Liberation Mono", "Lucida Console", monospace;
+
+  --color-solospec-light-bg: #ffffff;
+  --color-solospec-light-ink: #141414;
+  --color-solospec-light-muted: #545454;
+  --color-solospec-light-line: #d5d5d5;
+  --color-solospec-light-link: #2977d9;
+  --color-solospec-light-link-hover: #165db6;
+  --color-solospec-light-soft: #f4f6fb;
+  --color-solospec-light-panel: #f8f9fc;
+
+  --color-solospec-dark-bg: #000000;
+  --color-solospec-dark-ink: #ebebeb;
+  --color-solospec-dark-muted: #b3b3b3;
+  --color-solospec-dark-line: #2a2a2a;
+  --color-solospec-dark-link: #66a8ff;
+  --color-solospec-dark-link-hover: #8cbdff;
+  --color-solospec-dark-soft: #11131a;
+  --color-solospec-dark-panel: #090b12;
+}
+
+@custom-variant solospec-dark (&:where(.solospec-root[data-solospec-effective-mode="dark"] *));
+@custom-variant solospec-light (&:where(.solospec-root[data-solospec-effective-mode="light"] *));
+
+@layer base {
+  html:has(.solospec-root),
+  body:has(.solospec-root) {
+    margin: 0;
+    padding: 0;
+  }
+
+  .solospec-root,
+  .solospec-root * {
+    box-sizing: border-box;
+  }
+
+  .solospec-root[data-solospec-theme="bikeshed"] {
+    --solospec-bg: var(--color-solospec-light-bg);
+    --solospec-ink: var(--color-solospec-light-ink);
+    --solospec-muted: var(--color-solospec-light-muted);
+    --solospec-line: var(--color-solospec-light-line);
+    --solospec-link: var(--color-solospec-light-link);
+    --solospec-link-hover: var(--color-solospec-light-link-hover);
+    --solospec-soft: var(--color-solospec-light-soft);
+    --solospec-panel: var(--color-solospec-light-panel);
+  }
+
+  .solospec-root[data-solospec-theme="bikeshed"][data-solospec-mode="dark"],
+  .solospec-root[data-solospec-theme="bikeshed"][data-solospec-effective-mode="dark"] {
+    --solospec-bg: var(--color-solospec-dark-bg);
+    --solospec-ink: var(--color-solospec-dark-ink);
+    --solospec-muted: var(--color-solospec-dark-muted);
+    --solospec-line: var(--color-solospec-dark-line);
+    --solospec-link: var(--color-solospec-dark-link);
+    --solospec-link-hover: var(--color-solospec-dark-link-hover);
+    --solospec-soft: var(--color-solospec-dark-soft);
+    --solospec-panel: var(--color-solospec-dark-panel);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .solospec-root[data-solospec-theme="bikeshed"][data-solospec-mode="system"]:not(
+        [data-solospec-effective-mode]
+      ) {
+      --solospec-bg: var(--color-solospec-dark-bg);
+      --solospec-ink: var(--color-solospec-dark-ink);
+      --solospec-muted: var(--color-solospec-dark-muted);
+      --solospec-line: var(--color-solospec-dark-line);
+      --solospec-link: var(--color-solospec-dark-link);
+      --solospec-link-hover: var(--color-solospec-dark-link-hover);
+      --solospec-soft: var(--color-solospec-dark-soft);
+      --solospec-panel: var(--color-solospec-dark-panel);
+    }
+  }
+
+  .solospec-root {
+    --color-solospec-light-bg: #ffffff;
+    --color-solospec-light-ink: #141414;
+    --color-solospec-light-muted: #545454;
+    --color-solospec-light-line: #d5d5d5;
+    --color-solospec-light-link: #2977d9;
+    --color-solospec-light-link-hover: #165db6;
+    --color-solospec-light-soft: #f4f6fb;
+    --color-solospec-light-panel: #f8f9fc;
+
+    --color-solospec-dark-bg: #000000;
+    --color-solospec-dark-ink: #ebebeb;
+    --color-solospec-dark-muted: #b3b3b3;
+    --color-solospec-dark-line: #2a2a2a;
+    --color-solospec-dark-link: #66a8ff;
+    --color-solospec-dark-link-hover: #8cbdff;
+    --color-solospec-dark-soft: #11131a;
+    --color-solospec-dark-panel: #090b12;
+
+    --font-solospec-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-solospec-ui: var(--font-solospec-body);
+    --font-solospec-mono: Menlo, Consolas, Monaco, "Liberation Mono", "Lucida Console", monospace;
+
+    min-height: 100dvh;
+    background: var(--solospec-bg);
+    color: var(--solospec-ink);
+    font-family: var(--font-solospec-body);
+    font-size: 1.08rem;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+  }
+
+  .solospec-root a {
+    color: var(--solospec-link);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.12em;
+  }
+
+  .solospec-root a:hover {
+    color: var(--solospec-link-hover);
+  }
+
+  .solospec-root :is(code, pre, var, kbd, samp) {
+    font-family: var(--font-solospec-mono);
+  }
+
+  .solospec-root hr {
+    border: 0;
+    border-top: 1px solid var(--solospec-line);
+    margin: 1.25rem 0;
+  }
+
+  .solospec-root .spec-page {
+    position: relative;
+    width: min(86rem, 100vw);
+    margin: 0 auto;
+    padding: 1rem 1.35rem 2.5rem;
+    display: grid;
+    grid-template-columns: 18.5rem minmax(0, 1fr);
+    gap: 1.8rem;
+    align-items: start;
+  }
+
+  .solospec-root .w3c-logo {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.35rem;
+    z-index: 10;
+  }
+
+  .solospec-root .spec-header {
+    grid-column: 2;
+    border-bottom: 1px solid var(--solospec-line);
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+  }
+
+  .solospec-root .spec-title {
+    margin: 0;
+    font-family: var(--font-solospec-ui);
+    font-size: clamp(2.25rem, 4.6vw, 3.15rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    font-weight: 700;
+    color: var(--solospec-link);
+  }
+
+  .solospec-root .spec-subtitle {
+    margin: 0.45rem 0 0;
+    color: var(--solospec-link);
+    font-family: var(--font-solospec-ui);
+    font-size: clamp(1.3rem, 2.2vw, 2rem);
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
+  .solospec-root .spec-abstract {
+    margin-top: 1rem;
+    max-width: 76ch;
+  }
+
+  .solospec-root .spec-abstract p {
+    margin: 0;
+  }
+
+  .solospec-root .spec-more {
+    max-width: 76ch;
+    margin-top: 0.95rem;
+    border: 1px solid var(--solospec-line);
+    background: var(--solospec-panel);
+    padding: 0.3rem 0.8rem 0.8rem;
+  }
+
+  .solospec-root .spec-more > summary {
+    margin: 0.15rem 0;
+    cursor: pointer;
+    font-family: var(--font-solospec-ui);
+    font-size: 1.01rem;
+    font-weight: 700;
+  }
+
+  .solospec-root .spec-more[open] > summary {
+    margin-bottom: 0.8rem;
+  }
+
+  .solospec-root .spec-meta {
+    margin: 0;
+    display: grid;
+    gap: 0.35rem;
+    font-family: var(--font-solospec-ui);
+    font-size: 1.02rem;
+  }
+
+  .solospec-root .spec-meta-row {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .solospec-root .spec-meta-row dt {
+    color: var(--solospec-ink);
+    font-weight: 700;
+  }
+
+  .solospec-root .spec-meta-row dd {
+    margin: 0;
+    color: var(--solospec-ink);
+  }
+
+  .solospec-root .spec-layout {
+    display: contents;
+  }
+
+  .solospec-root #toc,
+  .solospec-root .toc {
+    grid-column: 1;
+    position: sticky;
+    top: 0;
+    max-height: 100dvh;
+    overflow: auto;
+    margin: 0;
+    padding: 0.15rem 1.25rem 1rem 0;
+    border-right: 1px solid var(--solospec-line);
+  }
+
+  .solospec-root #toc h2,
+  .solospec-root .toc h2 {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-solospec-ui);
+    font-size: 0.86rem;
+    color: var(--solospec-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+  }
+
+  .solospec-root #toc ol,
+  .solospec-root .toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .solospec-root #toc li,
+  .solospec-root .toc li {
+    margin: 0.26rem 0;
+  }
+
+  .solospec-root #toc a,
+  .solospec-root .toc a {
+    color: var(--solospec-ink);
+    text-decoration: none;
+  }
+
+  .solospec-root #toc a:hover,
+  .solospec-root .toc a:hover {
+    color: var(--solospec-link);
+    text-decoration: underline;
+  }
+
+  .solospec-root .toc-number {
+    display: inline-block;
+    min-width: 2.1em;
+    margin-right: 0.2em;
+    color: var(--solospec-muted);
+    font-family: var(--font-solospec-ui);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.92em;
+  }
+
+  .solospec-root .spec-article {
+    grid-column: 2;
+    min-width: 0;
+    max-width: 82ch;
+  }
+
+  .solospec-root .spec-prose > :first-child {
+    margin-top: 0;
+  }
+
+  .solospec-root .spec-prose > :last-child {
+    margin-bottom: 0;
+  }
+
+  .solospec-root .spec-prose p,
+  .solospec-root .spec-prose ul,
+  .solospec-root .spec-prose ol,
+  .solospec-root .spec-prose table,
+  .solospec-root .spec-prose pre,
+  .solospec-root .spec-prose blockquote,
+  .solospec-root .spec-prose figure,
+  .solospec-root .spec-prose details,
+  .solospec-root .spec-prose .ui-callout,
+  .solospec-root .spec-prose .idl-block {
+    margin: 0.95rem 0;
+  }
+
+  .solospec-root .spec-prose :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-solospec-ui);
+    line-height: 1.2;
+    margin: 1.35rem 0 0.55rem;
+    font-weight: 700;
+  }
+
+  .solospec-root .spec-prose h1 {
+    font-size: 2.1rem;
+  }
+
+  .solospec-root .spec-prose h2 {
+    font-size: 1.9rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--solospec-line);
+  }
+
+  .solospec-root .spec-prose h3 {
+    font-size: 1.55rem;
+  }
+
+  .solospec-root .spec-prose h4 {
+    font-size: 1.3rem;
+  }
+
+  .solospec-root .section-heading {
+    scroll-margin-top: 0.5rem;
+  }
+
+  .solospec-root .section-number {
+    color: var(--solospec-muted);
+    font-size: 0.86em;
+    margin-right: 0.25rem;
+    font-family: var(--font-solospec-ui);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .solospec-root ul,
+  .solospec-root ol {
+    padding-left: 1.25rem;
+  }
+
+  .solospec-root blockquote {
+    border-left: 0.28rem solid var(--solospec-line);
+    margin: 1rem 0;
+    padding: 0.35rem 0.85rem;
+    color: var(--solospec-muted);
+    background: color-mix(in oklab, var(--solospec-soft) 48%, transparent);
+  }
+
+  .solospec-root table {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 1px solid var(--solospec-line);
+    border-bottom: 1px solid var(--solospec-line);
+    font-size: 0.97em;
+  }
+
+  .solospec-root th,
+  .solospec-root td {
+    padding: 0.44rem 0.52rem;
+    border-bottom: 1px solid var(--solospec-line);
+    vertical-align: top;
+    text-align: left;
+  }
+
+  .solospec-root th {
+    font-weight: 700;
+  }
+
+  .solospec-root :is(code:not(pre code), kbd, var, samp) {
+    background: color-mix(in oklab, var(--solospec-soft) 70%, transparent);
+    border: 1px solid var(--solospec-line);
+    border-radius: 0.16rem;
+    padding: 0.02em 0.3em;
+    font-size: 0.89em;
+  }
+
+  .solospec-root :is(pre, .ui-code-block, .idl-block) {
+    border: 1px solid var(--solospec-line);
+    background: var(--solospec-soft);
+    overflow: auto;
+  }
+
+  .solospec-root :is(.ui-code-header, .idl-block-header) {
+    border-bottom: 1px solid var(--solospec-line);
+    color: var(--solospec-muted);
+    font-family: var(--font-solospec-ui);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.32rem 0.52rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+
+  .solospec-root :is(.ui-code-block pre, .idl-block-pre) {
+    margin: 0;
+    padding: 0.65rem;
+  }
+
+  .solospec-root .idl-copy-btn {
+    border: 1px solid var(--solospec-line);
+    background: transparent;
+    color: inherit;
+    padding: 0.08rem 0.45rem;
+    font-size: 0.72rem;
+    cursor: pointer;
+  }
+
+  .solospec-root .idl-copy-btn:hover {
+    background: color-mix(in oklab, var(--solospec-soft) 80%, transparent);
+  }
+
+  @media (max-width: 72rem) {
+    .solospec-root .spec-page {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .solospec-root .w3c-logo {
+      position: static;
+      margin-bottom: 1rem;
+    }
+
+    .solospec-root #toc,
+    .solospec-root .toc,
+    .solospec-root .spec-header,
+    .solospec-root .spec-article {
+      grid-column: 1;
+    }
+
+    .solospec-root #toc,
+    .solospec-root .toc {
+      position: static;
+      max-height: none;
+      border-right: 0;
+      border-bottom: 1px solid var(--solospec-line);
+      padding: 0 0 1rem;
+    }
+
+    .solospec-root .spec-meta-row {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+}
+
+@layer components {
+  .solospec-root .ui-callout,
+  .solospec-root :is(.note, .example, .warning) {
+    border: 1px solid var(--solospec-line);
+    border-left-width: 0.32rem;
+    background: color-mix(
+      in oklab,
+      var(--solospec-panel) 85%,
+      var(--solospec-soft)
+    );
+    padding: 0.55rem 0.75rem;
+  }
+
+  .solospec-root .ui-callout-note,
+  .solospec-root .note {
+    border-left-color: #2a7ee6;
+  }
+
+  .solospec-root .ui-callout-example,
+  .solospec-root .example {
+    border-left-color: #1f9d59;
+  }
+
+  .solospec-root .ui-callout-warning,
+  .solospec-root .warning {
+    border-left-color: #e48f1f;
+  }
+
+  .solospec-root .ui-callout-issue {
+    border-left-color: #e04141;
+  }
+
+  .solospec-root .ui-callout header {
+    margin: 0 0 0.35rem;
+  }
+
+  .solospec-root .ui-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--solospec-line);
+    padding: 0.08rem 0.45rem;
+    border-radius: 0.9rem;
+    font-size: 0.74rem;
+    font-family: var(--font-solospec-ui);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .solospec-root .ui-badge-accent {
+    color: #2a7ee6;
+    border-color: color-mix(in oklab, #2a7ee6 40%, var(--solospec-line));
+  }
+
+  .solospec-root .ui-badge-warn {
+    color: #d6820d;
+    border-color: color-mix(in oklab, #d6820d 40%, var(--solospec-line));
+  }
+
+  .solospec-root .ui-badge-danger {
+    color: #d54242;
+    border-color: color-mix(in oklab, #d54242 40%, var(--solospec-line));
+  }
+
+  .solospec-root .solospec-theme-switcher {
+    position: fixed;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid var(--solospec-line);
+    background: color-mix(
+      in oklab,
+      var(--solospec-bg) 74%,
+      var(--solospec-soft)
+    );
+    padding: 0.24rem 0.34rem;
+    font-family: var(--font-solospec-ui);
+    font-size: 0.75rem;
+    backdrop-filter: blur(4px);
+    opacity: 0.88;
+  }
+
+  .solospec-root .solospec-theme-switcher:hover {
+    opacity: 1;
+  }
+
+  .solospec-root .solospec-theme-switcher-label {
+    color: var(--solospec-muted);
+    margin-right: 0.2rem;
+  }
+
+  .solospec-root .solospec-theme-switcher button {
+    border: 1px solid var(--solospec-line);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 0.05rem 0.42rem;
+    cursor: pointer;
+  }
+
+  .solospec-root .solospec-theme-switcher button[data-active="true"] {
+    border-color: var(--solospec-link);
+    color: var(--solospec-link);
+    font-weight: 700;
+  }
+
+  .solospec-root .solospec-theme-switcher button:focus-visible {
+    outline: 2px solid var(--solospec-link);
+    outline-offset: 1px;
+  }
+
+  @media (max-width: 72rem) {
+    .solospec-root .solospec-theme-switcher {
+      position: static;
+      margin-bottom: 0.6rem;
+      opacity: 1;
+    }
+  }
+}

@@ -8,9 +8,6 @@
   "imports": {
     "#src/*": "./dist/*.js"
   },
-  "bin": {
-    "speculator-render": "bin/speculator-render.js"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -19,6 +16,10 @@
     "./components/*": {
       "import": "./dist/components/*.js"
     },
+    "./runtime/theme": {
+      "types": "./dist/runtime/theme.d.ts",
+      "import": "./dist/runtime/theme.js"
+    },
     "./vite": {
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js"
@@ -26,7 +27,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc",
+    "build:styles": "node ./scripts/build-theme-css.mjs",
+    "build": "pnpm run build:styles && tsc",
     "prepack": "pnpm build",
     "dev": "tsc --watch",
     "test": "vitest run",
@@ -35,7 +37,6 @@
   },
   "files": [
     "dist",
-    "bin",
     "README.md"
   ],
   "keywords": [
@@ -48,7 +49,8 @@
   "license": "MIT",
   "dependencies": {
     "@openuji/speculator": "workspace:*",
-    "commander": "^12.1.0"
+    "preact": "^10.28.4",
+    "preact-render-to-string": "^6.6.6"
   },
   "peerDependencies": {
     "@likec4/core": "^1.49.0",

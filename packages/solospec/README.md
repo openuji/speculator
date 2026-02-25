@@ -10,50 +10,49 @@ Static HTML renderer for Speculator AST without Astro.
 pnpm add @openuji/solospec @openuji/speculator
 ```
 
-## API
+## Vite Plugin (Package-Owned Theme)
 
-### `renderDocument`
+`solospecPlugin` injects everything required for rendering:
+
+- spec HTML wrapped in `.solospec-root`
+- bikeshed theme CSS (from `@openuji/solospec`, no host CSS import)
+- runtime mode handling (`system | light | dark`) with persisted preference
+- optional built-in mode switcher
 
 ```ts
-import { renderDocument } from "@openuji/solospec";
+import { defineConfig } from "vite";
+import { solospecPlugin } from "@openuji/solospec/vite";
 
-await renderDocument({
-  entry: "spec/index.md",
-  configPath: "spec/config.json",
-  output: "index.html",
-  options: {
-    client: {
-      likec4Workspace: "spec/diagrams",
-    },
-  },
+export default defineConfig({
+  plugins: [
+    solospecPlugin({
+      entry: "spec/index.md",
+      configPath: "spec/config.json",
+      theme: {
+        name: "bikeshed",
+        mode: "system",
+        themeSwitcher: true,
+      },
+    }),
+  ],
 });
 ```
 
-### `renderAst`
+Theme config contract:
 
 ```ts
-import { renderAst } from "@openuji/solospec";
-
-const { html } = await renderAst({
-  workspace,
-  documentId: "my-spec",
-  options: {
-    metadata: {
-      rowOrder: ["status", "editors", "authors"],
-    },
-  },
-});
+type SolospecThemeSettings = {
+  name?: "bikeshed";
+  mode?: "system" | "light" | "dark";
+  themeSwitcher?: boolean;
+};
 ```
 
-## CLI
+Defaults and schema are exported:
 
-```bash
-speculator-render \
-  --entry spec/index.md \
-  --config spec/config.json \
-  --out index.html \
-  --likec4-workspace spec/diagrams
-```
+- `DEFAULT_SOLOSPEC_THEME_SETTINGS`
+- `SOLOSPEC_THEME_SETTINGS_SCHEMA`
+- `resolveSolospecThemeSettings(...)`
 
 ## Client Runtime
 
@@ -63,7 +62,3 @@ Consumers are expected to process the resulting HTML file through a bundler like
 ```bash
 pnpm add -D vite @likec4/core likec4 mermaid react react-dom
 ```
-
-## Architecture
-
-See [`ARCHITECTURE.md`](./ARCHITECTURE.md).

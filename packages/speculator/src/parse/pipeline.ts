@@ -43,7 +43,8 @@ function getParser(parsers: Map<SourceFormat, UnitParser>, format: SourceFormat)
  */
 function parseUnit(
     unit: SourceUnit,
-    parsers: Map<SourceFormat, UnitParser>
+    parsers: Map<SourceFormat, UnitParser>,
+    errors: string[]
 ): (Section | Block)[] {
     try {
         const parser = getParser(parsers, unit.format);
@@ -58,7 +59,9 @@ function parseUnit(
             posSuffix = `:${posMatch[1]}:${posMatch[2]}`;
         }
 
-        console.error(`${unit.file}${posSuffix}: ${message}`);
+        const formattedError = `${unit.file}${posSuffix}: ${message}`;
+        errors.push(formattedError);
+        console.error(formattedError);
         return [];
     }
 }
@@ -71,15 +74,16 @@ function parseInternal(
     parsers: Map<SourceFormat, UnitParser>
 ): ParseResult {
     const allBlocks: (Section | Block)[] = [];
+    const errors: string[] = [];
 
     // Parse each unit in order
     for (const unit of preprocessed.source.units) {
-        const blocks = parseUnit(unit, parsers);
+        const blocks = parseUnit(unit, parsers, errors);
         allBlocks.push(...blocks);
     }
 
     if (allBlocks.length === 0) {
-        return {};
+        return { errors: errors.length > 0 ? errors : undefined };
     }
 
     // Assemble document
@@ -94,6 +98,7 @@ function parseInternal(
             config: preprocessed.config,
             document,
         },
+        errors: errors.length > 0 ? errors : undefined
     };
 }
 

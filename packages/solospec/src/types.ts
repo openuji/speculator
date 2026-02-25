@@ -1,4 +1,4 @@
-import type { Document, FileProvider, Workspace } from '@openuji/speculator';
+import type { SolospecThemeSettings } from '#src/theme/config';
 
 export type MetadataRowKey =
   | 'status'
@@ -19,39 +19,16 @@ export interface MetadataRenderOptions {
   rowOrder?: MetadataRowKey[];
 }
 
-export interface ClientRuntimeOptions {
-  likec4Workspace?: string;
-  likec4Project?: string;
-}
-
 export interface RenderOptions {
   metadata?: MetadataRenderOptions;
-  client?: ClientRuntimeOptions;
   basePath?: string;
   language?: string;
   includeToc?: boolean;
   includeStyles?: boolean;
+  theme?: SolospecThemeSettings;
+  client?: {
+    likec4Workspace?: string;
+    likec4Project?: string;
+  };
 }
 
-export interface RenderDocumentInput {
-  entry: string;
-  configPath?: string;
-  output?: string;
-  options?: RenderOptions;
-  fileProvider?: FileProvider;
-  env?: Record<string, string | undefined>;
-}
-
-export interface RenderAstInput {
-  workspace: Workspace;
-  documentId?: string;
-  output?: string;
-  options?: RenderOptions;
-}
-
-export interface RenderResult {
-  html: string;
-  document: Document;
-  workspace: Workspace;
-  output?: string;
-}

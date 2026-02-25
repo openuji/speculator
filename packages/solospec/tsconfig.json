@@ -12,6 +12,8 @@
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
