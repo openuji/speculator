@@ -696,6 +696,13 @@
                         "id": {
                             "type": "string"
                         },
+                        "tempId": {
+                            "type": "string"
+                        },
+                        "dataCopConcept": {
+                            "type": "string",
+                            "description": "Optional Class of Products (COP) identifier for this paragraph scope."
+                        },
                         "children": {
                             "type": "array",
                             "items": {
@@ -1320,6 +1327,10 @@
                         "dataCopConcept": {
                             "type": "string",
                             "description": "Optional explicit Class of Products (COP) identifier for this statement."
+                        },
+                        "dataIdPattern": {
+                            "type": "string",
+                            "description": "Optional pattern (e.g. `req-{\\d}`, `req-{\\a}`) to assign deterministic IDs to generated nested statements."
                         }
                     },
                     "required": [
@@ -1358,6 +1369,10 @@
                         "dataCopConcept": {
                             "type": "string",
                             "description": "Optional explicit Class of Products (COP) identifier for this group scope."
+                        },
+                        "dataIdPattern": {
+                            "type": "string",
+                            "description": "Optional pattern (e.g. `req-{\\d}`, `req-{\\a}`) to assign deterministic IDs to generated nested statements."
                         }
                     },
                     "required": [

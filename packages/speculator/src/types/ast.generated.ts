@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-23T15:09:42.882Z
+ * Generated at: 2026-02-24T17:07:17.521Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -278,6 +278,11 @@ export type Block =
 export type BlockParagraph = BaseNode & {
   type: 'paragraph';
   id?: string;
+  tempId?: string;
+  /**
+   * Optional Class of Products (COP) identifier for this paragraph scope.
+   */
+  dataCopConcept?: string;
   children: Inline[];
 };
 export type BlockHeading = BaseNode & {
@@ -464,6 +469,10 @@ export type BlockSpecStatement = BaseNode & {
    * Optional explicit Class of Products (COP) identifier for this statement.
    */
   dataCopConcept?: string;
+  /**
+   * Optional pattern (e.g. `req-{\d}`, `req-{\a}`) to assign deterministic IDs to generated nested statements.
+   */
+  dataIdPattern?: string;
 };
 export type BlockSpecStatementGroup = BaseNode & {
   type: 'specStatementGroup';
@@ -477,6 +486,10 @@ export type BlockSpecStatementGroup = BaseNode & {
    * Optional explicit Class of Products (COP) identifier for this group scope.
    */
   dataCopConcept?: string;
+  /**
+   * Optional pattern (e.g. `req-{\d}`, `req-{\a}`) to assign deterministic IDs to generated nested statements.
+   */
+  dataIdPattern?: string;
 };
 
 /**

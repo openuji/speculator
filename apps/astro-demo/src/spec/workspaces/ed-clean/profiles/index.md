@@ -101,12 +101,14 @@ It **MUST** satisfy the following schema:
 
 ### Handling Meta & Extensions
 
-<spec-statement>
-* **Timestamps:** Any timestamp within `meta` **MUST** adhere to [[RFC3339]] with timezone information (e.g., `Z` or `+01:00`).
-* **Extensions** (if present):
-  * **Structure:** `extensions` **MUST** be a Map (represented as a [§#example-node|JSON object]).
-  * **Key:** Every key in the map **MUST** be a string representing a unique namespace (e.g., reverse-DNS notation).
-* **Value**: The value for every key **MUST** be a JSON object.
+<spec-statement data-id-pattern="meta-ext-{\d}">
+
+- **Timestamps:** Any timestamp within `meta` **MUST** adhere to [[RFC3339]] with timezone information (e.g., `Z` or `+01:00`).
+- **Extensions** (if present):
+  - **Structure:** `extensions` **MUST** be a Map (represented as a [§#example-node|JSON object]).
+  - **Key:** Every key in the map **MUST** be a string representing a unique namespace (e.g., reverse-DNS notation).
+- **Value**: The value for every key **MUST** be a JSON object.
+
 </spec-statement>
 
 ### Example Node
@@ -158,7 +160,7 @@ It **MUST** satisfy the following schema:
 ### Document Resolution (Processing Model) {data-cop-concept="resolution"}
 
 Consumers may process multiple UJGDocument files as a single logical graph.
-<spec-statement>
+<spec-statement data-id-pattern="resolution-stmt-{\d}">
 
 - A Consumer validating references across documents **MUST** treat the union of all loaded documents’ `nodes[]` arrays as a single resolution set.
 - If `imports` is present, a Consumer performing full resolution **SHOULD** attempt to load each referenced import.

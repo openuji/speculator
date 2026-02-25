@@ -1,6 +1,6 @@
-# apps-docs
+# apps-astro-demo
 
-## 0.0.7
+## 0.1.1
 
 ### Patch Changes
 
@@ -9,9 +9,3 @@
   - @openuji/speculator@0.7.5
   - @openuji/speculator-lint@0.3.5
   - @openuji/speculator-search@0.3.5
-
-## 0.0.6
-
-### Patch Changes
-
-- fe078e4: Enable spec-statement group definition and provide a linter for spec-statement cop concept check

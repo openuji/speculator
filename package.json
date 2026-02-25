@@ -15,5 +15,16 @@
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
         "typescript": "^5.0.0"
+    },
+    "pnpm": {
+        "allowedDeprecatedVersions": {
+            "eslint": "*",
+            "@humanwhocodes/config-array": "*",
+            "@humanwhocodes/object-schema": "*",
+            "@types/minimatch": "*",
+            "glob": "*",
+            "inflight": "*",
+            "rimraf": "*"
+        }
     }
 }

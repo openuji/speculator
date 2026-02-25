@@ -15,7 +15,28 @@ import { walkDocument } from '#src/postprocess/walk-ast';
 import { slugify, toPlainText } from '#src/parse/normalize';
 import { inferLevel } from '#src/parse/utils/normative';
 
-function distributeToList(list: BlockList, stmt: BlockSpecStatement | BlockSpecStatementGroup, prefix: string): boolean {
+interface DistributeState {
+    index: number;
+}
+
+function generateIdFromPattern(pattern: string, index: number): string {
+    let result = pattern;
+    if (result.includes('{\\d}')) {
+        result = result.replace('{\\d}', String(index + 1));
+    }
+    if (result.includes('{\\a}')) {
+        let num = index;
+        let letters = '';
+        do {
+            letters = String.fromCharCode(97 + (num % 26)) + letters;
+            num = Math.floor(num / 26) - 1;
+        } while (num >= 0);
+        result = result.replace('{\\a}', letters);
+    }
+    return result;
+}
+
+function distributeToList(list: BlockList, stmt: BlockSpecStatement | BlockSpecStatementGroup, prefix: string, state: DistributeState): boolean {
     if (!list.children) return false;
     
     let modified = false;
@@ -28,7 +49,7 @@ function distributeToList(list: BlockList, stmt: BlockSpecStatement | BlockSpecS
                 const second = item.children[1];
                 if(first.type === 'paragraph' && second.type === 'list'){
                     const childPrefix = toPlainText(first.children).trim();
-                    distributeToList(second, stmt, [prefix, childPrefix].join(' '));
+                    distributeToList(second as BlockList, stmt, [prefix, childPrefix].join(' '), state);
                     continue;
                 }
             }
@@ -40,7 +61,12 @@ function distributeToList(list: BlockList, stmt: BlockSpecStatement | BlockSpecS
             const listItem = item as ListItem;
             listItem.level = level;
             listItem.contentText = fullText;
-            listItem.tempId = slugify(fullText);
+            
+            if (stmt.dataIdPattern) {
+                listItem.id = generateIdFromPattern(stmt.dataIdPattern, state.index++);
+            } else {
+                listItem.tempId = slugify(fullText);
+            }
             
             if (stmt.dataCopConcept) {
                 listItem.dataCopConcept = stmt.dataCopConcept;
@@ -51,7 +77,7 @@ function distributeToList(list: BlockList, stmt: BlockSpecStatement | BlockSpecS
     return modified;
 }
 
-function distributeToTable(table: BlockTable, stmt: BlockSpecStatement | BlockSpecStatementGroup, prefix: string): boolean {
+function distributeToTable(table: BlockTable, stmt: BlockSpecStatement | BlockSpecStatementGroup, prefix: string, state: DistributeState): boolean {
     if (!table.children) return false;
 
     let modified = false;
@@ -74,7 +100,13 @@ function distributeToTable(table: BlockTable, stmt: BlockSpecStatement | BlockSp
         
         tableRow.level = level;
         tableRow.contentText = fullText;
-        tableRow.tempId = slugify(fullText);
+        
+        if (stmt.dataIdPattern) {
+            tableRow.id = generateIdFromPattern(stmt.dataIdPattern, state.index++);
+        } else {
+            tableRow.tempId = slugify(fullText);
+        }
+
         if (stmt.dataCopConcept) {
             tableRow.dataCopConcept = stmt.dataCopConcept;
         }
@@ -99,18 +131,30 @@ function distributeStatements(document: Document): void {
 
             const children = group.children as Block[];
             let currentPrefix = '';
+            const state: DistributeState = { index: 0 };
 
             // Iterate over all children to handle multiple paragraph+list pairs
             for (const child of children) {
                 if (child.type === 'paragraph') {
+                    // Give paragraphs IDs using the pattern
+                    const paragraphText = toPlainText(child.children).trim();
+                    if (group.dataIdPattern) {
+                        child.id = generateIdFromPattern(group.dataIdPattern, state.index++);
+                    } else {
+                        child.tempId = slugify(paragraphText);
+                    }
+                    if (group.dataCopConcept) {
+                        child.dataCopConcept = group.dataCopConcept;
+                    }
+                    
                     // Update prefix for subsequent lists/tables
-                    currentPrefix = toPlainText(child.children).trim();
+                    currentPrefix = paragraphText;
                 } else if (child.type === 'list') {
                     // Distribute to list items
-                    distributeToList(child as BlockList, group, currentPrefix);
+                    distributeToList(child as BlockList, group, currentPrefix, state);
                 } else if (child.type === 'table') {
                     // Distribute to table rows
-                    distributeToTable(child as BlockTable, group, currentPrefix);
+                    distributeToTable(child as BlockTable, group, currentPrefix, state);
                 }
             }
         }
