@@ -15,9 +15,10 @@ export interface LikeC4DumpResult {
   data?: string;
 }
 
-function hasLikeC4(node: any): boolean {
-  if (node?.type === 'likeC4View') return true;
-  if (Array.isArray(node?.children)) return node.children.some(hasLikeC4);
+function hasLikeC4(node: unknown): boolean {
+  if (typeof node !== 'object' || node === null) return false;
+  if ('type' in node && node.type === 'likeC4View') return true;
+  if ('children' in node && Array.isArray(node.children)) return node.children.some(hasLikeC4);
   return false;
 }
 

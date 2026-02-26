@@ -32,3 +32,16 @@ export interface RenderOptions {
   };
 }
 
+
+declare module 'preact' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSX {
+    interface IntrinsicElements {
+      'spec-mermaid': preact.JSX.HTMLAttributes<HTMLElement>;
+      'spec-likec4': preact.JSX.HTMLAttributes<HTMLElement> & {
+        'view-id'?: string;
+        'dynamic-variant'?: string;
+      };
+    }
+  }
+}

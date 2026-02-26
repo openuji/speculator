@@ -12,8 +12,8 @@ describe('resolveSolospecThemeSettings', () => {
   it('falls back on invalid values', () => {
     const resolved = resolveSolospecThemeSettings({
       // Intentional invalid values to verify fallback behavior.
-      name: 'unknown' as any,
-      mode: 'midnight' as any,
+      name: 'unknown' as unknown as 'bikeshed',
+      mode: 'midnight' as unknown as 'dark' | 'light' | 'system',
       themeSwitcher: true,
     });
 

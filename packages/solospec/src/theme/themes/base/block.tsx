@@ -100,10 +100,8 @@ export function BaseBlock({
       if (node.lang === 'mermaid') {
         return (
           <>
-            {/* @ts-ignore: Custom element */}
             <spec-mermaid>
               <pre class="mermaid">{node.value}</pre>
-            {/* @ts-ignore: Custom element */}
             </spec-mermaid>
             <script type="module" dangerouslySetInnerHTML={{ __html: `import '@openuji/solospec/components/mermaid';` }} />
           </>
@@ -180,7 +178,6 @@ export function BaseBlock({
     case 'likeC4View': {
       return (
         <>
-          {/* @ts-ignore: Custom element */}
           <spec-likec4
             view-id={node.viewId}
             dynamic-variant={node.dynamicVariant || undefined}
@@ -199,7 +196,7 @@ export function BaseBlock({
             <button
               type="button"
               class="idl-copy-btn"
-              onClick={`navigator.clipboard.writeText(this.closest('.idl-block')?.querySelector('.idl-block-code')?.textContent || '')` as any}
+              onClick={`navigator.clipboard.writeText(this.closest('.idl-block')?.querySelector('.idl-block-code')?.textContent || '')` as unknown as JSX.MouseEventHandler<HTMLButtonElement>}
             >
               Copy
             </button>

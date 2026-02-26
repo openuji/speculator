@@ -1,4 +1,8 @@
-# Introduction {#intro}
+## Abstract
+
+The Solid OpenID Connect (Solid-OIDC) specification defines how resource servers verify the identity of relying parties and end users based on the authentication performed by an OpenID provider. Solid-OIDC builds on top of OpenID Connect to provide decentralized authentication without the need to mutually register the relying party and the identity provider.
+
+## Introduction {#intro}
 
 _This section is non-normative_
 
@@ -23,13 +27,13 @@ The additional functionality documented herein aims to address:
 1. Resource servers and their Authorization servers having no existing trust relationship with identity providers.
 2. Ephemeral Clients as a first-order use-case.
 
-## Out of Scope {#intro-out-of-scope}
+### Out of Scope {#intro-out-of-scope}
 
 _This section is non-normative_
 
 While the Solid-OIDC specification describes the structure of an ID Token for use in Solid, the definition of a global access token for use with Solid Resource Servers is beyond the scope of this specification.
 
-# Terminology {#terms}
+## Terminology {#terms}
 
 _This section is non-normative_
 
@@ -80,7 +84,7 @@ This specification also uses the following terms:
 </dd>
 </dl>
 
-# Core Concepts {#concepts}
+## Core Concepts {#concepts}
 
 _This section is non-normative_
 
@@ -94,7 +98,7 @@ PKCE, in accordance with OAuth and OIDC best practices. It is also assumed that 
 preexisting trust relationships with the OP. This means that client registration, whether dynamic,
 or static, is entirely optional.
 
-## WebIDs {#concepts-webids}
+### WebIDs {#concepts-webids}
 
 _This section is non-normative_
 
@@ -104,7 +108,7 @@ when dereferenced, resolves to a profile document that is structured data in an
 people to link with others to grant access to identity resources as they see fit. WebIDs underpin
 Solid and are used as a primary identifier for Users in this specification.
 
-# Basic Flow {#basic-flow}
+## Basic Flow {#basic-flow}
 
 _This section is non-normative_
 
@@ -115,7 +119,7 @@ Details of the flow are available in [[!SOLID-OIDC-PRIMER]]
     <figcaption>Basic sequence of authenticating the user and the client.</figcaption>
 </figure>
 
-# Client Identifiers {#clientids}
+## Client Identifiers {#clientids}
 
 OAuth and OIDC require the Client application to identify itself to the OP and RS by presenting a
 [client identifier](https://tools.ietf.org/html/rfc6749#section-2.2) (Client ID). Solid applications
@@ -123,7 +127,7 @@ SHOULD use a URI that can be dereferenced as a [Client ID Document](#clientids-d
 
 <aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/78">#78</a></aside>
 
-## Client ID Document {#clientids-document}
+### Client ID Document {#clientids-document}
 
 When a Client Identifier is dereferenced, the resource MUST be serialized as an `application/ld+json` document
 unless content negotiation requires a different outcome.
@@ -167,7 +171,7 @@ This example uses [JSON-LD ](https://www.w3.org/TR/json-ld/) for the Client ID D
 
 <aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/95">#95</a></aside>
 
-### JSON-LD context {#jsonld-context}
+#### JSON-LD context {#jsonld-context}
 
 This specification defines a JSON-LD context for use with OIDC Client ID Documents. This context is
 available at `https://www.w3.org/ns/solid/oidc-context.jsonld`. Client ID Documents that reference
@@ -177,7 +181,7 @@ NOTE: the [Solid-OIDC Vocabulary](https://www.w3.org/ns/solid/oidc) that is part
 
 Full content of JSON-LD context can be also seen in [§#full-jsonld-context]
 
-## OIDC Registration {#clientids-oidc}
+### OIDC Registration {#clientids-oidc}
 
 For non-dereferencable identifiers, the Client MUST present a `client_id` value that has been
 registered with the OP via either OIDC dynamic or static registration.
@@ -201,13 +205,13 @@ and include `webid` in its value (space-separated list).
     </pre>
 </div>
 
-# WebID Profile {#webid-profile}
+## WebID Profile {#webid-profile}
 
 Dereferencing the WebID URL results in a WebID Profile.
 
 <aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/76">#76</a></aside>
 
-## OIDC Issuer Discovery {#oidc-issuer-discovery}
+### OIDC Issuer Discovery {#oidc-issuer-discovery}
 
 A WebID Profile lists the OpenID Providers who are trusted to issue tokens on behalf
 of the agent who controls the WebID. This prevents a malicious OpenID Provider from issuing
@@ -239,7 +243,7 @@ The WebID Profile Document MUST include one or more statements matching the OIDC
 
 <aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/91">#91</a></aside>
 
-### OIDC Issuer Discovery via Link Headers {#oidc-issuer-discovery-link-headers}
+#### OIDC Issuer Discovery via Link Headers {#oidc-issuer-discovery-link-headers}
 
 A server hosting a WebID Profile Document MAY transmit the `http://www.w3.org/ns/solid/terms#oidcIssuer`
 values via Link Headers, but they MUST be the same as in the RDF representation.
@@ -255,7 +259,7 @@ but MAY use the Link Header values as an optimization.
     <figcaption>HTTP response Link Header (line breaks added for readibility)</figcaption>
 </figure>
 
-# Requesting the WebID Claim using a Scope Value {#webid-scope}
+## Requesting the WebID Claim using a Scope Value {#webid-scope}
 
 Solid-OIDC uses scope values, as defined in [[!RFC6749]] Section 3.3 and [[!OIDC-CORE]] Section 5.4 to specify
 what information is made available as Claim Values.
@@ -269,7 +273,7 @@ Solid-OIDC defines the following `scope` value for use with claim requests:
 </dd>
 </dl>
 
-# Token Instantiation {#tokens}
+## Token Instantiation {#tokens}
 
 Assuming one of the following options
 
@@ -278,7 +282,7 @@ Assuming one of the following options
 
 the OP MUST return A DPoP-bound OIDC ID Token.
 
-## DPoP-bound OIDC ID Token {#tokens-id}
+### DPoP-bound OIDC ID Token {#tokens-id}
 
 When requesting a DPoP-bound OIDC ID Token, the Client MUST send a DPoP proof JWT
 that is valid according to the [DPoP Section 5](https://tools.ietf.org/html/draft-ietf-oauth-dpop#section-5). The DPoP proof JWT is used to
@@ -328,7 +332,7 @@ With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these 
 
 <aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/47">#47</a></aside>
 
-### ID Token Validation {#id-token-validation}
+#### ID Token Validation {#id-token-validation}
 
 An ID Token must be validated according to [OIDC-CORE, Section 3.1.3.7](https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation)
 
@@ -338,9 +342,9 @@ to dereference the WebID Profile Document.
 Unless the verifying party acquires OP keys through some other means, or it chooses to reject tokens issued by this OP,
 the verifying party MUST follow OpenID Connect Discovery 1.0 [[!OIDC-DISCOVERY]] to find an OP's signing keys (JWK).
 
-# Resource Access {#resource}
+## Resource Access {#resource}
 
-## Authorization Server Discovery {#authorization-server-discovery}
+### Authorization Server Discovery {#authorization-server-discovery}
 
 When a Client performs an unauthenticated request to a protected resource,
 the Resource Server MUST respond with the HTTP <code>401</code> status code,
@@ -353,7 +357,7 @@ for discovering an associated authorization server.
 Authorization Servers SHOULD implement User-Managed Access (UMA) 2.0 Grant for
 OAuth 2.0 Authorization [[!UMA]].
 
-## Obtaining an Access Token {#obtaining-access-token}
+### Obtaining an Access Token {#obtaining-access-token}
 
 For Authorization Servers that conform to [[!UMA]], the
 <code>http://openid.net/specs/openid-connect-core-1_0.html#IDToken</code> profile MUST
@@ -368,7 +372,7 @@ Note: Clients can push additional claims by requesting an upgraded RPT [UMA Sect
 
 Authorization Server MUST pefrom [§#dpop-validation] and [§#id-token-validation]
 
-## DPoP Validation {#dpop-validation}
+### DPoP Validation {#dpop-validation}
 
 A DPoP Proof that is valid according to
 [DPoP Internet-Draft, Section 4.3](https://tools.ietf.org/html/draft-ietf-oauth-dpop-04#section-4.3),
@@ -379,7 +383,7 @@ The DPoP-bound OIDC ID Token MUST be validated according to
 but the AS MAY perform additional verification in order to determine whether to grant access to the
 requested resource.
 
-# Solid-OIDC Conformance Discovery {#discovery}
+## Solid-OIDC Conformance Discovery {#discovery}
 
 An OpenID Provider that conforms to the Solid-OIDC specification MUST advertise it in the OpenID Connect
 Discovery 1.0 [[!OIDC-DISCOVERY]] resource by including `webid` in its `scopes_supported` metadata property.
@@ -392,7 +396,7 @@ Discovery 1.0 [[!OIDC-DISCOVERY]] resource by including `webid` in its `scopes_s
     </pre>
 </div>
 
-# Security Considerations {#security}
+## Security Considerations {#security}
 
 _This section is non-normative_
 
@@ -408,35 +412,35 @@ security implications.
 In addition to above considerations, implementors should consider the Security
 Considerations in context of the Solid Protocol [[!SOLID-PROTOCOL]].
 
-## TLS Requirements {#security-tls}
+### TLS Requirements {#security-tls}
 
 All TLS requirements outlined in [[BCP195]] apply to this
 specification.
 
 All tokens, Client, and User credentials MUST only be transmitted over TLS.
 
-## Client IDs {#security-client-ids}
+### Client IDs {#security-client-ids}
 
 An AS SHOULD assign a fixed set of low trust policies to any client identified as anonymous.
 
 Implementors SHOULD expire ephemeral Client IDs that are kept in server storage to mitigate the
 potential for a bad actor to fill server storage with unexpired or otherwise useless Client IDs.
 
-## Client Secrets {#security-client-secrets}
+### Client Secrets {#security-client-secrets}
 
 Client secrets SHOULD NOT be stored in browser local storage. Doing so will increase the risk of
 data leaks should an attacker gain access to Client credentials.
 
-## Client Trust {#security-client-trust}
+### Client Trust {#security-client-trust}
 
 _This section is non-normative_
 
 Clients are ephemeral, client registration is optional, and most Clients cannot keep secrets. These,
 among other factors, are what makes Client trust challenging.
 
-# Privacy Considerations {#privacy}
+## Privacy Considerations {#privacy}
 
-## OIDC ID Token Reuse {#privacy-token-reuse}
+### OIDC ID Token Reuse {#privacy-token-reuse}
 
 _This section is non-normative_
 
@@ -446,7 +450,7 @@ OIDC ID Token on instantiation. This addition may unintentionally give other aut
 consuming the OIDC ID Token information about the user that they may not wish to share outside of the
 intended AS.
 
-# Acknowledgments {#acknowledgments}
+## Acknowledgments {#acknowledgments}
 
 _This section is non-normative_
 
@@ -458,7 +462,7 @@ Michiel de Jong, Ted Thibodeau Jr, Kjetil Kjernsmo, Mitzi László, Pat McBennet
 Ottenheimer, Justin Richer, severin-dsr, Henry Story, Michael Thornburgh, Emmet Townsend, Ruben
 Verborgh, Ricky White, Paul Worrall, Dmitri Zagidulin.
 
-# Appendix A: Full JSON-LD context {#full-jsonld-context}
+## Appendix A: Full JSON-LD context {#full-jsonld-context}
 
 The JSON-LD context is defined as:
 

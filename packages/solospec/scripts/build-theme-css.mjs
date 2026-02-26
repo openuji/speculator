@@ -45,12 +45,35 @@ async function build() {
 
   if (canCompile) {
     try {
+      // Find all tsx files to scan and extract potential tailwind classes
+      const getAllFiles = (dir, fileList = []) => {
+        const files = readdirSync(dir, { withFileTypes: true });
+        for (const file of files) {
+          if (file.isDirectory()) {
+            getAllFiles(path.join(dir, file.name), fileList);
+          } else if (file.name.endsWith('.tsx') || file.name.endsWith('.ts')) {
+            fileList.push(path.join(dir, file.name));
+          }
+        }
+        return fileList;
+      };
+      
+      const componentFiles = getAllFiles(path.resolve(packageDir, 'src'));
+      const candidates = new Set();
+      for (const file of componentFiles) {
+        const content = await readFile(file, 'utf8');
+        const words = content.match(/[\w\-:./]+/g) || [];
+        for (const word of words) {
+          candidates.add(word);
+        }
+      }
+      
       const compiler = await tailwindNode.compile(source, {
         base: path.dirname(sourcePath),
         from: sourcePath,
         onDependency: () => {},
       });
-      const compiledCss = compiler.build([]);
+      const compiledCss = compiler.build(Array.from(candidates));
       optimizedCss = tailwindNode.optimize(compiledCss, { minify: true }).code;
     } catch {
       optimizedCss = source

@@ -1,17 +1,53 @@
 {
   "id": "single-spec-page",
-  "title": "Single Spec Page Example",
+  "title": "Solid-OIDC",
   "respec": {
-    "title": "Single Spec Page Example",
-    "subtitle": "Path A static publishing sample",
-    "specStatus": "ED",
-    "publishDate": "2026-02-20",
-    "abstract": "Example used to demonstrate static single-document publishing.",
+    "title": "Solid-OIDC",
+    "status": "Draft Community Group Report",
+    "publishDate": "2026-01-21",
+    "editors": [
+      {
+        "name": "Aaron Coburn",
+        "url": "https://people.apache.org/~acoburn/#i",
+        "company": "Inrupt",
+        "companyUrl": "https://inrupt.com"
+      },
+      {
+        "name": "elf Pavlik",
+        "url": "https://elf-pavlik.hackers4peace.net"
+      },
+      {
+        "name": "Dmitri Zagidulin",
+        "url": "http://computingjoy.com/"
+      }
+    ],
+    "copyright": "Copyright © 2026 the Contributors to the Solid-OIDC, published by the Solid Community Group under the W3C Community Contributor License Agreement (CLA). A human-readable summary is available.",
     "localBiblio": {
       "RFC2119": {
         "title": "Key words for use in RFCs",
         "url": "https://www.rfc-editor.org/rfc/rfc2119"
       }
     }
+  },
+  "noConformance": true,
+  "custom": {
+    "thisVersion": "https://solid.github.io/solid-oidc/",
+    "latestVersion": "https://solidproject.org/TR/oidc",
+    "testSuite": "https://solid-contrib.github.io/solid-oidc-tests/",
+    "feedback": "GitHub",
+    "formerEditors": [
+      {
+        "name": "Adam Migus",
+        "url": "https://migusgroup.com/about/",
+        "company": "The Migus Group",
+        "companyUrl": "https://migusgroup.com/"
+      },
+      {
+        "name": "Ricky White",
+        "url": "https://endlesstrax.com",
+        "company": "The Migus Group",
+        "companyUrl": "https://migusgroup.com/"
+      }
+    ]
   }
 }

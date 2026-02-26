@@ -8,14 +8,14 @@ class SpecMermaid extends HTMLElement {
     this.initialized = true;
 
     // Only initialize mermaid config globally once
-    if (!window.hasOwnProperty('__specMermaidInitialized')) {
+    if (!Object.prototype.hasOwnProperty.call(window, '__specMermaidInitialized')) {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       mermaid.initialize({
         startOnLoad: false,
         theme: prefersDark ? 'dark' : 'default',
         securityLevel: 'strict',
       });
-      (window as any).__specMermaidInitialized = true;
+      (window as unknown as Record<string, unknown>).__specMermaidInitialized = true;
     }
 
     const pre = this.querySelector('pre');

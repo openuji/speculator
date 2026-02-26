@@ -1,7 +1,7 @@
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Plugin, HtmlTagDescriptor } from 'vite';
 import { speculate, corePlugins, NodeFileProvider } from '@openuji/speculator';
-import { renderDocumentFragment } from '#src/render/page';
 import { escapeHtml } from '#src/render/utils';
 import { buildLikeC4Dump } from '#src/runtime/likec4-dump';
 import { getThemeCss } from '#src/styles/theme-css';
@@ -34,12 +34,20 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
       if (pluginOptions.configPath) {
         server.watcher.add(path.resolve(pluginOptions.configPath));
       }
+      const distPath = path.dirname(fileURLToPath(import.meta.url));
+      server.watcher.add(distPath);
     },
     handleHotUpdate(ctx) {
       const entryPath = path.resolve(pluginOptions.entry);
       const configPath = pluginOptions.configPath ? path.resolve(pluginOptions.configPath) : null;
       
       if (ctx.file === entryPath || (configPath && ctx.file === configPath)) {
+        ctx.server.ws.send({ type: 'full-reload' });
+        return [];
+      }
+
+      const distPath = path.dirname(fileURLToPath(import.meta.url));
+      if (ctx.file.startsWith(distPath) && ctx.file.endsWith('.js')) {
         ctx.server.ws.send({ type: 'full-reload' });
         return [];
       }
@@ -78,7 +86,19 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
             theme: resolvedTheme,
           };
 
-          const fragmentResult = renderDocumentFragment({
+          let renderDocumentFragmentFn: typeof import('#src/render/page').renderDocumentFragment;
+
+          if (ctx.server) {
+            const distPath = path.dirname(fileURLToPath(import.meta.url));
+            const renderModulePath = path.resolve(distPath, 'render/page.js');
+            const dynamicModule = await ctx.server.ssrLoadModule(renderModulePath);
+            renderDocumentFragmentFn = dynamicModule.renderDocumentFragment;
+          } else {
+            const staticModule = await import('#src/render/page');
+            renderDocumentFragmentFn = staticModule.renderDocumentFragment;
+          }
+
+          const fragmentResult = renderDocumentFragmentFn({
             document,
             options: renderOptions,
           });
@@ -100,10 +120,35 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
           const tags: HtmlTagDescriptor[] = [];
 
           if (renderOptions.includeStyles !== false) {
+            let cssContent = getThemeCss(resolvedTheme.name);
+
+            if (ctx.server) {
+              try {
+                const distPath = path.dirname(fileURLToPath(import.meta.url));
+                const cssModulePath = path.resolve(distPath, `styles/generated/${resolvedTheme.name}.css.js`);
+                const moduleUrl = `${pathToFileURL(cssModulePath).href}?t=${Date.now()}`;
+                const dynamicModule = await import(moduleUrl);
+                
+                const exportKey = `${resolvedTheme.name.toUpperCase().replace(/-/g, '_')}_THEME_CSS`;
+                if (dynamicModule[exportKey]) {
+                  cssContent = dynamicModule[exportKey];
+                } else {
+                  for (const key of Object.keys(dynamicModule)) {
+                    if (typeof dynamicModule[key] === 'string' && dynamicModule[key].includes('{')) {
+                      cssContent = dynamicModule[key];
+                      break;
+                    }
+                  }
+                }
+              } catch (e: unknown) {
+                ctx.server.config.logger.warn(`[solospec] Failed to dynamically load theme CSS, falling back to cached. Error: ${(e as Error).message}`);
+              }
+            }
+
             tags.push({
               tag: 'style',
               attrs: { id: 'solospec-theme-style' },
-              children: getThemeCss(resolvedTheme.name),
+              children: cssContent,
               injectTo: 'head',
             });
           }
@@ -139,14 +184,15 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
             html: newHtml,
             tags,
           };
-        } catch (error: any) {
-          ctx.server?.config.logger.error(`[solospec] Error processing ${pluginOptions.entry}:\n${error.stack || error.message}`);
+        } catch (error: unknown) {
+          const err = error as Error;
+          ctx.server?.config.logger.error(`[solospec] Error processing ${pluginOptions.entry}:\n${err.stack || err.message}`);
           
           const errorHtml = `
             <div style="padding: 2rem; font-family: system-ui, sans-serif; color: #ff4a4a; background: #ffebeb; min-height: 100vh;">
               <h2>Speculator Error</h2>
               <p>Failed to parse or render <strong>${escapeHtml(pluginOptions.entry)}</strong></p>
-              <pre style="background: #fff; padding: 1rem; border-radius: 4px; overflow-x: auto; color: #333;">${escapeHtml(error.stack || error.message)}</pre>
+              <pre style="background: #fff; padding: 1rem; border-radius: 4px; overflow-x: auto; color: #333;">${escapeHtml(err.stack || err.message)}</pre>
             </div>
           `;
           
