@@ -1,0 +1,58 @@
+{
+  "https://github.com/solid/solid-oidc/issues/26": {
+    "title": "Proposal: change webid claim to solid",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "26",
+    "fetchedAt": "2026-02-26T16:23:30.757Z"
+  },
+  "https://github.com/solid/solid-oidc/issues/80": {
+    "title": "OIDC issuer discovery when WebID is not publicly readable",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "80",
+    "fetchedAt": "2026-02-26T16:23:30.759Z"
+  },
+  "https://github.com/solid/solid-oidc/issues/95": {
+    "title": "Hosting Client ID Document on Solid Storage",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "95",
+    "fetchedAt": "2026-02-26T16:23:30.769Z"
+  },
+  "https://github.com/solid/solid-oidc/issues/91": {
+    "title": "consider support for OIDC self-issuer",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "91",
+    "fetchedAt": "2026-02-26T16:23:30.773Z"
+  },
+  "https://github.com/solid/solid-oidc/issues/78": {
+    "title": "Specify the client authentication method when using a Client Identifier",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "78",
+    "fetchedAt": "2026-02-26T16:23:30.774Z"
+  },
+  "https://github.com/solid/solid-oidc/issues/92": {
+    "title": "In some cases OIDC issuer can't be disclosed in WebID Profile",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "92",
+    "fetchedAt": "2026-02-26T16:23:30.781Z"
+  },
+  "https://github.com/solid/solid-oidc/issues/47": {
+    "title": "Presenting multiple WebIDs in an ID Token",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "47",
+    "fetchedAt": "2026-02-26T16:23:30.792Z"
+  },
+  "https://github.com/solid/solid-oidc/issues/76": {
+    "title": "WebIDs MUST use a secure protocol",
+    "state": "open",
+    "repoSlug": "solid/solid-oidc",
+    "issueNumber": "76",
+    "fetchedAt": "2026-02-26T16:23:31.061Z"
+  }
+}

@@ -149,8 +149,7 @@ const renderIdlInline = (node: Inline): string => {
         return (
           <section class="spec-section" id={node.id}>
             {node.heading && (
-              // @ts-ignore dynamic heading tag
-              <HeadingTag id={node.heading.id} class="section-heading">
+              <HeadingTag id={node.heading.id as any} class="section-heading">
                 {sectionNumber && (
                   <span class="section-number">{sectionNumber}</span>
                 )}
@@ -207,8 +206,10 @@ const renderIdlInline = (node: Inline): string => {
       case "list": {
         const ListTag = node.ordered ? "ol" : "ul";
         return (
-          // @ts-ignore dynamic list tag
-          <ListTag id={node.id} start={node.ordered ? node.start : undefined}>
+          <ListTag
+            id={node.id as any}
+            start={node.ordered ? (node.start as any) : undefined}
+          >
             {node.children.map((item) => (
               <li id={item.id}>
                 {item.children.map((child) => (

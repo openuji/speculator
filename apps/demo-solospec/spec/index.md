@@ -1,4 +1,4 @@
-## Abstract
+## Abstract {.unnumbered}
 
 The Solid OpenID Connect (Solid-OIDC) specification defines how resource servers verify the identity of relying parties and end users based on the authentication performed by an OpenID provider. Solid-OIDC builds on top of OpenID Connect to provide decentralized authentication without the need to mutually register the relying party and the identity provider.
 
@@ -553,3 +553,22 @@ graph LR
 ```
 
 <likec4-view view-id="example-flow"></likec4-view>
+
+## Code Highlighting
+
+```typescript
+export interface HighlightedCodeBlock {
+  highlightedHtml?: string;
+}
+
+export async function highlightDocument(document: Document) {
+  console.log("hi");
+}
+```
+
+```css
+.ui-code-block.shiki-highlighted > div {
+  padding: 1rem;
+  overflow-x: auto;
+}
+```

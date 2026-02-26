@@ -1277,6 +1277,14 @@
                             "items": {
                                 "$ref": "#/definitions/Block"
                             }
+                        },
+                        "src": {
+                            "type": "string",
+                            "description": "Optional source URL, e.g., for issue notes."
+                        },
+                        "data": {
+                            "type": "object",
+                            "description": "Optional payload data fetched from the source."
                         }
                     },
                     "required": [

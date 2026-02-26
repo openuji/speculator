@@ -142,23 +142,19 @@
   }
 
   .solospec-root .spec-page {
-    position: relative;
-    width: min(86rem, 100vw);
-    margin: 0 auto;
-    padding: 1rem 1.35rem 2.5rem;
-    display: grid;
-    grid-template-columns: 18.5rem minmax(0, 1fr);
-    gap: 1.8rem;
-    align-items: start;
+    display:flex;
+    .spec-content {
+      min-width: 0;
+      overflow: hidden;
+    }
   }
 
-  .solospec-root .w3c-logo-cg {
-    position: absolute;
-    top: 1.25rem;
-    right: 1.35rem;
-    z-index: 10;
+  pre, pre > code {
+    overflow-x: auto;
+    display: block;
   }
 
+  
   .solospec-root.bikeshed-theme-bg {
     background-image: var(--solospec-watermark);
     background-repeat: repeat-y;
@@ -409,6 +405,50 @@
     background: var(--solospec-soft);
     overflow: auto;
   }
+ /* Shiki dual-theme: light mode (default) */
+  .solospec-root .shiki,
+  .solospec-root .shiki span {
+    color: var(--shiki-light);
+    background-color: var(--shiki-light-bg);
+  }
+
+  .solospec-root .shiki-highlighted .shiki {
+    overflow-x: auto;
+    min-width: 0;
+    padding: 0.65rem;
+  }
+
+  .solospec-root .shiki-highlighted .shiki,
+  .solospec-root .shiki-highlighted .shiki code {
+    border: none;
+    background: transparent;
+  }
+
+  .solospec-root .ui-code-block.shiki-highlighted {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .solospec-root .shiki-highlighted .shiki pre {
+    margin: 0;
+  }
+
+  /* Shiki dual-theme: dark mode via theme switcher */
+  .solospec-root[data-solospec-effective-mode="dark"] .shiki,
+  .solospec-root[data-solospec-effective-mode="dark"] .shiki span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+
+  /* Shiki dual-theme: dark mode via system preference */
+  @media (prefers-color-scheme: dark) {
+    .solospec-root[data-solospec-mode="system"]:not([data-solospec-effective-mode]) .shiki,
+    .solospec-root[data-solospec-mode="system"]:not([data-solospec-effective-mode]) .shiki span {
+      color: var(--shiki-dark);
+      background-color: var(--shiki-dark-bg);
+    }
+  }
+ 
 
   .solospec-root :is(.ui-code-header, .idl-block-header) {
     border-bottom: 1px solid var(--solospec-line);
@@ -443,36 +483,7 @@
   }
 
   @media (max-width: 72rem) {
-    .solospec-root .spec-page {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .solospec-root .w3c-logo {
-      position: static;
-      margin-bottom: 1rem;
-    }
-
-    .solospec-root #toc,
-    .solospec-root .toc,
-    .solospec-root .spec-header,
-    .solospec-root .spec-article {
-      grid-column: 1;
-    }
-
-    .solospec-root #toc,
-    .solospec-root .toc {
-      position: static;
-      max-height: none;
-      border-right: 0;
-      border-bottom: 1px solid var(--solospec-line);
-      padding: 0 0 1rem;
-    }
-
-    .solospec-root .spec-meta-row {
-      grid-template-columns: 1fr;
-      gap: 0.15rem;
-    }
+    
   }
 }
 
@@ -506,6 +517,48 @@
 
   .solospec-root .ui-callout-issue {
     border-left-color: #e04141;
+  }
+
+  .solospec-root .issue.no-marker {
+    border: 1px solid #e04141;
+    border-left-width: 0.32rem;
+    border-left-color: #e04141;
+    background: color-mix(
+      in oklab,
+      var(--solospec-panel) 85%,
+      var(--solospec-soft)
+    );
+    padding: 0.55rem 0.75rem;
+    margin: 0.95rem 0;
+    position: relative;
+  }
+
+  .solospec-root .issue.no-marker .self-link {
+    display: none;
+  }
+
+  .solospec-root .issue.no-marker .marker {
+    display: block;
+    font-family: var(--font-solospec-ui);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #e04141;
+    text-decoration: none;
+    margin-bottom: 0.2rem;
+  }
+
+  .solospec-root .issue.no-marker .marker:hover {
+    text-decoration: underline;
+  }
+
+  .solospec-root .issue.no-marker > a:last-child {
+    display: block;
+    color: var(--solospec-ink);
+    text-decoration: none;
+  }
+
+  .solospec-root .issue.no-marker > a:last-child:hover {
+    text-decoration: underline;
   }
 
   .solospec-root .ui-callout header {
@@ -590,11 +643,7 @@
   }
 
   @media (max-width: 72rem) {
-    .solospec-root .solospec-theme-switcher {
-      position: static;
-      margin-bottom: 0.6rem;
-      opacity: 1;
-    }
+   
   }
 }
 

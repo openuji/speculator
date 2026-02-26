@@ -39,6 +39,41 @@ function getNoteType(element: Element, ctx: ParseContext): NoteType | null {
 }
 
 /**
+ * Recursively find the first <a> element's href or mdast link's url in content.
+ */
+function findFirstLinkHref(nodes: unknown[]): string | null {
+    for (const node of nodes as { type: string; children?: unknown[]; tagName?: string; properties?: { href?: string }; url?: string; name?: string; attributes?: { name: string; value: unknown }[] }[]) {
+        // Handle HAST elements (e.g. <a href="...">)
+        if (node.type === 'element') {
+            const el = node as Element;
+            if (el.tagName === 'a') {
+                const href = el.properties?.href;
+                if (typeof href === 'string') return href;
+            }
+        }
+        
+        // Handle MDAST link elements (e.g. [text](href))
+        if (node.type === 'link') {
+            if (typeof node.url === 'string') return node.url;
+        }
+
+        // Handle MDX JSX elements (e.g. <a href="..."> in mdx context)
+        if ((node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') && node.name === 'a') {
+            const hrefAttr = node.attributes?.find((attr: { name: string; value: unknown }) => attr.name === 'href');
+            if (hrefAttr && typeof hrefAttr.value === 'string') {
+                return hrefAttr.value;
+            }
+        }
+
+        // Recurse into children of any node that has them
+        if (node.children && Array.isArray(node.children) && node.children.length > 0) {
+            const found = findFirstLinkHref(node.children);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+/**
  * HTML parser module for aside and note-type elements.
  */
 export const AsideHtmlParser: HtmlParserModule = {
@@ -83,6 +118,12 @@ export const AsideHtmlParser: HtmlParserModule = {
 
         if (id) result.id = id;
         if (sourcePos) result.sourcePos = sourcePos;
+
+        // For issue-type notes, extract the href from the first link in hast children
+        if (noteType === 'issue') {
+            const href = findFirstLinkHref(element.children as RootContent[]);
+            if (href) result.src = href;
+        }
 
         return result;
     },

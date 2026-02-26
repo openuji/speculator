@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-24T17:07:17.521Z
+ * Generated at: 2026-02-26T16:38:36.474Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -445,6 +445,14 @@ export type BlockNote = BaseNode & {
    */
   informative: true;
   children: Block[];
+  /**
+   * Optional source URL, e.g., for issue notes.
+   */
+  src?: string;
+  /**
+   * Optional payload data fetched from the source.
+   */
+  data?: {};
 };
 export type BlockSpecStatement = BaseNode & {
   type: 'specStatement';

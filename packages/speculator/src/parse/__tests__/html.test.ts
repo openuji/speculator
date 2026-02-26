@@ -152,6 +152,16 @@ describe('HtmlUnitParser', () => {
                 lang: 'javascript',
             });
         });
+
+        it('extracts language from highlight attribute', () => {
+            const unit = createUnit('<pre highlight="sparql">code</pre>');
+            const blocks = parser.parse(unit);
+
+            expect(blocks[0]).toMatchObject({
+                type: 'codeBlock',
+                lang: 'sparql',
+            });
+        });
     });
 
     describe('links and images', () => {

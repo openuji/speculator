@@ -10,6 +10,8 @@ import {
   type SolospecThemeSettings,
 } from '#src/theme/config';
 import type { RenderOptions } from '#src/types';
+import { highlightDocument } from '#src/render/highlight';
+import { enrichIssueMetadata } from '#src/render/issue-metadata';
 
 export interface SolospecPluginOptions {
   /** Path to the single spec markdown file */
@@ -78,6 +80,9 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
           }
 
           const document = result.workspace.documents[0];
+          await highlightDocument(document);
+          await enrichIssueMetadata(document, path.dirname(path.resolve(pluginOptions.entry)));
+
           const resolvedTheme = resolveSolospecThemeSettings(
             pluginOptions.theme || pluginOptions.options?.theme
           );

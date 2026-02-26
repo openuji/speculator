@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { useContext } from 'preact/hooks';
-import type { Block, BlockHeading, Section, Document, Inline } from '@openuji/speculator';
+import type { Block, BlockHeading, Section, Document, Inline, BlockNote } from '@openuji/speculator';
 import { AstComponentsContext } from '#src/theme/themes/base/context';
 import type { BlockRenderContext } from '#src/theme/types';
 
@@ -96,7 +96,7 @@ export function BaseBlock({
       );
     }
 
-    case 'codeBlock':
+    case 'codeBlock': {
       if (node.lang === 'mermaid') {
         return (
           <>
@@ -107,6 +107,15 @@ export function BaseBlock({
           </>
         );
       }
+      
+      const highlightedHtml = (node as { highlightedHtml?: string }).highlightedHtml;
+      
+      if (highlightedHtml) {
+        return (
+            <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
+        );
+      }
+      
       return (
         <div class="ui-code-block" id={node.id || undefined}>
           <div class="ui-code-header">
@@ -117,6 +126,7 @@ export function BaseBlock({
           </pre>
         </div>
       );
+    }
 
     case 'blockquote':
       return (
@@ -233,6 +243,26 @@ export function BaseBlock({
             : node.noteType === 'example'
               ? 'example'
               : 'note';
+
+      // Enriched issue rendering (Bikeshed-style)
+      const noteData = (node as BlockNote).data as Record<string, unknown> | undefined;
+      const noteSrc = (node as BlockNote).src; // Changed from noteHref to noteSrc
+      if (kind === 'issue' && noteSrc && noteData?.title) { // Changed from noteHref to noteSrc
+        const issueId = node.id || `issue-${noteData.issueNumber || ''}`;
+        const marker = noteData.repoSlug
+          ? `${noteData.repoSlug}/${noteData.issueNumber}`
+          : `#${noteData.issueNumber}`;
+        return (
+          <div class="issue no-marker" id={issueId as string}>
+            <a class="self-link" href={`#${issueId}`}></a>
+            <a class="marker" href={noteSrc} style="text-transform:none"> {/* Changed from noteHref to noteSrc */}
+              {marker as string}
+            </a>
+            <a href={noteSrc}>{noteData.title as string}</a> {/* Changed from noteHref to noteSrc */}
+          </div>
+        );
+      }
+
       return (
         <Callout kind={kind} title={(node.noteType || 'note').toUpperCase()}>
           <>

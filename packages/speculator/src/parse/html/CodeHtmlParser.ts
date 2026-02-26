@@ -30,8 +30,11 @@ export const CodeHtmlParser: HtmlParserModule = {
             children: [],
         };
 
-        // Try to extract language from class
-        if (codeEl) {
+        // Try to extract language from highlight attribute or class
+        const highlightAttr = ctx.getAttr(element, 'highlight');
+        if (highlightAttr) {
+            result.lang = highlightAttr;
+        } else if (codeEl) {
             const className = ctx.getAttr(codeEl, 'class') ?? ctx.getAttr(codeEl, 'className');
             if (className) {
                 const langMatch = className.match(/language-(\S+)/);

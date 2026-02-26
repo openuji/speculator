@@ -38,6 +38,9 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
 
   return (
     <header class="spec-header spec-header--bikeshed">
+      <div class="spec-header-top float-right">
+        <W3CCommunityLogo />
+      </div>
       <h1 class="spec-title" id="title">{vm.titleText}</h1>
       {meta.status ? (
         <h2 class="spec-subtitle">
@@ -138,6 +141,7 @@ function BikeshedToc({ vm }: { vm: RenderPageVm }): JSX.Element | null {
   if (vm.includeToc === false || !vm.toc || vm.toc.length === 0) return null;
   return (
     <aside id="toc" class="toc">
+      <W3CCommunityDraftReportLogo />
       <h2>TABLE OF CONTENTS</h2>
       <BikeshedTocTree entries={vm.toc} />
     </aside>
@@ -145,20 +149,41 @@ function BikeshedToc({ vm }: { vm: RenderPageVm }): JSX.Element | null {
 }
 
 function BikeshedLayout({ vm, children }: { vm: RenderPageVm; children?: JSX.Element }): JSX.Element {
+  
   return (
-    <div class="spec-layout">
-      <BikeshedToc vm={vm} />
-      <BikeshedHeader vm={vm} />
-      <article class="spec-article">
+    <div class="spec-page">
+      <BikeshedToc vm={vm} />      
+      <div class="spec-content">
+        <BikeshedHeader vm={vm} />
+        <article class="spec-article">
         {children || (
           <div class="spec-prose">
             <baseSlots.Components.Document document={vm.document} ctx={vm.blockCtx} />
           </div>
         )}
       </article>
+      </div>
+      
     </div>
   );
 }
+
+const W3CCommunityDraftReportLogo = () => (
+    <img
+      alt="W3C Community Group Draft Report"
+      src="https://www.w3.org/StyleSheets/TR/2021/logos/back-cg-draft.png"
+    />
+);
+
+const W3CCommunityLogo = () => (
+  <a  href="https://www.w3.org/community/">
+    <img
+      class="p-3 rounded-full"
+      alt="W3C Community Group"
+      src="https://www.w3.org/StyleSheets/TR/2021/logos/W3C"
+    />
+  </a>
+);
 
 function BikeshedFragmentShell({ vm, children }: { vm: RenderPageVm; children?: JSX.Element }): JSX.Element {
   return (
@@ -168,17 +193,7 @@ function BikeshedFragmentShell({ vm, children }: { vm: RenderPageVm; children?: 
         data-solospec-theme={vm.themeName}
         data-solospec-mode={vm.mode}
       >
-        <div class="spec-page">
-          <a  href="https://www.w3.org/community/">
-            <img
-              class="p-3 rounded-full"
-              alt="W3C Community Group"
-              src="https://www.w3.org/StyleSheets/TR/2021/logos/W3C"
-            />
-          </a>
-
-          <BikeshedLayout vm={vm}>{children}</BikeshedLayout>
-        </div>
+        <BikeshedLayout vm={vm}>{children}</BikeshedLayout>
       </main>
     </AstComponentsContext.Provider>
   );
