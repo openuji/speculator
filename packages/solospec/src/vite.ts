@@ -81,10 +81,7 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
             throw new Error('Speculator did not produce a workspace AST for the provided entry.');
           }
 
-          const document = result.workspace.documents[0];
-          await highlightDocument(document);
-          await enrichIssueMetadata(document, path.dirname(path.resolve(pluginOptions.entry)));
-
+          
           const resolvedTheme = resolveSolospecThemeSettings(
             pluginOptions.theme || pluginOptions.options?.theme
           );
@@ -92,6 +89,11 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
             ...pluginOptions.options,
             theme: resolvedTheme,
           };
+
+          const document = result.workspace.documents[0];
+          await highlightDocument(document, resolvedTheme.codeHighlightTheme);
+          await enrichIssueMetadata(document, path.dirname(path.resolve(pluginOptions.entry)));
+
 
           let renderDocumentFragmentFn: typeof import('#src/render/page').renderDocumentFragment;
 

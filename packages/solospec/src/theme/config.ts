@@ -4,11 +4,17 @@ export type SolospecThemeName = (typeof SOLOSPEC_THEME_NAMES)[number];
 export const SOLOSPEC_THEME_MODES = ['system', 'light', 'dark'] as const;
 export type SolospecThemeMode = (typeof SOLOSPEC_THEME_MODES)[number];
 
+export interface CodeHighlightThemeSettings {
+  light: string;
+  dark: string;
+}
+
 export interface SolospecThemeSettings {
   name?: SolospecThemeName;
   mode?: SolospecThemeMode;
   themeSwitcher?: boolean;
   w3cLogo?: boolean;
+  codeHighlightTheme?: CodeHighlightThemeSettings;
 }
 
 export interface ResolvedSolospecThemeSettings {
@@ -16,13 +22,20 @@ export interface ResolvedSolospecThemeSettings {
   mode: SolospecThemeMode;
   themeSwitcher: boolean;
   w3cLogo: boolean;
+  codeHighlightTheme: CodeHighlightThemeSettings;
 }
+
+export const DEFAULT_CODE_HIGHLIGHT_THEME: CodeHighlightThemeSettings = {
+  light: 'github-light',
+  dark: 'github-dark',
+} as const;
 
 export const DEFAULT_SOLOSPEC_THEME_SETTINGS: ResolvedSolospecThemeSettings = {
   name: 'bikeshed',
   mode: 'system',
   themeSwitcher: false,
   w3cLogo: false,
+  codeHighlightTheme: DEFAULT_CODE_HIGHLIGHT_THEME,
 };
 
 const THEME_NAME_SET = new Set<string>(SOLOSPEC_THEME_NAMES);
@@ -54,11 +67,16 @@ export function resolveSolospecThemeSettings(
       ? input.w3cLogo
       : DEFAULT_SOLOSPEC_THEME_SETTINGS.w3cLogo;
 
+  const codeHighlightTheme = input?.codeHighlightTheme
+    ? input.codeHighlightTheme
+    : DEFAULT_SOLOSPEC_THEME_SETTINGS.codeHighlightTheme;
+
   return {
     name,
     mode,
     themeSwitcher,
     w3cLogo,
+    codeHighlightTheme,
   };
 }
 

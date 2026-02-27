@@ -20,10 +20,7 @@ export const SectionsHtmlParser: HtmlParserModule = {
     handleBlock(element: Element, ctx: ParseContext): BlockHandlerResult {
         const sourcePos = ctx.createSourcePos(element);
         const id = ctx.getAttr(element, 'id');
-        const className = ctx.getAttr(element, 'className') ?? '';
-        const unnumbered = className.split(/\s+/).some(c => 
-            ['unnumbered', 'informative', 'introductory'].includes(c)
-        );
+        const noToc = ctx.getAttr(element, 'data-no-toc') !== undefined;
         const dataCopConcept = ctx.getAttr(element, 'data-cop-concept');
 
         // Find heading and other children
@@ -61,7 +58,7 @@ export const SectionsHtmlParser: HtmlParserModule = {
 
         if (id) result.id = id;
         if (heading) result.heading = heading;
-        if (unnumbered) result.unnumbered = true;
+        if (noToc) result.noToc = true;
         if (dataCopConcept) result.dataCopConcept = dataCopConcept;
         if (sourcePos) result.sourcePos = sourcePos;
 

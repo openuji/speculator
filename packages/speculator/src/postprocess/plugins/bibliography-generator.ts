@@ -117,7 +117,7 @@ export const bibliographyGeneratorPlugin: Plugin = {
         // 4. Create wrapper section
         const wrapperSection: Section = {
             type: 'section',
-            unnumbered: true,
+            noToc: true,
             id: 'references',
             heading: {
                 type: 'heading',

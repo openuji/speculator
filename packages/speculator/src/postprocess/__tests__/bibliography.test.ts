@@ -17,7 +17,6 @@ describe('bibliography-generator', () => {
             children: [],
             indexes: {
                 citations,
-                bibliography: [], // unused by plugin here directly?
                 definitions: [],
                 requirements: [],
                 issues: [],
@@ -31,7 +30,6 @@ describe('bibliography-generator', () => {
         const globalIndex: RuntimeGlobalIndex = {
             definitions: new Map(),
             bibliography: bibMap,
-            statements: []
         };
 
         const workspace: RuntimeWorkspace = {
@@ -83,7 +81,7 @@ describe('bibliography-generator', () => {
         const refSection = children.find(c => c.type === 'section' && c.id === 'references') as Section;
 
         expect(refSection).toBeDefined();
-        expect(refSection.unnumbered).toBe(true);
+        expect(refSection.noToc).toBe(true);
         expect(refSection.children).toHaveLength(2);
 
         const normativeSec = refSection.children.find(c => c.type === 'section' && c.id === 'bibliography-generator-normative-references') as Section;

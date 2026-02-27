@@ -27,6 +27,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
     "build:styles": "node ./scripts/build-theme-css.mjs",
     "build": "pnpm run build:styles && tsc",
     "prepack": "pnpm build",

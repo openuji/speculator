@@ -743,9 +743,9 @@
                                 "$ref": "#/definitions/Inline"
                             }
                         },
-                        "unnumbered": {
+                        "noToc": {
                             "type": "boolean",
-                            "description": "If true, the section created from this heading will be unnumbered.",
+                            "description": "If true, the section created from this heading will not be numbered and will be omitted from the TOC.",
                             "default": false
                         },
                         "dataCopConcept": {
@@ -1459,9 +1459,9 @@
                             "$ref": "#/definitions/BlockHeading",
                             "description": "Optional section heading"
                         },
-                        "unnumbered": {
+                        "noToc": {
                             "type": "boolean",
-                            "description": "If true, this section and its descendants do not increment the TOC counter at this level.",
+                            "description": "If true, this section and its descendants do not increment the TOC counter at this level and are omitted from the TOC.",
                             "default": false
                         },
                         "children": {

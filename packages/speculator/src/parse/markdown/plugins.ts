@@ -70,6 +70,9 @@ export function parseAttrText(text: string) {
       let v = rest.join("=");
       v = v.replace(/^['"]|['"]$/g, "");
       props[k] = v;
+    } else {
+      // Treat as boolean flag (e.g. data-no-toc)
+      props[p] = true;
     }
   }
   return props;
@@ -89,8 +92,12 @@ export function remarkHeadingAttrBlocks() {
       if (!last) return;
       if (last.type !== "mdxTextExpression" && last.type !== "text") return;
 
-      const raw = String(last.value ?? "").trim();
-      if (!raw.startsWith("{") && !raw.startsWith("#") && !raw.startsWith(".") && !raw.includes("=")) return;
+      const rawText = String(last.value ?? "").trim();
+      const raw = rawText.startsWith("{") && rawText.endsWith("}") 
+        ? rawText.slice(1, -1).trim() 
+        : rawText;
+
+      if (!raw.startsWith("#") && !raw.startsWith(".") && !raw.includes("=") && !raw.startsWith("data-")) return;
 
       const props = parseAttrText(raw);
 

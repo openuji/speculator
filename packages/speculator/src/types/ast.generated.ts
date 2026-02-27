@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-26T16:38:36.474Z
+ * Generated at: 2026-02-27T11:26:12.679Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -25,18 +25,18 @@ export type Section = BaseNode & {
     id?: string;
     children: Inline[];
     /**
-     * If true, the section created from this heading will be unnumbered.
+     * If true, the section created from this heading will not be numbered and will be omitted from the TOC.
      */
-    unnumbered?: boolean;
+    noToc?: boolean;
     /**
      * Optional Class of Products (COP) identifier for this heading/section scope.
      */
     dataCopConcept?: string;
   };
   /**
-   * If true, this section and its descendants do not increment the TOC counter at this level.
+   * If true, this section and its descendants do not increment the TOC counter at this level and are omitted from the TOC.
    */
-  unnumbered?: boolean;
+  noToc?: boolean;
   children: (Section | Block)[];
   /**
    * Optional Class of Products (COP) identifier for this section scope.
@@ -294,9 +294,9 @@ export type BlockHeading = BaseNode & {
   id?: string;
   children: Inline[];
   /**
-   * If true, the section created from this heading will be unnumbered.
+   * If true, the section created from this heading will not be numbered and will be omitted from the TOC.
    */
-  unnumbered?: boolean;
+  noToc?: boolean;
   /**
    * Optional Class of Products (COP) identifier for this heading/section scope.
    */

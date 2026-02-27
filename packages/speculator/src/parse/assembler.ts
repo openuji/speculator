@@ -51,9 +51,9 @@ function createSectionFromHeading(heading: BlockHeading): Section {
         section.sourcePos = heading.sourcePos;
         section.heading!.sourcePos = heading.sourcePos;
     }
-    if (heading.unnumbered) {
-        section.unnumbered = true;
-        section.heading!.unnumbered = true;
+    if (heading.noToc) {
+        section.noToc = true;
+        section.heading!.noToc = true;
     }
     if (heading.dataCopConcept) {
         section.dataCopConcept = heading.dataCopConcept;

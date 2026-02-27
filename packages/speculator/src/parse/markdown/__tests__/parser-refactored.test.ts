@@ -56,15 +56,14 @@ describe('Refactored MarkdownUnitParser', () => {
         const unit: SourceUnit = {
             file: 'test.md',
             format: 'markdown',
-            content: '### Heading {.unnumbered #my-id}\n',
+            content: '### Heading {data-no-toc #my-id}\n',
             startLine: 1,
         };
 
         const blocks = parser.parse(unit);
         const heading = blocks[0] as BlockHeading;
-        // Note: my plugin currently doesn't handle .class yet, only #id and key=val
-        // but let's see if it handles #id
         expect(heading.id).toBe('my-id');
+        expect(heading.noToc).toBe(true);
     });
 
     it('parses MDX <dfn> inline tags via HTML handlers', () => {

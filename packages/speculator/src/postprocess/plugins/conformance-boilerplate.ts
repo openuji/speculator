@@ -14,7 +14,7 @@ const RFC8174_KEY = 'RFC8174';
 function createConformanceSection(depth: number = 2): Section {
     return {
         type: 'section',
-        unnumbered: true,
+        noToc: true,
         id: 'conformance',
         heading: {
             type: 'heading',
