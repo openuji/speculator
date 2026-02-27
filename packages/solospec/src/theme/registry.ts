@@ -6,7 +6,7 @@ const bikeshedTheme: SolospecThemeRenderer = {
   name: 'bikeshed',
   getCss: () => getThemeCss('bikeshed'),
   slots: bikeshedSlots,
-  runtimeImport: '@openuji/solospec/themes/bikeshed/runtime',
+  runtimeImport: '@openuji/solospec/themes/bikeshed/runtime'
 };
 
 export function getThemeRenderer(name: string): SolospecThemeRenderer {

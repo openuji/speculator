@@ -20,7 +20,7 @@ export interface RenderPageVm {
   abstractText?: string;
 
   themeName: string;
-  mode: 'system' | 'light' | 'dark';
+  mode: 'auto' | 'light' | 'dark';
   w3cLogo: boolean;
 
   metadata?: import('@openuji/speculator').DocumentMetadata;
@@ -52,9 +52,17 @@ export interface ThemeSlots {
   Components: AstComponents;
 }
 
+export interface ThemeResource {
+  src: string;
+  type: 'script' | 'style';
+  injectTo?: 'head' | 'body';
+  attrs?: Record<string, string>;
+}
+
 export interface SolospecThemeRenderer {
   name: string;
   getCss(): string;
   slots: ThemeSlots;
   runtimeImport?: string;
+  resources?: ThemeResource[];
 }

@@ -8,6 +8,53 @@ import {
 } from '#src/theme/config';
 import { render } from 'preact';
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded bikeshed');
+    const root = document.querySelector('[data-solospec-theme="bikeshed"]') as HTMLElement;
+    if (!root) return;
+
+    const toc = document.getElementById('toc');
+    if (!toc) return;
+
+    
+    const mobuleToc = toc.cloneNode(true) as HTMLElement;
+    mobuleToc.setAttribute('id', 'toc-mobile');
+    
+    // Read breakpoint from CSS variable
+    const computedStyle = window.getComputedStyle(root);
+    const breakpoint = computedStyle.getPropertyValue('--breakpoint-mobile').trim() || '1247px';
+
+    const mq = window.matchMedia(`(max-width: ${breakpoint})`);
+    const firstLink = toc.querySelector('a[href^="#"]');
+    if(!firstLink) return;
+    
+    const targetId = firstLink.getAttribute('href')?.substring(1);
+    const targetSection = root.querySelector(`section#${targetId}`);
+    const parent = targetSection?.parentNode;
+    if(!targetSection || !parent) return;
+
+    const updateToc = () => {
+      if (mq.matches) {
+        // Move TOC inline
+        targetSection.before(mobuleToc);
+        root.setAttribute('data-toc-inline', 'true');
+      } else {
+        // Restore TOC to sidebar
+        parent.removeChild(mobuleToc);
+        root.removeAttribute('data-toc-inline');
+      }
+    };
+
+    mq.addEventListener('change', updateToc);
+    updateToc();
+  })
+
+}
+
+
+
+
 const STORAGE_KEY = 'solospec.theme.preferences.v1';
 const SYSTEM_DARK_QUERY = '(prefers-color-scheme: dark)';
 const ROOT_SELECTOR = '.solospec-root';
@@ -84,22 +131,25 @@ function removeSwitchers(): void {
   }
 }
 
-function ThemeSwitcherUi({
+function TocNav({
   currentMode,
   onModeSelect,
 }: {
   currentMode: SolospecThemeMode;
   onModeSelect: (mode: SolospecThemeMode) => void;
 }) {
-  return (
-    <div
-      class="solospec-theme-switcher"
-      data-solospec-theme-switcher
-      role="group"
-      aria-label="Color mode switcher"
-    >
-      <span class="solospec-theme-switcher-label">Mode</span>
-      {(['auto', 'light', 'dark'] as const).map((mode) => {
+  return (<p id="toc-nav">
+    <a id="toc-jump" href="#toc" aria-labelledby="toc-jump-text">
+      <span aria-hidden="true">↑</span>
+      <span id="toc-jump-text">Jump to Table of Contents</span>
+    </a>
+    <a id="toc-toggle" href="#toc" aria-labelledby="toc-expand-text">
+      <span aria-hidden="true">→</span>
+      <span id="toc-expand-text">Pop Out Sidebar</span>
+    </a>
+    <a id="toc-theme-toggle" role="radiogroup" aria-label="Select a color scheme">
+      <span aria-hidden="true"><img src="https://www.w3.org/StyleSheets/TR/2021/logos/dark.svg" title="theme toggle icon"/></span>
+       {(['light', 'dark', 'auto'] as const).map((mode) => {
         const isActive = currentMode === mode;
         return (
           <button
@@ -110,13 +160,49 @@ function ThemeSwitcherUi({
             data-active={isActive}
             onClick={() => onModeSelect(mode)}
           >
-            {mode[0].toUpperCase() + mode.slice(1)}
+            {mode}
           </button>
         );
       })}
-    </div>
-  );
+    </a>
+  </p>
+  )
 }
+
+
+// function ThemeSwitcherUi({
+//   currentMode,
+//   onModeSelect,
+// }: {
+//   currentMode: SolospecThemeMode;
+//   onModeSelect: (mode: SolospecThemeMode) => void;
+// }) {
+//   return (
+//     <div
+//       class="solospec-theme-switcher"
+//       data-solospec-theme-switcher
+//       role="group"
+//       aria-label="Color mode switcher"
+//     >
+//       <span class="solospec-theme-switcher-label">Mode</span>
+//       {(['system', 'light', 'dark'] as const).map((mode) => {
+//         const isActive = currentMode === mode;
+//         return (
+//           <button
+//             key={mode}
+//             type="button"
+//             data-solospec-mode-value={mode}
+//             aria-pressed={isActive}
+//             data-active={isActive}
+//             onClick={() => onModeSelect(mode)}
+//           >
+//             {mode[0].toUpperCase() + mode.slice(1)}
+//           </button>
+//         );
+//       })}
+//     </div>
+//   );
+// }
 
 function ensureSwitcher(
   settings: ResolvedSolospecThemeSettings,
@@ -145,7 +231,7 @@ function ensureSwitcher(
     }
 
     render(
-      <ThemeSwitcherUi currentMode={settings.mode} onModeSelect={onModeSelect} />,
+      <TocNav currentMode={settings.mode} onModeSelect={onModeSelect} />,
       container
     );
   }

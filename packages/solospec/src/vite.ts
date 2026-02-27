@@ -164,12 +164,12 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
           }
 
           const runtimeThemePayload = JSON.stringify(resolvedTheme).replace(/</g, '\\u003C');
-          tags.push({
-            tag: 'script',
-            attrs: { type: 'module' },
-            children: `import { initSolospecThemeRuntime } from '@openuji/solospec/runtime/theme';\ninitSolospecThemeRuntime(${runtimeThemePayload});`,
-            injectTo: 'body',
-          });
+          // tags.push({
+          //   tag: 'script',
+          //   attrs: { type: 'module' },
+          //   children: `import { initSolospecThemeRuntime } from '@openuji/solospec/runtime/theme';\ninitSolospecThemeRuntime(${runtimeThemePayload});`,
+          //   injectTo: 'body',
+          // });
 
           // Inject theme-specific client runtime (if declared by the theme).
           const themeRenderer = getThemeRenderer(resolvedTheme.name);
@@ -177,9 +177,27 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
             tags.push({
               tag: 'script',
               attrs: { type: 'module' },
-              children: `import '${themeRenderer.runtimeImport}';`,
+              children: `import { initSolospecThemeRuntime } from '${themeRenderer.runtimeImport}';\ninitSolospecThemeRuntime(${runtimeThemePayload});`,
               injectTo: 'body',
             });
+          }
+
+          if (themeRenderer.resources) {
+            for (const res of themeRenderer.resources) {
+              if (res.type === 'script') {
+                tags.push({
+                  tag: 'script',
+                  attrs: { src: res.src, ...res.attrs },
+                  injectTo: res.injectTo || 'body',
+                });
+              } else if (res.type === 'style') {
+                tags.push({
+                  tag: 'link',
+                  attrs: { rel: 'stylesheet', href: res.src, ...res.attrs },
+                  injectTo: res.injectTo || 'head',
+                });
+              }
+            }
           }
 
           const statementsJsonLd = document.computed?.statementsJsonLd;

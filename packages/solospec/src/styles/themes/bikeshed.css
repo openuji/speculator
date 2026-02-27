@@ -27,6 +27,8 @@
   --color-solospec-dark-link-hover: #8cbdff;
   --color-solospec-dark-soft: #11131a;
   --color-solospec-dark-panel: #090b12;
+
+  --breakpoint-mobile: 1247px;
 }
 
 @custom-variant solospec-dark (&:where(.solospec-root[data-solospec-effective-mode="dark"] *));
@@ -143,6 +145,7 @@
 
   .solospec-root .spec-page {
     display:flex;
+    flex-direction: row;
     .spec-content {
       min-width: 0;
       overflow: hidden;
@@ -642,8 +645,14 @@
     outline-offset: 1px;
   }
 
-  @media (max-width: 1247px) {
-    #toc { display: none; } 
+ 
+}
+
+@media (width <= 1247px) {
+  #toc { display: none; } 
+
+  .solospec-root .spec-page {
+    flex-direction: column;
   }
 }
 
@@ -655,4 +664,91 @@ img[src*="logos/W3C"] {
     padding: 10px;
     width: 120px;
     background: white;
+}
+
+
+/**
+ * TOC Toggler.
+ * taken from https://www.w3.org/StyleSheets/TR/2021/base.css
+ */
+
+@media print {
+  #toc-nav {
+    display: none;
+  }
+}
+@media not print {
+  #toc-nav {
+
+    position: fixed;
+    z-index: 3;
+    bottom: 0; left: 0;
+    margin: 0;
+    min-width: 1.33em;
+    border-top-right-radius: 2rem;
+    box-shadow: 0 0 2px;
+    font-size: 1.5em;
+    background: var(--solospec-bg);
+    border-top-right-radius: 1.33rem;
+
+    button {
+      display: none !important;   
+      font-weight: normal;
+      padding: 0rem 1rem;
+      border-radius: 2rem;
+
+    }
+    
+
+    &:hover {
+      button {
+        display: block !important;   
+        cursor: pointer;
+      }
+    }
+  }
+  #toc-nav > a {
+    display: block;
+    white-space: nowrap;
+
+    padding: .1em 0.3em;
+    margin: 0;
+
+    border-top: 1px solid var(--solospec-line);
+    border-right: 1px solid var(--solospec-line);
+
+    border-top-right-radius: 1.33rem;
+
+    background: var(--solospec-bg);
+
+  }
+
+  #toc-nav > #toc-theme-toggle {
+    display: flex !important;
+    align-items: center;
+    gap: 0.2rem;
+    height: 3rem;
+    & span {
+      margin-right: 0.4rem;
+    }
+    & button[data-active="true"] {
+      border-color: var(--solospec-link);
+      color: var(--solospec-bg);
+      background: var(--solospec-link);
+          }
+  }
+  
+
+  /* statusbar gets in the way on keyboard focus; remove once browsers fix */
+  #toc-nav > a[href="#toc"]:not(:hover):focus:last-child {
+    padding-bottom: 1.5rem;
+  }
+
+  #toc-nav:not(:hover) > a:not(:focus) > span + span {
+    /* Ideally this uses :focus-within on #toc-nav */
+    display: none;
+  }
+  #toc-nav > a > span + span {
+    padding-right: 0.2em;
+  }
 }

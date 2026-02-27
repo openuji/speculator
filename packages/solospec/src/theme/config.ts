@@ -1,7 +1,7 @@
 export const SOLOSPEC_THEME_NAMES = ['bikeshed'] as const;
 export type SolospecThemeName = (typeof SOLOSPEC_THEME_NAMES)[number];
 
-export const SOLOSPEC_THEME_MODES = ['system', 'light', 'dark'] as const;
+export const SOLOSPEC_THEME_MODES = ['light', 'dark', 'auto'] as const;
 export type SolospecThemeMode = (typeof SOLOSPEC_THEME_MODES)[number];
 
 export interface CodeHighlightThemeSettings {
@@ -32,7 +32,7 @@ export const DEFAULT_CODE_HIGHLIGHT_THEME: CodeHighlightThemeSettings = {
 
 export const DEFAULT_SOLOSPEC_THEME_SETTINGS: ResolvedSolospecThemeSettings = {
   name: 'bikeshed',
-  mode: 'system',
+  mode: 'auto',
   themeSwitcher: false,
   w3cLogo: false,
   codeHighlightTheme: DEFAULT_CODE_HIGHLIGHT_THEME,

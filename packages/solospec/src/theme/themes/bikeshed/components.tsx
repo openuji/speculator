@@ -2,6 +2,8 @@ import type { ThemeSlots, RenderPageVm } from '#src/theme/types';
 import type { DocumentMetadata, TocEntry } from '@openuji/speculator';
 import { baseSlots, baseComponents } from '#src/theme/themes/base/components';
 import { AstComponentsContext } from '#src/theme/themes/base/context';
+// import { TocNav } from '#src/theme/themes/bikeshed/TocNav';
+
 import type { JSX } from 'preact';
 
 function formatPersonList(people: DocumentMetadata['editors'] | DocumentMetadata['authors']): JSX.Element | null {
@@ -137,6 +139,7 @@ function BikeshedTocTree({ entries }: { entries: TocEntry[] }): JSX.Element | nu
   );
 }
 
+
 function BikeshedToc({ vm }: { vm: RenderPageVm }): JSX.Element | null {
   if (vm.includeToc === false || !vm.toc || vm.toc.length === 0) return null;
   return (
@@ -186,6 +189,7 @@ const W3CCommunityLogo = () => (
     />
   </a>
 );
+
 
 function BikeshedFragmentShell({ vm, children }: { vm: RenderPageVm; children?: JSX.Element }): JSX.Element {
   return (
