@@ -191,14 +191,24 @@ function TocNav({
     if (!root) return;
     if (isCollapsed) {
       root.classList.add('toc-collapsed');
+      root.classList.remove('toc-expanded');
     } else {
       root.classList.remove('toc-collapsed');
+      if(isMobile) {
+        root.classList.add('toc-expanded');
+      }
     }
-  }, [isCollapsed]);
+  }, [isCollapsed, isMobile]);
+
+  useEffect(() => {
+    if(isMobile) {
+      setIsCollapsed(true);
+    }
+  }, [isMobile]);
 
   return (
     <p id="toc-nav">
-      {isMobile && <a id="toc-jump" href={`#${tocId}`} aria-labelledby="toc-jump-text">
+      {isMobile && isCollapsed && <a id="toc-jump" href={`#${tocId}`} aria-labelledby="toc-jump-text">
         <span aria-hidden="true">↑</span>
         <span id="toc-jump-text">Jump to Table of Contents</span>
       </a>}
@@ -206,7 +216,7 @@ function TocNav({
         <span aria-hidden="true">→</span>
         <span id="toc-expand-text">Pop Out Sidebar</span>
       </a>}
-      {!isCollapsed && <a id="toc-collapse" role="button" onClick={collapseToc} aria-labelledby="toc-collapse-text">
+      {!isCollapsed && <a id="toc-collapse" onClick={collapseToc} aria-labelledby="toc-collapse-text">
        <span aria-hidden="true">←</span>
         <span id="toc-collapse-text">Collapse Sidebar</span>
       </a>}

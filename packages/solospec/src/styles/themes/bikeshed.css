@@ -754,14 +754,25 @@ img[src*="logos/W3C"] {
 
   [data-solospec-theme="bikeshed"] {
     &.toc-collapsed {
-      .toc {
+      #toc {
         display: none !important;   
       }
     }
 
     &.toc-expanded {
-      .toc {
+      #toc {
         display: block !important;   
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        bottom: 0;
+        margin: 0;
+        box-shadow: 0 0 2px;
+        background: var(--solospec-bg);        
+      }
+      #toc-mobile {
+        display: none !important;   
       }
     }
   }
