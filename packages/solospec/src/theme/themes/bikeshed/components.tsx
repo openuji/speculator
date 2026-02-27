@@ -145,7 +145,7 @@ function BikeshedToc({ vm }: { vm: RenderPageVm }): JSX.Element | null {
   return (
     <aside>
       <W3CCommunityDraftReportLogo />
-      <div id="toc">
+      <div id="toc" class="toc">
         <h2>TABLE OF CONTENTS</h2>
         <BikeshedTocTree entries={vm.toc} />
       </div>

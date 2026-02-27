@@ -735,7 +735,7 @@ img[src*="logos/W3C"] {
       border-color: var(--solospec-link);
       color: var(--solospec-bg);
       background: var(--solospec-link);
-          }
+    }
   }
   
 
@@ -751,4 +751,19 @@ img[src*="logos/W3C"] {
   #toc-nav > a > span + span {
     padding-right: 0.2em;
   }
+
+  [data-solospec-theme="bikeshed"] {
+    &.toc-collapsed {
+      .toc {
+        display: none !important;   
+      }
+    }
+
+    &.toc-expanded {
+      .toc {
+        display: block !important;   
+      }
+    }
+  }
 }
+

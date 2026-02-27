@@ -7,6 +7,17 @@ import {
   type SolospecThemeSettings,
 } from '#src/theme/config';
 import { render } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
+
+const getRoot = () => document.querySelector('[data-solospec-theme="bikeshed"]') as HTMLElement;
+
+const getMediaQuery = () => {
+    const root = getRoot();
+    if (!root) return null;
+    const computedStyle = window.getComputedStyle(root);
+    const breakpoint = computedStyle.getPropertyValue('--breakpoint-mobile').trim() || '1247px';
+    return window.matchMedia(`(max-width: ${breakpoint})`);
+}
 
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
@@ -18,14 +29,13 @@ if (typeof window !== 'undefined') {
     if (!toc) return;
 
     
-    const mobuleToc = toc.cloneNode(true) as HTMLElement;
-    mobuleToc.setAttribute('id', 'toc-mobile');
     
-    // Read breakpoint from CSS variable
-    const computedStyle = window.getComputedStyle(root);
-    const breakpoint = computedStyle.getPropertyValue('--breakpoint-mobile').trim() || '1247px';
-
-    const mq = window.matchMedia(`(max-width: ${breakpoint})`);
+    const mobileToc = toc.cloneNode(true) as HTMLElement;
+    mobileToc.setAttribute('id', 'toc-mobile');
+    
+    const mq = getMediaQuery();
+    if (!mq) return;
+    
     const firstLink = toc.querySelector('a[href^="#"]');
     if(!firstLink) return;
     
@@ -37,11 +47,13 @@ if (typeof window !== 'undefined') {
     const updateToc = () => {
       if (mq.matches) {
         // Move TOC inline
-        targetSection.before(mobuleToc);
+        targetSection.before(mobileToc);
         root.setAttribute('data-toc-inline', 'true');
       } else {
         // Restore TOC to sidebar
-        parent.removeChild(mobuleToc);
+        if(mobileToc.parentNode) {
+          mobileToc.parentNode.removeChild(mobileToc);
+        }
         root.removeAttribute('data-toc-inline');
       }
     };
@@ -50,6 +62,26 @@ if (typeof window !== 'undefined') {
     updateToc();
   })
 
+}
+
+function useMediaQuery(): boolean {
+  const [matches, setMatches] = useState(false);
+
+  
+
+  useEffect(() => {
+   
+    const mq = getMediaQuery();
+    if (!mq) return;
+    if (mq.matches !== matches) {
+      setMatches(mq.matches);
+    }
+    const listener = () => setMatches(mq.matches);
+    mq.addEventListener('change', listener);
+    return () => mq.removeEventListener('change', listener);
+  }, []);
+
+  return matches;
 }
 
 
@@ -138,35 +170,71 @@ function TocNav({
   currentMode: SolospecThemeMode;
   onModeSelect: (mode: SolospecThemeMode) => void;
 }) {
-  return (<p id="toc-nav">
-    <a id="toc-jump" href="#toc" aria-labelledby="toc-jump-text">
-      <span aria-hidden="true">↑</span>
-      <span id="toc-jump-text">Jump to Table of Contents</span>
-    </a>
-    <a id="toc-toggle" href="#toc" aria-labelledby="toc-expand-text">
-      <span aria-hidden="true">→</span>
-      <span id="toc-expand-text">Pop Out Sidebar</span>
-    </a>
-    <a id="toc-theme-toggle" role="radiogroup" aria-label="Select a color scheme">
-      <span aria-hidden="true"><img src="https://www.w3.org/StyleSheets/TR/2021/logos/dark.svg" title="theme toggle icon"/></span>
-       {(['light', 'dark', 'auto'] as const).map((mode) => {
-        const isActive = currentMode === mode;
-        return (
-          <button
-            key={mode}
-            type="button"
-            data-solospec-mode-value={mode}
-            aria-pressed={isActive}
-            data-active={isActive}
-            onClick={() => onModeSelect(mode)}
-          >
-            {mode}
-          </button>
-        );
-      })}
-    </a>
-  </p>
-  )
+  const isMobile = useMediaQuery();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const tocId = isMobile ? 'toc-mobile' : 'toc';
+
+  const collapseToc = () => {
+    const root = getRoot();
+    if (!root) return;
+    setIsCollapsed(true);
+  };
+
+  const expandToc = () => {
+    const root = getRoot();
+    if (!root) return;
+    setIsCollapsed(false);
+  };
+
+  useEffect(() => {
+    const root = getRoot();
+    if (!root) return;
+    if (isCollapsed) {
+      root.classList.add('toc-collapsed');
+    } else {
+      root.classList.remove('toc-collapsed');
+    }
+  }, [isCollapsed]);
+
+  return (
+    <p id="toc-nav">
+      {isMobile && <a id="toc-jump" href={`#${tocId}`} aria-labelledby="toc-jump-text">
+        <span aria-hidden="true">↑</span>
+        <span id="toc-jump-text">Jump to Table of Contents</span>
+      </a>}
+      {(isCollapsed) && <a id="toc-toggle" href="#toc" onClick={expandToc} aria-labelledby="toc-expand-text">
+        <span aria-hidden="true">→</span>
+        <span id="toc-expand-text">Pop Out Sidebar</span>
+      </a>}
+      {!isCollapsed && <a id="toc-collapse" role="button" onClick={collapseToc} aria-labelledby="toc-collapse-text">
+       <span aria-hidden="true">←</span>
+        <span id="toc-collapse-text">Collapse Sidebar</span>
+      </a>}
+      <a id="toc-theme-toggle" role="radiogroup" aria-label="Select a color scheme">
+        <span aria-hidden="true">
+          <img
+            src="https://www.w3.org/StyleSheets/TR/2021/logos/dark.svg"
+            title="theme toggle icon"
+          />
+        </span>
+        {(['light', 'dark', 'auto'] as const).map((mode) => {
+          const isActive = currentMode === mode;
+          return (
+            <button
+              key={mode}
+              type="button"
+              data-solospec-mode-value={mode}
+              aria-pressed={isActive}
+              data-active={isActive}
+              onClick={() => onModeSelect(mode)}
+            >
+              {mode}
+            </button>
+          );
+        })}
+      </a>
+    </p>
+  );
 }
 
 
