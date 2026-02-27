@@ -140,10 +140,12 @@ function BikeshedTocTree({ entries }: { entries: TocEntry[] }): JSX.Element | nu
 function BikeshedToc({ vm }: { vm: RenderPageVm }): JSX.Element | null {
   if (vm.includeToc === false || !vm.toc || vm.toc.length === 0) return null;
   return (
-    <aside id="toc" class="toc">
+    <aside>
       <W3CCommunityDraftReportLogo />
-      <h2>TABLE OF CONTENTS</h2>
-      <BikeshedTocTree entries={vm.toc} />
+      <div id="toc">
+        <h2>TABLE OF CONTENTS</h2>
+        <BikeshedTocTree entries={vm.toc} />
+      </div>
     </aside>
   );
 }

@@ -56,4 +56,5 @@ export interface SolospecThemeRenderer {
   name: string;
   getCss(): string;
   slots: ThemeSlots;
+  runtimeImport?: string;
 }

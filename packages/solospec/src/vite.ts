@@ -9,6 +9,7 @@ import {
   resolveSolospecThemeSettings,
   type SolospecThemeSettings,
 } from '#src/theme/config';
+import { getThemeRenderer } from '#src/theme/registry';
 import type { RenderOptions } from '#src/types';
 import { highlightDocument } from '#src/render/highlight';
 import { enrichIssueMetadata } from '#src/render/issue-metadata';
@@ -169,6 +170,17 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
             children: `import { initSolospecThemeRuntime } from '@openuji/solospec/runtime/theme';\ninitSolospecThemeRuntime(${runtimeThemePayload});`,
             injectTo: 'body',
           });
+
+          // Inject theme-specific client runtime (if declared by the theme).
+          const themeRenderer = getThemeRenderer(resolvedTheme.name);
+          if (themeRenderer.runtimeImport) {
+            tags.push({
+              tag: 'script',
+              attrs: { type: 'module' },
+              children: `import '${themeRenderer.runtimeImport}';`,
+              injectTo: 'body',
+            });
+          }
 
           const statementsJsonLd = document.computed?.statementsJsonLd;
           if (statementsJsonLd) {

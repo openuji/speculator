@@ -642,8 +642,8 @@
     outline-offset: 1px;
   }
 
-  @media (max-width: 72rem) {
-   
+  @media (max-width: 1247px) {
+    #toc { display: none; } 
   }
 }
 
