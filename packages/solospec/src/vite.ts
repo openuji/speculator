@@ -44,7 +44,9 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
       const configPath = pluginOptions.configPath ? path.resolve(pluginOptions.configPath) : null;
       
       if (ctx.file === entryPath || (configPath && ctx.file === configPath)) {
-        ctx.server.ws.send({ type: 'full-reload' });
+        // Use server.restart() to completely clear Vite's transform cache for index.html
+        // and force the browser to reload with the new config metadata.
+        ctx.server.restart();
         return [];
       }
 

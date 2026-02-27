@@ -296,6 +296,19 @@ export function BaseBlock({
         </div>
       );
 
+    case 'htmlElement': {
+      const Tag = node.tagName as keyof JSX.IntrinsicElements;
+      const attributes = (node.attributes || {}) as Record<string, unknown>;
+      const idAttr = node.id ? { id: node.id } : {};
+      return (
+        <Tag {...idAttr} {...attributes}>
+          {node.children.map((child, i) => (
+            <Components.Block key={i} node={child} ctx={ctx} />
+          ))}
+        </Tag>
+      );
+    }
+
     default:
       return <Callout kind="issue" title="Unknown block"><>{(node as Block).type}</></Callout>;
   }

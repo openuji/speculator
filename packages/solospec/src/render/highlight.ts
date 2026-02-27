@@ -1,5 +1,7 @@
-import { createHighlighter } from 'shiki';
+import { createHighlighter, type LanguageRegistration, type BundledLanguage } from 'shiki';
 import type { Document, Block, Section, Inline } from '@openuji/speculator';
+import jsonLDLanguage from '../grammar/jsonld.tmLanguage.json' with { type: 'json' };
+
 
 // We want to attach the highlighted HTML to the code block node directly.
 // Normally we shouldn't mutate the AST but since we are doing a pre-render pass,
@@ -41,6 +43,7 @@ export async function highlightDocument(document: Document): Promise<void> {
     if (block.lang && block.lang !== 'mermaid') {
       langsToLoad.add(block.lang);
     }
+
   }
 
   if (langsToLoad.size === 0) {
@@ -58,14 +61,18 @@ export async function highlightDocument(document: Document): Promise<void> {
     // (e.g. jsonld, sparql) are skipped gracefully instead of
     // failing the entire highlighter initialization.
     const loadedLangs = new Set<string>();
-    for (const lang of langsToLoad) {
+   for (const lang of langsToLoad) {
       try {
-        await highlighter.loadLanguage(lang as import('shiki').BundledLanguage);
+        if (lang === 'jsonld') {
+          await highlighter.loadLanguage(jsonLDLanguage as unknown as LanguageRegistration)
+        } else {
+          await highlighter.loadLanguage(lang as BundledLanguage); // bundled language id
+        }
         loadedLangs.add(lang);
       } catch {
-        console.info(`[solospec:shiki] Language '${lang}' not available in Shiki, skipping highlighting.`);
+        console.info(`[solospec:shiki] Language '${lang}' not available, skipping.`);
       }
-    }
+    }   
 
     // highlighter.dispose();
 
@@ -95,3 +102,13 @@ export async function highlightDocument(document: Document): Promise<void> {
     console.error(`[solospec:shiki] Failed to initialize Shiki highlighter:`, err);
   }
 }
+
+
+export const jsonldLanguage = {
+  name: 'jsonld',
+  scopeName: 'source.jsonld',
+  fileTypes: ['jsonld', 'json-ld'],
+  patterns: [
+    { include: 'source.json' }, // delegate to JSON
+  ],
+} as const

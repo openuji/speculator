@@ -146,8 +146,6 @@ export async function enrichIssueMetadata(document: Document, appDir: string): P
     }
   }
 
-  console.log('toFetch', toFetch, issueNodes);
-
   if (toFetch.length === 0) return;
 
   // Fetch missing entries (in parallel, but capped)

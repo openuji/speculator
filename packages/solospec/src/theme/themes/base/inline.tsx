@@ -278,6 +278,17 @@ export function BaseInline({
       );
     }
 
+    case 'htmlInlineElement': {
+      const Tag = node.tagName as keyof JSX.IntrinsicElements;
+      const attributes = (node.attributes || {}) as Record<string, unknown>;
+      const idAttr = node.id ? { id: node.id } : {};
+      return (
+        <Tag {...idAttr} {...attributes}>
+          <Components.Inlines nodes={node.children} ctx={ctx} />
+        </Tag>
+      );
+    }
+
     default:
       return <span class="ui-badge ui-badge-danger">Unknown inline: {(node as Inline).type}</span>;
   }

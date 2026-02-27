@@ -153,6 +153,11 @@ function collectMdxText(node: unknown): string {
         return candidate.value;
     }
 
+    if ((candidate.type === 'mdxTextExpression' || candidate.type === 'mdxFlowExpression')
+        && typeof candidate.value === 'string') {
+        return `{${candidate.value}}`;
+    }
+
     if (Array.isArray(candidate.children)) {
         return candidate.children.map(collectMdxText).join('');
     }
