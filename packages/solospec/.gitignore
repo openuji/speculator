@@ -1,1 +1,3 @@
 src/styles/generated/*.css.ts
+src/styles/generated/themes/*.tokens.css
+AGENTS.md

@@ -1,0 +1,15 @@
+{
+  "size": {
+    "$type": "dimension",
+    "breakpoint": {
+      "mobile": {
+        "$value": "1247px",
+        "$type": "dimension"
+      }
+    },
+    "logo": {
+      "$value": "120px",
+      "$type": "dimension"
+    }
+  }
+}

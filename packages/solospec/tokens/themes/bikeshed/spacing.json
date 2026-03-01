@@ -1,0 +1,11 @@
+{
+  "spacing": {
+    "$type": "dimension",
+    "logo": {
+      "padding": {
+        "$value": "10px",
+        "$type": "dimension"
+      }
+    }
+  }
+}

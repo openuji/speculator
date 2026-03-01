@@ -1,0 +1,17 @@
+{
+  "size": {
+    "$type": "dimension",
+    "shadow": {
+      "soft": {
+        "$value": "2px",
+        "$type": "dimension"
+      }
+    },
+    "blur": {
+      "backdrop": {
+        "$value": "4px",
+        "$type": "dimension"
+      }
+    }
+  }
+}

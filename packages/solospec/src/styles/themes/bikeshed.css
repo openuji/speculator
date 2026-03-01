@@ -1,35 +1,5 @@
+@import "../generated/themes/bikeshed.tokens.css";
 @import "tailwindcss";
-
-@theme {
-  --font-solospec-body:
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-solospec-ui: var(--font-solospec-body);
-  --font-solospec-mono:
-    Menlo, Consolas, Monaco, "Liberation Mono", "Lucida Console", monospace;
-
-  --color-solospec-light-bg: #ffffff;
-  --color-solospec-light-ink: #141414;
-  --color-solospec-light-muted: #545454;
-  --color-solospec-light-line: #d5d5d5;
-  --color-solospec-light-link: #2977d9;
-  
-  --color-solospec-light-link-hover: #165db6;
-  --color-solospec-light-soft: #f4f6fb;
-  --color-solospec-light-panel: #f8f9fc;
-
-  --color-solospec-dark-bg: #000000;
-  --color-solospec-dark-ink: #ebebeb;
-  --color-solospec-dark-muted: #b3b3b3;
-  --color-solospec-dark-line: #2a2a2a;
-  --color-solospec-dark-link: #66a8ff;
-  --color-solospec-dark-heading: #8af;
-  --color-solospec-dark-link-hover: #8cbdff;
-  --color-solospec-dark-soft: #11131a;
-  --color-solospec-dark-panel: #090b12;
-
-  --breakpoint-mobile: 1247px;
-}
 
 @custom-variant solospec-dark (&:where(.solospec-root[data-solospec-effective-mode="dark"] *));
 @custom-variant solospec-light (&:where(.solospec-root[data-solospec-effective-mode="light"] *));
@@ -47,6 +17,44 @@
   }
 
   .solospec-root[data-solospec-theme="bikeshed"] {
+    --font-solospec-body: var(--dt-font-family-body);
+    --font-solospec-ui: var(--dt-font-family-ui);
+    --font-solospec-mono: var(--dt-font-family-mono);
+
+    --color-solospec-light-bg: var(--dt-color-surface-light-bg);
+    --color-solospec-light-ink: var(--dt-color-surface-light-ink);
+    --color-solospec-light-muted: var(--dt-color-surface-light-muted);
+    --color-solospec-light-line: var(--dt-color-surface-light-line);
+    --color-solospec-light-link: var(--dt-color-surface-light-link);
+    --color-solospec-light-link-hover: var(--dt-color-surface-light-link-hover);
+    --color-solospec-light-soft: var(--dt-color-surface-light-soft);
+    --color-solospec-light-panel: var(--dt-color-surface-light-panel);
+    --color-solospec-light-heading: var(--dt-color-text-light-heading);
+
+    --color-solospec-dark-bg: var(--dt-color-surface-dark-bg);
+    --color-solospec-dark-ink: var(--dt-color-surface-dark-ink);
+    --color-solospec-dark-muted: var(--dt-color-surface-dark-muted);
+    --color-solospec-dark-line: var(--dt-color-surface-dark-line);
+    --color-solospec-dark-link: var(--dt-color-surface-dark-link);
+    --color-solospec-dark-heading: var(--dt-color-text-dark-heading);
+    --color-solospec-dark-link-hover: var(--dt-color-surface-dark-link-hover);
+    --color-solospec-dark-soft: var(--dt-color-surface-dark-soft);
+    --color-solospec-dark-panel: var(--dt-color-surface-dark-panel);
+
+    --color-solospec-callout-note: var(--dt-color-state-note);
+    --color-solospec-callout-example: var(--dt-color-state-example);
+    --color-solospec-callout-warning: var(--dt-color-state-warning);
+    --color-solospec-callout-issue: var(--dt-color-state-issue);
+    --color-solospec-badge-accent: var(--dt-color-badge-accent);
+    --color-solospec-badge-warn: var(--dt-color-badge-warn);
+    --color-solospec-badge-danger: var(--dt-color-badge-danger);
+
+    --size-solospec-logo: var(--dt-size-logo);
+    --spacing-solospec-logo-padding: var(--dt-spacing-logo-padding);
+    --radius-solospec-logo: var(--dt-radius-logo);
+    --size-solospec-shadow-soft: var(--dt-size-shadow-soft);
+    --size-solospec-backdrop-blur: var(--dt-size-blur-backdrop);
+    --breakpoint-mobile: var(--dt-size-breakpoint-mobile);
     --solospec-bg: var(--color-solospec-light-bg);
     --solospec-ink: var(--color-solospec-light-ink);
     --solospec-muted: var(--color-solospec-light-muted);
@@ -90,30 +98,6 @@
   }
 
   .solospec-root {
-    --color-solospec-light-bg: #ffffff;
-    --color-solospec-light-ink: #141414;
-    --color-solospec-light-muted: #545454;
-    --color-solospec-light-line: #d5d5d5;
-    --color-solospec-light-link: #2977d9;
-    --color-solospec-light-link-hover: #165db6;
-    --color-solospec-light-soft: #f4f6fb;
-    --color-solospec-light-panel: #f8f9fc;
-    --color-solospec-light-heading: #005a9c;
-    
-    --color-solospec-dark-bg: #000000;
-    --color-solospec-dark-ink: #ebebeb;
-    --color-solospec-dark-muted: #b3b3b3;
-    --color-solospec-dark-line: #2a2a2a;
-    --color-solospec-dark-link: #66a8ff;
-    --color-solospec-dark-link-hover: #8cbdff;
-    --color-solospec-dark-soft: #11131a;
-    --color-solospec-dark-panel: #090b12;
-    --color-solospec-dark-heading: #8af;
-
-    --font-solospec-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-solospec-ui: var(--font-solospec-body);
-    --font-solospec-mono: Menlo, Consolas, Monaco, "Liberation Mono", "Lucida Console", monospace;
-
     min-height: 100dvh;
     background: var(--solospec-bg);
     color: var(--solospec-ink);
@@ -505,27 +489,27 @@
 
   .solospec-root .ui-callout-note,
   .solospec-root .note {
-    border-left-color: #2a7ee6;
+    border-left-color: var(--color-solospec-callout-note);
   }
 
   .solospec-root .ui-callout-example,
   .solospec-root .example {
-    border-left-color: #1f9d59;
+    border-left-color: var(--color-solospec-callout-example);
   }
 
   .solospec-root .ui-callout-warning,
   .solospec-root .warning {
-    border-left-color: #e48f1f;
+    border-left-color: var(--color-solospec-callout-warning);
   }
 
   .solospec-root .ui-callout-issue {
-    border-left-color: #e04141;
+    border-left-color: var(--color-solospec-callout-issue);
   }
 
   .solospec-root .issue.no-marker {
-    border: 1px solid #e04141;
+    border: 1px solid var(--color-solospec-callout-issue);
     border-left-width: 0.32rem;
-    border-left-color: #e04141;
+    border-left-color: var(--color-solospec-callout-issue);
     background: color-mix(
       in oklab,
       var(--solospec-panel) 85%,
@@ -545,7 +529,7 @@
     font-family: var(--font-solospec-ui);
     font-size: 0.8rem;
     font-weight: 700;
-    color: #e04141;
+    color: var(--color-solospec-callout-issue);
     text-decoration: none;
     margin-bottom: 0.2rem;
   }
@@ -581,18 +565,18 @@
   }
 
   .solospec-root .ui-badge-accent {
-    color: #2a7ee6;
-    border-color: color-mix(in oklab, #2a7ee6 40%, var(--solospec-line));
+    color: var(--color-solospec-badge-accent);
+    border-color: color-mix(in oklab, var(--color-solospec-badge-accent) 40%, var(--solospec-line));
   }
 
   .solospec-root .ui-badge-warn {
-    color: #d6820d;
-    border-color: color-mix(in oklab, #d6820d 40%, var(--solospec-line));
+    color: var(--color-solospec-badge-warn);
+    border-color: color-mix(in oklab, var(--color-solospec-badge-warn) 40%, var(--solospec-line));
   }
 
   .solospec-root .ui-badge-danger {
-    color: #d54242;
-    border-color: color-mix(in oklab, #d54242 40%, var(--solospec-line));
+    color: var(--color-solospec-badge-danger);
+    border-color: color-mix(in oklab, var(--color-solospec-badge-danger) 40%, var(--solospec-line));
   }
 
   .solospec-root .solospec-theme-switcher {
@@ -612,7 +596,7 @@
     padding: 0.24rem 0.34rem;
     font-family: var(--font-solospec-ui);
     font-size: 0.75rem;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(var(--size-solospec-backdrop-blur));
     opacity: 0.88;
   }
 
@@ -659,11 +643,7 @@
 
 img[src*="logos/W3C"] {
     display: block;
-    border-radius: 50%;
-    height: 120px;
-    padding: 10px;
-    width: 120px;
-    background: white;
+    
 }
 
 
@@ -686,7 +666,7 @@ img[src*="logos/W3C"] {
     margin: 0;
     min-width: 1.33em;
     border-top-right-radius: 2rem;
-    box-shadow: 0 0 2px;
+    box-shadow: 0 0 var(--size-solospec-shadow-soft);
     font-size: 1.5em;
     background: var(--solospec-bg);
     border-top-right-radius: 1.33rem;
@@ -768,7 +748,7 @@ img[src*="logos/W3C"] {
         z-index: 2;
         bottom: 0;
         margin: 0;
-        box-shadow: 0 0 2px;
+        box-shadow: 0 0 var(--size-solospec-shadow-soft);
         background: var(--solospec-bg);        
       }
       #toc-mobile {
@@ -777,4 +757,3 @@ img[src*="logos/W3C"] {
     }
   }
 }
-

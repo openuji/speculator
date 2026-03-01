@@ -62,3 +62,40 @@ Consumers are expected to process the resulting HTML file through a bundler like
 ```bash
 pnpm add -D vite @likec4/core likec4 mermaid react react-dom
 ```
+
+## Theme Tokens (DTCG + Tailwind v4)
+
+Theme design values live in DTCG token files, grouped per theme:
+
+```text
+tokens/
+  themes/
+    bikeshed/
+      color.json
+      spacing.json
+      typography.json
+      radius.json
+      shadow.json
+      motion.json
+      size.json
+```
+
+Token build output is generated into:
+
+```text
+src/styles/generated/themes/<theme>.tokens.css
+```
+
+Theme CSS files import their generated token file first, then Tailwind v4:
+
+```css
+@import "../generated/themes/bikeshed.tokens.css";
+@import "tailwindcss";
+```
+
+Commands:
+
+```bash
+pnpm run tokens       # generate token css from DTCG files
+pnpm run build:styles # regenerate tokens and compile theme css
+```
