@@ -55,6 +55,10 @@ function createSectionFromHeading(heading: BlockHeading): Section {
         section.noToc = true;
         section.heading!.noToc = true;
     }
+    if (heading.noTocCount) {
+        section.noTocCount = true;
+        section.heading!.noTocCount = true;
+    }
     if (heading.dataCopConcept) {
         section.dataCopConcept = heading.dataCopConcept;
         section.heading!.dataCopConcept = heading.dataCopConcept;
@@ -179,6 +183,10 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
     }
     if (config.lastUpdateDate) {
         meta.lastUpdateDate = config.lastUpdateDate;
+        hasContent = true;
+    }
+    if (config.creationDate) {
+        meta.creationDate = config.creationDate;
         hasContent = true;
     }
     if (config.editors && config.editors.length > 0) {

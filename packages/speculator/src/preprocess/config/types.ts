@@ -36,6 +36,7 @@ export interface RawRespecConfig {
     specStatus?: string;
     version?: string;
     publishDate?: string;
+    creationDate?: string;
     modificationDate?: string;
     thisVersion?: string;
     latestVersion?: string;

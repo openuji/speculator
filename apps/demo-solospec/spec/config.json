@@ -3,8 +3,9 @@
   "title": "Solid-OIDC",
   "respec": {
     "title": "Solid-OIDC",
-    "status": "CG-DRAFT",
-    "publishDate": "2026-01-21",
+    "specStatus": "CG-DRAFT",
+    "creationDate": "2021-07-16",
+    "modificationDate": "2026-02-28",
     "editors": [
       {
         "name": "Aaron Coburn",

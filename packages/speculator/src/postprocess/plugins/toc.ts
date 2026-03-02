@@ -66,7 +66,8 @@ function buildTocFromSections(
     counters: number[],
     headingNumbers: Map<string, string>,
     headingTitles: Map<string, string>,
-    parentNoToc: boolean = false
+    parentNoToc: boolean = false,
+    parentNoTocCount: boolean = false
 ): TocEntry[] {
     const entries: TocEntry[] = [];
 
@@ -92,10 +93,11 @@ function buildTocFromSections(
 
         // Section is unnumbered/excluded-from-TOC if explicitly marked OR if parent is so marked
         const isNoToc = section.noToc || parentNoToc;
+        const isNoTocCount = section.noTocCount || parentNoTocCount;
 
         // Determine numbering
         let number = '';
-        if (!isNoToc) {
+        if (!isNoToc && !isNoTocCount) {
             // Increment counter at current depth
             counters[depthIndex]++;
 
@@ -118,13 +120,14 @@ function buildTocFromSections(
         }
 
         // Recursively process nested sections
-        // Pass isNoToc to children so they inherit the status
+        // Pass isNoToc/isNoTocCount to children so they inherit the status
         const nestedChildren = buildTocFromSections(
             section.children,
             [...counters], // Pass a copy to avoid mutation issues
             headingNumbers,
             headingTitles,
-            isNoToc   // Cascade status to children
+            isNoToc,       // Cascade status to children
+            isNoTocCount   // Cascade unnumbered status to children
         );
 
         if (!isNoToc) {

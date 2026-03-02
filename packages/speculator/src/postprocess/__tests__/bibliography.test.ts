@@ -81,7 +81,7 @@ describe('bibliography-generator', () => {
         const refSection = children.find(c => c.type === 'section' && c.id === 'references') as Section;
 
         expect(refSection).toBeDefined();
-        expect(refSection.noToc).toBe(true);
+        expect(refSection.noTocCount).toBe(true);
         expect(refSection.children).toHaveLength(2);
 
         const normativeSec = refSection.children.find(c => c.type === 'section' && c.id === 'bibliography-generator-normative-references') as Section;

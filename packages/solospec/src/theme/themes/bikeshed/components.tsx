@@ -26,7 +26,7 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
   const meta = vm.metadata || {};
   const custom = meta.custom || {};
 
-  let formattedDate = meta.publishDate;
+  let formattedDate = meta.lastUpdateDate;
   if (formattedDate) {
     try {
       const d = new Date(formattedDate);
@@ -38,20 +38,40 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
     }
   }
 
-  const w3cState = () => {
-    return <p id="w3c-state">
-      <a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2026-02-28">28 February 2026</time>
-      
-    </p>
-
+  let formattedCreationDate = meta.creationDate;
+  if (formattedCreationDate) {
+    try {
+      const d = new Date(formattedCreationDate);
+      if (!isNaN(d.getTime())) {
+        formattedCreationDate = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    } catch {
+      // ignore
+    }
   }
+
+  const w3cState = () => {
+    if (meta.status === 'CG-DRAFT') {
+      return (
+        <p id="w3c-state">
+          <a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>,{' '}
+          <time class="dt-updated" datetime={meta.lastUpdateDate || ''}>
+            {formattedDate}
+          </time>
+        </p>
+      );
+    }
+    return null;
+  };
 
   return (
     <header class="spec-header spec-header--bikeshed">
       <div class="spec-header-top float-right">
         <W3CCommunityLogo />
       </div>
-      <h1 class="spec-title" id="title">{vm.titleText}</h1>
+      <h1 class="spec-title" id="title">
+        {vm.titleText}
+      </h1>
       {w3cState()}
       
 
@@ -78,10 +98,10 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
             </>
           ) : null}
 
-          {meta.publishDate ? (
+          {formattedCreationDate ? (
             <>
               <dt>Created:</dt>
-              <dd>July 16, 2021</dd>
+              <dd>{formattedCreationDate}</dd>
             </>
           ) : null}
 

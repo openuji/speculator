@@ -109,6 +109,9 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     if (raw.publishDate !== undefined) {
         config.publishDate = raw.publishDate;
     }
+    if (raw.creationDate !== undefined) {
+        config.creationDate = raw.creationDate;
+    }
     
     // Priority: root lastUpdateDate > respec.modificationDate
     if (docConfig.lastUpdateDate !== undefined) {

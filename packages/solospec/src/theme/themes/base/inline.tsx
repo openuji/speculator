@@ -224,9 +224,9 @@ export function BaseInline({
     }
 
     case 'cite': {
-      const citeClass = node.forcedNormative
-        ? 'ui-badge ui-badge-accent'
-        : 'ui-badge ui-badge-neutral';
+      // const citeClass = node.forcedNormative
+      //   ? 'ui-badge ui-badge-accent'
+      //   : 'ui-badge ui-badge-neutral';
 
       const content =
         node.children && node.children.length > 0 ? (
@@ -238,14 +238,14 @@ export function BaseInline({
       if (node.url || node.targetId) {
         const href = node.url || `#${node.targetId}`;
         return (
-          <a href={href} class={citeClass} data-cite={node.key}>
+          <a href={href} data-cite={node.key}>
             {content}
           </a>
         );
       }
 
       return (
-        <cite class={citeClass} data-cite={node.key}>
+        <cite data-cite={node.key}>
           {content}
         </cite>
       );

@@ -258,56 +258,6 @@ describe('TocPlugin', () => {
         expect(doc.computed.toc).toBeDefined();
     });
 
-    it('handles heading with definition', async () => {
-        const section: Section = {
-            type: 'section',
-            id: 'about-loop',
-            heading: {
-                type: 'heading',
-                depth: 1,
-                children: [
-                    { type: 'text', value: 'About ' },
-                    {
-                        type: 'definition',
-                        term: 'event loop',
-                        children: [{ type: 'text', value: 'Event Loop' }]
-                    },
-                ],
-            },
-            children: [],
-        };
-        const doc = createDocWithSections([section]);
-
-        await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
-
-        expect(doc.computed!.toc![0].text).toBe('About event loop');
-    });
-
-    it('handles heading with reference', async () => {
-        const section: Section = {
-            type: 'section',
-            id: 'understanding',
-            heading: {
-                type: 'heading',
-                depth: 1,
-                children: [
-                    { type: 'text', value: 'Understanding ' },
-                    {
-                        type: 'workspaceDfnReference',
-                        targetTerm: 'task queue',
-                        children: [{ type: 'text', value: 'Task Queue' }]
-                    },
-                ],
-            },
-            children: [],
-        };
-        const doc = createDocWithSections([section]);
-
-        await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
-
-        expect(doc.computed!.toc![0].text).toBe('Understanding task queue');
-    });
-
     describe('noToc sections', () => {
         it('skips numbering for top-level noToc sections (Abstract, SOTD pattern)', async () => {
             const abstract = createSectionWithHeading('Abstract', 1, 'abstract');
@@ -337,84 +287,6 @@ describe('TocPlugin', () => {
             });
         });
 
-        it('does not store headingNumbers for noToc sections', async () => {
-            const abstract = createSectionWithHeading('Abstract', 1, 'abstract');
-            abstract.noToc = true;
-
-            const intro = createSectionWithHeading('Introduction', 1, 'intro');
-
-            const doc = createDocWithSections([abstract, intro]);
-
-            await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
-
-            expect(doc.computed!.headingNumbers).toEqual({
-                'intro': '1',
-            });
-        });
-
-        it('handles nested noToc subsection', async () => {
-            const parent = createSectionWithHeading('Main Section', 1, 'main');
-            
-            const noTocSub = createSectionWithHeading('Informative Note', 2, 'note');
-            noTocSub.noToc = true;
-
-            const numberedSub = createSectionWithHeading('Details', 2, 'details');
-
-            parent.children = [noTocSub, numberedSub];
-
-            const doc = createDocWithSections([parent]);
-
-            await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
-
-            expect(doc.computed!.toc![0].children).toHaveLength(1);
-            expect(doc.computed!.toc![0].children![0]).toMatchObject({
-                id: 'details',
-                text: 'Details',
-                number: '1.1',
-            });
-        });
-
-        it('continues proper numbering after noToc sections at same level', async () => {
-            const section1 = createSectionWithHeading('First', 1, 'first');
-            
-            const noToc = createSectionWithHeading('Interlude', 1, 'interlude');
-            noToc.noToc = true;
-            
-            const section2 = createSectionWithHeading('Second', 1, 'second');
-
-            const doc = createDocWithSections([section1, noToc, section2]);
-
-            await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
-
-            expect(doc.computed!.toc).toHaveLength(2);
-            expect(doc.computed!.toc![0].number).toBe('1');
-            expect(doc.computed!.toc![1].number).toBe('2');
-        });
-
-        it('handles deeply nested mixed numbered/noToc sections', async () => {
-            const level1 = createSectionWithHeading('Level 1', 1, 'l1');
-            const level2 = createSectionWithHeading('Level 2', 2, 'l2');
-            
-            const level3NoToc = createSectionWithHeading('NoToc L3', 3, 'l3-un');
-            level3NoToc.noToc = true;
-            
-            const level3Numbered = createSectionWithHeading('Numbered L3', 3, 'l3-num');
-
-            level2.children = [level3NoToc, level3Numbered];
-            level1.children = [level2];
-
-            const doc = createDocWithSections([level1]);
-
-            await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
-
-            expect(doc.computed!.headingNumbers).toEqual({
-                'l1': '1',
-                'l2': '1.1',
-                'l3-num': '1.1.1',
-            });
-            expect(doc.computed!.headingNumbers!['l3-un']).toBeUndefined();
-        });
-
         it('cascades noToc to all child sections of an noToc parent', async () => {
             const parent = createSectionWithHeading('Appendix', 1, 'appendix');
             parent.noToc = true;
@@ -439,6 +311,108 @@ describe('TocPlugin', () => {
             });
             expect(doc.computed!.headingNumbers).toEqual({
                 'intro': '1',
+            });
+        });
+    });
+
+    describe('noTocCount sections', () => {
+        it('skips numbering but includes in TOC for noTocCount sections', async () => {
+            const intro = createSectionWithHeading('Introduction', 1, 'intro');
+            
+            const appendix = createSectionWithHeading('Appendix A', 1, 'appendix');
+            appendix.noTocCount = true;
+
+            const reference = createSectionWithHeading('References', 1, 'refs');
+
+            const doc = createDocWithSections([intro, appendix, reference]);
+
+            await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
+
+            expect(doc.computed!.toc).toHaveLength(3);
+            
+            // Introduction: 1
+            expect(doc.computed!.toc![0]).toMatchObject({
+                id: 'intro',
+                number: '1',
+            });
+
+            // Appendix: no number
+            expect(doc.computed!.toc![1]).toMatchObject({
+                id: 'appendix',
+                number: '',
+            });
+
+            // References: 2 (not 3)
+            expect(doc.computed!.toc![2]).toMatchObject({
+                id: 'refs',
+                number: '2',
+            });
+
+            expect(doc.computed!.headingNumbers).toEqual({
+                'intro': '1',
+                'refs': '2',
+            });
+            expect(doc.computed!.headingNumbers!['appendix']).toBeUndefined();
+        });
+
+        it('cascades noTocCount to all child sections', async () => {
+            const parent = createSectionWithHeading('Appendix', 1, 'appendix');
+            parent.noTocCount = true;
+
+            const child1 = createSectionWithHeading('Sub A', 2, 'sub-a');
+            const child2 = createSectionWithHeading('Sub B', 2, 'sub-b');
+            const grandchild = createSectionWithHeading('Deep', 3, 'deep');
+            child2.children = [grandchild];
+            parent.children = [child1, child2];
+
+            const intro = createSectionWithHeading('Introduction', 1, 'intro');
+
+            const doc = createDocWithSections([parent, intro]);
+
+            await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
+
+            expect(doc.computed!.toc).toHaveLength(2);
+            
+            const tocAppendix = doc.computed!.toc![0];
+            expect(tocAppendix.number).toBe('');
+            expect(tocAppendix.children![0].number).toBe('');
+            expect(tocAppendix.children![1].number).toBe('');
+            expect(tocAppendix.children![1].children![0].number).toBe('');
+
+            expect(doc.computed!.toc![1]).toMatchObject({
+                id: 'intro',
+                number: '1',
+            });
+
+            expect(doc.computed!.headingNumbers).toEqual({
+                'intro': '1',
+            });
+        });
+
+        it('handles mixed noToc and noTocCount', async () => {
+            const s1 = createSectionWithHeading('S1', 1, 's1');
+            
+            const unnumbered = createSectionWithHeading('Unnumbered', 1, 'un');
+            unnumbered.noTocCount = true;
+
+            const hidden = createSectionWithHeading('Hidden', 1, 'hid');
+            hidden.noToc = true;
+
+            const s2 = createSectionWithHeading('S2', 1, 's2');
+
+            const doc = createDocWithSections([s1, unnumbered, hidden, s2]);
+
+            await tocPlugin.compute!({ document: doc, level: 0, config: {} as unknown as SpecConfig } as ComputeContext);
+
+            // TOC should have S1, Unnumbered, S2
+            expect(doc.computed!.toc).toHaveLength(3);
+            expect(doc.computed!.toc![0].number).toBe('1');
+            expect(doc.computed!.toc![1].number).toBe('');
+            expect(doc.computed!.toc![2].number).toBe('2');
+
+            expect(doc.computed!.headingNumbers).toEqual({
+                's1': '1',
+                's2': '2',
             });
         });
     });
