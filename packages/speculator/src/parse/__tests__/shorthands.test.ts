@@ -81,6 +81,24 @@ describe('ShorthandsMarkdownParser', () => {
                 children: [{ type: 'text', value: 'keywords' }],
             });
         });
+
+        it('parses ReSpec section reference [[#id]] as sectionReference', () => {
+            const unit = createUnit('See [[#intro]] and [[#details|the details]].');
+            const blocks = parser.parse(unit);
+            const para = blocks[0] as BlockParagraph;
+
+            const refs = para.children.filter((child) => child.type === 'sectionReference');
+            expect(refs).toHaveLength(2);
+            expect(refs[0]).toMatchObject({
+                type: 'sectionReference',
+                targetId: 'intro',
+            });
+            expect(refs[1]).toMatchObject({
+                type: 'sectionReference',
+                targetId: 'details',
+                children: [{ type: 'text', value: 'the details' }],
+            });
+        });
     });
 
     describe('concepts [=concept=]', () => {

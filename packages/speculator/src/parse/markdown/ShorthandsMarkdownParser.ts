@@ -91,8 +91,24 @@ export const SHORTHAND_REGISTRY: ShorthandDefinition[] = [
         status: 'implemented',
         handler: (match, ctx, node) => {
             const forced = match[1];
+            const rawTarget = match[2].trim();
             const target = parseShorthandCitationTarget(match[2]);
             const alias = match[3]?.trim();
+
+            // ReSpec-style section links: [[#section-id]]
+            if (rawTarget.startsWith('#')) {
+                const result: InlineSectionReference = {
+                    type: 'sectionReference',
+                    targetId: rawTarget.slice(1),
+                };
+                if (alias) {
+                    result.children = [{ type: 'text', value: alias }];
+                }
+                const sourcePos = ctx.createSourcePos(node);
+                if (sourcePos) result.sourcePos = sourcePos;
+                return result;
+            }
+
             const result: InlineCite = {
                 type: 'cite',
                 key: target.key,
