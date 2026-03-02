@@ -17,6 +17,7 @@ export { dfnIndexPlugin } from './plugins/dfn-index.js';
 export { biblioIndexPlugin } from './plugins/biblio-index.js';
 export { citationIndexPlugin } from './plugins/citation-index.js';
 export { statementIndexPlugin } from './plugins/statement-index.js';
+export { exampleIndexPlugin } from './plugins/example-index.js';
 
 // Resolve plugins
 export { referenceResolvePlugin } from './plugins/reference-resolve.js';
@@ -43,6 +44,7 @@ import { dfnIndexPlugin } from './plugins/dfn-index.js';
 import { biblioIndexPlugin } from './plugins/biblio-index.js';
 import { citationIndexPlugin } from './plugins/citation-index.js';
 import { statementIndexPlugin } from './plugins/statement-index.js';
+import { exampleIndexPlugin } from './plugins/example-index.js';
 import { referenceResolvePlugin } from './plugins/reference-resolve.js';
 import { citationResolvePlugin } from './plugins/citation-resolve.js';
 import { bibliographyGeneratorPlugin } from './plugins/bibliography-generator.js';
@@ -60,6 +62,7 @@ export const corePlugins = [
     biblioIndexPlugin,          // order: { index: 1 }
     citationIndexPlugin,        // order: { index: 12 }
     statementIndexPlugin,       // order: { index: 15 }
+    exampleIndexPlugin,         // order: { index: 15 }
     // Resolve plugins
     referenceResolvePlugin,     // order: { resolve: 10 }
     citationResolvePlugin,      // order: { resolve: 15 }

@@ -7,7 +7,7 @@
 
 import type { Element, RootContent } from 'hast';
 import type { HtmlParserModule, ParseContext, BlockHandlerResult } from '#src/parse/registry';
-import type { BlockThematicBreak, BlockNote, Section, Block } from '#src/types/ast.generated';
+import type { BlockThematicBreak, BlockNote, Section, Block, BlockExample } from '#src/types/ast.generated';
 
 /**
  * Note type classifications
@@ -31,6 +31,10 @@ function getNoteTypeFromDiv(element: Element, ctx: ParseContext): NoteType | nul
         }
     }
 
+    // Check data-type attribute
+    const dataType = ctx.getAttr(element, 'data-type');
+    if (dataType === 'example') return 'example';
+
     return null;
 }
 
@@ -39,7 +43,7 @@ function getNoteTypeFromDiv(element: Element, ctx: ParseContext): NoteType | nul
  */
 export const MiscHtmlParser: HtmlParserModule = {
     name: 'MiscHtmlParser',
-    handles: ['hr', 'div', 'article', 'main', 'body', 'html', 'head', 'script', 'style', 'meta', 'link', 'title'],
+    handles: ['hr', 'div', 'article', 'main', 'body', 'html', 'head', 'script', 'style', 'meta', 'link', 'title', 'figure'],
     order: 20, // Lower priority than content parsers
 
     handleBlock(element: Element, ctx: ParseContext): BlockHandlerResult {
@@ -68,6 +72,18 @@ export const MiscHtmlParser: HtmlParserModule = {
                 // Filter out sections - notes only contain blocks
                 const children = childBlocks.filter((c): c is Block => c.type !== 'section');
 
+                if (noteType === 'example') {
+                    const result: BlockExample = {
+                        type: 'example',
+                        children,
+                    };
+                    const title = ctx.getAttr(element, 'title') || ctx.getAttr(element, 'data-title');
+                    if (title) result.title = title;
+                    if (id) result.id = id;
+                    if (sourcePos) result.sourcePos = sourcePos;
+                    return result;
+                }
+
                 const result: BlockNote = {
                     type: 'note',
                     noteType,
@@ -85,7 +101,7 @@ export const MiscHtmlParser: HtmlParserModule = {
         }
 
         // Other container elements - pass through children
-        if (tagName === 'article' || tagName === 'main' || tagName === 'body') {
+        if (tagName === 'article' || tagName === 'main' || tagName === 'body' || tagName === 'figure') {
             return ctx.transformBlockChildren(element.children) as (Section | Block)[];
         }
 

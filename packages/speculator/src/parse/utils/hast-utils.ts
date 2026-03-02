@@ -41,6 +41,12 @@ function offsetMdastNodes(nodes: MdastRootContent[], offsetLine: number) {
 export function getAttr(element: Element, name: string): string | undefined {
     let val = element.properties?.[name];
 
+    // Handle class/className alias
+    if (val === undefined) {
+        if (name === 'class') val = element.properties?.className;
+        else if (name === 'className') val = element.properties?.class;
+    }
+
     // Fallback: handle data- attributes (check both camelCase and kebab-case)
     if (val === undefined && name.startsWith('data')) {
         const camel = name.replace(/-([a-z0-9])/g, (g) => g[1].toUpperCase());
@@ -189,6 +195,12 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
         if (val === undefined && name.startsWith('data-')) {
             const camelName = name.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
             val = element.properties?.[camelName];
+        }
+
+        // Handle class/className alias
+        if (val === undefined) {
+            if (name === 'class') val = element.properties?.className;
+            else if (name === 'className') val = element.properties?.class;
         }
 
         if (Array.isArray(val)) {

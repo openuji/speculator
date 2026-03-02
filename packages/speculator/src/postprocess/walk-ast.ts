@@ -13,6 +13,7 @@ import type {
     ListItem,
     TableRow,
     TableCell,
+    BlockExample,
 } from '#src/types/ast.generated';
 
 
@@ -25,6 +26,8 @@ export interface AstVisitor {
     visitInline?(inline: Inline): void;
     /** Called for each block node */
     visitBlock?(block: Block): void;
+    /** Called for example nodes */
+    visitExample?(example: BlockExample): void;
     /** Called for each section node */
     visitSection?(section: Section): void;
     /** Called for list items */
@@ -94,6 +97,9 @@ function walkNode(node: AstNode, visitor: AstVisitor): void {
         default:
             if (INLINE_TYPES.has(node.type)) {
                 visitor.visitInline?.(node as Inline);
+            } else if (node.type === 'example') {
+                visitor.visitExample?.(node as BlockExample);
+                visitor.visitBlock?.(node as Block);
             } else {
                 visitor.visitBlock?.(node as Block);
             }

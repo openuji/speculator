@@ -946,7 +946,7 @@
 
 .solospec-root .ui-callout-example .ui-badge::after,
 .solospec-root .example .ui-badge::after {
-	content: counter(example);
+	content: none;
 }
 
 .solospec-root .ui-callout .self-link {

@@ -216,16 +216,16 @@ describe('HtmlUnitParser', () => {
 
     describe('generic html elements', () => {
         it('preserves unhandled block tags as htmlElement', () => {
-            const unit = createUnit('<figure id="f-1"><figcaption>Caption</figcaption></figure>');
+            const unit = createUnit('<details id="f-1"><summary>Caption</summary></details>');
             const blocks = parser.parse(unit);
 
-            const figure = blocks[0] as BlockHtmlElement;
-            expect(figure.type).toBe('htmlElement');
-            expect(figure.tagName).toBe('figure');
-            expect(figure.id).toBe('f-1');
-            expect(figure.children).toHaveLength(1);
-            expect((figure.children[0] as BlockHtmlElement).type).toBe('htmlElement');
-            expect((figure.children[0] as BlockHtmlElement).tagName).toBe('figcaption');
+            const details = blocks[0] as BlockHtmlElement;
+            expect(details.type).toBe('htmlElement');
+            expect(details.tagName).toBe('details');
+            expect(details.id).toBe('f-1');
+            expect(details.children).toHaveLength(1);
+            expect((details.children[0] as BlockHtmlElement).type).toBe('htmlElement');
+            expect((details.children[0] as BlockHtmlElement).tagName).toBe('summary');
         });
 
         it('preserves unhandled inline tags as htmlInlineElement', () => {

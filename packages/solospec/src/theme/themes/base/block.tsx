@@ -228,7 +228,7 @@ export function BaseBlock({
 
     case 'example':
       return (
-        <Callout kind="example" title={(node.title || 'Example') + ' '} id={node.id || undefined}>
+        <Callout kind="example" title={node.title || 'EXAMPLE'} id={node.id || undefined}>
           <>
             {node.children.map((child, i) => (
               <Components.Block key={i} node={child} ctx={ctx} />
@@ -267,7 +267,7 @@ export function BaseBlock({
       }
 
       return (
-        <Callout kind={kind} title={(node.noteType || 'note').toUpperCase() + (kind === 'example' ? ' ' : '')} id={node.id || undefined}>
+        <Callout kind={kind} title={(node.noteType || 'note').toUpperCase()} id={node.id || undefined}>
           <>
             {node.children.map((child, i) => (
               <Components.Block key={i} node={child} ctx={ctx} />

@@ -7,7 +7,7 @@
 
 import type { Element, RootContent } from 'hast';
 import type { HtmlParserModule, ParseContext, BlockHandlerResult } from '#src/parse/registry';
-import type { BlockNote, Block } from '#src/types/ast.generated';
+import type { BlockNote, Block, BlockExample } from '#src/types/ast.generated';
 
 /**
  * Note type classifications
@@ -30,6 +30,10 @@ function getNoteType(element: Element, ctx: ParseContext): NoteType | null {
             return noteClass as NoteType;
         }
     }
+
+    // Check data-type attribute
+    const dataType = ctx.getAttr(element, 'data-type');
+    if (dataType === 'example') return 'example';
 
     // Check role attribute
     const role = ctx.getAttr(element, 'role');
@@ -78,7 +82,7 @@ function findFirstLinkHref(nodes: unknown[]): string | null {
  */
 export const AsideHtmlParser: HtmlParserModule = {
     name: 'AsideHtmlParser',
-    handles: ['aside', 'div'],
+    handles: ['aside', 'div', 'figure'],
     order: 8, // Run before misc parser but after specialized handlers
 
     handleBlock(element: Element, ctx: ParseContext): BlockHandlerResult {
@@ -90,6 +94,13 @@ export const AsideHtmlParser: HtmlParserModule = {
 
         if (tagName === 'aside') {
             noteType = getNoteType(element, ctx) ?? 'note';
+        } else if (tagName === 'figure') {
+            noteType = getNoteType(element, ctx);
+            if (!noteType) {
+                // Not a note-type figure - but we might still want it as a regular figure
+                // For now, let's treat it as a pass-through if not an example
+                return ctx.transformBlockChildren(element.children as RootContent[]);
+            }
         } else {
             // tagName === 'div'
             noteType = getNoteType(element, ctx);
@@ -108,6 +119,37 @@ export const AsideHtmlParser: HtmlParserModule = {
         const children = childBlocks.filter((c): c is Block =>
             c.type !== 'section'
         );
+
+        if (noteType === 'example') {
+            const result: BlockExample = {
+                type: 'example',
+                children,
+            };
+
+            // For <figure>, look for <figcaption> to use as title
+            let title = ctx.getAttr(element, 'title') || ctx.getAttr(element, 'data-title');
+
+            if (tagName === 'figure') {
+                const figcaption = (element.children as Element[]).find(c => c.type === 'element' && c.tagName === 'figcaption');
+                if (figcaption) {
+                    title = ctx.getTextContent(figcaption);
+                    // Actually, if we use figcaption as title, we should probably exclude it from children
+                    // to avoid duplication in rendering.
+                    // Let's re-transform without figcaption if it exists
+                    const filteredHastChildren = (element.children as RootContent[]).filter(c => 
+                        !(c.type === 'element' && c.tagName === 'figcaption')
+                    );
+                    result.children = ctx.transformBlockChildren(filteredHastChildren).filter((c): c is Block =>
+                        c.type !== 'section'
+                    );
+                }
+            }
+
+            if (title) result.title = title;
+            if (id) result.id = id;
+            if (sourcePos) result.sourcePos = sourcePos;
+            return result;
+        }
 
         const result: BlockNote = {
             type: 'note',

@@ -127,18 +127,18 @@ describe('Refactored MarkdownUnitParser', () => {
         const unit: SourceUnit = {
             file: 'test.md',
             format: 'markdown',
-            content: '<figure id="fig-a"><figcaption>Overview</figcaption></figure>\n',
+            content: '<details id="fig-a"><summary>Overview</summary></details>\n',
             startLine: 1,
         };
 
         const blocks = parser.parse(unit);
-        const figure = blocks[0] as BlockHtmlElement;
+        const details = blocks[0] as BlockHtmlElement;
 
-        expect(figure.type).toBe('htmlElement');
-        expect(figure.tagName).toBe('figure');
-        expect(figure.id).toBe('fig-a');
-        expect(figure.children).toHaveLength(1);
-        expect((figure.children[0] as BlockHtmlElement).type).toBe('htmlElement');
-        expect((figure.children[0] as BlockHtmlElement).tagName).toBe('figcaption');
+        expect(details.type).toBe('htmlElement');
+        expect(details.tagName).toBe('details');
+        expect(details.id).toBe('fig-a');
+        expect(details.children).toHaveLength(1);
+        expect((details.children[0] as BlockHtmlElement).type).toBe('htmlElement');
+        expect((details.children[0] as BlockHtmlElement).tagName).toBe('summary');
     });
 });
