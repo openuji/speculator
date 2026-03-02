@@ -360,6 +360,28 @@
 
   .solospec-root .section-heading {
     scroll-margin-top: 0.5rem;
+    position: relative;
+  }
+
+  .solospec-root .section-heading > .self-link {
+    position: absolute;
+    top: 0;
+    left: -2.5ex;
+    width: 2ex;
+    height: 100%;
+    text-align: center;
+    border: none;
+    text-decoration: none;
+    opacity: 0.5;
+  }
+
+  .solospec-root .section-heading > .self-link::before {
+    content: "§";
+    color: var(--solospec-muted);
+  }
+
+  .solospec-root .section-heading:hover > .self-link {
+    opacity: 1;
   }
 
   .solospec-root .section-number {
@@ -1018,14 +1040,9 @@
   }
 }
 
-/* Example numbering and styling */
-.solospec-root {
-  counter-reset: example;
-}
 
 .solospec-root .ui-callout-example,
 .solospec-root .example {
-  counter-increment: example;
   border-left-color: #ffd700 !important; /* Gold/Yellow */
 }
 
@@ -1047,10 +1064,6 @@
   text-transform: uppercase;
 }
 
-.solospec-root .ui-callout-example .ui-badge::after,
-.solospec-root .example .ui-badge::after {
-  content: counter(example);
-}
 
 .solospec-root .ui-callout .self-link {
   display: inline-block;

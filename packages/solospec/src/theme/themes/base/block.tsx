@@ -70,6 +70,7 @@ export function BaseBlock({
         <Tag id={heading.id || undefined} class="section-heading">
           {sectionNumber ? <span class="section-number">{sectionNumber}</span> : null}
           <Components.Inlines nodes={heading.children} ctx={ctx} />
+          {node.id && !node.noToc ? <a class="self-link" href={`#${node.id}`}></a> : null}
         </Tag>
       ) : null;
 
