@@ -300,7 +300,7 @@ function ensureSwitcher(
       container = document.createElement('div');
       container.className = SWITCHER_CONTAINER_CLASS;
 
-      const page = root.querySelector<HTMLElement>('.spec-page');
+      const page = root.querySelector<HTMLElement>('.solospec-root');
       if (page) {
         page.insertBefore(container, page.firstChild);
       } else {

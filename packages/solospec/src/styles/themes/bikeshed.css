@@ -67,6 +67,8 @@
     --solospec-watermark: url(https://www.w3.org/StyleSheets/TR/2016/logos/UD-watermark);
     --solospec-watermark-vertical: url(https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-light-draft.svg);
     --solospec-heading: var(--color-solospec-light-heading);
+
+    --solospec-toc-heading-text: hsla(203, 20%, 40%, .7); 
   }
 
   .solospec-root[data-solospec-theme="bikeshed"][data-solospec-mode="dark"],
@@ -83,6 +85,7 @@
     --solospec-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
     --solospec-watermark-vertical: url('https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-dark-draft');
     --solospec-heading: var(--color-solospec-dark-heading);
+    --solospec-a-hover: rgba(25%, 25%, 25%, .25);
 
   }
 
@@ -99,6 +102,11 @@
       --solospec-soft: var(--color-solospec-dark-soft);
       --solospec-panel: var(--color-solospec-dark-panel);
       --solospec-panel-shadow: var(--color-solospec-dark-panel-shadow);
+      --solospec-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
+      --solospec-watermark-vertical: url('https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-dark-draft');
+      --solospec-a-hover: rgba(25%, 25%, 25%, .25);
+
+    
     }
   }
 
@@ -135,6 +143,7 @@
   .solospec-root .spec-page {
     display:flex;
     flex-direction: row;
+    gap: 94px;
     .spec-content {
       min-width: 0;
       overflow: hidden;
@@ -385,7 +394,7 @@
     }
   }
  
-
+/* 
   .solospec-root :is(.ui-code-header, .idl-block-header) {
     border-bottom: 1px solid var(--solospec-line);
     color: var(--solospec-muted);
@@ -398,7 +407,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.4rem;
-  }
+  } */
 
   .solospec-root :is(.ui-code-block pre, .idl-block-pre) {
     margin: 0;
@@ -583,7 +592,7 @@
 
 /* === Unlayered Overrides (must stay outside @layer) === */
 
-@media (width <= 1247px) {
+@media (width <= 78em) {
   #toc { display: none; } 
 
   .solospec-root .spec-page {
@@ -725,8 +734,23 @@
     z-index: 1;
 			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
 			box-shadow: -.1em 0 .25em var(--solospec-panel-shadow) inset;
+
+    width: 376px;
+    padding: 0 1rem 0 calc(26px + 1rem);
+    box-sizing: content-box;
+    flex-shrink: 0;
   }
 
+  @media screen and (min-width: 78em) {
+    &:not(.toc-collapsed) #toc h2 {
+        margin-top: .8rem;
+        font-variant: small-caps;
+        font-variant: all-small-caps;
+        text-transform: lowercase;
+        font-weight: bold;
+        color: var(--solospec-toc-heading-text);
+    }
+  }
 
 	.toc a {
 		color: black;
@@ -746,16 +770,14 @@
 	}
 	.toc a:focus,
 	.toc a:hover {
-		background: #f8f8f8;
-		background: rgba(75%, 75%, 75%, .25);
-		background: var(--a-hover-bg);
-		border-bottom-color: #3980b5;
-		border-bottom-color: var(--toclink-underline);
+		
+		background: var(--solospec-a-hover, rgba(75%, 75%, 75%, .25));		
+		border-bottom-color: var(--toclink-underline, #3980b5);
 	}
 	.toc a:visited:focus,
 	.toc a:visited:hover {
-		border-bottom-color: #054572;
-		border-bottom-color: var(--toclink-visited-underline);
+		
+		border-bottom-color: var(--toclink-visited-underline, #054572);
 	}
 
 	.toc, .toc ol, .toc ul, .toc li {
@@ -780,47 +802,47 @@
 	.toc > li li li       { margin-left: 2rem;   }
 
 	/* Section numbers in a column of their own */
-	.toc .secno {
+	.toc .toc-number {
 		float: left;
 		width: 4rem;
 		white-space: nowrap;
 	}
-	.toc > li li li li .secno {
+	.toc > li li li li .toc-number {
 		font-size: 85%;
 	}
-	.toc > li li li li li .secno {
+	.toc > li li li li li .toc-number {
 		font-size: 100%;
 	}
 
 	:not(li) > .toc              { margin-left:  5rem; }
-	.toc .secno                  { margin-left: -5rem; }
-	.toc > li li li .secno       { margin-left: -7rem; }
-	.toc > li li li li .secno    { margin-left: -9rem; }
-	.toc > li li li li li .secno { margin-left: -11rem; }
+	.toc .toc-number                  { margin-left: -5rem; }
+	.toc > li li li .toc-number       { margin-left: -7rem; }
+	.toc > li li li li .toc-number    { margin-left: -9rem; }
+	.toc > li li li li li .toc-number { margin-left: -11rem; }
 
 	/* Tighten up indentation in narrow ToCs */
 	@media (max-width: 30em) {
 		:not(li) > .toc              { margin-left:  4rem; }
-		.toc .secno                  { margin-left: -4rem; }
+		.toc .toc-number                  { margin-left: -4rem; }
 		.toc > li li li              { margin-left:  1rem; }
-		.toc > li li li .secno       { margin-left: -5rem; }
-		.toc > li li li li .secno    { margin-left: -6rem; }
-		.toc > li li li li li .secno { margin-left: -7rem; }
+		.toc > li li li .toc-number       { margin-left: -5rem; }
+		.toc > li li li li .toc-number    { margin-left: -6rem; }
+		.toc > li li li li li .toc-number { margin-left: -7rem; }
 	}
 	@media screen and (min-width: 78em) {
-		body:not(.toc-inline) :not(li) > .toc              { margin-left:  4rem; }
-		body:not(.toc-inline) .toc .secno                  { margin-left: -4rem; }
-		body:not(.toc-inline) .toc > li li li              { margin-left:  1rem; }
-		body:not(.toc-inline) .toc > li li li .secno       { margin-left: -5rem; }
-		body:not(.toc-inline) .toc > li li li li .secno    { margin-left: -6rem; }
-		body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
+		&:not(.toc-collapsed) :not(li) > .toc              { margin-left:  4rem; }
+		&:not(.toc-collapsed) .toc .toc-number                  { margin-left: -4rem; }
+		&:not(.toc-collapsed) .toc > li li li              { margin-left:  1rem; }
+		&:not(.toc-collapsed) .toc > li li li .toc-number       { margin-left: -5rem; }
+		&:not(.toc-collapsed) .toc > li li li li .toc-number    { margin-left: -6rem; }
+		&:not(.toc-collapsed) .toc > li li li li li .toc-number { margin-left: -7rem; }
 	}
-	body.toc-sidebar #toc :not(li) > .toc              { margin-left:  4rem; }
-	body.toc-sidebar #toc .toc .secno                  { margin-left: -4rem; }
-	body.toc-sidebar #toc .toc > li li li              { margin-left:  1rem; }
-	body.toc-sidebar #toc .toc > li li li .secno       { margin-left: -5rem; }
-	body.toc-sidebar #toc .toc > li li li li .secno    { margin-left: -6rem; }
-	body.toc-sidebar #toc .toc > li li li li li .secno { margin-left: -7rem; }
+	.toc-sidebar #toc :not(li) > .toc              { margin-left:  4rem; }
+	.toc-sidebar #toc .toc .toc-number                  { margin-left: -4rem; }
+	.toc-sidebar #toc .toc > li li li              { margin-left:  1rem; }
+	.toc-sidebar #toc .toc > li li li .toc-number       { margin-left: -5rem; }
+	.toc-sidebar #toc .toc > li li li li .toc-number    { margin-left: -6rem; }
+	.toc-sidebar #toc .toc > li li li li li .toc-number { margin-left: -7rem; }
 
 	.toc li {
 		clear: both;
