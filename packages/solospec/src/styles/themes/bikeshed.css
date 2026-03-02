@@ -592,6 +592,10 @@
   }
 
   .solospec-root .issue.no-marker {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
     border: 1px solid var(--color-solospec-callout-issue);
     border-left-width: 0.32rem;
     border-left-color: var(--color-solospec-callout-issue);
@@ -605,18 +609,14 @@
     position: relative;
   }
 
-  .solospec-root .issue.no-marker .self-link {
-    display: none;
-  }
 
   .solospec-root .issue.no-marker .marker {
     display: block;
     font-family: var(--font-solospec-ui);
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-solospec-callout-issue);
     text-decoration: none;
-    margin-bottom: 0.2rem;
+    
   }
 
   .solospec-root .issue.no-marker .marker:hover {
@@ -1076,6 +1076,9 @@
 
 .solospec-root .ui-callout .self-link::after {
   content: "¶";
+}
+.solospec-root .issue .self-link {
+  margin-left: auto;
 }
 
 .solospec-root .ui-callout .self-link:hover {

@@ -257,12 +257,13 @@ export function BaseBlock({
           ? `${noteData.repoSlug}/${noteData.issueNumber}`
           : `#${noteData.issueNumber}`;
         return (
-          <div class="issue no-marker" id={issueId as string}>
-            <a class="self-link" href={`#${issueId}`}></a>
+          <div class="issue no-marker ui-callout" id={issueId as string}>
+            
             <a class="marker" href={noteSrc} style="text-transform:none"> {/* Changed from noteHref to noteSrc */}
               {marker as string}
             </a>
             <a href={noteSrc}>{noteData.title as string}</a> {/* Changed from noteHref to noteSrc */}
+            <a class="self-link" href={`#${issueId}`}></a>
           </div>
         );
       }
