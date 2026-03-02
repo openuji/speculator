@@ -260,7 +260,8 @@ export function BaseInline({
     }
 
     case 'sectionReference': {
-      const number = node.targetNumber ? `§${node.targetNumber}` : '§';
+      const title = node.targetTitle;
+      const number = node.targetNumber ? `§${node.targetNumber} ${title}` : `§ ${title}`;
       const content =
         node.children && node.children.length > 0 ? (
           <>

@@ -223,7 +223,7 @@ this JSON-LD context MUST use the HTTPS scheme.
 
 NOTE: the [Solid-OIDC Vocabulary](https://www.w3.org/ns/solid/oidc) that is part of this context uses the HTTP scheme.
 
-Full content of JSON-LD context can be also seen in [§#full-jsonld-context]
+Full content of JSON-LD context can be also seen in [[#full-jsonld-context]].
 
 ### OIDC Registration {#clientids-oidc}
 

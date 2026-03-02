@@ -317,8 +317,10 @@
     font-family: var(--font-solospec-ui);
     line-height: 1.2;
     font-weight: 700;
-    color: var(--solospec-heading);
     hyphens: manual;
+  }
+  .solospec-root :is(h1, h2, h3) {
+    color: var(--solospec-heading);
   }
 
   h2,
@@ -385,8 +387,6 @@
   }
 
   .solospec-root .section-number {
-    color: var(--solospec-muted);
-    font-size: 0.86em;
     margin-right: 0.25rem;
     font-family: var(--font-solospec-ui);
     font-variant-numeric: tabular-nums;
