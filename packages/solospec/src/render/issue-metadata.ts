@@ -55,7 +55,6 @@ async function fetchGitHubIssue(repoSlug: string, issueNumber: string): Promise<
     }
 
     const data = await response.json() as { title: string; state: string };
-    console.log('issue', data);
     return {
       title: data.title,
       state: data.state as 'open' | 'closed',
@@ -157,6 +156,10 @@ export async function enrichIssueMetadata(document: Document, appDir: string): P
       if (metadata) {
         node.data = metadata;
         cache[url] = metadata;
+        const stateIcon = metadata.state === 'open' ? '🟢' : '🔴';
+        console.log(
+          `[solospec] ${stateIcon} Cached issue ${metadata.repoSlug}#${metadata.issueNumber} — "${metadata.title}" (${metadata.state})`
+        );
       }
     })
   );

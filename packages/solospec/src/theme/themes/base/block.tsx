@@ -44,10 +44,10 @@ function Callout({
     <aside id={id} class={`ui-callout ui-callout-${kind}`}>
       <header>
         <span class={`ui-badge ui-badge-${badgeTone}`}>{title}</span>
-       
+        {id && kind !== 'note' ? <a class="self-link" href={`#${id}`}></a> : null}
       </header>
       <div>{children}</div>
-       {id ? <a class="self-link" href={`#${id}`}></a> : null}
+      {id && kind === 'note' ? <a class="self-link" href={`#${id}`}></a> : null}
     </aside>
   );
 }
@@ -281,15 +281,10 @@ export function BaseBlock({
     }
 
     case 'specStatement': {
-      const level = String(node.level || 'statement').toUpperCase();
-      const kind = level.includes('MUST') ? 'warning' : 'note';
-      const title = level === 'STATEMENT' ? 'Spec Statement' : `Spec Statement (${level})`;
       return (
-        <Callout kind={kind} title={title}>
           <p id={node.id || undefined}>
             <Components.Inlines nodes={node.children as Inline[]} ctx={ctx} />
           </p>
-        </Callout>
       );
     }
 

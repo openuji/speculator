@@ -456,19 +456,19 @@ security implications.
 In addition to above considerations, implementors should consider the Security
 Considerations in context of the Solid Protocol [[!SOLID-PROTOCOL]].
 
-### TLS Requirements {#security-tls}
+### TLS Requirements {#security-tls data-cop-concept="tls"}
 
 All TLS requirements outlined in [[BCP195]] apply to this
 specification.
 
-All tokens, Client, and User credentials MUST only be transmitted over TLS.
+<spec-statement id="security-tls">All tokens, Client, and User credentials MUST only be transmitted over TLS.</spec-statement>
 
-### Client IDs {#security-client-ids}
+### Client IDs {#security-client-ids data-cop-concept="client-id"}
 
-An AS SHOULD assign a fixed set of low trust policies to any client identified as anonymous.
+<spec-statement id="security-client-ids-fixed">An AS SHOULD assign a fixed set of low trust policies to any client identified as anonymous.</spec-statement>
 
-Implementors SHOULD expire ephemeral Client IDs that are kept in server storage to mitigate the
-potential for a bad actor to fill server storage with unexpired or otherwise useless Client IDs.
+<spec-statement id="security-client-ids-expiration">Implementors SHOULD expire ephemeral Client IDs that are kept in server storage to mitigate the
+potential for a bad actor to fill server storage with unexpired or otherwise useless Client IDs.</spec-statement>
 
 ### Client Secrets {#security-client-secrets}
 
