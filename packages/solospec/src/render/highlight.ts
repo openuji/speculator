@@ -2,6 +2,7 @@ import { createHighlighter, type LanguageRegistration, type BundledLanguage } fr
 import type { Document, Block, Section, Inline } from '@openuji/speculator';
 import jsonLDLanguage from '../grammar/jsonld.tmLanguage.json' with { type: 'json' };
 import type { CodeHighlightThemeSettings } from '../theme/config.js';
+import { dedent } from './utils.js';
 
 // We want to attach the highlighted HTML to the code block node directly.
 // Normally we shouldn't mutate the AST but since we are doing a pre-render pass,
@@ -88,7 +89,7 @@ function applyHighlightingToBlocks(highlighter: HighlighterInstance, codeBlocks:
     }
 
     try {
-      block.highlightedHtml = highlighter.codeToHtml(block.value, {
+      block.highlightedHtml = highlighter.codeToHtml(dedent(block.value), {
         lang: block.lang,
         themes: {
           light: codeHighlightTheme.light,

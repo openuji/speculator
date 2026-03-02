@@ -192,7 +192,7 @@ This example uses [JSON-LD ](https://www.w3.org/TR/json-ld/) for the Client ID D
 <div class='example' id="test-example">
     <p>https://app.example/id</p>
 
-    <pre highlight="jsonld">
+    ```jsonld
         {
           "@context": ["https://www.w3.org/ns/solid/oidc-context.jsonld"],
 
@@ -209,7 +209,7 @@ This example uses [JSON-LD ](https://www.w3.org/TR/json-ld/) for the Client ID D
           "default_max_age" : 3600,
           "require_auth_time" : true
         }
-    </pre>
+    ```
 
 </div>
 
@@ -235,7 +235,7 @@ When requesting Dynamic Client Registration, the Client MUST specify the `scope`
 and include `webid` in its value (space-separated list).
 
 <div class='example'>
-    <pre highlight="jsonld" line-highlight="9">
+    ```jsonld
         {
           "client_name": "S-C-A Browser Demo Client App",
           "application_type": "web",
@@ -246,7 +246,7 @@ and include `webid` in its value (space-separated list).
           "token_endpoint_auth_method": "client_secret_basic",
           "scope" : "openid profile offline_access webid"
         }
-    </pre>
+    ```
 </div>
 
 ## WebID Profile {#webid-profile}
@@ -263,11 +263,11 @@ otherwise valid ID Tokens for arbitrary WebIDs. An entity that verifies ID Token
 mechanism to determine if the issuer is authoritative for the given WebID.
 
 <figure class="example">
-    <pre highlight="turtle">
-      PREFIX solid: &lt;http://www.w3.org/ns/solid/terms#&gt;
+    ```turtle
+      PREFIX solid: <http://www.w3.org/ns/solid/terms#>
 
-      &lt;#id&gt; solid:oidcIssuer &lt;https://oidc.example&gt; .
-    </pre>
+      <id> solid:oidcIssuer <https://oidc.example> .
+    ```
     <figcaption>WebID Profile specifying an OIDC issuer</figcaption>
 
 </figure>
@@ -295,11 +295,11 @@ A client MUST treat the RDF in the body of the WebID Profile as canonical
 but MAY use the Link Header values as an optimization.
 
 <figure class="example">
-    <pre highlight="http">
-        Link: &lt;https://oidc.example&gt;;
+    ```http
+        Link: <https://oidc.example>;
               rel="http://www.w3.org/ns/solid/terms#oidcIssuer";
               anchor="#id"
-    </pre>
+    ```
     <figcaption>HTTP response Link Header (line breaks added for readibility)</figcaption>
 </figure>
 
@@ -355,7 +355,7 @@ With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these 
 
 <div class="example">
     An example OIDC ID Token:
-    <pre highlight="json">
+    ```json
         {
           "webid": "https://janedoe.com/web#id",
           "iss": "https://idp.example.com",
@@ -368,7 +368,7 @@ With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these 
             "jkt":"0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
           }
         }
-    </pre>
+    ```
 
 </div>
 
@@ -433,11 +433,11 @@ An OpenID Provider that conforms to the Solid-OIDC specification MUST advertise 
 Discovery 1.0 [[!OIDC-DISCOVERY]] resource by including `webid` in its `scopes_supported` metadata property.
 
 <div class="example">
-    <pre highlight="json">
+    ```json
         {
             "scopes_supported": ["openid", "offline_access", "webid"]
         }
-    </pre>
+    ```
 </div>
 
 ## Security Considerations {#security}
@@ -510,7 +510,7 @@ Verborgh, Ricky White, Paul Worrall, Dmitri Zagidulin.
 
 The JSON-LD context is defined as:
 
-<pre highlight="jsonld">
+```jsonld
   {
     "@context": {
       "@version": 1.1,
@@ -576,7 +576,7 @@ The JSON-LD context is defined as:
       }
     }
   }
-</pre>
+```
 
 ## Scope {data-no-toc-count}
 
