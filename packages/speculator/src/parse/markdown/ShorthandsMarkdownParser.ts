@@ -20,6 +20,46 @@ export interface ShorthandDefinition {
     handler: (match: RegExpExecArray, ctx: ParseContext, node: NodeWithPosition) => Inline;
 }
 
+interface ParsedCitationTarget {
+    key: string;
+    path?: string;
+    fragment?: string;
+}
+
+/**
+ * Parse shorthand citation target syntax:
+ * - REF
+ * - REF/path
+ * - REF#fragment
+ * - REF/path#fragment
+ *
+ * Unlike data-cite parsing, this keeps key casing as-authored so it
+ * remains compatible with localBiblio keys.
+ */
+function parseShorthandCitationTarget(rawTarget: string): ParsedCitationTarget {
+    const target = rawTarget.trim();
+
+    let base = target;
+    let fragment: string | undefined;
+    const hashIdx = base.indexOf('#');
+    if (hashIdx !== -1) {
+        const parsedFragment = base.slice(hashIdx + 1).trim();
+        if (parsedFragment) fragment = parsedFragment;
+        base = base.slice(0, hashIdx);
+    }
+
+    let key = base.trim();
+    let path: string | undefined;
+    const slashIdx = base.indexOf('/');
+    if (slashIdx !== -1) {
+        key = base.slice(0, slashIdx).trim();
+        const parsedPath = base.slice(slashIdx + 1).trim();
+        if (parsedPath) path = parsedPath;
+    }
+
+    return { key: key || target, path, fragment };
+}
+
 /**
  * Registry of supported shorthands.
  * This satisfies the requirement to track what shorthands are implemented.
@@ -51,13 +91,35 @@ export const SHORTHAND_REGISTRY: ShorthandDefinition[] = [
         status: 'implemented',
         handler: (match, ctx, node) => {
             const forced = match[1];
-            const key = match[2];
+            const rawTarget = match[2].trim();
+            const target = parseShorthandCitationTarget(match[2]);
+            const alias = match[3]?.trim();
+
+            // ReSpec-style section links: [[#section-id]]
+            if (rawTarget.startsWith('#')) {
+                const result: InlineSectionReference = {
+                    type: 'sectionReference',
+                    targetId: rawTarget.slice(1),
+                };
+                if (alias) {
+                    result.children = [{ type: 'text', value: alias }];
+                }
+                const sourcePos = ctx.createSourcePos(node);
+                if (sourcePos) result.sourcePos = sourcePos;
+                return result;
+            }
+
             const result: InlineCite = {
                 type: 'cite',
-                key: key,
+                key: target.key,
             };
             if (forced === '!') result.forcedNormative = true;
             if (forced === '?') result.forcedInformative = true;
+            if (target.path) result.path = target.path;
+            if (target.fragment) result.fragment = target.fragment;
+            if (alias) {
+                result.children = [{ type: 'text', value: alias }];
+            }
             const sourcePos = ctx.createSourcePos(node);
             if (sourcePos) result.sourcePos = sourcePos;
             return result;
