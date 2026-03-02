@@ -49,6 +49,38 @@ describe('ShorthandsMarkdownParser', () => {
 
             expect(para.children[1]).toMatchObject({ type: 'cite', key: 'FULLSCREEN', expanded: true });
         });
+
+        it('parses reference with fragment/path locator', () => {
+            const unit = createUnit('See [[UMA#rfc.section.2]] and [[RFC2119/section-2#anchor]].');
+            const blocks = parser.parse(unit);
+            const para = blocks[0] as BlockParagraph;
+
+            const cites = para.children.filter((child) => child.type === 'cite');
+            expect(cites).toHaveLength(2);
+            expect(cites[0]).toMatchObject({
+                type: 'cite',
+                key: 'UMA',
+                fragment: 'rfc.section.2',
+            });
+            expect(cites[1]).toMatchObject({
+                type: 'cite',
+                key: 'RFC2119',
+                path: 'section-2',
+                fragment: 'anchor',
+            });
+        });
+
+        it('parses reference alias [[REF|text]] as cite children', () => {
+            const unit = createUnit('See [[RFC2119|keywords]].');
+            const blocks = parser.parse(unit);
+            const para = blocks[0] as BlockParagraph;
+
+            expect(para.children[1]).toMatchObject({
+                type: 'cite',
+                key: 'RFC2119',
+                children: [{ type: 'text', value: 'keywords' }],
+            });
+        });
     });
 
     describe('concepts [=concept=]', () => {
