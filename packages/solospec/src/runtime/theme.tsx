@@ -13,7 +13,7 @@ const SYSTEM_DARK_QUERY = '(prefers-color-scheme: dark)';
 const ROOT_SELECTOR = '.solospec-root';
 const SWITCHER_CONTAINER_CLASS = 'solospec-theme-switcher-container';
 
-type EffectiveMode = Exclude<SolospecThemeMode, 'system'>;
+type EffectiveMode = Exclude<SolospecThemeMode, 'auto'>;
 
 interface StoredThemePreferences {
   name?: string;

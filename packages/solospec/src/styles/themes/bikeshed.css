@@ -914,3 +914,60 @@
 		clear: both;
 	}
 }
+
+/* Example numbering and styling */
+.solospec-root {
+	counter-reset: example;
+}
+
+.solospec-root .ui-callout-example,
+.solospec-root .example {
+	counter-increment: example;
+	border-left-color: #ffd700 !important; /* Gold/Yellow */
+}
+
+.solospec-root .ui-callout-example header,
+.solospec-root .example header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.solospec-root .ui-callout-example .ui-badge,
+.solospec-root .example .ui-badge {
+	background: transparent !important;
+	border: none !important;
+	color: #ffd700 !important;
+	font-weight: bold;
+	font-size: 0.9rem;
+	padding: 0;
+	text-transform: uppercase;
+}
+
+.solospec-root .ui-callout-example .ui-badge::after,
+.solospec-root .example .ui-badge::after {
+	content: " " counter(example);
+}
+
+.solospec-root .ui-callout .self-link {
+	display: inline-block;
+	color: #4b8cc7;
+	text-decoration: none;
+	font-size: 1.2rem;
+	line-height: 1;
+	margin-left: 0.5rem;
+}
+
+.solospec-root .ui-callout .self-link::after {
+	content: "¶";
+}
+
+.solospec-root .ui-callout .self-link:hover {
+	color: var(--solospec-link-hover);
+}
+
+/* Dark mode adjustments for callouts */
+.solospec-root[data-solospec-theme="bikeshed"][data-solospec-effective-mode="dark"] .ui-callout,
+.solospec-root[data-solospec-theme="bikeshed"][data-solospec-effective-mode="dark"] :is(.note, .example, .warning) {
+	background: color-mix(in oklab, var(--solospec-panel) 60%, transparent);
+}

@@ -31,17 +31,20 @@ export function BaseDocument({
 function Callout({
   kind,
   title,
+  id,
   children,
 }: {
   kind: 'note' | 'warning' | 'example' | 'issue';
   title: string;
+  id?: string;
   children: JSX.Element;
 }): JSX.Element {
   const badgeTone = kind === 'warning' ? 'warn' : kind === 'issue' ? 'danger' : 'accent';
   return (
-    <aside class={`ui-callout ui-callout-${kind}`}>
+    <aside id={id} class={`ui-callout ui-callout-${kind}`}>
       <header>
         <span class={`ui-badge ui-badge-${badgeTone}`}>{title}</span>
+        {id ? <a class="self-link" href={`#${id}`}></a> : null}
       </header>
       <div>{children}</div>
     </aside>
@@ -225,7 +228,7 @@ export function BaseBlock({
 
     case 'example':
       return (
-        <Callout kind="example" title={node.title || 'Example'}>
+        <Callout kind="example" title={node.title || 'Example'} id={node.id || undefined}>
           <>
             {node.children.map((child, i) => (
               <Components.Block key={i} node={child} ctx={ctx} />
@@ -264,7 +267,7 @@ export function BaseBlock({
       }
 
       return (
-        <Callout kind={kind} title={(node.noteType || 'note').toUpperCase()}>
+        <Callout kind={kind} title={(node.noteType || 'note').toUpperCase()} id={node.id || undefined}>
           <>
             {node.children.map((child, i) => (
               <Components.Block key={i} node={child} ctx={ctx} />

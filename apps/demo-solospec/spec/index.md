@@ -189,7 +189,7 @@ list.
 
 This example uses [JSON-LD ](https://www.w3.org/TR/json-ld/) for the Client ID Document:
 
-<div class='example'>
+<div class='example' id="test-example">
     <p>https://app.example/id</p>
 
     <pre highlight="jsonld">
@@ -357,16 +357,16 @@ With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these 
     An example OIDC ID Token:
     <pre highlight="json">
         {
-            "webid": "https://janedoe.com/web#id",
-            "iss": "https://idp.example.com",
-            "sub": "janedoe",
-            "aud": ["https://client.example.com/client_id", "solid"],
-            "azp": "https://client.example.com/client_id",
-            "iat": 1311280970,
-            "exp": 1311281970,
-            "cnf":{
-              "jkt":"0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
-            }
+          "webid": "https://janedoe.com/web#id",
+          "iss": "https://idp.example.com",
+          "sub": "janedoe",
+          "aud": ["https://client.example.com/client_id", "solid"],
+          "azp": "https://client.example.com/client_id",
+          "iat": 1311280970,
+          "exp": 1311281970,
+          "cnf":{
+            "jkt":"0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
+          }
         }
     </pre>
 
@@ -392,7 +392,7 @@ the verifying party MUST follow OpenID Connect Discovery 1.0 [[!OIDC-DISCOVERY]]
 
 When a Client performs an unauthenticated request to a protected resource,
 the Resource Server MUST respond with the HTTP <code>401</code> status code,
-and a <code>WWW-Authenticate</code> HTTP header. See also: [[!RFC9110]] section 11.6.1 (WWW-Authenticate)
+and a <code>WWW-Authenticate</code> HTTP header. See also: [[RFC9110]](11.6.1. WWW-Authenticate)
 
 The <code>WWW-Authenticate</code> HTTP header MUST include an <code>as_uri</code>
 parameter unless the authentication scheme requires a different mechanism
@@ -406,15 +406,15 @@ OAuth 2.0 Authorization [[!UMA]].
 For Authorization Servers that conform to [[!UMA]], the
 <code>http://openid.net/specs/openid-connect-core-1_0.html#IDToken</code> profile MUST
 be supported. This profile MUST be advertised in the <code>uma_profiles_supported</code>
-metadata of the Authorization Server discovery document [UMA Section 2](https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html#rfc.section.2).
+metadata of the Authorization Server discovery document [[UMA#rfc.section.2]].
 
 When using the <code>http://openid.net/specs/openid-connect-core-1_0.html#IDToken</code>
 profile with an UMA-based Authorization Server, the Authorization Server MUST be capable
-of exchanging a valid Solid-OIDC ID Token [§#tokens-id] for an OAuth 2.0 Access Token.
+of exchanging a valid Solid-OIDC ID Token [[#tokens-id]] for an OAuth 2.0 Access Token.
 
-Note: Clients can push additional claims by requesting an upgraded RPT [UMA Section 3.3.1](https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html#rfc.section.3.3.1)
+Note: Clients can push additional claims by requesting an upgraded RPT [[UMA#rfc.section.3.3.1]]
 
-Authorization Server MUST pefrom [§#dpop-validation] and [§#id-token-validation]
+Authorization Server MUST pefrom [[#dpop-validation]] and [[#id-token-validation]]
 
 ### DPoP Validation {#dpop-validation}
 

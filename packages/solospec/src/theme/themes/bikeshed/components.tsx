@@ -155,7 +155,7 @@ function BikeshedTocTree({ entries }: { entries: TocEntry[] }): JSX.Element | nu
               <span class="toc-number">{entry.number || ''}</span>
               <span>{entry.text}</span>
             </a>
-            {entry.children?.length ? <BikeshedTocTree entries={entry.children} /> : null}
+            {entry.children?.length && entry.depth < 3 ? <BikeshedTocTree entries={entry.children} /> : null}
           </li>
         );
       })}
