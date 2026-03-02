@@ -198,6 +198,9 @@
   menu {
     list-style: decimal;
   }
+  ul {
+    list-style: disc;
+  }
 
   pre,
   pre > code {

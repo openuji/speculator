@@ -412,7 +412,7 @@ When using the <code>http://openid.net/specs/openid-connect-core-1_0.html#IDToke
 profile with an UMA-based Authorization Server, the Authorization Server MUST be capable
 of exchanging a valid Solid-OIDC ID Token [[#tokens-id]] for an OAuth 2.0 Access Token.
 
-Note: Clients can push additional claims by requesting an upgraded RPT [[UMA#rfc.section.3.3.1]]
+<aside class="note">Clients can push additional claims by requesting an upgraded RPT [[UMA#rfc.section.3.3.1]]</aside>
 
 Authorization Server MUST pefrom [[#dpop-validation]] and [[#id-token-validation]]
 

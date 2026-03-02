@@ -44,9 +44,10 @@ function Callout({
     <aside id={id} class={`ui-callout ui-callout-${kind}`}>
       <header>
         <span class={`ui-badge ui-badge-${badgeTone}`}>{title}</span>
-        {id ? <a class="self-link" href={`#${id}`}></a> : null}
+       
       </header>
       <div>{children}</div>
+       {id ? <a class="self-link" href={`#${id}`}></a> : null}
     </aside>
   );
 }
