@@ -35,10 +35,10 @@
       }
     },
     "state": {
-      "note": { "$value": "#2a7ee6", "$type": "color" },
-      "example": { "$value": "#1f9d59", "$type": "color" },
+      "note": { "$value": "hsl(120deg, 100%, 35%)", "$type": "color" },
+      "example": { "$value": "hsl(50deg, 90%, 60%)", "$type": "color" },
       "warning": { "$value": "#e48f1f", "$type": "color" },
-      "issue": { "$value": "#e04141", "$type": "color" }
+      "issue": { "$value": "#e05252", "$type": "color" }
     },
     "badge": {
       "accent": { "$value": "{color.state.note}", "$type": "color" },
