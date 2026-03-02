@@ -221,7 +221,7 @@ This specification defines a JSON-LD context for use with OIDC Client ID Documen
 available at `https://www.w3.org/ns/solid/oidc-context.jsonld`. Client ID Documents that reference
 this JSON-LD context MUST use the HTTPS scheme.
 
-NOTE: the [Solid-OIDC Vocabulary](https://www.w3.org/ns/solid/oidc) that is part of this context uses the HTTP scheme.
+<aside class="note">the [Solid-OIDC Vocabulary](https://www.w3.org/ns/solid/oidc) that is part of this context uses the HTTP scheme.</aside>
 
 Full content of JSON-LD context can be also seen in [§#full-jsonld-context]
 
