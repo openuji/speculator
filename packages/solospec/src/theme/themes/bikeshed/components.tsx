@@ -38,80 +38,84 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
     }
   }
 
+  const w3cState = () => {
+    return <p id="w3c-state">
+      <a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2026-02-28">28 February 2026</time>
+      
+    </p>
+
+  }
+
   return (
     <header class="spec-header spec-header--bikeshed">
       <div class="spec-header-top float-right">
         <W3CCommunityLogo />
       </div>
       <h1 class="spec-title" id="title">{vm.titleText}</h1>
-      {meta.status ? (
-        <h2 class="spec-subtitle">
-          {meta.status}{formattedDate ? `, ${formattedDate}` : ''}
-        </h2>
-      ) : null}
+      {w3cState()}
+      
 
       <details class="spec-more bikeshed-more-details" open>
         <summary>More details about this document</summary>
         <dl class="spec-meta">
-          {custom.thisVersion ? (
-            <div class="spec-meta-row">
+          {custom.thisVersion ? (<>
               <dt>This version:</dt>
               <dd><a href={String(custom.thisVersion)}>{String(custom.thisVersion)}</a></dd>
-            </div>
+              </>
           ) : null}
           
           {custom.latestVersion ? (
-            <div class="spec-meta-row">
+            <>
               <dt>Latest published version:</dt>
               <dd><a href={String(custom.latestVersion)}>{String(custom.latestVersion)}</a></dd>
-            </div>
+            </>
           ) : null}
 
           {custom.testSuite ? (
-            <div class="spec-meta-row">
+            <>
               <dt>Test Suite:</dt>
               <dd><a href={String(custom.testSuite)}>{String(custom.testSuite)}</a></dd>
-            </div>
+            </>
           ) : null}
 
           {meta.publishDate ? (
-            <div class="spec-meta-row">
+            <>
               <dt>Created:</dt>
               <dd>July 16, 2021</dd>
-            </div>
+            </>
           ) : null}
 
           {formattedDate ? (
-            <div class="spec-meta-row">
+            <>
               <dt>Modified:</dt>
               <dd>{formattedDate}</dd>
-            </div>
+            </>
           ) : null}
 
           {custom.feedback ? (
-            <div class="spec-meta-row">
+            <>
                <dt>Feedback:</dt>
                <dd><a href="https://github.com/solid/solid-oidc">{String(custom.feedback)}</a></dd>
-            </div>
+            </>
           ) : null}
 
           {meta.editors && meta.editors.length > 0 ? (
-            <div class="spec-meta-row">
+            <>
               <dt>Editors:</dt>
               <dd>{formatPersonList(meta.editors)}</dd>
-            </div>
+            </>
           ) : null}
 
           {custom.formerEditors && Array.isArray(custom.formerEditors) && custom.formerEditors.length > 0 ? (
-            <div class="spec-meta-row">
+            <>
               <dt>Former Editors:</dt>
               <dd>{formatPersonList(custom.formerEditors as DocumentMetadata['editors'])}</dd>
-            </div>
+            </>
           ) : null}
         </dl>
       </details>
       {meta.copyright ? (
-        <p class="copyright">
+        <p class="copyright text-sm">
            Copyright © 2026 the Contributors to the Solid-OIDC, published by the <a href="https://www.w3.org/community/solid/">Solid Community Group</a> under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>. A human-readable <a href="https://www.w3.org/community/about/agreements/cla-deed/">summary</a> is available.
         </p>
       ) : null}
