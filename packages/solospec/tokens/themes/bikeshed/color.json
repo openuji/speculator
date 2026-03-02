@@ -10,7 +10,8 @@
         "link": { "$value": "#2977d9", "$type": "color" },
         "linkHover": { "$value": "#165db6", "$type": "color" },
         "soft": { "$value": "#f4f6fb", "$type": "color" },
-        "panel": { "$value": "#f8f9fc", "$type": "color" }
+        "panel": { "$value": "#f8f9fc", "$type": "color" },
+        "panelShadow": {"$value": "rgba(0,0,0,.1)", "$type": "color"}
       },
       "dark": {
         "bg": { "$value": "#000000", "$type": "color" },
@@ -20,7 +21,9 @@
         "link": { "$value": "#66a8ff", "$type": "color" },
         "linkHover": { "$value": "#8cbdff", "$type": "color" },
         "soft": { "$value": "#11131a", "$type": "color" },
-        "panel": { "$value": "#090b12", "$type": "color" }
+        "panel": { "$value": "#080808", "$type": "color" },
+        "panelShadow": {"$value": "rgba(255,255,255,.1)", "$type": "color"}
+
       }
     },
     "text": {

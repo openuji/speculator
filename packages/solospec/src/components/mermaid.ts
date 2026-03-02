@@ -1,5 +1,25 @@
 import mermaid from 'mermaid';
 
+let pendingNodes: HTMLElement[] = [];
+let renderScheduled = false;
+
+function scheduleRender(node: HTMLElement) {
+  pendingNodes.push(node);
+  if (!renderScheduled) {
+    renderScheduled = true;
+    queueMicrotask(() => {
+      const nodes = pendingNodes.filter((n) => !n.hasAttribute('data-processed'));
+      pendingNodes = [];
+      renderScheduled = false;
+      if (nodes.length > 0) {
+        mermaid.run({ nodes }).catch((err) => {
+          console.error('[solospec][mermaid] render failed:', err);
+        });
+      }
+    });
+  }
+}
+
 class SpecMermaid extends HTMLElement {
   private initialized = false;
 
@@ -19,10 +39,8 @@ class SpecMermaid extends HTMLElement {
     }
 
     const pre = this.querySelector('pre');
-    if (pre && !pre.hasAttribute('data-processed')) {
-      mermaid.run({ nodes: [pre] }).catch((err) => {
-        console.error('[solospec][mermaid] render failed:', err);
-      });
+    if (pre) {
+      scheduleRender(pre as HTMLElement);
     }
   }
 }

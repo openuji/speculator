@@ -1,9 +1,6 @@
 @import "../generated/themes/bikeshed.tokens.css";
 @import "tailwindcss";
 
-@custom-variant solospec-dark (&:where(.solospec-root[data-solospec-effective-mode="dark"] *));
-@custom-variant solospec-light (&:where(.solospec-root[data-solospec-effective-mode="light"] *));
-
 @layer base {
   html:has(.solospec-root),
   body:has(.solospec-root) {
@@ -29,6 +26,7 @@
     --color-solospec-light-link-hover: var(--dt-color-surface-light-link-hover);
     --color-solospec-light-soft: var(--dt-color-surface-light-soft);
     --color-solospec-light-panel: var(--dt-color-surface-light-panel);
+    --color-solospec-light-panel-shadow: var(--dt-color-surface-light-panel-shadow);
     --color-solospec-light-heading: var(--dt-color-text-light-heading);
 
     --color-solospec-dark-bg: var(--dt-color-surface-dark-bg);
@@ -40,6 +38,8 @@
     --color-solospec-dark-link-hover: var(--dt-color-surface-dark-link-hover);
     --color-solospec-dark-soft: var(--dt-color-surface-dark-soft);
     --color-solospec-dark-panel: var(--dt-color-surface-dark-panel);
+    --color-solospec-dark-panel-shadow: var(--dt-color-surface-dark-panel-shadow);
+
 
     --color-solospec-callout-note: var(--dt-color-state-note);
     --color-solospec-callout-example: var(--dt-color-state-example);
@@ -63,7 +63,9 @@
     --solospec-link-hover: var(--color-solospec-light-link-hover);
     --solospec-soft: var(--color-solospec-light-soft);
     --solospec-panel: var(--color-solospec-light-panel);
+    --solospec-panel-shadow: var(--color-solospec-light-panel-shadow);
     --solospec-watermark: url(https://www.w3.org/StyleSheets/TR/2016/logos/UD-watermark);
+    --solospec-watermark-vertical: url(https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-light-draft.svg);
     --solospec-heading: var(--color-solospec-light-heading);
   }
 
@@ -77,13 +79,15 @@
     --solospec-link-hover: var(--color-solospec-dark-link-hover);
     --solospec-soft: var(--color-solospec-dark-soft);
     --solospec-panel: var(--color-solospec-dark-panel);
+    --solospec-panel-shadow: var(--color-solospec-dark-panel-shadow);
     --solospec-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
+    --solospec-watermark-vertical: url('https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-dark-draft');
     --solospec-heading: var(--color-solospec-dark-heading);
 
   }
 
   @media (prefers-color-scheme: dark) {
-    .solospec-root[data-solospec-theme="bikeshed"][data-solospec-mode="system"]:not(
+    .solospec-root[data-solospec-theme="bikeshed"][data-solospec-mode="auto"]:not(
         [data-solospec-effective-mode]
       ) {
       --solospec-bg: var(--color-solospec-dark-bg);
@@ -94,6 +98,7 @@
       --solospec-link-hover: var(--color-solospec-dark-link-hover);
       --solospec-soft: var(--color-solospec-dark-soft);
       --solospec-panel: var(--color-solospec-dark-panel);
+      --solospec-panel-shadow: var(--color-solospec-dark-panel-shadow);
     }
   }
 
@@ -143,9 +148,10 @@
 
   
   .solospec-root.bikeshed-theme-bg {
-    background-image: var(--solospec-watermark);
+    background-position: left, right;
+    background-image: var(--solospec-watermark-vertical), var(--solospec-watermark);
     background-repeat: repeat-y;
-    background-position: right;
+    
   }
 
   .solospec-root .spec-header {
@@ -218,63 +224,7 @@
   .solospec-root .spec-layout {
     display: contents;
   }
-
-  .solospec-root #toc,
-  .solospec-root .toc {
-    grid-column: 1;
-    position: sticky;
-    top: 0;
-    max-height: 100dvh;
-    overflow: auto;
-    margin: 0;
-    padding: 0.15rem 1.25rem 1rem 0;
-  }
-
-  .solospec-root #toc h2,
-  .solospec-root .toc h2 {
-    margin: 1.2rem 0 0.8rem;
-    font-family: var(--font-solospec-ui);
-    font-size: 0.86rem;
-    color: var(--solospec-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-weight: 700;
-  }
-
-  .solospec-root #toc ol,
-  .solospec-root .toc ol {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font-size: 0.95em;
-  }
-
-  .solospec-root #toc li,
-  .solospec-root .toc li {
-    margin: 0.26rem 0;
-  }
-
-  .solospec-root #toc a,
-  .solospec-root .toc a {
-    color: var(--solospec-ink);
-    text-decoration: none;
-  }
-
-  .solospec-root #toc a:hover,
-  .solospec-root .toc a:hover {
-    color: var(--solospec-link);
-    text-decoration: underline;
-  }
-
-  .solospec-root .toc-number {
-    display: inline-block;
-    min-width: 2.1em;
-    margin-right: 0.2em;
-    color: var(--solospec-muted);
-    font-family: var(--font-solospec-ui);
-    font-variant-numeric: tabular-nums;
-    font-size: 0.92em;
-  }
+  
 
   .solospec-root .spec-article {
     grid-column: 2;
@@ -326,8 +276,7 @@
   .solospec-root  h3 {
     font-size: 1.2rem;
 
-    @apply font-normal;
-
+    font-weight: 400;
   }
 
   .solospec-root  h4 {
@@ -469,8 +418,8 @@
     background: color-mix(in oklab, var(--solospec-soft) 80%, transparent);
   }
 
-  @media (max-width: 72rem) {
-    
+  .solospec-root img[src*="logos/W3C"] {
+    display: block;
   }
 }
 
@@ -632,18 +581,14 @@
  
 }
 
+/* === Unlayered Overrides (must stay outside @layer) === */
+
 @media (width <= 1247px) {
   #toc { display: none; } 
 
   .solospec-root .spec-page {
     flex-direction: column;
   }
-}
-
-
-img[src*="logos/W3C"] {
-    display: block;
-    
 }
 
 
@@ -756,4 +701,128 @@ img[src*="logos/W3C"] {
       }
     }
   }
+}
+
+
+/** Table of Contents *********************************************************/
+.solospec-root {
+
+  &:not(.toc-collapsed) .toc-sidebar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    max-height: 100dvh;
+    overflow: auto;
+    margin: 0;
+
+    background-position: left, right;
+    background-image: var(--solospec-watermark-vertical), var(--solospec-watermark);
+    background-repeat: repeat-y;
+    
+  
+			
+    background-color: var(--solospec-panel);
+    z-index: 1;
+			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+			box-shadow: -.1em 0 .25em var(--solospec-panel-shadow) inset;
+  }
+
+
+	.toc a {
+		color: black;
+		color: var(--toclink-text);
+		/* More spacing; use padding to make it part of the click target. */
+		padding: 0.1rem 1px 0;
+		/* Larger, more consistently-sized click target */
+		display: block;
+		/* Switch to using border-bottom */
+		text-decoration: none;
+		border-bottom: 3px solid transparent;
+		margin-bottom: -2px;
+	}
+	.toc a:visited {
+		color: black;
+		color: var(--toclink-visited-text);
+	}
+	.toc a:focus,
+	.toc a:hover {
+		background: #f8f8f8;
+		background: rgba(75%, 75%, 75%, .25);
+		background: var(--a-hover-bg);
+		border-bottom-color: #3980b5;
+		border-bottom-color: var(--toclink-underline);
+	}
+	.toc a:visited:focus,
+	.toc a:visited:hover {
+		border-bottom-color: #054572;
+		border-bottom-color: var(--toclink-visited-underline);
+	}
+
+	.toc, .toc ol, .toc ul, .toc li {
+		list-style: none; /* Numbers must be inlined into source */
+		/* because generated content isn't search/selectable and markers can't do multilevel yet */
+		margin:  0;
+		padding: 0;
+	}
+	.toc {
+		line-height: 1.1em; /* consistent spacing */
+	}
+
+	/* ToC not indented until third level, but font style & margins show hierarchy */
+	.toc > li             { font-weight: bold;   }
+	.toc > li li          { font-weight: normal; }
+	.toc > li li li       { font-size:   95%;    }
+	.toc > li li li li    { font-size:   90%;    }
+	.toc > li li li li li { font-size:   85%;    }
+
+	.toc > li             { margin: 1.5rem 0;    }
+	.toc > li li          { margin: 0.3rem 0;    }
+	.toc > li li li       { margin-left: 2rem;   }
+
+	/* Section numbers in a column of their own */
+	.toc .secno {
+		float: left;
+		width: 4rem;
+		white-space: nowrap;
+	}
+	.toc > li li li li .secno {
+		font-size: 85%;
+	}
+	.toc > li li li li li .secno {
+		font-size: 100%;
+	}
+
+	:not(li) > .toc              { margin-left:  5rem; }
+	.toc .secno                  { margin-left: -5rem; }
+	.toc > li li li .secno       { margin-left: -7rem; }
+	.toc > li li li li .secno    { margin-left: -9rem; }
+	.toc > li li li li li .secno { margin-left: -11rem; }
+
+	/* Tighten up indentation in narrow ToCs */
+	@media (max-width: 30em) {
+		:not(li) > .toc              { margin-left:  4rem; }
+		.toc .secno                  { margin-left: -4rem; }
+		.toc > li li li              { margin-left:  1rem; }
+		.toc > li li li .secno       { margin-left: -5rem; }
+		.toc > li li li li .secno    { margin-left: -6rem; }
+		.toc > li li li li li .secno { margin-left: -7rem; }
+	}
+	@media screen and (min-width: 78em) {
+		body:not(.toc-inline) :not(li) > .toc              { margin-left:  4rem; }
+		body:not(.toc-inline) .toc .secno                  { margin-left: -4rem; }
+		body:not(.toc-inline) .toc > li li li              { margin-left:  1rem; }
+		body:not(.toc-inline) .toc > li li li .secno       { margin-left: -5rem; }
+		body:not(.toc-inline) .toc > li li li li .secno    { margin-left: -6rem; }
+		body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
+	}
+	body.toc-sidebar #toc :not(li) > .toc              { margin-left:  4rem; }
+	body.toc-sidebar #toc .toc .secno                  { margin-left: -4rem; }
+	body.toc-sidebar #toc .toc > li li li              { margin-left:  1rem; }
+	body.toc-sidebar #toc .toc > li li li .secno       { margin-left: -5rem; }
+	body.toc-sidebar #toc .toc > li li li li .secno    { margin-left: -6rem; }
+	body.toc-sidebar #toc .toc > li li li li li .secno { margin-left: -7rem; }
+
+	.toc li {
+		clear: both;
+	}
 }

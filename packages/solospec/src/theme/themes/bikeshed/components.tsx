@@ -122,7 +122,7 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
 function BikeshedTocTree({ entries }: { entries: TocEntry[] }): JSX.Element | null {
   if (!entries || entries.length === 0) return null;
   return (
-    <ol>
+    <ol class="toc">
       {entries.map((entry, i) => {
         const href = entry.id ? `#${entry.id}` : '#';
         return (
@@ -143,12 +143,12 @@ function BikeshedTocTree({ entries }: { entries: TocEntry[] }): JSX.Element | nu
 function BikeshedToc({ vm }: { vm: RenderPageVm }): JSX.Element | null {
   if (vm.includeToc === false || !vm.toc || vm.toc.length === 0) return null;
   return (
-    <aside>
+    <aside class="toc-sidebar">
       <W3CCommunityDraftReportLogo />
-      <div id="toc" class="toc">
+      <nav id="toc">
         <h2>TABLE OF CONTENTS</h2>
         <BikeshedTocTree entries={vm.toc} />
-      </div>
+      </nav>
     </aside>
   );
 }
