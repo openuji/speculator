@@ -1,5 +1,3 @@
-<!-- source: https://raw.githubusercontent.com/speced/bikeshed-boilerplate/main/boilerplate/solidcg/copyright-CG-DRAFT.include -->
-
 Copyright © [YEAR] the Contributors to the [TITLE],
 published by the <a href="https://www.w3.org/community/solid/">Solid Community Group</a>
 under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>.

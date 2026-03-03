@@ -4,7 +4,7 @@ _This section is non-normative_
 
 ## Terminology {#terminology}
 
-An <dfn>agent</dfn> is an autonomous assistant that can understand a user’s goals and take actions on the user’s behalf to achieve them. Today, these are typically implemented by large language model (LLM) based \[=AI platforms=], interacting with users via text-based chat interfaces.
+An <dfn>agent</dfn> is an autonomous assistant that can understand a user’s goals and take actions on the user’s behalf to achieve them. Today, these are typically implemented by large language model (LLM) based [=AI platforms=], interacting with users via text-based chat interfaces.
 
 The OAuth 2.0 [[!RFC6749]] and OpenID Connect Core 1.0 [[!OIDC-CORE]] web standards were
 published in October 2012 and November 2014, respectively. Since publication they've seen rapid and
