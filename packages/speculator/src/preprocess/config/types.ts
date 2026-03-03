@@ -67,9 +67,6 @@ export interface RawRespecConfig {
     // Bibliography
     localBiblio?: Record<string, unknown>;
 
-    // Conformance
-    noConformance?: boolean;
-
     // Cross-references
     xref?: string | string[] | Record<string, string>;
 }
@@ -92,9 +89,6 @@ export interface ResolvedDocumentConfig {
 
   /** Base URL for assembling thisVersion when not explicitly set */
   baseUrl?: string;
-
-  /** If true, suppresses the automatic generation of the conformance section. */
-  noConformance?: boolean;
 
   /** Optional ReSpec configuration embedded in config.json */
   respec?: RawRespecConfig;

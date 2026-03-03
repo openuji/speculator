@@ -202,11 +202,6 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         config.custom = docConfig.custom;
     }
 
-    if(docConfig.noConformance || docConfig.respec?.noConformance !== undefined) {
-        const noConformance = docConfig.noConformance || docConfig.respec?.noConformance;
-        config.noConformance = noConformance;
-    }
-
     // Cross-references
     if (raw.xref !== undefined) {
         config.xref = raw.xref;

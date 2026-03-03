@@ -2075,10 +2075,6 @@
                     "type": "object",
                     "description": "Highest priority user-defined properties",
                     "additionalProperties": true
-                },
-                "noConformance": {
-                    "type": "boolean",
-                    "description": "If true, disables automatic conformance section generation."
                 }
             }
         },

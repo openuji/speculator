@@ -290,9 +290,6 @@ export interface SpecConfig {
      */
     custom?: Record<string, unknown>;
 
-    /** If true, suppresses the automatic generation of the conformance section. */
-    noConformance?: boolean;
-
     /** JSON-LD metadata configuration */
     jsonLd?: {
         /** Base IRI for the specification vocabulary (default: https://speculator.openuji.org/vocab#) */

@@ -612,10 +612,6 @@ export interface DocumentMetadata {
   custom?: {
     [k: string]: unknown | undefined;
   };
-  /**
-   * If true, disables automatic conformance section generation.
-   */
-  noConformance?: boolean;
 }
 export interface BaseNode {
   sourcePos?: SourcePos;

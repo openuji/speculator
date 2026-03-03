@@ -202,3 +202,5 @@ Consumers may process multiple UJGDocument files as a single logical graph.
   ]
 }
 ```
+
+<spec-biblio-references />

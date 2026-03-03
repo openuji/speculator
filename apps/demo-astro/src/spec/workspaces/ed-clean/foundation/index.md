@@ -2,6 +2,8 @@
 
 :::include ./partials/intro.md :::
 
+:::include ./partials/conformance.md :::
+
 ## Terms {#terms}
 
 A <dfn id="session-token">session token</dfn> binds a client session to its request context.
@@ -54,6 +56,4 @@ The following examples demonstrate the fallback to JSON-LD term extraction when 
 <spec-vocab term="ex:ClassThree"></spec-vocab>
 </spec-statement>
 
-## References {#references-foundation}
-
-The key words **MUST**, **SHOULD**, and **MAY** follow [[!RFC2119]] and [[!RFC8174]].
+<spec-biblio-references />

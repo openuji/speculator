@@ -71,10 +71,7 @@ If your document does not already contain a section with `id="conformance"`, Spe
 This injected section:
 
 - Is **unnumbered** to avoid interfering with your document's outline.
-- Declares that everything in the document is normative except for notes, examples, etc.
 - Defines the key words MUST, SHOULD, MAY, etc., linking them to [[!RFC2119]] and [[!RFC8174]].
-
-To disable this automatic section, set `noConformance: true` in your configuration (either at the root or inside a `respec` object).
 
 ### Bibliography Generation
 

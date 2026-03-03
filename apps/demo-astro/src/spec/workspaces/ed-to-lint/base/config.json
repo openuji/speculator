@@ -10,7 +10,6 @@
     "shortName": "ed-lint-base",
     "specStatus": "ED",
     "modificationDate": "2026-02-12",
-    "noConformance": true,
     "abstract": "Root document containing intentionally problematic authoring patterns."
   }
 }

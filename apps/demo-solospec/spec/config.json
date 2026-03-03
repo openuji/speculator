@@ -89,7 +89,6 @@
       }
     }
   },
-  "noConformance": true,
   "custom": {
     "thisVersion": "https://solid.github.io/solid-oidc/",
     "latestVersion": "https://solidproject.org/TR/oidc",
