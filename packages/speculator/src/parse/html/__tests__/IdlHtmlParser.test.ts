@@ -157,4 +157,70 @@ interface Element {
         expect(methodDef).toBeDefined();
         if (methodDef) expect(methodDef.dfnType).toBe('method');
     });
+
+    it('parses generic type references in member signatures', () => {
+        const idl = `
+<pre class="idl">
+dictionary Sample {
+  sequence&lt;DOMString&gt; labels = [];
+};
+</pre>
+`;
+        const mapper = new SourceMapper(idl, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: idl.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
+
+        const blocks = parser.parse(idl, mapper);
+        const block = blocks[0] as BlockIdl;
+        const children = block.children;
+
+        const domStringRef = children.find(
+            (c): c is InlineWorkspaceIdlReference => c.type === 'workspaceIdlReference' && c.targetTerm === 'DOMString'
+        );
+        expect(domStringRef).toBeDefined();
+
+        const labelsDef = children.find(
+            (c): c is InlineDefinition => c.type === 'definition' && c.term === 'Sample/labels'
+        );
+        expect(labelsDef).toBeDefined();
+    });
+
+    it('parses lowercase primitive type references', () => {
+        const idl = `
+<pre class="idl">
+interface PrimitiveDemo {
+  readonly attribute boolean enabled;
+};
+</pre>
+`;
+        const mapper = new SourceMapper(idl, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: idl.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
+
+        const blocks = parser.parse(idl, mapper);
+        const block = blocks[0] as BlockIdl;
+        const children = block.children;
+
+        const boolRef = children.find(
+            (c): c is InlineWorkspaceIdlReference => c.type === 'workspaceIdlReference' && c.targetTerm === 'boolean'
+        );
+        expect(boolRef).toBeDefined();
+
+        const memberDef = children.find(
+            (c): c is InlineDefinition => c.type === 'definition' && c.term === 'PrimitiveDemo/enabled'
+        );
+        expect(memberDef).toBeDefined();
+    });
 });

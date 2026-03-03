@@ -53,8 +53,8 @@ export function tokenizeIdlContent(content: string, sourcePos?: SourcePos): Inli
     let expectingNameFor: string | null = null;
     let expectingMemberName = false;
 
-    // Delimiters: whitespace, {};(),=?
-    const tokens = content.split(/([ \t\n\r]+|[{};(),=?])/);
+    // Delimiters: whitespace, punctuation, and type wrapper tokens used in IDL type expressions.
+    const tokens = content.split(/([ \t\n\r]+|[{};(),=?<>[\]:])/);
 
     for (const token of tokens) {
         if (!token) continue;
@@ -118,7 +118,7 @@ export function tokenizeIdlContent(content: string, sourcePos?: SourcePos): Inli
 
         if (contextName && (currentContext === 'interface' || currentContext === 'dictionary')) {
             if (PRIMITIVE_TYPES.has(token)) {
-                children.push(createTextInline(token, sourcePos));
+                children.push(createWorkspaceIdlReference(token, sourcePos));
                 expectingMemberName = true;
                 continue;
             }

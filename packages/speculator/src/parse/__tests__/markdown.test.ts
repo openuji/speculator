@@ -121,6 +121,30 @@ describe('MarkdownUnitParser', () => {
             expect(idl.value).toContain('interface Example');
             expect(idl.children.some((inline) => inline.type === 'definition' && 'term' in inline && inline.term === 'Example')).toBe(true);
         });
+
+        it('parses lowercase primitive IDL types as references', () => {
+            const unit = createUnit('```webidl\ninterface Example {\n  readonly attribute boolean enabled;\n};\n```');
+            const blocks = parser.parse(unit);
+
+            expect(blocks).toHaveLength(1);
+            expect(blocks[0].type).toBe('idl');
+
+            const idl = blocks[0] as BlockIdl;
+            expect(idl.children.some((inline) => inline.type === 'workspaceIdlReference' && 'targetTerm' in inline && inline.targetTerm === 'boolean')).toBe(true);
+            expect(idl.children.some((inline) => inline.type === 'definition' && 'term' in inline && inline.term === 'Example/enabled')).toBe(true);
+        });
+
+        it('parses generic webidl type references inside fences', () => {
+            const unit = createUnit('```webidl\ndictionary Example {\n  sequence<DOMString> names = [];\n};\n```');
+            const blocks = parser.parse(unit);
+
+            expect(blocks).toHaveLength(1);
+            expect(blocks[0].type).toBe('idl');
+
+            const idl = blocks[0] as BlockIdl;
+            expect(idl.children.some((inline) => inline.type === 'workspaceIdlReference' && 'targetTerm' in inline && inline.targetTerm === 'DOMString')).toBe(true);
+            expect(idl.children.some((inline) => inline.type === 'definition' && 'term' in inline && inline.term === 'Example/names')).toBe(true);
+        });
     });
 
     describe('blockquotes', () => {

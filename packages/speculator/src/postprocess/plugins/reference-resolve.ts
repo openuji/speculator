@@ -138,6 +138,28 @@ interface XrefResult {
     uri: string;
 }
 
+const SAFE_WEBIDL_IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+function extractTargetIdFromUrl(url?: string): string | undefined {
+    if (!url) return undefined;
+
+    try {
+        const parsed = new URL(url);
+        if (parsed.hash.length > 1) {
+            return parsed.hash.slice(1);
+        }
+    } catch {
+        // Non-absolute URLs are expected in some flows; fallback to string parsing below.
+    }
+
+    const hashIdx = url.indexOf('#');
+    if (hashIdx >= 0 && hashIdx < url.length - 1) {
+        return decodeURIComponent(url.slice(hashIdx + 1));
+    }
+
+    return undefined;
+}
+
 /**
  * Parse a targetTerm like "Document/getElementsByTagName(qualifiedName)" 
  * into { term, forContext } for the xref API.
@@ -268,9 +290,11 @@ async function resolveExternalXrefs(
                     // Construct absolute URL: base + relative URI
                     // URI from xref is typically a fragment like "#document"
                     ref.url = baseUrl.replace(/\/$/, '') + '/' + result.uri.replace(/^\//, '');
+                    ref.targetId = extractTargetIdFromUrl(result.uri) ?? extractTargetIdFromUrl(ref.url);
                 } else {
                     // Fallback: link to the xref search page
                     ref.url = `https://respec.org/xref/?term=${encodeURIComponent(ref.targetTerm)}`;
+                    ref.targetId = undefined;
                 }
             }
         }
@@ -316,6 +340,7 @@ function handleExternalResolution(
         if (directUrl) {
             ref.xrefSpec = 'manual';
             ref.url = directUrl;
+            ref.targetId = extractTargetIdFromUrl(directUrl);
             return;
         }
     }
@@ -332,6 +357,36 @@ function handleExternalResolution(
     pendingQueue.push({ ref, specs, origType: ref.type });
 }
 
+function hasWebIdlSpecConfigured(xrefConfig: SpecConfig['xref']): boolean {
+    if (typeof xrefConfig === 'string') {
+        return normalizeTerm(xrefConfig) === 'webidl';
+    }
+    if (Array.isArray(xrefConfig)) {
+        return xrefConfig.some((spec) => normalizeTerm(spec) === 'webidl');
+    }
+    return false;
+}
+
+function resolveWebIdlTypeFallback(ref: ExternalReference): boolean {
+    if (ref.type !== 'externalIdlReference') {
+        return false;
+    }
+
+    const candidateTerms = ref.candidateTerms || [ref.targetTerm];
+    for (const candidate of candidateTerms) {
+        const term = candidate.trim();
+        if (!SAFE_WEBIDL_IDENTIFIER.test(term)) continue;
+
+        const targetId = `idl-${term}`;
+        ref.xrefSpec = 'webidl';
+        ref.targetId = targetId;
+        ref.url = `https://webidl.spec.whatwg.org/#${encodeURIComponent(targetId)}`;
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * Reference resolve plugin
  */
@@ -346,6 +401,7 @@ export const referenceResolvePlugin: Plugin = {
             : buildLookupMap(ctx.document);
 
         const xrefConfig = ctx.config.xref;
+        const webIdlFallbackEnabled = hasWebIdlSpecConfigured(xrefConfig);
 
         // Collect refs that need external resolution
         const pendingExternalRefs: Array<{ ref: ExternalReference; specs: string[]; origType: string }> = [];
@@ -376,6 +432,7 @@ export const referenceResolvePlugin: Plugin = {
                 if (WORKSPACE_REF_TYPES.has(ref.type) && xrefConfig) {
                     const extRef = promoteWorkspaceToExternal(ref as WorkspaceReference);
                     handleExternalResolution(extRef, xrefConfig, pendingExternalRefs);
+                    return;
                 }
             }
         });
@@ -383,6 +440,15 @@ export const referenceResolvePlugin: Plugin = {
         // Batch-resolve all pending external references via API
         if (pendingExternalRefs.length > 0) {
             await resolveExternalXrefs(pendingExternalRefs);
+
+            // Apply generic WebIDL fallback only when explicitly configured
+            // and only for unresolved external IDL refs.
+            if (webIdlFallbackEnabled) {
+                for (const { ref } of pendingExternalRefs) {
+                    if (ref.targetId) continue;
+                    resolveWebIdlTypeFallback(ref);
+                }
+            }
         }
 
         
