@@ -22,7 +22,7 @@ import { inferFormat } from '#src/preprocess/types';
  * (e.g., attributes split across lines, attribute values with escaped quotes).
  * For complex HTML, a proper parser would be needed.
  */
-const DATA_INCLUDE_REGEX = /<([a-z][a-z0-9]*)\s+[^>]*data-include\s*=\s*["']([^"']+)["'][^>]*>/gi;
+const DATA_INCLUDE_REGEX = /<([a-z][a-z0-9]*)\s+[^>]*data-include\s*=\s*["']([^"']+)["'][^>]*>(?:\s*<\/(\1)>)?/gi;
 
 /**
  * Extract data-include-format from a tag string

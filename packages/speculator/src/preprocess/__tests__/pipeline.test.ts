@@ -112,9 +112,9 @@ describe('preprocess', () => {
                 fileProvider: fp,
             });
 
-            expect(result.source.units.length).toBeGreaterThanOrEqual(3);
+            expect(result.source.sourceMap.fragments.length).toBeGreaterThanOrEqual(3);
 
-            const files = result.source.units.map((u) => u.file);
+            const files = result.source.sourceMap.fragments.map((u) => u.file);
             expect(files).toContain('/spec/intro.md');
             expect(files).toContain('/spec/conformance.md');
         });
@@ -133,7 +133,7 @@ describe('preprocess', () => {
                 fileProvider: fp,
             });
 
-            const files = result.source.units.map((u) => u.file);
+            const files = result.source.sourceMap.fragments.map((u) => u.file);
             expect(files).toContain('/spec/intro.md');
         });
 
@@ -177,7 +177,7 @@ Text here
             });
 
             expect(result.config.title).toBe('Test Specification');
-            expect(result.source.units.length).toBeGreaterThanOrEqual(4);
+            expect(result.source.sourceMap.fragments.length).toBeGreaterThanOrEqual(4);
         });
 
         it('processes HTML spec with includes', async () => {
@@ -202,7 +202,7 @@ Text here
                 fileProvider: fp,
             });
 
-            const files = result.source.units.map((u) => u.file);
+            const files = result.source.sourceMap.fragments.map((u) => u.file);
             expect(files).toContain('/spec/intro.md');
             expect(files).toContain('/spec/conformance.md');
         });

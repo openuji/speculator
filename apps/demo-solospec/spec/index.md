@@ -106,8 +106,11 @@ _This section is non-normative_
 Details of the flow are available in [[!SOLID-OIDC-PRIMER]]
 
 <figure id="fig-signature">
-    <img src="sequence.mmd.svg" />
+    
+    :::include ./sequence.md:::
+
     <figcaption>Basic sequence of authenticating the user and the client.</figcaption>
+
 </figure>
 
 ## Client Identifiers {#clientids}
@@ -559,3 +562,7 @@ The JSON-LD context is defined as:
     }
   }
 ```
+
+:::include ./includes/conformance.md:::
+
+<spec-biblio-references />

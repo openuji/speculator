@@ -2,8 +2,23 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
+import { SourceMapper } from '#src/parse/source-mapper';
 import { statementIndexPlugin } from '../statement-index';
 import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute';
+
+function mdParse(parser: MarkdownUnitParser, content: string, file = 'test.md') {
+    const mapper = new SourceMapper(content, {
+        fragments: [{ startOffset: 0, endOffset: content.length, file, format: 'markdown', originalStartLine: 1 }]
+    });
+    return parser.parse(content, mapper);
+}
+
+function htmlParse(parser: HtmlUnitParser, content: string, file = 'test.html') {
+    const mapper = new SourceMapper(content, {
+        fragments: [{ startOffset: 0, endOffset: content.length, file, format: 'html', originalStartLine: 1 }]
+    });
+    return parser.parse(content, mapper);
+}
 
 describe('data-cop resolution', () => {
     const mdParser = new MarkdownUnitParser();
@@ -25,7 +40,7 @@ describe('data-cop resolution', () => {
 <spec-statement>The Role MUST ...</spec-statement>
 `;
         const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
-        const blocks = mdParser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
+        const blocks = mdParse(mdParser, content);
         const document = assembleDocument(blocks, config, 'test.md');
 
         await statementIndexPlugin.index!({ 
@@ -56,7 +71,7 @@ describe('data-cop resolution', () => {
 </section>
 `;
 const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
-        const blocks = htmlParser.parse({ file: 'test.html', format: 'html', content, startLine: 1 });
+        const blocks = htmlParse(htmlParser, content);
         const document = assembleDocument(blocks, config, 'test.html');
 
         await statementIndexPlugin.index!({ 
@@ -84,7 +99,7 @@ const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1
 <spec-statement>The server MUST ...</spec-statement>
 `;
 const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
-        const blocks = mdParser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
+        const blocks = mdParse(mdParser, content);
         const document = assembleDocument(blocks, config, 'test.md');
 
         await statementIndexPlugin.index!({ document, config, level: 0 });
@@ -138,7 +153,7 @@ const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1
 </section>
 `;
 const config = { id: 'test', title: 'My Specification', specIri: 'https://example.org/spec/1.0.0' };
-        const blocks = htmlParser.parse({ file: 'test.html', format: 'html', content, startLine: 1 });
+        const blocks = htmlParse(htmlParser, content);
         const document = assembleDocument(blocks, config, 'test.html');
 
         await statementIndexPlugin.index!({ document, config, level: 0 });

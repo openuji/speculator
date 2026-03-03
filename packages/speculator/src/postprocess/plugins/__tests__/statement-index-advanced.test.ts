@@ -2,8 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
+import { SourceMapper } from '#src/parse/source-mapper';
 import { statementIndexPlugin } from '../statement-index';
 import type { IndexContext } from '#src/pipeline/types';
+
+function mdParse(parser: MarkdownUnitParser, content: string, file = 'test.md') {
+    const mapper = new SourceMapper(content, {
+        fragments: [{ startOffset: 0, endOffset: content.length, file, format: 'markdown', originalStartLine: 1 }]
+    });
+    return parser.parse(content, mapper);
+}
 
 describe('statement-index advanced edge cases', () => {
     const mdParser = new MarkdownUnitParser();
@@ -20,7 +28,7 @@ describe('statement-index advanced edge cases', () => {
 
 <spec-statement>The A element</spec-statement>
 `;
-        const blocks = mdParser.parse({ file: 'collision.md', format: 'markdown', content, startLine: 1 });
+        const blocks = mdParse(mdParser, content, 'collision.md');
         const document = assembleDocument(blocks, { id: 'collision', title: 'Collision', specIri: 'https://example.org/spec/1.0.0' }, 'collision.md');
 
         await statementIndexPlugin.index!({ 
@@ -70,7 +78,7 @@ describe('statement-index advanced edge cases', () => {
 <spec-statement>No COP.</spec-statement>
 `;
         const config = { id: 'nested', title: 'Nested', specIri: 'https://example.org/spec/1.0.0/nested' };
-        const blocks = mdParser.parse({ file: 'nested.md', format: 'markdown', content, startLine: 1 });
+        const blocks = mdParse(mdParser, content, 'nested.md');
         const document = assembleDocument(blocks, config, 'nested.md');
 
         await statementIndexPlugin.index!({ 
@@ -93,7 +101,7 @@ describe('statement-index advanced edge cases', () => {
 <spec-statement>Plain statement.</spec-statement>
 <spec-statement level="MUST">Normative statement.</spec-statement>
 `;
-        const blocks = mdParser.parse({ file: 'levels.md', format: 'markdown', content, startLine: 1 });
+        const blocks = mdParse(mdParser, content, 'levels.md');
         const document = assembleDocument(blocks, { id: 'levels', title: 'Levels', specIri: 'https://example.org/spec/1.0.0' }, 'levels.md');
 
         await statementIndexPlugin.index!({ 

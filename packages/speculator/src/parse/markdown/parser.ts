@@ -10,13 +10,13 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import { remarkMdxAgnostic, remarkHeadingAttrBlocks } from './plugins.js';
 import type { Root, RootContent } from 'mdast';
-import type { SourceUnit } from '#src/preprocess/types';
 import type { UnitParser } from '#src/parse/types';
+import { SourceMapper } from '#src/parse/source-mapper';
+import type { SourceFormat } from '#src/preprocess/types';
 import type {
     Section,
     Block,
     Inline,
-    SourcePos,
 } from '#src/types/ast.generated';
 import {
     ParseHandlerRegistry,
@@ -26,54 +26,7 @@ import {
 } from '#src/parse/registry';
 import { escapeShorthandPipesInTables, normalizeMdxTags } from '../utils/markdown-utils.js';
 
-/**
- * Create source position from mdast node position
- */
-function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos {
-    if (!node.position) {
-        return {
-            file: unit.file,
-            line: unit.startLine,
-            column: 1,
-        }
-    }
-
-    const pos = node.position;
-    const result: SourcePos = {
-        file: unit.file,
-        line: unit.startLine + pos.start.line - 1,
-        column: pos.start.column,
-    };
-
-    if (pos.start.offset !== undefined) {
-        result.offset = pos.start.offset;
-    }
-    if (pos.end) {
-        result.endLine = unit.startLine + pos.end.line - 1;
-        result.endColumn = pos.end.column;
-        if (pos.end.offset !== undefined) {
-            result.endOffset = pos.end.offset;
-        }
-    }
-
-    return result;
-}
-
-function adjustErrorLineNumbers(error: unknown, startLine: number): void {
-    if (!(error instanceof Error) || startLine <= 1) return;
-
-    const startOff = startLine - 1;
-    // Match (L:C), (L:C-L:C), or even just L:C if MDX format changes
-    const posRegex = /(\(?|)(\d+):(\d+)(?:-(\d+):(\d+))?(\)?|)/g;
-    error.message = error.message.replace(posRegex, (_match, openParen = '', l1, c1, l2, c2, closeParen = '') => {
-        const nl1 = parseInt(l1) + startOff;
-        if (l2 && c2) {
-            const nl2 = parseInt(l2) + startOff;
-            return `${openParen}${nl1}:${c1}-${nl2}:${c2}${closeParen}`;
-        }
-        return `${openParen}${nl1}:${c1}${closeParen}`;
-    });
-}
+// No longer need createSourcePos wrapper here, SourceMapper handles it natively
 
 
 /**
@@ -95,34 +48,77 @@ export class MarkdownUnitParser implements UnitParser {
     }
 
     /**
-     * Parse markdown unit to AST blocks
+     * Parse markdown composed string to AST blocks
+     * Overload 1: New API with content string and SourceMapper
+     * Overload 2: Legacy API with SourceUnit-like object (backwards compat for tests)
      */
-    parse(unit: SourceUnit): (Section | Block)[] {
-        let content = unit.content;
-        
+    parse(content: string, sourceMapper: SourceMapper): (Section | Block)[];
+    parse(unit: { content: string; file: string; format: string; startLine: number; sideFiles?: Record<string, string> }): (Section | Block)[];
+    parse(
+        contentOrUnit: string | { content: string; file: string; format: string; startLine: number; sideFiles?: Record<string, string> },
+        sourceMapper?: SourceMapper
+    ): (Section | Block)[] {
+        let content: string;
+        if (typeof contentOrUnit === 'string') {
+            content = contentOrUnit;
+        } else {
+            // Legacy SourceUnit-like object
+            content = contentOrUnit.content;
+            sourceMapper = new SourceMapper(content, {
+                fragments: [{
+                    startOffset: 0,
+                    endOffset: content.length,
+                    file: contentOrUnit.file,
+                    format: contentOrUnit.format as SourceFormat,
+                    originalStartLine: contentOrUnit.startLine,
+                    sideFiles: contentOrUnit.sideFiles,
+                }]
+            });
+        }
+
+        if (!sourceMapper) {
+            throw new Error('sourceMapper is required in non-legacy mode');
+        }
         // Refined pre-processing for MDX:
         // 1. Escape shorthand pipes in tables (GFM compat)
         content = escapeShorthandPipesInTables(content);
         
-        // Parse to mdast tree
-        let tree: Root;
-        try {
-            tree = this.processor.parse(content) as Root;
-        } catch (initialError: unknown) {
-            // Retry once after normalizing MDX block-like tags. This rescues cases
-            // where custom tags begin inline and then cross block boundaries.
-            const normalizedContent = normalizeMdxTags(content);
-            if (normalizedContent !== content) {
-                try {
-                    content = normalizedContent;
-                    tree = this.processor.parse(content) as Root;
-                } catch (normalizedError: unknown) {
-                    adjustErrorLineNumbers(normalizedError, unit.startLine);
-                    throw normalizedError;
+        // Parse to mdast tree with retry logic for MDX strictness
+        let tree: Root = null!;
+        let retryCount = 0;
+        const maxRetries = 20;
+        while (retryCount <= maxRetries) {
+            try {
+                tree = this.processor.parse(content) as Root;
+                break;
+            } catch (error: unknown) {
+                if (retryCount >= maxRetries) throw error;
+                retryCount++;
+
+                const message = error instanceof Error ? error.message : String(error);
+
+                // Strategy 1: Normalize Speculator custom tags (e.g. crossing block boundaries)
+                const normalized = normalizeMdxTags(content);
+                if (normalized !== content) {
+                    content = normalized;
+                    continue;
                 }
-            } else {
-                adjustErrorLineNumbers(initialError, unit.startLine);
-                throw initialError;
+
+                // Strategy 2: Escape unclosed common HTML tags used as literal text
+                // Search for "Expected a closing tag for <tag>" (modern MDX)
+                // or similar errors that indicate unclosed tags.
+                const tagMatch = message.match(/Expected a closing tag for `<([^>]+)>`/);
+                if (tagMatch) {
+                    const tagName = tagMatch[1];
+                    // Escape all occurrences of this opening tag to &lt;tag
+                    // but ONLY if they don't look self-closing or have a close tag.
+                    // (Actually, if MDX is complaining, it's safer to just escape them).
+                    content = content.replace(new RegExp(`<${tagName}(?![^>]*/>)`, 'g'), `&lt;${tagName}`);
+                    continue;
+                }
+
+                // Strategy 3: Unclosed block handlers or other JSX errors
+                throw error;
             }
         }
         
@@ -131,7 +127,7 @@ export class MarkdownUnitParser implements UnitParser {
         const transformedTree = this.processor.runSync(tree) as Root;
 
         // Create context for handlers
-        const ctx = this.createContext(unit);
+        const ctx = this.createContext(sourceMapper);
 
         const blocks: (Section | Block)[] = [];
 
@@ -146,14 +142,17 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Create parse context for handlers
      */
-    private createContext(unit: SourceUnit): ParseContext {
+    private createContext(sourceMapper: SourceMapper): ParseContext {
         return {
-            unit,
-            createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            transformInlineChildren: (children) => this.transformInlineChildren(children as RootContent[], unit),
+            sourceMapper,
+            createSourcePos: (node: NodeWithPosition) => {
+                if (!node || !node.position) return { file: 'unknown', line: 1, column: 1 };
+                return sourceMapper.createSourcePos(node.position) || { file: 'unknown', line: 1, column: 1 };
+            },
+            transformInlineChildren: (children) => this.transformInlineChildren(children as RootContent[], sourceMapper),
             transformBlockChildren: (children) => {
                 const results: (Section | Block)[] = [];
-                const ctx = this.createContext(unit);
+                const ctx = this.createContext(sourceMapper);
                 for (const child of children as RootContent[]) {
                     const blocksResult = this.transformBlock(child, ctx);
                     results.push(...blocksResult);
@@ -167,7 +166,7 @@ export class MarkdownUnitParser implements UnitParser {
                     if (child.type === 'text') {
                         text += child.value;
                     } else if (child.type === 'element') {
-                        text += this.createContext(unit).getTextContent(child);
+                        text += this.createContext(sourceMapper).getTextContent(child);
                     }
                 }
                 return text;
@@ -205,8 +204,8 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Transform mdast inline node to Speculator inline(s)
      */
-    private transformInline(node: RootContent, unit: SourceUnit): Inline | Inline[] | null {
-        const ctx = this.createContext(unit);
+    private transformInline(node: RootContent, sourceMapper: SourceMapper): Inline | Inline[] | null {
+        const ctx = this.createContext(sourceMapper);
 
         // Look up handlers in registry
         const handlers = this.registry.getMdInlineHandlers(node.type);
@@ -226,11 +225,11 @@ export class MarkdownUnitParser implements UnitParser {
     /**
      * Transform array of inline children
      */
-    private transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
+    private transformInlineChildren(children: RootContent[], sourceMapper: SourceMapper): Inline[] {
         const results: Inline[] = [];
 
         for (const child of children) {
-            const result = this.transformInline(child, unit);
+            const result = this.transformInline(child, sourceMapper);
             if (result === null) continue;
 
             if (Array.isArray(result)) {

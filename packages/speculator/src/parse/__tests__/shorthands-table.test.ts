@@ -4,11 +4,22 @@
 
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
-import type { SourceUnit } from '#src/preprocess/types';
 import type { BlockTable, TableRow, TableCell, InlineCode } from '#src/types/ast.generated';
+import { SourceMapper } from '#src/parse/source-mapper';
 
-function createUnit(content: string, file = '/spec/test.md'): SourceUnit {
-    return { file, format: 'markdown', content, startLine: 1 };
+function createUnit(content: string, file = '/spec/test.md'): [string, SourceMapper] {
+    return [
+        content,
+        new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file,
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        })
+    ];
 }
 
 describe('Shorthands in Tables', () => {
@@ -20,8 +31,8 @@ describe('Shorthands in Tables', () => {
 | :------- | :------- |
 | Cell 1   | See [§#ref|Label] |
 `;
-        const unit = createUnit(content);
-        const blocks = parser.parse(unit);
+        const [parsedContent, mapper] = createUnit(content);
+        const blocks = parser.parse(parsedContent, mapper);
         
         const table = blocks[0] as BlockTable;
         expect(table.type).toBe('table');
@@ -43,8 +54,8 @@ describe('Shorthands in Tables', () => {
 | :--- | :---------- |
 | [=term|alias=] | Some description |
 `;
-        const unit = createUnit(content);
-        const blocks = parser.parse(unit);
+        const [parsedContent, mapper] = createUnit(content);
+        const blocks = parser.parse(parsedContent, mapper);
         
         const table = blocks[0] as BlockTable;
         const bodyRow = table.children[1] as TableRow;
@@ -65,8 +76,8 @@ describe('Shorthands in Tables', () => {
 | Section   | [§#id|Label] | reference |
 | Concept   | [=term|alias=] | reference |
 `;
-        const unit = createUnit(content);
-        const blocks = parser.parse(unit);
+        const [parsedContent, mapper] = createUnit(content);
+        const blocks = parser.parse(parsedContent, mapper);
 
         const table = blocks[0] as BlockTable;
         // Should have 3 columns, not more
@@ -81,8 +92,8 @@ describe('Shorthands in Tables', () => {
 | --------- | ------ |
 | Section   | \`[§#id|alias]\` |
 `;
-        const unit = createUnit(content);
-        const blocks = parser.parse(unit);
+        const [parsedContent, mapper] = createUnit(content);
+        const blocks = parser.parse(parsedContent, mapper);
 
         const table = blocks[0] as BlockTable;
         const bodyRow = table.children[1] as TableRow;

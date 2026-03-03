@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import { assembleDocument } from '#src/parse/assembler';
 import { noteShorthandsPlugin } from '#src/postprocess/plugins/note-shorthands';
+import { SourceMapper } from '#src/parse/source-mapper';
 import type { SpecConfig } from '#src/preprocess/types';
 import type { BlockNote, BlockParagraph, Document } from '#src/types/ast.generated';
 
@@ -10,12 +11,16 @@ function createDocument(
     configOverrides: Partial<SpecConfig> = {}
 ): { document: Document; config: SpecConfig } {
     const parser = new MarkdownUnitParser();
-    const blocks = parser.parse({
-        file: '/spec/index.md',
-        format: 'markdown',
-        content,
-        startLine: 1,
+    const mapper = new SourceMapper(content, {
+        fragments: [{
+            startOffset: 0,
+            endOffset: content.length,
+            file: '/spec/index.md',
+            format: 'markdown',
+            originalStartLine: 1,
+        }]
     });
+    const blocks = parser.parse(content, mapper);
 
     const config: SpecConfig = {
         id: 'test-spec',

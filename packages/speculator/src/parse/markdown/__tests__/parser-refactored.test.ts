@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '../index.js';
-import type { SourceUnit } from '#src/preprocess/types';
+import { SourceMapper } from '#src/parse/source-mapper';
 import type {
     BlockHeading,
     BlockHtmlElement,
@@ -15,14 +15,18 @@ describe('Refactored MarkdownUnitParser', () => {
     const parser = new MarkdownUnitParser();
 
     it('parses headings with attributes using the new plugin', () => {
-        const unit: SourceUnit = {
-            file: 'test.md',
-            format: 'markdown',
-            content: '## The Universal Node {#node data-cop-concept="node"}\n',
-            startLine: 1,
-        };
+        const content = '## The Universal Node {#node data-cop-concept="node"}\n';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.md',
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(content, mapper);
         expect(blocks[0].type).toBe('heading');
         const heading = blocks[0] as BlockHeading;
         expect(heading.id).toBe('node');
@@ -35,14 +39,18 @@ describe('Refactored MarkdownUnitParser', () => {
     });
 
     it('parses <spec-statement> using MDX parser without switching to HTML', () => {
-        const unit: SourceUnit = {
-            file: 'test.md',
-            format: 'markdown',
-            content: '\n<spec-statement id="stmt1">This is a **normative** statement</spec-statement>\n',
-            startLine: 1,
-        };
+        const content = '\n<spec-statement id="stmt1">This is a **normative** statement</spec-statement>\n';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.md',
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(content, mapper);
         expect(blocks[0].type).toBe('specStatement');
         const stmt = blocks[0] as BlockSpecStatement;
         expect(stmt.id).toBe('stmt1');
@@ -53,28 +61,36 @@ describe('Refactored MarkdownUnitParser', () => {
     });
 
     it('handles complex MDX attributes', () => {
-        const unit: SourceUnit = {
-            file: 'test.md',
-            format: 'markdown',
-            content: '### Heading {data-no-toc #my-id}\n',
-            startLine: 1,
-        };
+        const content = '### Heading {data-no-toc #my-id}\n';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.md',
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(content, mapper);
         const heading = blocks[0] as BlockHeading;
         expect(heading.id).toBe('my-id');
         expect(heading.noToc).toBe(true);
     });
 
     it('parses MDX <dfn> inline tags via HTML handlers', () => {
-        const unit: SourceUnit = {
-            file: 'test.md',
-            format: 'markdown',
-            content: 'A <dfn data-dfn-for="Window">postMessage()</dfn> call.\n',
-            startLine: 1,
-        };
+        const content = 'A <dfn data-dfn-for="Window">postMessage()</dfn> call.\n';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.md',
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(content, mapper);
         const paragraph = blocks[0] as BlockParagraph;
         const definition = paragraph.children.find((child) => child.type === 'definition') as InlineDefinition | undefined;
 
@@ -84,14 +100,18 @@ describe('Refactored MarkdownUnitParser', () => {
     });
 
     it('parses standalone MDX <dfn> flow tags as paragraph definitions', () => {
-        const unit: SourceUnit = {
-            file: 'test.md',
-            format: 'markdown',
-            content: '<dfn id="term-phase">Phase</dfn>\n',
-            startLine: 1,
-        };
+        const content = '<dfn id="term-phase">Phase</dfn>\n';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.md',
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(content, mapper);
         const paragraph = blocks[0] as BlockParagraph;
 
         expect(paragraph.type).toBe('paragraph');
@@ -104,14 +124,18 @@ describe('Refactored MarkdownUnitParser', () => {
     });
 
     it('preserves unknown inline HTML tags as htmlInlineElement', () => {
-        const unit: SourceUnit = {
-            file: 'test.md',
-            format: 'markdown',
-            content: 'Press <kbd class="keycap">Ctrl</kbd>.\n',
-            startLine: 1,
-        };
+        const content = 'Press <kbd class="keycap">Ctrl</kbd>.\n';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.md',
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(content, mapper);
         const paragraph = blocks[0] as BlockParagraph;
         const htmlNode = paragraph.children.find(
             (child): child is InlineHtmlElement => child.type === 'htmlInlineElement'
@@ -124,14 +148,18 @@ describe('Refactored MarkdownUnitParser', () => {
     });
 
     it('preserves unknown block HTML tags as htmlElement', () => {
-        const unit: SourceUnit = {
-            file: 'test.md',
-            format: 'markdown',
-            content: '<details id="fig-a"><summary>Overview</summary></details>\n',
-            startLine: 1,
-        };
+        const content = '<details id="fig-a"><summary>Overview</summary></details>\n';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.md',
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(content, mapper);
         const details = blocks[0] as BlockHtmlElement;
 
         expect(details.type).toBe('htmlElement');

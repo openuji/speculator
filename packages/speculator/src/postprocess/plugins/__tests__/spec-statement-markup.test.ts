@@ -2,9 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
+import { SourceMapper } from '#src/parse/source-mapper';
 import { statementIndexPlugin } from '../statement-index';
 import { statementsJsonLdComputePlugin } from '../statementsJsonLd-compute';
 import type { BlockSpecStatement, BlockParagraph } from '#src/types/ast.generated';
+
+function mdParse(parser: MarkdownUnitParser, content: string, file = 'test.md') {
+    const mapper = new SourceMapper(content, {
+        fragments: [{ startOffset: 0, endOffset: content.length, file, format: 'markdown', originalStartLine: 1 }]
+    });
+    return parser.parse(content, mapper);
+}
 
 describe('SpecStatement markup separation', () => {
     const mdParser = new MarkdownUnitParser();
@@ -13,7 +21,7 @@ describe('SpecStatement markup separation', () => {
         const content = `
 <spec-statement>The client **MUST** send a \`header\` and [link](https://example.com).</spec-statement>
 `;
-        const blocks = mdParser.parse({ file: 'markup.md', format: 'markdown', content, startLine: 1 });
+        const blocks = mdParse(mdParser, content, 'markup.md');
         const document = assembleDocument(blocks, { id: 'markup', title: 'Markup', specIri: 'https://example.org/spec/1.0.0', deps: [] }, 'markup.md');
 
         // 1. Verify AST structure

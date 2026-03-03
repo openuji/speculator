@@ -27,11 +27,9 @@ export type {
 // Types
 export type {
     UnitParser,
-    ParsedSpec,
     ParseResult,
+    ParsedSpec,
 } from '#src/parse/types';
-
-export { createSourcePos } from '#src/parse/types';
 
 // Assembler
 export { buildSectionHierarchy, assembleDocument } from '#src/parse/assembler';
@@ -42,7 +40,6 @@ export { HtmlUnitParser } from '#src/parse/html/index';
 
 // Parser module aggregates
 export { coreHtmlParsers, coreMarkdownParsers } from '#src/parse/parsers';
-
 
 // Normative Utils
 export * from '#src/parse/utils/normative';

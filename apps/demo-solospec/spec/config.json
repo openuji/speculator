@@ -6,6 +6,7 @@
     "specStatus": "CG-DRAFT",
     "creationDate": "2021-07-16",
     "modificationDate": "[DATE]",
+    "repository": "https://github.com/solid/solid-oidc",
     "editors": [
       {
         "name": "Aaron Coburn",

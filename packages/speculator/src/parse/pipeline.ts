@@ -5,13 +5,14 @@
  * Parser modules are registered automatically when importing html/index and markdown/index.
  */
 
-import type { PreprocessedSpec, SourceUnit, SourceFormat } from '#src/preprocess/types';
+import type { PreprocessedSpec, SourceFormat } from '#src/preprocess/types';
 import type { Section, Block } from '#src/types/ast.generated';
 import type { UnitParser, ParseResult } from '#src/parse/types';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import { HtmlUnitParser } from '#src/parse/html/index';
 import { assembleDocument } from '#src/parse/assembler';
 import { ParseHandlerRegistry, defaultRegistry } from '#src/parse/registry';
+import { SourceMapper } from '#src/parse/source-mapper';
 
 
 /**
@@ -39,29 +40,43 @@ function getParser(parsers: Map<SourceFormat, UnitParser>, format: SourceFormat)
 }
 
 /**
- * Parse a single source unit
+ * Helper to parse content with error handling
  */
-function parseUnit(
-    unit: SourceUnit,
+function parseContent(
+    content: string,
+    format: SourceFormat,
+    sourceMapper: SourceMapper,
+    entryFile: string,
     parsers: Map<SourceFormat, UnitParser>,
     errors: string[]
 ): (Section | Block)[] {
     try {
-        const parser = getParser(parsers, unit.format);
-        return parser.parse(unit);
+        const parser = getParser(parsers, format);
+        return parser.parse(content, sourceMapper);
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         
         // Extract position from message if adjusted by parser (e.g. "(99:1)")
         const posMatch = message.match(/\((\d+):(\d+)(?:-[\d:]+)?\)/);
         let posSuffix = "";
+        let reportedFile = entryFile;
+
         if (posMatch) {
-            posSuffix = `:${posMatch[1]}:${posMatch[2]}`;
+            const startLineOffset = parseInt(posMatch[1], 10);
+            // Convert remark's global line to actual source line via mapper
+            const srcPos = sourceMapper.createSourcePos({ start: { line: startLineOffset, column: parseInt(posMatch[2], 10), offset: 0 }});
+            if (srcPos) {
+                reportedFile = srcPos.file;
+                posSuffix = `:${srcPos.line}:${srcPos.column}`;
+            } else {
+                posSuffix = `:${posMatch[1]}:${posMatch[2]}`;
+            }
         }
 
-        const formattedError = `${unit.file}${posSuffix}: ${message}`;
+        const formattedError = `${reportedFile}${posSuffix}: ${message}`;
         errors.push(formattedError);
         console.error(formattedError);
+        if (error instanceof Error) console.error(error);
         return [];
     }
 }
@@ -73,22 +88,37 @@ function parseInternal(
     preprocessed: PreprocessedSpec,
     parsers: Map<SourceFormat, UnitParser>
 ): ParseResult {
-    const allBlocks: (Section | Block)[] = [];
     const errors: string[] = [];
+    const source = preprocessed.source;
 
-    // Parse each unit in order
-    for (const unit of preprocessed.source.units) {
-        const blocks = parseUnit(unit, parsers, errors);
-        allBlocks.push(...blocks);
+    const sourceMapper = new SourceMapper(source.content, source.sourceMap);
+
+
+
+    // If entry is HTML but we have markdown fragments, we MUST use the Markdown/MDX
+    // parser for the whole thing to allow markdown-inside-tags. MDX is a superset
+    // of HTML for our purposes.
+    let effectiveFormat = source.entryFormat;
+    if (effectiveFormat === 'html' && source.sourceMap.fragments.some(f => f.format === 'markdown')) {
+        effectiveFormat = 'markdown';
     }
 
-    if (allBlocks.length === 0) {
+    const blocks = parseContent(
+        source.content,
+        effectiveFormat,
+        sourceMapper,
+        source.entryFile,
+        parsers,
+        errors
+    );
+
+    if (blocks.length === 0) {
         return { errors: errors.length > 0 ? errors : undefined };
     }
 
     // Assemble document
     const document = assembleDocument(
-        allBlocks,
+        blocks,
         preprocessed.config,
         preprocessed.source.entryFile
     );
