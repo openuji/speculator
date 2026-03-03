@@ -49,6 +49,20 @@ function createPreprocessedSpec(
     };
 }
 
+function getInlineText(inlines: unknown[] | undefined): string {
+    if (!Array.isArray(inlines)) return '';
+    return inlines
+        .map((inline) => {
+            if (!inline || typeof inline !== 'object') return '';
+            if ('value' in inline && typeof inline.value === 'string') return inline.value;
+            if ('children' in inline && Array.isArray(inline.children)) return getInlineText(inline.children);
+            return '';
+        })
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 describe('parse', () => {
     describe('markdown parsing', () => {
         it('parses simple markdown document', () => {
@@ -248,13 +262,13 @@ describe('parse', () => {
                 {
                     file: '/spec/format.html',
                     format: 'html',
-                    content: '<section id="abstract"><h2>Abstract</h2><p>Short summary</p></section>',
+                    content: '<section id="abstract">\n<h2>Abstract</h2>\n\n## Introduction\n\nText...\n\n</section>',
                     startLine: 1,
                 },
                 {
                     file: '/spec/intro.md',
                     format: 'markdown',
-                    content: '## Introduction\nText...',
+                    content: '## Appendix\nTail',
                     startLine: 1,
                 },
             ]);
@@ -264,9 +278,18 @@ describe('parse', () => {
             // Find nodes from each file
             const doc = result.result?.document;
             const htmlSection = doc?.children.find(
-                (c): c is Section | Block => typeof c === 'object' && c !== null && 'sourcePos' in c && c.sourcePos?.file === '/spec/format.html'
+                (c): c is Section =>
+                    c.type === 'section'
+                    && typeof c === 'object'
+                    && c !== null
+                    && 'sourcePos' in c
+                    && c.sourcePos?.file === '/spec/format.html'
             );
             expect(htmlSection).toBeDefined();
+            const introHeading = htmlSection?.children.find(
+                (child): child is Block => child.type === 'heading'
+            );
+            expect(getInlineText(introHeading?.children)).toBe('Introduction');
         });
     });
 });
