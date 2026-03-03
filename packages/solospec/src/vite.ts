@@ -31,6 +31,9 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
   return {
     name: 'vite-plugin-solospec',
     enforce: 'pre',
+    api: {
+      getOptions: () => pluginOptions
+    },
     configureServer(server) {
       // Add the entry file and config file to Vite's watcher
       server.watcher.add(path.resolve(pluginOptions.entry));

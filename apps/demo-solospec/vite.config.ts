@@ -8,7 +8,7 @@ export default defineConfig({
       configPath: 'spec/config.json',
       theme: {
         name: 'bikeshed',
-        mode: 'system',
+        mode: 'auto',
         themeSwitcher: true,
         w3cLogo: true,
       },

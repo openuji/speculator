@@ -56,8 +56,12 @@
     "likec4"
   ],
   "license": "MIT",
+  "bin": {
+    "speculator-lint": "bin/speculator-lint.js"
+  },
   "dependencies": {
     "@openuji/speculator": "workspace:*",
+    "@openuji/speculator-lint": "workspace:*",
     "preact": "^10.28.4",
     "preact-render-to-string": "^6.6.6",
     "shiki": "^3.23.0"

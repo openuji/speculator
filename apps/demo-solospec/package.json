@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "lint": "speculator-lint"
   },
   "dependencies": {
     "@openuji/solospec": "workspace:*"
