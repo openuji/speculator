@@ -5,7 +5,11 @@
  * Markdown headings. We convert them so Speculator's Markdown parser creates
  * proper Section nodes.
  *
- * Output format: `## Text ## {#id}` (Speculator ATX heading with optional id).
+ * HTML headings already encode the correct depth: <h2> authors as ## because
+ * <h1> is the document title. ATX headings are demoted separately (migrate.ts)
+ * because markdown-centric Bikeshed specs use # as h1.
+ *
+ * Output format: `## Text {#id}`
  */
 
 import type { Element, Text } from 'hast';
@@ -36,9 +40,9 @@ export function tryHtmlHeading(node: Element): string | null {
     const tag = node.tagName.toLowerCase();
     if (!HEADING_TAGS.has(tag)) return null;
 
-    // Demote by one level to match ATX heading demotion (spec sections start at ##).
-    // Cap at h6 (depth 6).
-    const depth = Math.min(getDepth(tag) + 1, 6);
+    // Use the heading level as-is. HTML headings already encode the correct depth
+    // (<h1> = document title, <h2> = top section, etc.).
+    const depth = Math.min(getDepth(tag), 6);
     const hashes = '#'.repeat(depth);
     const text = extractText(node);
 

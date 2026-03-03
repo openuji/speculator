@@ -1,6 +1,6 @@
 ## Introduction {#intro}
 
-_This section is non-normative_
+*This section is non-normative*
 
 The [Solid project](https://solidproject.org/) aims to change the way web applications work today to
 improve privacy and user control of personal data by utilizing current standards, protocols, and
@@ -13,7 +13,7 @@ client.
 
 The OAuth 2.0 [[!RFC6749]] and OpenID Connect Core 1.0 [[!OIDC-CORE]] web standards were
 published in October 2012 and November 2014, respectively. Since publication they've seen rapid and
-widespread adoption across the industry, in turn gaining extensive _"real-world"_ data and
+widespread adoption across the industry, in turn gaining extensive *"real-world"* data and
 experience. The strengths of the protocols are now clear; however, in a changing eco-system where
 privacy and control of digital identities are becoming more pressing concerns, it is also clear
 that additional functionality is required.
@@ -25,13 +25,13 @@ The additional functionality documented herein aims to address:
 
 ### Out of Scope {#intro-out-of-scope}
 
-_This section is non-normative_
+*This section is non-normative*
 
 While the Solid-OIDC specification describes the structure of an ID Token for use in Solid, the definition of a global access token for use with Solid Resource Servers is beyond the scope of this specification.
 
 ## Terminology {#terms}
 
-_This section is non-normative_
+*This section is non-normative*
 
 This specification uses the terms "access token", "authorization server", "resource server" (RS), "token endpoint",
 "grant type", and "client" as defined by The OAuth 2.0 Authorization Framework [[!RFC6749]].
@@ -77,7 +77,7 @@ This specification also uses the following terms:
 
 ## Core Concepts {#concepts}
 
-_This section is non-normative_
+*This section is non-normative*
 
 In a decentralized ecosystem, such as Solid, an OP may be an identity-as-a-service vendor or, at
 the other end of the spectrum, a user-controlled OP. In either case, the user may be authenticating
@@ -91,7 +91,7 @@ or static, is entirely optional.
 
 ### WebIDs {#concepts-webids}
 
-_This section is non-normative_
+*This section is non-normative*
 
 In line with Linked Data principles, a WebID is a HTTP URI that,
 when dereferenced, resolves to a profile document that is structured data in an
@@ -101,7 +101,7 @@ Solid and are used as a primary identifier for Users in this specification.
 
 ## Basic Flow {#basic-flow}
 
-_This section is non-normative_
+*This section is non-normative*
 
 Details of the flow are available in [[!SOLID-OIDC-PRIMER]]
 
@@ -156,7 +156,6 @@ This example uses [JSON-LD ](https://www.w3.org/TR/json-ld/) for the Client ID D
           "require_auth_time" : true
         }
 ```
-
 </div>
 
 Issue(95):
@@ -194,7 +193,6 @@ and include `webid` in its value (space-separated list).
           "scope" : "openid profile offline_access webid"
         }
 ```
-
 </div>
 
 ## WebID Profile {#webid-profile}
@@ -216,7 +214,6 @@ mechanism to determine if the issuer is authoritative for the given WebID.
 PREFIX solid: <http://www.w3.org/ns/solid/terms#>
       <#id> solid:oidcIssuer <https://oidc.example> .
 ```
-
 <figcaption>WebID Profile specifying an OIDC issuer</figcaption>
 </figure>
 
@@ -249,7 +246,6 @@ Link: <https://oidc.example>;
               rel="http://www.w3.org/ns/solid/terms#oidcIssuer";
               anchor="#id"
 ```
-
 <figcaption>HTTP response Link Header (line breaks added for readibility)</figcaption>
 </figure>
 
@@ -274,7 +270,7 @@ defense against [Mix-Up Attacks](https://www.rfc-editor.org/rfc/rfc9700.html#sec
 is required in Solid-OIDC as clients are expected to interact with more than one OP.
 To this end, this specification adopts the mechanism defined in [[!RFC9207]].
 
-The OP MUST include the `iss` query parameter alongside the authorization code when redirecting the user agent back to the Client's redirect_uri.
+The OP MUST include the `iss` query parameter alongside the authorization code when redirecting the user agent back to the Client's redirect\_uri.
 The value of the `iss` parameter MUST be the Issuer Identifier of the OP, as defined in [[OIDC-CORE]].
 
 <figure class="example">
@@ -286,14 +282,13 @@ Location: https://client.example.com/callback?
                                         &state=af0ifjsldkj
                                         &iss=https%3A%2F%2Fidp.example.com
 ```
-
 <figcaption>Example Authorization Response including the `iss` query parameter</figcaption>
 </figure>
 
 Upon receiving the authorization response, the Client MUST validate the `iss` parameter:
 
-- The Client MUST check for the presence of the `iss` parameter.
-- The Client MUST verify that the `iss` value matches the Issuer Identifier of the OP to which the authorization request was sent.
+* The Client MUST check for the presence of the `iss` parameter.
+* The Client MUST verify that the `iss` value matches the Issuer Identifier of the OP to which the authorization request was sent.
 
 If the `iss` parameter is missing or does not match the expected value, the Client MUST reject the response, MUST NOT exchange the authorization code for tokens, and SHOULD signal an error to the user.
 
@@ -301,8 +296,8 @@ If the `iss` parameter is missing or does not match the expected value, the Clie
 
 Assuming one of the following options
 
-- Client ID and Secret, and valid DPoP Proof (for dynamic and static registration)
-- Dereferencable Client Identifier with a proper Client ID Document and valid DPoP Proof (for a Solid client identifier)
+* Client ID and Secret, and valid DPoP Proof (for dynamic and static registration)
+* Dereferencable Client Identifier with a proper Client ID Document and valid DPoP Proof (for a Solid client identifier)
 
 the OP MUST return A DPoP-bound OIDC ID Token.
 
@@ -314,23 +309,23 @@ bind the OIDC ID Token to a public key. See also: [[!DPOP]].
 
 With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these claims:
 
-- `webid` — The WebID claim MUST be the user's WebID.
-- `iss` — The issuer claim MUST be a valid URL of the OP
+* `webid` — The WebID claim MUST be the user's WebID.
+* `iss` — The issuer claim MUST be a valid URL of the OP
   instantiating this token.
-- `aud` — The audience claim MUST be an array of values.
+* `aud` — The audience claim MUST be an array of values.
   The values MUST include the authorized party claim `azp`
   and the string `solid`.
   In the decentralized world
   of Solid-OIDC, the audience of an ID Token is not only the client (`azp`),
   but also any Solid Authorization Server at any accessible address
   on the world wide web (`solid`). See also: [[RFC7519#section-4.1.3]].
-- `azp` - The authorized party claim is used to identify the client
+* `azp` - The authorized party claim is used to identify the client
   (See also: [section 5. Client Identifiers](#clientids)).
-- `iat` — The issued-at claim is the time at which the DPoP-bound
+* `iat` — The issued-at claim is the time at which the DPoP-bound
   OIDC ID Token was issued.
-- `exp` — The expiration claim is the time at which the DPoP-bound
+* `exp` — The expiration claim is the time at which the DPoP-bound
   OIDC ID Token becomes invalid.
-- `cnf` — The confirmation claim is used to identify the DPoP Public
+* `cnf` — The confirmation claim is used to identify the DPoP Public
   Key bound to the OIDC ID Token. See also: [[DPOP#section-7]].
 
 <div class="example">
@@ -338,19 +333,18 @@ With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these 
 
 ```json
 {
-  "webid": "https://janedoe.com/web#id",
-  "iss": "https://idp.example.com",
-  "sub": "janedoe",
-  "aud": ["https://client.example.com/client_id", "solid"],
-  "azp": "https://client.example.com/client_id",
-  "iat": 1311280970,
-  "exp": 1311281970,
-  "cnf": {
-    "jkt": "0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
-  }
-}
+            "webid": "https://janedoe.com/web#id",
+            "iss": "https://idp.example.com",
+            "sub": "janedoe",
+            "aud": ["https://client.example.com/client_id", "solid"],
+            "azp": "https://client.example.com/client_id",
+            "iat": 1311280970,
+            "exp": 1311281970,
+            "cnf":{
+              "jkt":"0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
+            }
+        }
 ```
-
 </div>
 
 Issue(26):
@@ -375,7 +369,7 @@ When a Client performs an unauthenticated request to a protected resource,
 the Resource Server MUST respond with the HTTP <code>401</code> status code,
 and a <code>WWW-Authenticate</code> HTTP header. See also: [[RFC9110]](11.6.1. WWW-Authenticate)
 
-The <code>WWW-Authenticate</code> HTTP header MUST include an <code>as_uri</code>
+The <code>WWW-Authenticate</code> HTTP header MUST include an <code>as\_uri</code>
 parameter unless the authentication scheme requires a different mechanism
 for discovering an associated authorization server.
 
@@ -385,7 +379,7 @@ OAuth 2.0 Authorization [[!UMA]].
 ### Obtaining an Access Token {#obtaining-access-token}
 
 For Authorization Servers that conform to [[!UMA]], the <code>http://openid.net/specs/openid-connect-core-1\_0.html#IDToken</code> profile MUST
-be supported. This profile MUST be advertised in the <code>uma_profiles_supported</code>
+be supported. This profile MUST be advertised in the <code>uma\_profiles\_supported</code>
 metadata of the Authorization Server discovery document [[UMA#rfc.section.2]].
 
 When using the <code>http://openid.net/specs/openid-connect-core-1\_0.html#IDToken</code>
@@ -416,15 +410,14 @@ Discovery 1.0 [[!OIDC-DISCOVERY]] resource by including `webid` in its `scopes_s
 
 ```json
 {
-  "scopes_supported": ["openid", "offline_access", "webid"]
-}
+            "scopes_supported": ["openid", "offline_access", "webid"]
+        }
 ```
-
 </div>
 
 ## Security Considerations {#security}
 
-_This section is non-normative_
+*This section is non-normative*
 
 As this specification builds upon existing web standards, security considerations from OAuth, OIDC,
 PKCE, and the DPoP specifications may also apply unless otherwise indicated. The following
@@ -459,7 +452,7 @@ data leaks should an attacker gain access to Client credentials.
 
 ### Client Trust {#security-client-trust}
 
-_This section is non-normative_
+*This section is non-normative*
 
 Clients are ephemeral, client registration is optional, and most Clients cannot keep secrets. These,
 among other factors, are what makes Client trust challenging.
@@ -468,7 +461,7 @@ among other factors, are what makes Client trust challenging.
 
 ### OIDC ID Token Reuse {#privacy-token-reuse}
 
-_This section is non-normative_
+*This section is non-normative*
 
 With JWTs being extendable by design, there is potential for a privacy breach if OIDC ID Tokens get
 reused across multiple authorization servers. It is not unimaginable that a custom claim is added to the
@@ -478,7 +471,7 @@ intended AS.
 
 ## Acknowledgments {#acknowledgments}
 
-_This section is non-normative_
+*This section is non-normative*
 
 The Solid Community Group would like to thank the following individuals for reviewing and providing
 feedback on the specification (in alphabetical order):
@@ -559,3 +552,7 @@ The JSON-LD context is defined as:
     }
   }
 ```
+
+:::include ./includes/status.md:::
+:::include ./includes/conformance.md:::
+
