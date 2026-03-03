@@ -7,6 +7,7 @@ import { HtmlUnitParser } from '../parser.js';
 import { IdlHtmlParser } from '../IdlHtmlParser.js';
 import { CodeHtmlParser } from '../CodeHtmlParser.js';
 import { defaultRegistry } from '#src/parse/registry';
+import { SourceMapper } from '#src/parse/source-mapper';
 import type { BlockIdl, InlineDefinition, InlineWorkspaceIdlReference, InlineText } from '#src/types/ast.generated';
 
 // Register the parser for testing
@@ -17,14 +18,18 @@ describe('IdlHtmlParser', () => {
     const parser = new HtmlUnitParser(defaultRegistry);
 
     it('ignores non-idl pre blocks', () => {
-        const source = {
-            file: 'test.html',
-            format: 'html' as const,
-            content: '<pre>some code</pre>',
-            startLine: 1,
-        };
+        const content = '<pre>some code</pre>';
+        const mapper = new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(source);
+        const blocks = parser.parse(content, mapper);
         
         // CodeHtmlParser returns [codeBlock]
         // IdlHtmlParser delegates to CodeHtmlParser
@@ -41,14 +46,17 @@ interface Document {
 };
 </pre>
 `;
-        const unit = {
-            file: 'test.html',
-            format: 'html' as const,
-            content: idl,
-            startLine: 1,
-        } as const;
+        const mapper = new SourceMapper(idl, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: idl.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
         
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(idl, mapper);
         
         // Expect: BlockIdl
         expect(blocks).toHaveLength(1);
@@ -83,14 +91,17 @@ dictionary EventInit {
 };
 </pre>
 `;
-        const source = {
-            file: 'test.html',
-            format: 'html' as const,
-            content: idl,
-            startLine: 1,
-        };
+        const mapper = new SourceMapper(idl, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: idl.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
 
-        const blocks = parser.parse(source);
+        const blocks = parser.parse(idl, mapper);
         const block = blocks[0] as BlockIdl;
         
         expect(block.type).toBe('idl');
@@ -114,14 +125,17 @@ interface Element {
 };
 </pre>
 `;
-        const unit = {
-            file: 'test.html',
-            format: 'html' as const,
-            content: idl,
-            startLine: 1,
-        } as const;
+        const mapper = new SourceMapper(idl, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: idl.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
         
-        const blocks = parser.parse(unit);
+        const blocks = parser.parse(idl, mapper);
         const block = blocks[0] as BlockIdl;
         const children = block.children;
 
@@ -142,5 +156,71 @@ interface Element {
         const methodDef = children.find((c): c is InlineDefinition => c.type === 'definition' && c.term === 'Element/getAttribute');
         expect(methodDef).toBeDefined();
         if (methodDef) expect(methodDef.dfnType).toBe('method');
+    });
+
+    it('parses generic type references in member signatures', () => {
+        const idl = `
+<pre class="idl">
+dictionary Sample {
+  sequence&lt;DOMString&gt; labels = [];
+};
+</pre>
+`;
+        const mapper = new SourceMapper(idl, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: idl.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
+
+        const blocks = parser.parse(idl, mapper);
+        const block = blocks[0] as BlockIdl;
+        const children = block.children;
+
+        const domStringRef = children.find(
+            (c): c is InlineWorkspaceIdlReference => c.type === 'workspaceIdlReference' && c.targetTerm === 'DOMString'
+        );
+        expect(domStringRef).toBeDefined();
+
+        const labelsDef = children.find(
+            (c): c is InlineDefinition => c.type === 'definition' && c.term === 'Sample/labels'
+        );
+        expect(labelsDef).toBeDefined();
+    });
+
+    it('parses lowercase primitive type references', () => {
+        const idl = `
+<pre class="idl">
+interface PrimitiveDemo {
+  readonly attribute boolean enabled;
+};
+</pre>
+`;
+        const mapper = new SourceMapper(idl, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: idl.length,
+                file: 'test.html',
+                format: 'html',
+                originalStartLine: 1,
+            }]
+        });
+
+        const blocks = parser.parse(idl, mapper);
+        const block = blocks[0] as BlockIdl;
+        const children = block.children;
+
+        const boolRef = children.find(
+            (c): c is InlineWorkspaceIdlReference => c.type === 'workspaceIdlReference' && c.targetTerm === 'boolean'
+        );
+        expect(boolRef).toBeDefined();
+
+        const memberDef = children.find(
+            (c): c is InlineDefinition => c.type === 'definition' && c.term === 'PrimitiveDemo/enabled'
+        );
+        expect(memberDef).toBeDefined();
     });
 });

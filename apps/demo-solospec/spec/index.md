@@ -1,97 +1,85 @@
 ## Introduction {#intro}
 
-*This section is non-normative*
+_This section is non-normative_
 
-The [Solid project](https://solidproject.org/) aims to change the way web applications work today to
-improve privacy and user control of personal data by utilizing current standards, protocols, and
-tools, to facilitate building extensible and modular decentralized applications based on
-[Linked Data](https://www.w3.org/standards/semanticweb/data) principles.
+## Terminology {#terminology}
 
-This specification is written for Authorization and Resource Server owners intending to implement
-Solid-OIDC. It is also useful to Solid application developers charged with implementing a Solid-OIDC
-client.
+An <dfn>agent</dfn> is an autonomous assistant that can understand a user’s goals and take actions on the user’s behalf to achieve them. Today, these are typically implemented by large language model (LLM) based \[=AI platforms=], interacting with users via text-based chat interfaces.
 
 The OAuth 2.0 [[!RFC6749]] and OpenID Connect Core 1.0 [[!OIDC-CORE]] web standards were
 published in October 2012 and November 2014, respectively. Since publication they've seen rapid and
-widespread adoption across the industry, in turn gaining extensive *"real-world"* data and
+widespread adoption across the industry, in turn gaining extensive _"real-world"_ data and
 experience. The strengths of the protocols are now clear; however, in a changing eco-system where
 privacy and control of digital identities are becoming more pressing concerns, it is also clear
 that additional functionality is required.
 
-The additional functionality documented herein aims to address:
+An <dfn>AI platform</dfn> is a provider of agentic assistants such as OpenAI’s ChatGPT, Anthropic’s Claude, or Google’s Gemini.
 
-1. Resource servers and their Authorization servers having no existing trust relationship with identity providers.
-2. Ephemeral Clients as a first-order use-case.
+## Security and privacy considerations {#security-privacy}
 
-### Out of Scope {#intro-out-of-scope}
+## Accessibility considerations {#accessibility}
 
-*This section is non-normative*
+_This section is non-normative_
 
-While the Solid-OIDC specification describes the structure of an ID Token for use in Solid, the definition of a global access token for use with Solid Resource Servers is beyond the scope of this specification.
+### Extensions to the {{Navigator}} Interface {#navigator-extension}
 
-## Terminology {#terms}
+The {{Navigator}} interface is extended to provide access to the {{ModelContext}}.
 
-*This section is non-normative*
+_This section is non-normative_
 
-This specification uses the terms "access token", "authorization server", "resource server" (RS), "token endpoint",
-"grant type", and "client" as defined by The OAuth 2.0 Authorization Framework [[!RFC6749]].
+### ModelContext Interface {#model-context-container}
 
-Throughout this specification, we will use the term OpenID Provider (OP) in line with the
-terminology used in the Open ID Connect Core 1.0 specification (OIDC) [[!OIDC-CORE]].
-It should be noted that this is distinct from the entity referred to as an Authorization Server
-by the OAuth 2.0 Authorization Framework (OAuth) [[!RFC6749]].
+The {{ModelContext}} interface provides methods for web applications to register and manage tools that can be invoked by \[=agents=].
 
-This specification also uses the following terms:
+```webidl
+[Exposed=Window, SecureContext]
+interface ModelContext {
+  undefined provideContext(optional ModelContextOptions options = {});
+  undefined clearContext();
+  undefined registerTool(ModelContextTool tool);
+  undefined unregisterTool(DOMString name);
+};
+```
 
-<dl>
-<dt>*WebID* as defined by [[!WEBID]]</dt>
+<dl class="domintro">
+<dt><code><var ignore="">navigator</var>.{{Navigator/modelContext}}.{{ModelContext/provideContext(options)}}</code></dt>
 <dd>
-    A WebID is a URI with an HTTP or HTTPS scheme which denotes an Agent (Person, Organization, Group,
-    Device, etc.).
+    <p>Registers the provided context (tools) with the browser. This method clears any pre-existing tools and other context before registering the new ones.</p>
 </dd>
-<dt>*JSON Web Token (JWT)* as defined by [[!RFC7519]]</dt>
+<dt><code><var ignore="">navigator</var>.{{Navigator/modelContext}}.{{ModelContext/clearContext()}}</code></dt>
 <dd>
-    A string representing a set of claims as a JSON object that is encoded in a JWS or JWE, enabling the
-    claims to be digitally signed or MACed and/or encrypted.
+    <p>Unregisters all context (tools) with the browser.</p>
 </dd>
-<dt>*JSON Web Key (JWK)* as defined by [[!RFC7517]]</dt>
+<dt><code><var ignore="">navigator</var>.{{Navigator/modelContext}}.{{ModelContext/registerTool(tool)}}</code></dt>
 <dd>
-    A JSON object that represents a cryptographic key. The members of the object represent properties of
-    the key, including its value.
+    <p>Registers a single tool without clearing the existing set of tools. The method throws an error, if a tool with the same name already exists, or if the {{ModelContextTool/inputSchema}} is invalid.</p>
 </dd>
-<dt>*Demonstration of Proof-of-Possession at the Application Layer (DPoP)* as defined by [[!DPOP]]</dt>
+<dt><code><var ignore="">navigator</var>.{{Navigator/modelContext}}.{{ModelContext/unregisterTool(name)}}</code></dt>
 <dd>
-    A mechanism for sender-constraining OAuth tokens via a proof-of-possession mechanism on the
-    application level.
-</dd>
-<dt>*DPoP Proof* as defined by [[!DPOP]]</dt>
-<dd>
-    A DPoP proof is a JWT that is signed (using JWS) using a private key chosen by the client.
-</dd>
-<dt>*Proof Key for Code Exchange (PKCE)* as defined by [[!RFC7636]]</dt>
-<dd>
-    An extension to the Authorization Code flow which mitigates the risk of an authorization code
-    interception attack.
+    <p>Removes the tool with the specified name from the registered set.</p>
 </dd>
 </dl>
 
-## Core Concepts {#concepts}
+<section data-algorithm="">
+The <dfn method="" for="ModelContext">provideContext(<var ignore="">options</var>)</dfn> method steps are:
+1. TODO: fill this out.
+</section>
 
-*This section is non-normative*
+_This section is non-normative_
 
-In a decentralized ecosystem, such as Solid, an OP may be an identity-as-a-service vendor or, at
-the other end of the spectrum, a user-controlled OP. In either case, the user may be authenticating
-from a browser or an application.
+<section data-algorithm="">
+The <dfn method="" for="ModelContext">registerTool(<var ignore="">tool</var>)</dfn> method steps are:
+1. TODO: fill this out.
+</section>
 
-Therefore, this specification assumes the use of the
-[Authorization Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowSteps) with
-PKCE, in accordance with OAuth and OIDC best practices. It is also assumed that there are no
-preexisting trust relationships with the OP. This means that client registration, whether dynamic,
-or static, is entirely optional.
+<section data-algorithm="">
+The <dfn method="" for="ModelContext">unregisterTool(<var ignore="">name</var>)</dfn> method steps are:
+1. TODO: fill this out.
+</section>
 
-### WebIDs {#concepts-webids}
+#### ModelContextOptions Dictionary {#model-context-options}
 
-*This section is non-normative*
+_This section is non-normative_
 
 In line with Linked Data principles, a WebID is a HTTP URI that,
 when dereferenced, resolves to a profile document that is structured data in an
@@ -101,7 +89,7 @@ Solid and are used as a primary identifier for Users in this specification.
 
 ## Basic Flow {#basic-flow}
 
-*This section is non-normative*
+_This section is non-normative_
 
 Details of the flow are available in [[!SOLID-OIDC-PRIMER]]
 
@@ -156,6 +144,7 @@ This example uses [JSON-LD ](https://www.w3.org/TR/json-ld/) for the Client ID D
           "require_auth_time" : true
         }
 ```
+
 </div>
 
 Issue(95):
@@ -193,6 +182,7 @@ and include `webid` in its value (space-separated list).
           "scope" : "openid profile offline_access webid"
         }
 ```
+
 </div>
 
 ## WebID Profile {#webid-profile}
@@ -214,6 +204,7 @@ mechanism to determine if the issuer is authoritative for the given WebID.
 PREFIX solid: <http://www.w3.org/ns/solid/terms#>
       <#id> solid:oidcIssuer <https://oidc.example> .
 ```
+
 <figcaption>WebID Profile specifying an OIDC issuer</figcaption>
 </figure>
 
@@ -246,6 +237,7 @@ Link: <https://oidc.example>;
               rel="http://www.w3.org/ns/solid/terms#oidcIssuer";
               anchor="#id"
 ```
+
 <figcaption>HTTP response Link Header (line breaks added for readibility)</figcaption>
 </figure>
 
@@ -259,18 +251,15 @@ Solid-OIDC defines the following `scope` value for use with claim requests:
 <dl>
 <dt>*webid*</dt>
 <dd>
-    REQUIRED. This scope requests access to the End-User's `webid` Claim.
+    <p>A list of {{ModelContextOptions/tools}} to register with the browser. Each tool name in the list is expected to be unique.</p>
 </dd>
 </dl>
 
-## Issuer Validation after receiving the Authorization Code {#iss-check}
+#### ModelContextTool Dictionary {#model-context-tool}
 
-In accordance with Best Current Practice [[RFC9700]],
-defense against [Mix-Up Attacks](https://www.rfc-editor.org/rfc/rfc9700.html#section-4.4)
-is required in Solid-OIDC as clients are expected to interact with more than one OP.
-To this end, this specification adopts the mechanism defined in [[!RFC9207]].
+The {{ModelContextTool}} dictionary describes a tool that can be invoked by \[=agents=].
 
-The OP MUST include the `iss` query parameter alongside the authorization code when redirecting the user agent back to the Client's redirect\_uri.
+The OP MUST include the `iss` query parameter alongside the authorization code when redirecting the user agent back to the Client's redirect_uri.
 The value of the `iss` parameter MUST be the Issuer Identifier of the OP, as defined in [[OIDC-CORE]].
 
 <figure class="example">
@@ -282,22 +271,23 @@ Location: https://client.example.com/callback?
                                         &state=af0ifjsldkj
                                         &iss=https%3A%2F%2Fidp.example.com
 ```
+
 <figcaption>Example Authorization Response including the `iss` query parameter</figcaption>
 </figure>
 
-Upon receiving the authorization response, the Client MUST validate the `iss` parameter:
+The {{ToolAnnotations}} dictionary provides optional metadata about a tool:
 
-* The Client MUST check for the presence of the `iss` parameter.
-* The Client MUST verify that the `iss` value matches the Issuer Identifier of the OP to which the authorization request was sent.
+- The Client MUST check for the presence of the `iss` parameter.
+- The Client MUST verify that the `iss` value matches the Issuer Identifier of the OP to which the authorization request was sent.
 
-If the `iss` parameter is missing or does not match the expected value, the Client MUST reject the response, MUST NOT exchange the authorization code for tokens, and SHOULD signal an error to the user.
+#### ModelContextClient Interface {#model-context-client}
 
-## Token Instantiation {#tokens}
+The {{ModelContextClient}} interface represents an \[=agent=] executing a tool provided by the site through the {{ModelContext}} API.
 
 Assuming one of the following options
 
-* Client ID and Secret, and valid DPoP Proof (for dynamic and static registration)
-* Dereferencable Client Identifier with a proper Client ID Document and valid DPoP Proof (for a Solid client identifier)
+- Client ID and Secret, and valid DPoP Proof (for dynamic and static registration)
+- Dereferencable Client Identifier with a proper Client ID Document and valid DPoP Proof (for a Solid client identifier)
 
 the OP MUST return A DPoP-bound OIDC ID Token.
 
@@ -309,23 +299,23 @@ bind the OIDC ID Token to a public key. See also: [[!DPOP]].
 
 With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these claims:
 
-* `webid` — The WebID claim MUST be the user's WebID.
-* `iss` — The issuer claim MUST be a valid URL of the OP
+- `webid` — The WebID claim MUST be the user's WebID.
+- `iss` — The issuer claim MUST be a valid URL of the OP
   instantiating this token.
-* `aud` — The audience claim MUST be an array of values.
+- `aud` — The audience claim MUST be an array of values.
   The values MUST include the authorized party claim `azp`
   and the string `solid`.
   In the decentralized world
   of Solid-OIDC, the audience of an ID Token is not only the client (`azp`),
   but also any Solid Authorization Server at any accessible address
   on the world wide web (`solid`). See also: [[RFC7519#section-4.1.3]].
-* `azp` - The authorized party claim is used to identify the client
+- `azp` - The authorized party claim is used to identify the client
   (See also: [section 5. Client Identifiers](#clientids)).
-* `iat` — The issued-at claim is the time at which the DPoP-bound
+- `iat` — The issued-at claim is the time at which the DPoP-bound
   OIDC ID Token was issued.
-* `exp` — The expiration claim is the time at which the DPoP-bound
+- `exp` — The expiration claim is the time at which the DPoP-bound
   OIDC ID Token becomes invalid.
-* `cnf` — The confirmation claim is used to identify the DPoP Public
+- `cnf` — The confirmation claim is used to identify the DPoP Public
   Key bound to the OIDC ID Token. See also: [[DPOP#section-7]].
 
 <div class="example">
@@ -333,27 +323,39 @@ With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these 
 
 ```json
 {
-            "webid": "https://janedoe.com/web#id",
-            "iss": "https://idp.example.com",
-            "sub": "janedoe",
-            "aud": ["https://client.example.com/client_id", "solid"],
-            "azp": "https://client.example.com/client_id",
-            "iat": 1311280970,
-            "exp": 1311281970,
-            "cnf":{
-              "jkt":"0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
-            }
-        }
+  "webid": "https://janedoe.com/web#id",
+  "iss": "https://idp.example.com",
+  "sub": "janedoe",
+  "aud": ["https://client.example.com/client_id", "solid"],
+  "azp": "https://client.example.com/client_id",
+  "iat": 1311280970,
+  "exp": 1311281970,
+  "cnf": {
+    "jkt": "0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I"
+  }
+}
 ```
+
 </div>
 
-Issue(26):
+<section data-algorithm="">
+The <dfn method="" for="ModelContextClient">requestUserInteraction(<var ignore="">callback</var>)</dfn> method steps are:
+1. TODO: fill this out.
+</section>
 
-Issue(47):
+## Acknowledgements {#acknowledgements}
 
-#### ID Token Validation {#id-token-validation}
+Thanks to
+Brandon Walderman,
+Leo Lee,
+Andrew Nolan,
+David Bokan,
+Khushal Sagar,
+Hannah Van Opstal,
+Sushanth Rajasankar
+for the initial explainer, proposals and discussions that established the foundation for this specification.
 
-An ID Token must be validated according to [OIDC-CORE, Section 3.1.3.7](https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation)
+Also many thanks to Alex Nahas and Jason McGhee for sharing early implementation experience.
 
 The Verifying party MUST perform [[#oidc-issuer-discovery]] using the value of the `webid` claim
 to dereference the WebID Profile Document.
@@ -369,7 +371,7 @@ When a Client performs an unauthenticated request to a protected resource,
 the Resource Server MUST respond with the HTTP <code>401</code> status code,
 and a <code>WWW-Authenticate</code> HTTP header. See also: [[RFC9110]](11.6.1. WWW-Authenticate)
 
-The <code>WWW-Authenticate</code> HTTP header MUST include an <code>as\_uri</code>
+The <code>WWW-Authenticate</code> HTTP header MUST include an <code>as_uri</code>
 parameter unless the authentication scheme requires a different mechanism
 for discovering an associated authorization server.
 
@@ -379,7 +381,7 @@ OAuth 2.0 Authorization [[!UMA]].
 ### Obtaining an Access Token {#obtaining-access-token}
 
 For Authorization Servers that conform to [[!UMA]], the <code>http://openid.net/specs/openid-connect-core-1\_0.html#IDToken</code> profile MUST
-be supported. This profile MUST be advertised in the <code>uma\_profiles\_supported</code>
+be supported. This profile MUST be advertised in the <code>uma_profiles_supported</code>
 metadata of the Authorization Server discovery document [[UMA#rfc.section.2]].
 
 When using the <code>http://openid.net/specs/openid-connect-core-1\_0.html#IDToken</code>
@@ -410,14 +412,15 @@ Discovery 1.0 [[!OIDC-DISCOVERY]] resource by including `webid` in its `scopes_s
 
 ```json
 {
-            "scopes_supported": ["openid", "offline_access", "webid"]
-        }
+  "scopes_supported": ["openid", "offline_access", "webid"]
+}
 ```
+
 </div>
 
 ## Security Considerations {#security}
 
-*This section is non-normative*
+_This section is non-normative_
 
 As this specification builds upon existing web standards, security considerations from OAuth, OIDC,
 PKCE, and the DPoP specifications may also apply unless otherwise indicated. The following
@@ -452,7 +455,7 @@ data leaks should an attacker gain access to Client credentials.
 
 ### Client Trust {#security-client-trust}
 
-*This section is non-normative*
+_This section is non-normative_
 
 Clients are ephemeral, client registration is optional, and most Clients cannot keep secrets. These,
 among other factors, are what makes Client trust challenging.
@@ -461,7 +464,7 @@ among other factors, are what makes Client trust challenging.
 
 ### OIDC ID Token Reuse {#privacy-token-reuse}
 
-*This section is non-normative*
+_This section is non-normative_
 
 With JWTs being extendable by design, there is potential for a privacy breach if OIDC ID Tokens get
 reused across multiple authorization servers. It is not unimaginable that a custom claim is added to the
@@ -471,7 +474,7 @@ intended AS.
 
 ## Acknowledgments {#acknowledgments}
 
-*This section is non-normative*
+_This section is non-normative_
 
 The Solid Community Group would like to thank the following individuals for reviewing and providing
 feedback on the specification (in alphabetical order):
@@ -555,4 +558,3 @@ The JSON-LD context is defined as:
 
 :::include ./includes/status.md:::
 :::include ./includes/conformance.md:::
-

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '../index.js';
 import '../../html/index.js'; 
 import { assembleDocument } from '../../assembler.js';
+import { SourceMapper } from '../../source-mapper.js';
 
 describe('Granular Markdown Parser Tests', () => {
 
@@ -62,16 +63,20 @@ describe('Granular Markdown Parser Tests', () => {
 
     it("shows project own ast with inline-like statement", () => {
       const parser = new MarkdownUnitParser();
-      const unit = {
-            file: 'test.md',
-            format: 'markdown' as const,
-            content: `\n
+      const content = `\n
             <dfn>Some Definition</dfn> means some \`very\` specific
             <spec-statement id="stmt1">This is a **normative** statement</spec-statement>\n
-            \n`,
-            startLine: 1,
-        };
-        const blocks = parser.parse(unit);
+            \n`;
+      const mapper = new SourceMapper(content, {
+          fragments: [{
+              startOffset: 0,
+              endOffset: content.length,
+              file: 'test.md',
+              format: 'markdown',
+              originalStartLine: 1,
+          }]
+      });
+      const blocks = parser.parse(content, mapper);
         const doc = assembleDocument(blocks, { id: 'test-inline', deps: [], specIri: 'https://example.org/inline' }, 'test.md');
         expect(doc).toMatchSnapshot();
     });

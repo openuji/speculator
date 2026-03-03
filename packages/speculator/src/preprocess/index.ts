@@ -15,7 +15,8 @@ export type { PreprocessOptions } from '#src/preprocess/pipeline';
 export type {
     SourceFormat,
     IncludeDirective,
-    SourceUnit,
+    SourceMapFragment,
+    SourceMap,
     IncludeGraph,
     IncludeEdge,
     CompositeSource,

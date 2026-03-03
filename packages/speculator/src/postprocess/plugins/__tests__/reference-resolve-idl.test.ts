@@ -2,7 +2,7 @@
  * Tests for WebIDL Reference Resolution
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { referenceResolvePlugin } from '../reference-resolve.js';
 import type { ResolveContext, RuntimeWorkspace } from '#src/pipeline/types';
 import type { Document, InlineWorkspaceIdlReference, InlineExternalIdlReference } from '#src/types/ast.generated';
@@ -10,6 +10,33 @@ import type { SpecConfig } from '#src/preprocess/types';
 
 describe('reference-resolve plugin (WebIDL)', () => {
     it('resolves external IDL reference using xref config (batch API)', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    result: [[
+                        'NodeList',
+                        [{
+                            shortname: 'dom',
+                            spec: 'dom',
+                            type: 'interface',
+                            normative: true,
+                            uri: '#nodelist',
+                        }],
+                    ]],
+                }),
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    dom: { href: 'https://dom.spec.whatwg.org/' },
+                }),
+            });
+
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = fetchMock as unknown as typeof fetch;
+
         // Mock document with an unresolved IDL reference
         const ref: InlineWorkspaceIdlReference = {
             type: 'workspaceIdlReference',
@@ -47,7 +74,11 @@ describe('reference-resolve plugin (WebIDL)', () => {
             } as unknown as RuntimeWorkspace
         };
 
-        await referenceResolvePlugin.resolve!(ctx);
+        try {
+            await referenceResolvePlugin.resolve!(ctx);
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
 
         // Expect conversion to external reference with resolved URL from API
         const extRef = ref as unknown as InlineExternalIdlReference;

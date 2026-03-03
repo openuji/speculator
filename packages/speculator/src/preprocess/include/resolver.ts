@@ -15,7 +15,7 @@ import { isFileNotFoundError } from '#src/file-provider/types';
 import type {
     SourceFormat,
     IncludeDirective,
-    SourceUnit,
+    SourceMapFragment,
     IncludeGraph,
     IncludeEdge,
     CompositeSource,
@@ -123,16 +123,16 @@ async function getSideFiles(file: string, ctx: ResolveContext): Promise<Record<s
 }
 
 /**
- * Split content at include points and recursively resolve
+ * Recursively resolves includes and builds the source map and content
  * 
- * Returns SourceUnits in document order (includes expanded in-place)
  * @throws IncludeResolveError on cycle detection or file not found
  */
 async function resolveFile(
     file: string,
     format: SourceFormat,
-    ctx: ResolveContext
-): Promise<SourceUnit[]> {
+    ctx: ResolveContext,
+    currentOffset: number = 0
+): Promise<{ content: string; fragments: SourceMapFragment[] }> {
     const { fileProvider, includeGraph, activePath, visited } = ctx;
 
     // Cycle detection
@@ -149,13 +149,17 @@ async function resolveFile(
     const cached = visited.get(file);
     if (cached) {
         const sideFiles = await getSideFiles(file, ctx);
-        return [{
-            file,
-            format: cached.format,
+        return {
             content: cached.content,
-            startLine: 1,
-            sideFiles,
-        }];
+            fragments: [{
+                startOffset: currentOffset,
+                endOffset: currentOffset + cached.content.length,
+                file,
+                format: cached.format,
+                originalStartLine: 1,
+                sideFiles,
+            }]
+        };
     }
 
     // Read file
@@ -197,20 +201,24 @@ async function resolveFile(
             includeGraph.set(file, edges);
         }
 
-        // If no includes, return single unit
+        // If no includes, return single fragment
         if (includes.length === 0) {
             const sideFiles = await getSideFiles(file, ctx);
-            return [{
-                file,
-                format,
+            return {
                 content,
-                startLine: 1,
-                sideFiles,
-            }];
+                fragments: [{
+                    startOffset: currentOffset,
+                    endOffset: currentOffset + content.length,
+                    file,
+                    format,
+                    originalStartLine: 1,
+                    sideFiles,
+                }]
+            };
         }
 
-        // Split content at include points and recursively resolve
-        const units: SourceUnit[] = [];
+        let resultContent = '';
+        const fragments: SourceMapFragment[] = [];
         let lastEnd = 0;
 
         for (const include of includes) {
@@ -219,13 +227,15 @@ async function resolveFile(
                 const beforeContent = content.slice(lastEnd, include.startOffset);
                 if (beforeContent.length > 0) {
                     const sideFiles = await getSideFiles(file, ctx);
-                    units.push({
+                    fragments.push({
+                        startOffset: currentOffset + resultContent.length,
+                        endOffset: currentOffset + resultContent.length + beforeContent.length,
                         file,
                         format,
-                        content: beforeContent,
-                        startLine: countLinesUpTo(content, lastEnd),
+                        originalStartLine: countLinesUpTo(content, lastEnd),
                         sideFiles,
                     });
+                    resultContent += beforeContent;
                 }
             }
 
@@ -233,8 +243,20 @@ async function resolveFile(
             const includedPath = fileProvider.resolve(file, include.relativePath);
             const includedFormat = include.format ?? inferFormat(include.relativePath);
 
-            const includedUnits = await resolveFile(includedPath, includedFormat, ctx);
-            units.push(...includedUnits);
+            const includedResult = await resolveFile(
+                includedPath, 
+                includedFormat, 
+                ctx, 
+                currentOffset + resultContent.length
+            );
+            
+            // Ensure block separation
+            const injectContent = includedResult.content.endsWith('\n') 
+                ? includedResult.content 
+                : includedResult.content + '\n';
+                
+            resultContent += injectContent;
+            fragments.push(...includedResult.fragments);
 
             lastEnd = include.endOffset;
 
@@ -249,17 +271,22 @@ async function resolveFile(
             const afterContent = content.slice(lastEnd);
             if (afterContent.length > 0) {
                 const sideFiles = await getSideFiles(file, ctx);
-                units.push({
+                fragments.push({
+                    startOffset: currentOffset + resultContent.length,
+                    endOffset: currentOffset + resultContent.length + afterContent.length,
                     file,
                     format,
-                    content: afterContent,
-                    startLine: countLinesUpTo(content, lastEnd),
+                    originalStartLine: countLinesUpTo(content, lastEnd),
                     sideFiles,
                 });
+                resultContent += afterContent;
             }
         }
 
-        return units;
+        return {
+            content: resultContent,
+            fragments
+        };
     } finally {
         // Remove from active path when done
         activePath.delete(file);
@@ -305,12 +332,13 @@ export async function resolveIncludes(
         sideFilesCache: new Map(),
     };
 
-    const units = await resolveFile(canonicalEntry, format, ctx);
+    const { content, fragments } = await resolveFile(canonicalEntry, format, ctx);
 
     return {
         entryFile: canonicalEntry,
         entryFormat: format,
-        units,
+        content,
+        sourceMap: { fragments },
         includeGraph: ctx.includeGraph,
     };
 }

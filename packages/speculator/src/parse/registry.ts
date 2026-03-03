@@ -7,7 +7,7 @@
 import type { Element, RootContent as HastRootContent } from 'hast';
 import type { RootContent as MdastRootContent } from 'mdast';
 import type { Block, Inline, Section, SourcePos } from '#src/types/ast.generated';
-import type { SourceUnit } from '#src/preprocess/types';
+import type { SourceMapper } from '#src/parse/source-mapper';
 
 // ============================================================================
 // Types & Interfaces
@@ -40,8 +40,8 @@ export type ParseContextChildren = HastRootContent[] | MdastRootContent[];
  * Context provided to parser modules during transformation.
  */
 export interface ParseContext {
-    /** The source unit being parsed */
-    readonly unit: SourceUnit;
+    /** The source mapper for absolute coordinates */
+    readonly sourceMapper: SourceMapper;
 
     /** Create a source position for the AST node */
     createSourcePos(node: NodeWithPosition): SourcePos;

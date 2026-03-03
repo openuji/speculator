@@ -60,16 +60,21 @@ export interface IncludeDirective {
  * The preprocess stage splits content at include points to preserve
  * sourcePos.file for each fragment. This enables accurate error reporting
  * that points to the correct file.
+/**
+ * A fragment of the composed source mapping back to its origin file
  */
-export interface SourceUnit {
-    /** Canonical file path */
+export interface SourceMapFragment {
+    /** 0-indexed start offset in the final composed string */
+    startOffset: number;
+
+    /** 0-indexed end offset in the final composed string (exclusive) */
+    endOffset: number;
+
+    /** Canonical file path from which this fragment originated */
     file: string;
 
-    /** Content format */
+    /** Content format of this file */
     format: SourceFormat;
-
-    /** Raw content (not the entire file if split at includes) */
-    content: string;
 
     /** 
      * Display-friendly file path for error messages
@@ -78,19 +83,25 @@ export interface SourceUnit {
     displayFile?: string;
 
     /**
-     * 1-indexed line number where this unit's content starts in the source file.
+     * 1-indexed line number where this fragment's content starts in its origin file.
      * Used to compute accurate sourcePos for parsed AST nodes.
      */
-    startLine: number;
+    originalStartLine: number;
 
     /**
      * Pre-read sibling files keyed by canonical path.
      * 
      * Populated by the preprocess stage for files relevant to the parser
      * (e.g. `.ttl`, `.jsonld` vocabulary files next to the source file).
-     * Allows parsers to remain isomorphic without accessing the filesystem directly.
      */
     sideFiles?: Record<string, string>;
+}
+
+/**
+ * Maps locations in the composed output string back to original source files.
+ */
+export interface SourceMap {
+    fragments: SourceMapFragment[];
 }
 
 // ============================================================================
@@ -132,10 +143,14 @@ export interface CompositeSource {
     entryFormat: SourceFormat;
 
     /** 
-     * Ordered source units representing document flow.
-     * Includes are expanded in-place (encounter order).
+     * The fully composed content string with all includes resolved.
      */
-    units: SourceUnit[];
+    content: string;
+
+    /**
+     * Source map for tracing the composed string back to original files.
+     */
+    sourceMap: SourceMap;
 
     /** Include relationship graph */
     includeGraph: IncludeGraph;

@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import type { SourceUnit } from '#src/preprocess/types';
-import type { BlockHeading, BlockParagraph, BlockList, BlockTable } from '#src/types/ast.generated';
+import type { BlockHeading, BlockParagraph, BlockList, BlockTable, BlockIdl } from '#src/types/ast.generated';
 
 function createUnit(content: string, file = '/spec/test.md'): SourceUnit {
     return { file, format: 'markdown', content, startLine: 1 };
@@ -108,6 +108,42 @@ describe('MarkdownUnitParser', () => {
                 lang: 'javascript',
                 value: 'const x = 1;',
             });
+        });
+
+        it('parses webidl fenced blocks as idl blocks', () => {
+            const unit = createUnit('```webidl\ninterface Example {\n  attribute DOMString name;\n};\n```');
+            const blocks = parser.parse(unit);
+
+            expect(blocks).toHaveLength(1);
+            expect(blocks[0].type).toBe('idl');
+
+            const idl = blocks[0] as BlockIdl;
+            expect(idl.value).toContain('interface Example');
+            expect(idl.children.some((inline) => inline.type === 'definition' && 'term' in inline && inline.term === 'Example')).toBe(true);
+        });
+
+        it('parses lowercase primitive IDL types as references', () => {
+            const unit = createUnit('```webidl\ninterface Example {\n  readonly attribute boolean enabled;\n};\n```');
+            const blocks = parser.parse(unit);
+
+            expect(blocks).toHaveLength(1);
+            expect(blocks[0].type).toBe('idl');
+
+            const idl = blocks[0] as BlockIdl;
+            expect(idl.children.some((inline) => inline.type === 'workspaceIdlReference' && 'targetTerm' in inline && inline.targetTerm === 'boolean')).toBe(true);
+            expect(idl.children.some((inline) => inline.type === 'definition' && 'term' in inline && inline.term === 'Example/enabled')).toBe(true);
+        });
+
+        it('parses generic webidl type references inside fences', () => {
+            const unit = createUnit('```webidl\ndictionary Example {\n  sequence<DOMString> names = [];\n};\n```');
+            const blocks = parser.parse(unit);
+
+            expect(blocks).toHaveLength(1);
+            expect(blocks[0].type).toBe('idl');
+
+            const idl = blocks[0] as BlockIdl;
+            expect(idl.children.some((inline) => inline.type === 'workspaceIdlReference' && 'targetTerm' in inline && inline.targetTerm === 'DOMString')).toBe(true);
+            expect(idl.children.some((inline) => inline.type === 'definition' && 'term' in inline && inline.term === 'Example/names')).toBe(true);
         });
     });
 

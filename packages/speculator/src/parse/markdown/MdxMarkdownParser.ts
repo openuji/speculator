@@ -168,6 +168,22 @@ function collectMdxText(node: unknown): string {
 function createMdxContext(ctx: ParseContext): ParseContext {
     return {
         ...ctx,
+        transformInlineChildren: (children) => {
+            const flattened: MdastRootContent[] = [];
+            for (const child of children as MdastRootContent[]) {
+                if (
+                    child
+                    && typeof child === 'object'
+                    && child.type === 'paragraph'
+                    && Array.isArray((child as Paragraph).children)
+                ) {
+                    flattened.push(...((child as Paragraph).children as unknown as MdastRootContent[]));
+                    continue;
+                }
+                flattened.push(child);
+            }
+            return ctx.transformInlineChildren(flattened);
+        },
         getAttr: (element, name) => {
             if (isMdxVirtualElement(element)) {
                 const value = getMdxAttr(element, name);
