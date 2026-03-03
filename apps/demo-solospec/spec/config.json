@@ -4,13 +4,8 @@
     "title": "Solid-OIDC",
     "shortName": "solid-oidc",
     "specStatus": "CG-DRAFT",
-    "thisVersion": "https://solid.github.io/solid-oidc/",
-    "latestVersion": "https://solidproject.org/TR/oidc",
-    "creationDate": "July 16, 2021",
+    "creationDate": "2021-07-16",
     "modificationDate": "[DATE]",
-    "group": "solidcg",
-    "repository": "https://github.com/solid/solid-oidc",
-    "maxTocLevel": 2,
     "editors": [
       {
         "name": "Aaron Coburn",

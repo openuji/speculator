@@ -101,14 +101,18 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
           {formattedCreationDate ? (
             <>
               <dt>Created:</dt>
-              <dd>{formattedCreationDate}</dd>
+              <dd>
+                <time datetime={meta.creationDate || ''}>{formattedCreationDate}</time>
+              </dd>
             </>
           ) : null}
 
           {formattedDate ? (
             <>
               <dt>Modified:</dt>
-              <dd>{formattedDate}</dd>
+              <dd>
+                <time datetime={meta.lastUpdateDate || ''}>{formattedDate}</time>
+              </dd>
             </>
           ) : null}
 
