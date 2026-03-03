@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { MemoryFileProvider } from '#src/file-provider/memory';
 import { preprocess } from '#src/preprocess/pipeline';
 import { normalizeConfig } from '../normalize.js';
@@ -15,6 +15,10 @@ function createResolvedConfig(partial: DocumentConfig): ResolvedDocumentConfig {
         ...partial,
     };
 }
+
+afterEach(() => {
+    vi.useRealTimers();
+});
 
 describe('Config Priority Rules', () => {
     describe('lastUpdateDate priority', () => {
@@ -55,6 +59,34 @@ describe('Config Priority Rules', () => {
             const config = normalizeConfig(createResolvedConfig(docConfig));
 
             expect(config.lastUpdateDate).toBeUndefined();
+        });
+
+        it('resolves [DATE] placeholder on root-level lastUpdateDate', () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-03-03T12:00:00Z'));
+
+            const docConfig: DocumentConfig = {
+                lastUpdateDate: '[DATE]',
+            };
+
+            const config = normalizeConfig(createResolvedConfig(docConfig));
+
+            expect(config.lastUpdateDate).toBe('2026-03-03');
+        });
+
+        it('resolves [DATE] placeholder from respec.modificationDate when root is missing', () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-03-03T12:00:00Z'));
+
+            const docConfig: DocumentConfig = {
+                respec: {
+                    modificationDate: '[DATE]',
+                },
+            };
+
+            const config = normalizeConfig(createResolvedConfig(docConfig));
+
+            expect(config.lastUpdateDate).toBe('2026-03-03');
         });
     });
 
@@ -120,6 +152,28 @@ describe('Config Priority Rules', () => {
             });
 
             expect(result.config.lastUpdateDate).toBe('2026-01-10');
+        });
+
+        it('resolves [DATE] placeholder in the full preprocess pipeline', async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-03-03T12:00:00Z'));
+
+            const fp = new MemoryFileProvider({
+                '/spec/index.md': '# Title',
+                '/spec/config.json': JSON.stringify({
+                    respec: {
+                        modificationDate: '[DATE]',
+                    },
+                }),
+            });
+
+            const result = await preprocess({
+                entry: '/spec/index.md',
+                configPath: '/spec/config.json',
+                fileProvider: fp,
+            });
+
+            expect(result.config.lastUpdateDate).toBe('2026-03-03');
         });
 
         it('uses explicit configPath instead of sibling config', async () => {
