@@ -60,6 +60,35 @@ if (typeof window !== 'undefined') {
 
     mq.addEventListener('change', updateToc);
     updateToc();
+
+    // Setup global click handler for copy buttons
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      
+      const isUiCopyBtn = target.closest('.ui-code-copy-btn');
+      const isIdlCopyBtn = target.closest('.idl-copy-btn');
+      
+      if (isUiCopyBtn || isIdlCopyBtn) {
+        const btn = (isUiCopyBtn || isIdlCopyBtn) as HTMLButtonElement;
+        
+        let textToCopy = '';
+        if (isUiCopyBtn) {
+          textToCopy = btn.closest('.ui-code-block')?.querySelector('code')?.textContent || '';
+        } else if (isIdlCopyBtn) {
+          textToCopy = btn.closest('.idl-block')?.querySelector('.idl-block-code')?.textContent || '';
+        }
+        
+        if (textToCopy) {
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            btn.classList.add('copied');
+            setTimeout(() => btn.classList.remove('copied'), 300);
+          }).catch(err => {
+            console.error('Failed to copy text: ', err);
+          });
+        }
+      }
+    });
+
   })
 
 }

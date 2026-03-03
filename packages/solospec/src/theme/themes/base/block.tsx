@@ -115,17 +115,30 @@ export function BaseBlock({
       
       const highlightedHtml = (node as { highlightedHtml?: string }).highlightedHtml;
       
+      const header = (
+        <div class="ui-code-header">
+          <span>{node.lang || 'text'}</span>
+          <button
+            type="button"
+            class="ui-code-copy-btn"
+          >
+            Copy
+          </button>
+        </div>
+      );
+
       if (highlightedHtml) {
         return (
+          <div class="ui-code-block shiki-highlighted" id={node.id || undefined}>
+            {header}
             <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
+          </div>
         );
       }
       
       return (
         <div class="ui-code-block" id={node.id || undefined}>
-          <div class="ui-code-header">
-            <span>{node.lang || 'text'}</span>
-          </div>
+          {header}
           <pre>
             <code class={`language-${node.lang || 'text'}`}>{node.value}</code>
           </pre>
@@ -211,7 +224,6 @@ export function BaseBlock({
             <button
               type="button"
               class="idl-copy-btn"
-              onClick={`navigator.clipboard.writeText(this.closest('.idl-block')?.querySelector('.idl-block-code')?.textContent || '')` as unknown as JSX.MouseEventHandler<HTMLButtonElement>}
             >
               Copy
             </button>
