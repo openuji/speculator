@@ -189,6 +189,7 @@
     .spec-content {
       min-width: 0;
       overflow: hidden;
+      width: 100%;
       max-width: var(--solospec-content-max-with);
       padding: calc(var(--spacing) * 6);
     }
@@ -321,6 +322,10 @@
     line-height: 1.2;
     font-weight: 700;
     hyphens: manual;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    min-width: 0;
+    width: fit-content;
   }
   .solospec-root :is(h1, h2, h3) {
     color: var(--solospec-heading);
@@ -371,7 +376,7 @@
   .solospec-root .section-heading > .self-link {
     position: absolute;
     top: 0;
-    left: -2.5ex;
+    left: -2ex;
     width: 2ex;
     height: 100%;
     text-align: center;
@@ -474,6 +479,7 @@
     min-width: 0;
     max-width: 100%;
   }
+
 
   .solospec-root .shiki-highlighted .shiki pre {
     margin: 0;
@@ -756,6 +762,10 @@
 
   .solospec-root .spec-page {
     flex-direction: column;
+    gap: 0;
+    .spec-content {
+      margin-inline: auto;
+    }
   }
 }
 
@@ -808,16 +818,20 @@
     border-right: 1px solid var(--solospec-line);
 
     border-top-right-radius: 1.33rem;
-    color: var(--solospec-ink);
+    color: var(--solospec-a-underline);
 
     background: var(--solospec-bg);
+
+    
   }
+  
 
   #toc-nav > #toc-theme-toggle {
     display: flex !important;
     align-items: center;
     gap: 0.2rem;
     height: 3rem;
+    text-decoration: none;
     & span {
       margin-right: 0.4rem;
     }
@@ -1063,7 +1077,7 @@
 
 .solospec-root .ui-callout-example,
 .solospec-root .example {
-  border-left-color: #ffd700 !important; /* Gold/Yellow */
+  border-left-color: var(--color-solospec-callout-example) !important; /* Gold/Yellow */
 }
 
 .solospec-root .ui-callout-example header,
@@ -1077,7 +1091,7 @@
 .solospec-root .example .ui-badge {
   background: transparent !important;
   border: none !important;
-  color: #ffd700 !important;
+  color: var(--color-solospec-callout-example) !important;
   font-weight: bold;
   font-size: 0.9rem;
   padding: 0;

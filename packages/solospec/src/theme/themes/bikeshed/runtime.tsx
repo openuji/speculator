@@ -233,16 +233,19 @@ function TocNav({
     if(isMobile) {
       setIsCollapsed(true);
     }
+    else {
+      setIsCollapsed(false);
+    }
   }, [isMobile]);
 
   return (
     <p id="toc-nav">
       {isMobile && isCollapsed && <a id="toc-jump" href={`#${tocId}`} aria-labelledby="toc-jump-text">
-        <span aria-hidden="true">↑</span>
+        <span aria-hidden="true">↑ </span>
         <span id="toc-jump-text">Jump to Table of Contents</span>
       </a>}
       {(isCollapsed) && <a id="toc-toggle" href="#toc" onClick={expandToc} aria-labelledby="toc-expand-text">
-        <span aria-hidden="true">→</span>
+        <span aria-hidden="true">→ </span>
         <span id="toc-expand-text">Pop Out Sidebar</span>
       </a>}
       {!isCollapsed && <a id="toc-collapse" onClick={collapseToc} aria-labelledby="toc-collapse-text">
