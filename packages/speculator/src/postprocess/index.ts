@@ -8,6 +8,7 @@
  */
 
 // Transform plugins
+export { noteShorthandsPlugin } from './plugins/note-shorthands.js';
 export { statementDistributePlugin } from './plugins/statement-distribute.js';
 
 // Index plugins
@@ -37,6 +38,7 @@ export { walkDocument, type AstVisitor } from './walk-ast.js';
  * 
  * Phase execution order: transform → index → resolve → compute → render
  */
+import { noteShorthandsPlugin } from './plugins/note-shorthands.js';
 import { statementDistributePlugin } from './plugins/statement-distribute.js';
 import { sectionIdPlugin } from './plugins/section-id.js';
 import { dfnIndexPlugin } from './plugins/dfn-index.js';
@@ -54,6 +56,7 @@ import { statementsJsonLdComputePlugin } from './plugins/statementsJsonLd-comput
 
 export const corePlugins = [
     // Transform plugins
+    noteShorthandsPlugin,       // order: { transform: 15 }
     statementDistributePlugin,   // order: { transform: 25 }
     // Index plugins
     sectionIdPlugin,            // order: { index: 5 }
@@ -72,4 +75,3 @@ export const corePlugins = [
     sectionResolvePlugin,       // order: { compute: 20 }
     statementsJsonLdComputePlugin, // order: { compute: 25 }
 ];
-

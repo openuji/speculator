@@ -180,7 +180,10 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     if (raw.group !== undefined) {
         config.group = raw.group;
     }
-    if (raw.repository !== undefined) {
+    // Priority: root repository > respec.repository
+    if (docConfig.repository !== undefined) {
+        config.repository = docConfig.repository;
+    } else if (raw.repository !== undefined) {
         config.repository = raw.repository;
     }
 

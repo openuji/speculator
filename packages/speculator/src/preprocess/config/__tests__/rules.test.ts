@@ -271,6 +271,31 @@ describe('Config Priority Rules', () => {
         });
     });
 
+    describe('repository priority', () => {
+        it('uses root-level repository when both root and respec are present', () => {
+            const docConfig: DocumentConfig = {
+                repository: 'https://github.com/root/priority-repo',
+                respec: {
+                    repository: 'https://github.com/respec/fallback-repo',
+                },
+            };
+
+            const config = normalizeConfig(createResolvedConfig(docConfig));
+            expect(config.repository).toBe('https://github.com/root/priority-repo');
+        });
+
+        it('falls back to respec.repository when root-level repository is missing', () => {
+            const docConfig: DocumentConfig = {
+                respec: {
+                    repository: 'https://github.com/respec/fallback-repo',
+                },
+            };
+
+            const config = normalizeConfig(createResolvedConfig(docConfig));
+            expect(config.repository).toBe('https://github.com/respec/fallback-repo');
+        });
+    });
+
     describe('custom overrides', () => {
         it('passes through custom properties', () => {
             const docConfig: DocumentConfig = {
