@@ -36,13 +36,14 @@ export function tryHtmlHeading(node: Element): string | null {
     const tag = node.tagName.toLowerCase();
     if (!HEADING_TAGS.has(tag)) return null;
 
-    const depth = getDepth(tag);
+    // Demote by one level to match ATX heading demotion (spec sections start at ##).
+    // Cap at h6 (depth 6).
+    const depth = Math.min(getDepth(tag) + 1, 6);
     const hashes = '#'.repeat(depth);
     const text = extractText(node);
 
     const id = node.properties?.id;
     const idSuffix = id ? ` {#${id}}` : '';
 
-    // Format: `## Text ## {#id}` (ATX with closing hashes for ReSpec compatibility)
-    return `${hashes} ${text} ${hashes}${idSuffix}`;
+    return `${hashes} ${text}${idSuffix}`;
 }

@@ -9,10 +9,10 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { migrate } from '../src/migrate.js';
-import type { MigrationResult } from '../src/migrate.js';
+import { migrate, type MigrationResult } from '../src/migrate.js';
+import { speculate, corePlugins, MemoryFileProvider } from '@openuji/speculator';
 
-const SAMPLES_DIR = resolve(fileURLToPath(import.meta.url), '../../../../samples/oidc');
+const SAMPLES_DIR = resolve(fileURLToPath(import.meta.url), '../../samples/oidc');
 
 let result: MigrationResult;
 
@@ -102,8 +102,11 @@ describe('oidc index.md', () => {
         expect(result.md).toContain('```http');
     });
 
-    it('preserves markdown headings', () => {
-        expect(result.md).toContain('# Introduction #');
+    it('strips Bikeshed closing # and demotes ATX headings by one level', () => {
+        expect(result.md).toContain('## Introduction {#intro}');
+        expect(result.md).not.toContain('# Introduction #');
+        // Use line-anchored regex: '## Introduction {#intro}' contains '# Introduction {#intro}' as substring
+        expect(result.md).not.toMatch(/^# Introduction/m);
     });
 
     it('preserves [[!RFC6749]] citation syntax', () => {
@@ -117,5 +120,34 @@ describe('oidc index.md', () => {
     it('preserves HTML passthrough elements', () => {
         expect(result.md).toContain('<dl>');
         expect(result.md).toContain('<figure');
+    });
+
+    it('preserves <figure class="example"> wrapper with code fence inside', () => {
+        expect(result.md).toContain('<figure class="example">');
+        // Code fence should be inside the wrapper, not hoisted out
+        expect(result.md).toMatch(/<figure class="example">[\s\S]*?```[\s\S]*?```[\s\S]*?<\/figure>/);
+    });
+
+    it('preserves <div class="example"> wrapper with code fence inside', () => {
+        expect(result.md).toContain('<div class="example">');
+        expect(result.md).toMatch(/<div class="example">[\s\S]*?```[\s\S]*?```[\s\S]*?<\/div>/);
+    });
+});
+
+describe('oidc speculate() verification', () => {
+    it('parses without errors through Speculator pipeline', async () => {
+        const configJson = JSON.stringify(result.config, null, 2);
+        const fileProvider = new MemoryFileProvider({
+            '/spec/index.md': result.md,
+            '/spec/config.json': configJson,
+        });
+        const speculateResult = await speculate({
+            entry: '/spec/index.md',
+            fileProvider,
+            plugins: corePlugins,
+        });
+        expect(speculateResult.errors ?? []).toEqual([]);
+        expect(speculateResult.workspace).toBeDefined();
+        expect(speculateResult.workspace!.documents[0].metadata?.title).toBe('Solid-OIDC');
     });
 });

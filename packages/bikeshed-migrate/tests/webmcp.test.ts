@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { migrate } from '../src/migrate.js';
 import type { MigrationResult } from '../src/migrate.js';
 
-const SAMPLES_DIR = resolve(fileURLToPath(import.meta.url), '../../../../samples/webmcp');
+const SAMPLES_DIR = resolve(fileURLToPath(import.meta.url), '../../samples/webmcp');
 
 let result: MigrationResult;
 
@@ -58,8 +58,11 @@ describe('webmcp index.md', () => {
         expect(result.md).not.toMatch(/<h3\s/);
     });
 
-    it('contains markdown headings converted from HTML headings', () => {
-        expect(result.md).toContain('## Introduction ##');
+    it('contains markdown headings converted from HTML headings (demoted one level)', () => {
+        // <h2> → ###, <h3> → ####, etc.
+        expect(result.md).toContain('### Introduction {#intro}');
+        // Use line-anchored regex: '### Introduction' contains '## Introduction' as substring
+        expect(result.md).not.toMatch(/^## Introduction/m);
     });
 
     it('contains webidl code fences from <xmp class="idl">', () => {

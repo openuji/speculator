@@ -45,7 +45,15 @@ async function run() {
         } else if (arg === '--dry-run') {
             dryRun = true;
         } else if (!arg.startsWith('-')) {
-            inputFile = arg;
+            if (!inputFile) {
+                inputFile = arg;
+            } else if (!outDir) {
+                outDir = arg;
+            } else {
+                console.error(`Unexpected argument: ${arg}`);
+                printUsage();
+                process.exit(1);
+            }
         } else {
             console.error(`Unknown option: ${arg}`);
             printUsage();

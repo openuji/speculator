@@ -1,113 +1,35 @@
 {
-  "id": "single-spec-page",
+  "id": "webmcp",
   "respec": {
-    "title": "Solid-OIDC",
+    "title": "WebMCP",
+    "shortName": "webmcp",
     "specStatus": "CG-DRAFT",
-    "creationDate": "2021-07-16",
-    "modificationDate": "2026-02-28",
+    "group": "webml",
+    "repository": "webmachinelearning/webmcp",
     "editors": [
       {
-        "name": "Aaron Coburn",
-        "url": "https://people.apache.org/~acoburn/#i",
-        "company": "Inrupt",
-        "companyUrl": "https://inrupt.com"
+        "name": "Brandon Walderman, Microsoft https://www.microsoft.com, brwalder@microsoft.com, w3cid 115877"
       },
       {
-        "name": "elf Pavlik",
-        "url": "https://elf-pavlik.hackers4peace.net"
+        "name": "Khushal Sagar, Google https://www.google.com, khushalsagar@google.com, w3cid 122787"
       },
       {
-        "name": "Dmitri Zagidulin",
-        "url": "http://computingjoy.com/"
+        "name": "Dominic Farolino, Google https://www.google.com, domfarolino@google.com, w3cid 102763"
       }
     ],
-    "copyright": "Copyright © 2026 the Contributors to the Solid-OIDC, published by the Solid Community Group under the W3C Community Contributor License Agreement (CLA). A human-readable summary is available.",
+    "abstract": "The WebMCP API enables web applications to provide JavaScript-based tools to AI agents.",
     "localBiblio": {
-      "RFC2119": {
-        "title": "Key words for use in RFCs",
-        "url": "https://www.rfc-editor.org/rfc/rfc2119"
+      "mcp": {
+        "title": "Model Context Protocol (MCP) Specification",
+        "url": "https://modelcontextprotocol.io/specification/latest",
+        "publisher": "The Linux Foundation"
       },
-      "RFC6749": {
-        "title": "The OAuth 2.0 Authorization Framework",
-        "url": "https://www.rfc-editor.org/rfc/rfc6749"
-      },
-      "OIDC-CORE": {
-        "title": "OpenID Connect Core 1.0",
-        "url": "https://openid.net/specs/openid-connect-core-1_0.html"
-      },
-      "WEBID": {
-        "title": "WebID",
-        "url": "https://www.w3.org/TR/webid/"
-      },
-      "RFC7519": {
-        "title": "JSON Web Token (JWT)",
-        "url": "https://www.rfc-editor.org/rfc/rfc7519"
-      },
-      "RFC7517": {
-        "title": "JSON Web Key (JWK)",
-        "url": "https://www.rfc-editor.org/rfc/rfc7517"
-      },
-      "DPOP": {
-        "title": "OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)",
-        "url": "https://www.rfc-editor.org/rfc/rfc9449"
-      },
-      "RFC7636": {
-        "title": "Proof Key for Code Exchange by OAuth Public Clients",
-        "url": "https://www.rfc-editor.org/rfc/rfc7636"
-      },
-      "SOLID-OIDC-PRIMER": {
-        "title": "Solid-OIDC Primer",
-        "url": "https://solidproject.org/TR/oidc-primer"
-      },
-      "RFC7591": {
-        "title": "OAuth 2.0 Dynamic Client Registration Protocol",
-        "url": "https://www.rfc-editor.org/rfc/rfc7591"
-      },
-      "OIDC-DYNAMIC-CLIENT-REGISTRATION": {
-        "title": "OpenID Connect Dynamic Client Registration 1.0",
-        "url": "https://openid.net/specs/openid-connect-registration-1_0.html"
-      },
-      "OIDC-DISCOVERY": {
-        "title": "OpenID Connect Discovery 1.0",
-        "url": "https://openid.net/specs/openid-connect-discovery-1_0.html"
-      },
-      "RFC9110": {
-        "title": "HTTP Semantics",
-        "url": "https://www.rfc-editor.org/rfc/rfc9110"
-      },
-      "UMA": {
-        "title": "User-Managed Access (UMA) 2.0 Grant for OAuth 2.0 Authorization",
-        "url": "https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html"
-      },
-      "SOLID-PROTOCOL": {
-        "title": "Solid Protocol",
-        "url": "https://solidproject.org/TR/protocol"
-      },
-      "BCP195": {
-        "title": "Recommendations for Secure Use of Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS)",
-        "url": "https://www.rfc-editor.org/info/bcp195"
+      "json-schema": {
+        "title": "JSON Schema: A Media Type for Describing JSON Documents",
+        "url": "https://json-schema.org/draft/2020-12/json-schema-core.html",
+        "publisher": "JSON Schema"
       }
     }
   },
-  "noConformance": true,
-  "custom": {
-    "thisVersion": "https://solid.github.io/solid-oidc/",
-    "latestVersion": "https://solidproject.org/TR/oidc",
-    "testSuite": "https://solid-contrib.github.io/solid-oidc-tests/",
-    "feedback": "GitHub",
-    "formerEditors": [
-      {
-        "name": "Adam Migus",
-        "url": "https://migusgroup.com/about/",
-        "company": "The Migus Group",
-        "companyUrl": "https://migusgroup.com/"
-      },
-      {
-        "name": "Ricky White",
-        "url": "https://endlesstrax.com",
-        "company": "The Migus Group",
-        "companyUrl": "https://migusgroup.com/"
-      }
-    ]
-  }
+  "title": "WebMCP"
 }

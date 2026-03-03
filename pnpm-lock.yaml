@@ -152,6 +152,9 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
     devDependencies:
+      '@openuji/speculator':
+        specifier: workspace:*
+        version: link:../speculator
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.4

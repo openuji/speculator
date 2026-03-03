@@ -20,6 +20,7 @@
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
+        "@openuji/speculator": "workspace:*",
         "@types/hast": "^3.0.4",
         "@types/mdast": "^4.0.4",
         "@types/node": "^22.10.0",
