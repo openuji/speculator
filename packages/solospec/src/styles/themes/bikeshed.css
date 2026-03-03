@@ -436,11 +436,16 @@
     font-size: 0.9em;
   }
 
-  .solospec-root :is(pre, .ui-code-block, .idl-block) {
+  .solospec-root :is(pre:not(.mermaid), .ui-code-block, .idl-block) {
     border: 1px solid var(--solospec-line);
     background: var(--solospec-soft);
     overflow: auto;
   }
+  .solospec-root pre.mermaid {
+    border: none;
+    background: var(--solospec-bg);
+  }
+
   /* Shiki dual-theme: light mode (default) */
   .solospec-root .shiki,
   .solospec-root .shiki span {
