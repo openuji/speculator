@@ -357,18 +357,8 @@ function handleExternalResolution(
     pendingQueue.push({ ref, specs, origType: ref.type });
 }
 
-function hasWebIdlSpecConfigured(xrefConfig: SpecConfig['xref']): boolean {
-    if (typeof xrefConfig === 'string') {
-        return normalizeTerm(xrefConfig) === 'webidl';
-    }
-    if (Array.isArray(xrefConfig)) {
-        return xrefConfig.some((spec) => normalizeTerm(spec) === 'webidl');
-    }
-    return false;
-}
-
-function resolveWebIdlTypeFallback(ref: ExternalReference): boolean {
-    if (ref.type !== 'externalIdlReference') {
+function resolveWebIdlTypeFallback(ref: WorkspaceReference): boolean {
+    if (ref.type !== 'workspaceIdlReference') {
         return false;
     }
 
@@ -377,10 +367,11 @@ function resolveWebIdlTypeFallback(ref: ExternalReference): boolean {
         const term = candidate.trim();
         if (!SAFE_WEBIDL_IDENTIFIER.test(term)) continue;
 
+        const extRef = promoteWorkspaceToExternal(ref);
         const targetId = `idl-${term}`;
-        ref.xrefSpec = 'webidl';
-        ref.targetId = targetId;
-        ref.url = `https://webidl.spec.whatwg.org/#${encodeURIComponent(targetId)}`;
+        extRef.xrefSpec = 'webidl';
+        extRef.targetId = targetId;
+        extRef.url = `https://webidl.spec.whatwg.org/#${encodeURIComponent(targetId)}`;
         return true;
     }
 
@@ -401,7 +392,6 @@ export const referenceResolvePlugin: Plugin = {
             : buildLookupMap(ctx.document);
 
         const xrefConfig = ctx.config.xref;
-        const webIdlFallbackEnabled = hasWebIdlSpecConfigured(xrefConfig);
 
         // Collect refs that need external resolution
         const pendingExternalRefs: Array<{ ref: ExternalReference; specs: string[]; origType: string }> = [];
@@ -428,7 +418,12 @@ export const referenceResolvePlugin: Plugin = {
                     return;
                 }
 
-                // 3. Optional: Fallback to External Resolution (only for workspace refs)
+                // 3. Prefer deterministic WebIDL resolution for unresolved IDL references.
+                if (WORKSPACE_REF_TYPES.has(ref.type) && resolveWebIdlTypeFallback(ref as WorkspaceReference)) {
+                    return;
+                }
+
+                // 4. Optional: Fallback to xref external resolution (only when WebIDL resolution didn't apply).
                 if (WORKSPACE_REF_TYPES.has(ref.type) && xrefConfig) {
                     const extRef = promoteWorkspaceToExternal(ref as WorkspaceReference);
                     handleExternalResolution(extRef, xrefConfig, pendingExternalRefs);
@@ -440,15 +435,6 @@ export const referenceResolvePlugin: Plugin = {
         // Batch-resolve all pending external references via API
         if (pendingExternalRefs.length > 0) {
             await resolveExternalXrefs(pendingExternalRefs);
-
-            // Apply generic WebIDL fallback only when explicitly configured
-            // and only for unresolved external IDL refs.
-            if (webIdlFallbackEnabled) {
-                for (const { ref } of pendingExternalRefs) {
-                    if (ref.targetId) continue;
-                    resolveWebIdlTypeFallback(ref);
-                }
-            }
         }
 
         
