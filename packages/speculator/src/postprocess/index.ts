@@ -9,7 +9,7 @@
 
 // Transform plugins
 export { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.js';
-export { issueShorthandPlugin } from './plugins/issue-shorthand.js';
+export { noteShorthandsPlugin } from './plugins/note-shorthands.js';
 export { statementDistributePlugin } from './plugins/statement-distribute.js';
 
 // Index plugins
@@ -40,7 +40,7 @@ export { walkDocument, type AstVisitor } from './walk-ast.js';
  * Phase execution order: transform → index → resolve → compute → render
  */
 import { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.js';
-import { issueShorthandPlugin } from './plugins/issue-shorthand.js';
+import { noteShorthandsPlugin } from './plugins/note-shorthands.js';
 import { statementDistributePlugin } from './plugins/statement-distribute.js';
 import { sectionIdPlugin } from './plugins/section-id.js';
 import { dfnIndexPlugin } from './plugins/dfn-index.js';
@@ -58,7 +58,7 @@ import { statementsJsonLdComputePlugin } from './plugins/statementsJsonLd-comput
 
 export const corePlugins = [
     // Transform plugins
-    issueShorthandPlugin,       // order: { transform: 15 }
+    noteShorthandsPlugin,       // order: { transform: 15 }
     conformanceBoilerplatePlugin, // order: { transform: 20 }
     statementDistributePlugin,   // order: { transform: 25 }
     // Index plugins

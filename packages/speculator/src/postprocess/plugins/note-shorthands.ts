@@ -1,11 +1,10 @@
 /**
- * Issue Shorthand Transform Plugin
+ * Note Shorthands Transform Plugin
  *
- * Converts Bikeshed-style issue shorthands in paragraphs:
- *   Issue(78):
- *   Issue(#78):
- * Into issue-type notes with canonical GitHub issue links resolved
- * against config.repository when needed.
+ * Converts note-centric paragraph shorthands into BlockNote nodes:
+ * - Issue(78):
+ * - Issue(#78):
+ * - NOTE:
  */
 
 import type { Plugin, TransformContext } from '#src/pipeline/types';
@@ -20,6 +19,7 @@ import type {
 import type { SpecConfig } from '#src/preprocess/types';
 
 const ISSUE_SHORTHAND_RE = /^Issue\(\s*([^)]+?)\s*\)\s*:\s*/i;
+const NOTE_SHORTHAND_RE = /^NOTE\s*:\s*/i;
 
 function extractGitHubRepoSlug(repository: SpecConfig['repository']): string | null {
     if (!repository) return null;
@@ -237,12 +237,49 @@ function convertParagraphIfIssueShorthand(
     return result;
 }
 
+function convertParagraphIfNoteShorthand(paragraph: BlockParagraph): BlockNote | null {
+    const paragraphText = inlinesToPlainText(paragraph.children);
+    const match = paragraphText.match(NOTE_SHORTHAND_RE);
+    if (!match) return null;
+
+    const trimmedRemainder = trimLeadingInlineWhitespace(
+        consumeInlinePrefix(paragraph.children, match[0].length)
+    );
+
+    const noteChildren: Block[] = [];
+    if (hasInlineContent(trimmedRemainder)) {
+        noteChildren.push({
+            type: 'paragraph',
+            children: trimmedRemainder,
+        });
+    }
+
+    const result: BlockNote = {
+        type: 'note',
+        noteType: 'note',
+        informative: true,
+        children: noteChildren,
+    };
+
+    if (paragraph.id) result.id = paragraph.id;
+    if (paragraph.sourcePos) result.sourcePos = paragraph.sourcePos;
+
+    return result;
+}
+
+function convertParagraphIfShorthand(
+    paragraph: BlockParagraph,
+    repoSlug: string | null
+): BlockNote | null {
+    return convertParagraphIfIssueShorthand(paragraph, repoSlug) ?? convertParagraphIfNoteShorthand(paragraph);
+}
+
 function transformBlockList(blocks: Block[], repoSlug: string | null): void {
     for (let i = 0; i < blocks.length; i++) {
         const current = blocks[i];
 
         if (current.type === 'paragraph') {
-            const converted = convertParagraphIfIssueShorthand(current, repoSlug);
+            const converted = convertParagraphIfShorthand(current, repoSlug);
             if (converted) {
                 blocks[i] = converted;
                 continue;
@@ -278,7 +315,7 @@ function transformSectionList(nodes: (Section | Block)[], repoSlug: string | nul
         }
 
         if (current.type === 'paragraph') {
-            const converted = convertParagraphIfIssueShorthand(current, repoSlug);
+            const converted = convertParagraphIfShorthand(current, repoSlug);
             if (converted) {
                 nodes[i] = converted;
                 continue;
@@ -304,15 +341,15 @@ function transformSectionList(nodes: (Section | Block)[], repoSlug: string | nul
     }
 }
 
-function transformIssueShorthands(document: Document, config: SpecConfig): void {
+function transformNoteShorthands(document: Document, config: SpecConfig): void {
     const repoSlug = extractGitHubRepoSlug(config.repository);
     transformSectionList(document.children, repoSlug);
 }
 
-export const issueShorthandPlugin: Plugin = {
-    name: 'issue-shorthand',
+export const noteShorthandsPlugin: Plugin = {
+    name: 'note-shorthands',
     order: { transform: 15 },
     async transform(ctx: TransformContext): Promise<void> {
-        transformIssueShorthands(ctx.document, ctx.config);
+        transformNoteShorthands(ctx.document, ctx.config);
     },
 };

@@ -19,7 +19,7 @@ export type { Plugin, Phase, PostprocessPhase, SpeculateOptions, SpeculateResult
 // Postprocess Plugins
 export {
     dfnIndexPlugin,
-    issueShorthandPlugin,
+    noteShorthandsPlugin,
     referenceResolvePlugin,
     citationResolvePlugin,
     tocPlugin,

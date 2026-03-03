@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
 import { assembleDocument } from '#src/parse/assembler';
-import { issueShorthandPlugin } from '#src/postprocess/plugins/issue-shorthand';
+import { noteShorthandsPlugin } from '#src/postprocess/plugins/note-shorthands';
 import type { SpecConfig } from '#src/preprocess/types';
 import type { BlockNote, BlockParagraph, Document } from '#src/types/ast.generated';
 
@@ -28,13 +28,13 @@ function createDocument(
     return { document, config };
 }
 
-describe('issueShorthandPlugin', () => {
+describe('noteShorthandsPlugin', () => {
     it('converts Issue(78): using config.repository as local repo', async () => {
         const { document, config } = createDocument('Issue(78):', {
             repository: 'https://github.com/solid/solid-oidc',
         });
 
-        await issueShorthandPlugin.transform!({ document, config, level: 0 });
+        await noteShorthandsPlugin.transform!({ document, config, level: 0 });
 
         const issue = document.children[0] as BlockNote;
         expect(issue).toMatchObject({
@@ -61,7 +61,7 @@ describe('issueShorthandPlugin', () => {
             { repository: 'solid/solid-oidc' }
         );
 
-        await issueShorthandPlugin.transform!({ document, config, level: 0 });
+        await noteShorthandsPlugin.transform!({ document, config, level: 0 });
 
         const issue = document.children[0] as BlockNote;
         expect(issue.src).toBe('https://github.com/solid/solid-oidc/issues/95');
@@ -76,7 +76,7 @@ describe('issueShorthandPlugin', () => {
     it('does not convert local shorthand when repository is unavailable', async () => {
         const { document, config } = createDocument('Issue(78):');
 
-        await issueShorthandPlugin.transform!({ document, config, level: 0 });
+        await noteShorthandsPlugin.transform!({ document, config, level: 0 });
 
         expect(document.children[0].type).toBe('paragraph');
     });
@@ -86,7 +86,7 @@ describe('issueShorthandPlugin', () => {
             'Issue(https://github.com/solid/solid-oidc/issues/80):'
         );
 
-        await issueShorthandPlugin.transform!({ document, config, level: 0 });
+        await noteShorthandsPlugin.transform!({ document, config, level: 0 });
 
         const issue = document.children[0] as BlockNote;
         expect(issue.src).toBe('https://github.com/solid/solid-oidc/issues/80');
@@ -102,5 +102,40 @@ describe('issueShorthandPlugin', () => {
             ],
         });
     });
-});
 
+    it('converts NOTE: shorthand to a note block', async () => {
+        const { document, config } = createDocument(
+            'NOTE: the [Solid-OIDC Vocabulary](https://www.w3.org/ns/solid/oidc) uses the HTTP scheme.'
+        );
+
+        await noteShorthandsPlugin.transform!({ document, config, level: 0 });
+
+        const note = document.children[0] as BlockNote;
+        expect(note).toMatchObject({
+            type: 'note',
+            noteType: 'note',
+            informative: true,
+        });
+        expect(note.src).toBeUndefined();
+        expect(note.children).toHaveLength(1);
+
+        const body = note.children[0] as BlockParagraph;
+        expect(body.children).toMatchObject([
+            { type: 'text', value: 'the ' },
+            {
+                type: 'link',
+                url: 'https://www.w3.org/ns/solid/oidc',
+                children: [{ type: 'text', value: 'Solid-OIDC Vocabulary' }],
+            },
+            { type: 'text', value: ' uses the HTTP scheme.' },
+        ]);
+    });
+
+    it('does not convert NOTE when marker is not paragraph prefix', async () => {
+        const { document, config } = createDocument('This is NOTE: plain text.');
+
+        await noteShorthandsPlugin.transform!({ document, config, level: 0 });
+
+        expect(document.children[0].type).toBe('paragraph');
+    });
+});
