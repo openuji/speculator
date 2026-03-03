@@ -48,7 +48,14 @@ function mutateElement(node: Element): boolean {
     let mutated = false;
 
     // <div algorithm> → <section data-algorithm>
-    if (tryAlgorithmDiv(node)) mutated = true;
+    if (tryAlgorithmDiv(node)) {
+        // Ensure </section> appears on its own line (MDX requires block closing tags at col 1).
+        const lastChild = node.children[node.children.length - 1];
+        if (!lastChild || lastChild.type !== 'text' || !(lastChild as { value: string }).value.endsWith('\n')) {
+            node.children.push({ type: 'text', value: '\n' } as ElementContent);
+        }
+        mutated = true;
+    }
 
     // Void HTML elements (img, br, hr, …) must be self-closing in MDX (<img />).
     // Returning true forces the containing block to be re-serialised with
@@ -78,6 +85,11 @@ function mutateElement(node: Element): boolean {
                     if (c.type === 'text') { c.value = c.value.trimEnd(); break; }
                 }
             } else if (el.tagName === 'dd') {
+                // Trim trailing whitespace in element children (e.g. <p> tags with implicit
+                // closing): a trailing \n before </p> causes an MDX paragraph parse error.
+                for (const ddChild of el.children) {
+                    if (ddChild.type === 'element') trimLastText(ddChild as Element);
+                }
                 // Ensure <dd> content ends with \n so </dd> appears on its own line.
                 // MDX requires block-level closing tags at column 1.
                 const last = el.children[el.children.length - 1];

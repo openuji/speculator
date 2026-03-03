@@ -11,6 +11,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { migrate } from '../src/migrate.js';
 import type { MigrationResult } from '../src/migrate.js';
+import { speculate, corePlugins, MemoryFileProvider } from '@openuji/speculator';
 
 const SAMPLES_DIR = resolve(fileURLToPath(import.meta.url), '../../samples/webmcp');
 
@@ -58,11 +59,10 @@ describe('webmcp index.md', () => {
         expect(result.md).not.toMatch(/<h3\s/);
     });
 
-    it('contains markdown headings converted from HTML headings (demoted one level)', () => {
-        // <h2> → ###, <h3> → ####, etc.
-        expect(result.md).toContain('### Introduction {#intro}');
-        // Use line-anchored regex: '### Introduction' contains '## Introduction' as substring
-        expect(result.md).not.toMatch(/^## Introduction/m);
+    it('contains markdown headings converted from HTML headings (level preserved)', () => {
+        // <h2> → ##, <h3> → ###, etc. (HTML heading level used as-is)
+        expect(result.md).toContain('## Introduction {#intro}');
+        expect(result.md).toContain('## Terminology {#terminology}');
     });
 
     it('contains webidl code fences from <xmp class="idl">', () => {
@@ -85,6 +85,14 @@ describe('webmcp index.md', () => {
         expect(result.md).not.toMatch(/<pre\s+class=['"]biblio/);
     });
 
+    it('does not contain <style> blocks (extracted to resources)', () => {
+        expect(result.md).not.toMatch(/<style[\s>]/);
+    });
+
+    it('does not contain HTML comments (stripped for MDX compatibility)', () => {
+        expect(result.md).not.toContain('<!--');
+    });
+
     it('preserves <dfn> elements as HTML passthrough', () => {
         expect(result.md).toContain('<dfn>');
     });
@@ -93,5 +101,35 @@ describe('webmcp index.md', () => {
         expect(result.md).toContain('<section');
         expect(result.md).toContain('data-algorithm');
         expect(result.md).not.toContain('<div algorithm');
+    });
+});
+
+describe('webmcp resources', () => {
+    it('extracts at least one style resource from the <style> block', () => {
+        const styles = result.resources.filter(r => r.type === 'style');
+        expect(styles.length).toBeGreaterThan(0);
+    });
+
+    it('style resource contains CSS content', () => {
+        const style = result.resources.find(r => r.type === 'style');
+        expect(style?.content).toContain('.domintro');
+    });
+});
+
+describe('webmcp speculate() verification', () => {
+    it('parses without errors through Speculator pipeline', async () => {
+        const configJson = JSON.stringify(result.config, null, 2);
+        const fileProvider = new MemoryFileProvider({
+            '/spec/index.md': result.md,
+            '/spec/config.json': configJson,
+        });
+        const speculateResult = await speculate({
+            entry: '/spec/index.md',
+            fileProvider,
+            plugins: corePlugins,
+        });
+        expect(speculateResult.errors ?? []).toEqual([]);
+        expect(speculateResult.workspace).toBeDefined();
+        expect(speculateResult.workspace!.documents[0].metadata?.title).toBe('WebMCP');
     });
 });

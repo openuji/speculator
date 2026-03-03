@@ -9,16 +9,18 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
 import { migrate } from './migrate.js';
+import { fetchBoilerplate, renderBoilerplateFile } from './boilerplate.js';
 
 function printUsage() {
     console.log(`
 Usage: bikeshed-migrate <input.bs> [options]
 
 Options:
-  --out <dir>    Output directory (default: same directory as input file)
-  --id <id>      Override document ID in config.json
-  --dry-run      Print outputs to stdout without writing files
-  --help         Show this help message
+  --out <dir>         Output directory (default: same directory as input file)
+  --id <id>           Override document ID in config.json
+  --no-boilerplate    Skip fetching boilerplate overrides (includes/*.md)
+  --dry-run           Print outputs to stdout without writing files
+  --help              Show this help message
 `.trim());
 }
 
@@ -35,6 +37,7 @@ async function run() {
     let outDir: string | undefined;
     let idOverride: string | undefined;
     let dryRun = false;
+    let skipBoilerplate = false;
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -44,6 +47,8 @@ async function run() {
             idOverride = args[++i];
         } else if (arg === '--dry-run') {
             dryRun = true;
+        } else if (arg === '--no-boilerplate') {
+            skipBoilerplate = true;
         } else if (!arg.startsWith('-')) {
             if (!inputFile) {
                 inputFile = arg;
@@ -93,11 +98,34 @@ async function run() {
     const configPath = join(outputDir, 'config.json');
     const configJson = JSON.stringify(result.config, null, 2);
 
+    const styles = result.resources.filter(r => r.type === 'style').map(r => r.content).join('\n\n');
+    const scripts = result.resources.filter(r => r.type === 'script').map(r => r.content).join('\n\n');
+    const stylePath = styles ? join(outputDir, 'style.css') : null;
+    const scriptPath = scripts ? join(outputDir, 'script.js') : null;
+
+    // Fetch boilerplate includes by default when Group + Status are present
+    const group = result.config.respec?.group;
+    const status = result.config.respec?.specStatus;
+    let boilerplate: Awaited<ReturnType<typeof fetchBoilerplate>> | null = null;
+
+    if (!skipBoilerplate && group && status) {
+        console.log(`Fetching boilerplate for group=${group}, status=${status}…`);
+        boilerplate = await fetchBoilerplate(group, status);
+    }
+
     if (dryRun) {
         console.log(`\n--- ${inputName}.md ---`);
         console.log(result.md);
         console.log('\n--- config.json ---');
         console.log(configJson);
+        if (styles) { console.log('\n--- style.css ---'); console.log(styles); }
+        if (scripts) { console.log('\n--- script.js ---'); console.log(scripts); }
+        if (boilerplate) {
+            for (const [slot, resolved] of Object.entries(boilerplate)) {
+                console.log(`\n--- includes/${slot}.md --- (${resolved.source})`);
+                console.log(resolved.content);
+            }
+        }
         return;
     }
 
@@ -108,6 +136,32 @@ async function run() {
 
     console.log(`✓ Wrote ${mdPath}`);
     console.log(`✓ Wrote ${configPath}`);
+
+    if (stylePath) {
+        await writeFile(stylePath, styles + '\n', 'utf-8');
+        console.log(`✓ Wrote ${stylePath}  (${result.resources.filter(r => r.type === 'style').length} style block(s))`);
+    }
+    if (scriptPath) {
+        await writeFile(scriptPath, scripts + '\n', 'utf-8');
+        console.log(`✓ Wrote ${scriptPath}  (${result.resources.filter(r => r.type === 'script').length} script block(s))`);
+    }
+
+    if (boilerplate) {
+        const includesDir = join(outputDir, 'includes');
+        await mkdir(includesDir, { recursive: true });
+        for (const [slot, resolved] of Object.entries(boilerplate)) {
+            if (!resolved) continue;
+            const filePath = join(includesDir, `${slot}.md`);
+            await writeFile(filePath, renderBoilerplateFile(slot, resolved), 'utf-8');
+            console.log(`✓ Wrote ${filePath}  (${resolved.source})`);
+        }
+        const missing = (['status', 'copyright', 'logo', 'conformance'] as const).filter(
+            s => !(s in boilerplate!),
+        );
+        if (missing.length > 0) {
+            console.warn(`⚠ No boilerplate found for: ${missing.join(', ')}`);
+        }
+    }
 }
 
 run().catch((err: unknown) => {

@@ -11,11 +11,20 @@ import { extractBiblioBlock } from './extract/biblio.js';
 import { buildConfig, type SpeculatorConfig } from './build-config.js';
 import { remarkBikeshed } from './transform/remark-bikeshed.js';
 
+export interface Resource {
+    /** 'style' for <style> blocks, 'script' for <script> blocks */
+    type: 'style' | 'script';
+    /** Raw inner content of the block (without the wrapping tags) */
+    content: string;
+}
+
 export interface MigrationResult {
     /** Content for index.md */
     md: string;
     /** Content for config.json (as a plain object, ready for JSON.stringify) */
     config: SpeculatorConfig;
+    /** Extracted <style> and <script> blocks, in source order */
+    resources: Resource[];
 }
 
 export interface MigrateOptions {
@@ -47,8 +56,29 @@ export async function migrate(content: string, options: MigrateOptions = {}): Pr
     // Step 2: Extract and strip the biblio block
     const { biblio, rest: afterBiblio } = extractBiblioBlock(afterMeta);
 
+    // Step 2b: Extract <style> and <script> blocks into resources, remove them from content.
+    // Authors embed these in .bs for Bikeshed's output pipeline; in Speculator they are
+    // separate concerns (loaded via config or a custom CSS file).
+    const resources: Resource[] = [];
+    const noStyleScript = afterBiblio
+        .replace(/<style(?:\s[^>]*)?>[\s\S]*?<\/style>/gi, (match) => {
+            const inner = match.replace(/^<style[^>]*>\n?/, '').replace(/\n?<\/style>$/, '');
+            resources.push({ type: 'style', content: inner });
+            return '';
+        })
+        .replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, (match) => {
+            const inner = match.replace(/^<script[^>]*>\n?/, '').replace(/\n?<\/script>$/, '');
+            resources.push({ type: 'script', content: inner });
+            return '';
+        });
+
+    // Step 2c: Strip HTML comments (<!-- ... -->).
+    // MDX does not support HTML comment syntax — <!-- causes a parse error ("Unexpected
+    // character '!'"). Bikeshed comments are author annotations not needed in the output.
+    const noComments = noStyleScript.replace(/<!--[\s\S]*?-->/g, '');
+
     // Step 3: Strip Bikeshed ATX heading closing markers: "# Title # {#id}" → "# Title {#id}"
-    const headingStripped = afterBiblio.replace(BS_ATX_HEADING_RE, (_, prefix, id) =>
+    const headingStripped = noComments.replace(BS_ATX_HEADING_RE, (_, prefix, id) =>
         id ? `${prefix} ${id}` : prefix
     );
 
@@ -59,11 +89,11 @@ export async function migrate(content: string, options: MigrateOptions = {}): Pr
 
     // Step 3b: Collapse blank lines within HTML wrapper blocks.
     // CommonMark ends an HTML block at the first blank line. Bikeshed sources use blank
-    // lines inside <dl>, <figure>, and <div class="example"> blocks (e.g. blank lines
-    // separating <dt>/<dd> items, or blank lines inside <pre highlight> content).
-    // Removing those internal blank lines keeps each wrapper as a single HTML block
-    // that hast can parse and re-serialise correctly.
-    const COLLAPSE_BLANK_LINES_RE = /(<(?:dl|figure|div\b[^>]*class=[^>]*example[^>]*)[^>]*>)[\s\S]*?<\/(?:dl|figure|div)>/gi;
+    // lines inside <dl>, <figure>, <xmp class="idl">, <div class="example">, and
+    // <div algorithm> blocks. Removing those internal blank lines keeps each wrapper
+    // as a single HTML block that hast can parse and re-serialise correctly.
+    const COLLAPSE_BLANK_LINES_RE =
+        /(<(?:dl|figure|xmp)[^>]*>|<div\b[^>]*\b(?:algorithm|class=[^>]*\bexample\b)[^>]*>)[\s\S]*?<\/(?:dl|figure|xmp|div)>/gi;
     const contentOnly = headingFixed.replace(COLLAPSE_BLANK_LINES_RE, block =>
         block.replace(/\n{2,}/g, '\n')
     );
@@ -94,5 +124,5 @@ export async function migrate(content: string, options: MigrateOptions = {}): Pr
     // Step 8: Build the config object
     const config = buildConfig(metadata, biblio, options.id);
 
-    return { md, config };
+    return { md, config, resources };
 }
