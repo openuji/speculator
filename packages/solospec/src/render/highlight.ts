@@ -27,7 +27,10 @@ function walkForCodeBlocks(node: Document | Section | Block | Inline, codeBlocks
   }
 }
 
-const UNSUPPORTED_LANGUAGES = new Set(['mermaid']);
+const UNSUPPORTED_LANGUAGES = new Set(['mermaid', 'webidl', 'idl']);
+const LANGUAGE_ALIASES: Record<string, string> = {
+  'json-ld': 'jsonld',
+};
 
 
 type HighlighterInstance = Awaited<ReturnType<typeof createHighlighter>>;
@@ -39,14 +42,32 @@ function isHighlightable(lang?: string): lang is string {
   return !!lang && !UNSUPPORTED_LANGUAGES.has(lang);
 }
 
+function normalizeLanguage(lang?: string): string | undefined {
+  if (!lang) return undefined;
+
+  const normalized = lang.trim().toLowerCase();
+  if (!normalized) return undefined;
+
+  return LANGUAGE_ALIASES[normalized] ?? normalized;
+}
+
+function getHighlightLanguage(lang?: string): string | undefined {
+  const normalized = normalizeLanguage(lang);
+  if (!normalized || !isHighlightable(normalized)) {
+    return undefined;
+  }
+  return normalized;
+}
+
 /**
  * Extracts all target languages from the provided code blocks that should be loaded.
  */
 function extractLanguagesToLoad(codeBlocks: Block[]): Set<string> {
   const langsToLoad = new Set<string>();
   for (const block of codeBlocks as (Block & { lang?: string })[]) {
-    if (isHighlightable(block.lang)) {
-      langsToLoad.add(block.lang);
+    const highlightLang = getHighlightLanguage(block.lang);
+    if (highlightLang) {
+      langsToLoad.add(highlightLang);
     }
   }
   return langsToLoad;
@@ -54,6 +75,7 @@ function extractLanguagesToLoad(codeBlocks: Block[]): Set<string> {
 
 let globalHighlighter: HighlighterInstance | null = null;
 const globalLoadedLangs = new Set<string>();
+const globalUnavailableLangs = new Set<string>();
 
 /**
  * Loads the required languages into the Shiki highlighter instance.
@@ -61,7 +83,7 @@ const globalLoadedLangs = new Set<string>();
  */
 async function loadLanguages(highlighter: HighlighterInstance, langsToLoad: Set<string>): Promise<Set<string>> {
   for (const lang of langsToLoad) {
-    if (globalLoadedLangs.has(lang)) continue;
+    if (globalLoadedLangs.has(lang) || globalUnavailableLangs.has(lang)) continue;
 
     try {
       if (lang === 'jsonld') {
@@ -72,8 +94,7 @@ async function loadLanguages(highlighter: HighlighterInstance, langsToLoad: Set<
       globalLoadedLangs.add(lang);
     } catch {
       console.info(`[solospec:shiki] Language '${lang}' not available, skipping.`);
-      // Add to loaded set to prevent retrying unsupported languages repeatedly
-      globalLoadedLangs.add(lang);
+      globalUnavailableLangs.add(lang);
     }
   }
   return globalLoadedLangs;
@@ -84,13 +105,14 @@ async function loadLanguages(highlighter: HighlighterInstance, langsToLoad: Set<
  */
 function applyHighlightingToBlocks(highlighter: HighlighterInstance, codeBlocks: Block[], loadedLangs: Set<string>, codeHighlightTheme: CodeHighlightThemeSettings): void {
   for (const block of codeBlocks as (Block & { lang?: string, value: string, highlightedHtml?: string })[]) {
-    if (!isHighlightable(block.lang) || !loadedLangs.has(block.lang)) {
+    const highlightLang = getHighlightLanguage(block.lang);
+    if (!highlightLang || !loadedLangs.has(highlightLang)) {
       continue;
     }
 
     try {
       block.highlightedHtml = highlighter.codeToHtml(dedent(block.value), {
-        lang: block.lang,
+        lang: highlightLang,
         themes: {
           light: codeHighlightTheme.light,
           dark: codeHighlightTheme.dark,
