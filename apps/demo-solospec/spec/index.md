@@ -169,7 +169,9 @@ OAuth and OIDC require the Client application to identify itself to the OP and R
 [client identifier](https://tools.ietf.org/html/rfc6749#section-2.2) (Client ID). Solid applications
 SHOULD use a URI that can be dereferenced as a [Client ID Document](#clientids-document).
 
-<aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/78">#78</a></aside>
+Issue(78):
+
+
 
 ### Client ID Document {#clientids-document}
 
@@ -350,7 +352,7 @@ With the `webid` scope, the DPoP-bound OIDC ID Token payload MUST contain these 
 
 </div>
 
-<aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/26">#26</a></aside>
+Issue(26):
 
 <aside class="issue">Open issue: <a href="https://github.com/solid/solid-oidc/issues/47">#47</a></aside>
 

@@ -87,6 +87,9 @@ export interface ResolvedDocumentConfig {
   /** Last update date (core config setting, takes priority over respec.modificationDate) */
   lastUpdateDate?: ISODateString;
 
+  /** Repository URL or descriptor (core config setting, takes priority over respec.repository) */
+  repository?: string | { url: string; branch?: string; type?: 'github' | 'gitlab' | 'manual' };
+
   /** Maturity level (core config setting, takes priority over mapped respec.specStatus) */
   maturityLevel?: MaturityLevel;
 

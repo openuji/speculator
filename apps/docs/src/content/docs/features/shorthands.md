@@ -21,6 +21,7 @@ Speculator provides a set of powerful shorthands in Markdown that simplify autho
 | **Element Reference**         | `[^element^]`      | `<a data-link-type="element">element</a>`          | `InlineReference`        |
 | **Section Reference**         | `[§#id]`           | `<a href="#id">§1.2</a>`                           | `InlineSectionReference` |
 | **Section Reference Aliased** | `[§#id\|Label]`    | `<a href="#id">§1.2 Label</a>`                     | `InlineSectionReference` |
+| **Issue Marker**              | `Issue(78):`       | `<aside class="issue">Open issue: <a href="https://github.com/org/repo/issues/78">#78</a></aside>` | `BlockNote`              |
 | **Heading ID**                | `{#id}`            | `id="id"` on heading                               | `BlockHeading.id`        |
 
 ## Detailed Usage
@@ -78,3 +79,17 @@ By default, section IDs are generated from the heading text. You can provide an 
 - **HTML Equivalent**: `<h1 id="my-id">My Section</h1>`
 
 This is especially useful for maintaining stable links even if the heading text changes.
+
+### Issue Shorthand
+
+You can write Bikeshed-style issue markers directly in Markdown:
+
+- `Issue(78):`
+- `Issue(#78):`
+
+When the identifier is a local issue number, Speculator resolves it using your config repository:
+
+- Root-level `repository`, or
+- `respec.repository`
+
+Example: if repository is `https://github.com/solid/solid-oidc`, then `Issue(78):` resolves to `https://github.com/solid/solid-oidc/issues/78`.

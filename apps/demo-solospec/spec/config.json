@@ -21,6 +21,7 @@
         "url": "http://computingjoy.com/"
       }
     ],
+    "repository": "https://github.com/solid/solid-oidc",
     "copyright": "Copyright © 2026 the Contributors to the Solid-OIDC, published by the Solid Community Group under the W3C Community Contributor License Agreement (CLA). A human-readable summary is available.",
     "localBiblio": {
       "RFC2119": {
