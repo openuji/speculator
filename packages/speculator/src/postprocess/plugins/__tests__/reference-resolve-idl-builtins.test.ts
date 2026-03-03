@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { referenceResolvePlugin } from '../reference-resolve.js';
 import type { ResolveContext, RuntimeWorkspace } from '#src/pipeline/types';
 import type { Document, InlineExternalIdlReference, InlineWorkspaceIdlReference } from '#src/types/ast.generated';
 import type { SpecConfig } from '#src/preprocess/types';
 
 describe('reference-resolve plugin (WebIDL type fallback)', () => {
-    it('resolves DOMString as external WebIDL reference when webidl xref fallback is enabled', async () => {
+    it('resolves DOMString as external WebIDL reference without requiring xref config', async () => {
         const ref: InlineWorkspaceIdlReference = {
             type: 'workspaceIdlReference',
             targetTerm: 'DOMString',
@@ -30,7 +30,6 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
             config: {
                 id: 'test-doc',
                 specIri: 'http://example.com',
-                xref: 'webidl',
             } as unknown as SpecConfig,
             workspace: {
                 globalIndex: {
@@ -40,16 +39,7 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
             } as unknown as RuntimeWorkspace,
         };
 
-        const originalFetch = globalThis.fetch;
-        globalThis.fetch = async () => {
-            throw new Error('offline');
-        };
-
-        try {
-            await referenceResolvePlugin.resolve!(ctx);
-        } finally {
-            globalThis.fetch = originalFetch;
-        }
+        await referenceResolvePlugin.resolve!(ctx);
 
         const extRef = ref as unknown as InlineExternalIdlReference;
         expect(extRef.type).toBe('externalIdlReference');
@@ -75,7 +65,7 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
         const ctx: ResolveContext = {
             document: doc,
             level: 0,
-            config: { id: 'test-doc', specIri: 'http://example.com', xref: 'webidl' } as unknown as SpecConfig,
+            config: { id: 'test-doc', specIri: 'http://example.com' } as unknown as SpecConfig,
             workspace: {
                 globalIndex: {
                     definitions: new Map(),
@@ -84,16 +74,7 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
             } as unknown as RuntimeWorkspace,
         };
 
-        const originalFetch = globalThis.fetch;
-        globalThis.fetch = async () => {
-            throw new Error('offline');
-        };
-
-        try {
-            await referenceResolvePlugin.resolve!(ctx);
-        } finally {
-            globalThis.fetch = originalFetch;
-        }
+        await referenceResolvePlugin.resolve!(ctx);
 
         const extRef = ref as unknown as InlineExternalIdlReference;
         expect(extRef.type).toBe('externalIdlReference');
@@ -102,7 +83,7 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
         expect(extRef.url).toBe('https://webidl.spec.whatwg.org/#idl-boolean');
     });
 
-    it('does not create fallback URL for unsafe terms (injection guard)', async () => {
+    it('uses xref fallback for unsafe terms where WebIDL fallback is blocked', async () => {
         const ref: InlineWorkspaceIdlReference = {
             type: 'workspaceIdlReference',
             targetTerm: 'DOMString" onclick="alert(1)',
@@ -119,7 +100,7 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
         const ctx: ResolveContext = {
             document: doc,
             level: 0,
-            config: { id: 'test-doc', specIri: 'http://example.com', xref: 'webidl' } as unknown as SpecConfig,
+            config: { id: 'test-doc', specIri: 'http://example.com', xref: 'dom' } as unknown as SpecConfig,
             workspace: {
                 globalIndex: {
                     definitions: new Map(),
@@ -128,10 +109,12 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
             } as unknown as RuntimeWorkspace,
         };
 
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({ result: [] }),
+        });
         const originalFetch = globalThis.fetch;
-        globalThis.fetch = async () => {
-            throw new Error('offline');
-        };
+        globalThis.fetch = fetchMock as unknown as typeof fetch;
 
         try {
             await referenceResolvePlugin.resolve!(ctx);
@@ -141,8 +124,9 @@ describe('reference-resolve plugin (WebIDL type fallback)', () => {
 
         const extRef = ref as unknown as InlineExternalIdlReference;
         expect(extRef.type).toBe('externalIdlReference');
-        expect(extRef.xrefSpec).toBe('webidl');
+        expect(extRef.xrefSpec).toBe('dom');
         expect(extRef.targetId).toBeUndefined();
         expect(extRef.url).toBeUndefined();
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 });
