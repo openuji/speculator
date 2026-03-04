@@ -37,7 +37,6 @@ export function buildRenderPageVm(args: {
     
     themeName: themeSettings.name,
     mode: themeSettings.mode,
-    w3cLogo: !!themeSettings.w3cLogo,
 
     metadata,
     metadataOptions: options?.metadata,

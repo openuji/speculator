@@ -30,8 +30,6 @@ export default defineConfig({
       configPath: "spec/config.json",
       theme: {
         name: "bikeshed",
-        mode: "system",
-        themeSwitcher: true,
       },
     }),
   ],
@@ -43,8 +41,6 @@ Theme config contract:
 ```ts
 type SolospecThemeSettings = {
   name?: "bikeshed";
-  mode?: "system" | "light" | "dark";
-  themeSwitcher?: boolean;
 };
 ```
 

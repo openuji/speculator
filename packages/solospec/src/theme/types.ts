@@ -21,7 +21,6 @@ export interface RenderPageVm {
 
   themeName: string;
   mode: 'auto' | 'light' | 'dark';
-  w3cLogo: boolean;
 
   metadata?: import('@openuji/speculator').DocumentMetadata;
   metadataOptions?: import('#src/types').MetadataRenderOptions;

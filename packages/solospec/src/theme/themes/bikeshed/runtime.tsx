@@ -184,14 +184,6 @@ function writeStoredThemePreferences(settings: ResolvedSolospecThemeSettings): v
   }
 }
 
-function removeSwitchers(): void {
-  const containers = document.querySelectorAll<HTMLElement>(`.${SWITCHER_CONTAINER_CLASS}`);
-  for (const container of Array.from(containers)) {
-    render(null, container);
-    container.remove();
-  }
-}
-
 function TocNav({
   currentMode,
   onModeSelect,
@@ -318,11 +310,7 @@ function ensureSwitcher(
   settings: ResolvedSolospecThemeSettings,
   onModeSelect: (mode: SolospecThemeMode) => void
 ): void {
-  if (!settings.themeSwitcher) {
-    removeSwitchers();
-    return;
-  }
-
+  
   const roots = getRootElements();
 
   for (const root of roots) {
@@ -350,11 +338,15 @@ function ensureSwitcher(
 function resolveInitialSettings(defaults: ResolvedSolospecThemeSettings): ResolvedSolospecThemeSettings {
   const stored = readStoredThemePreferences();
 
-  return resolveSolospecThemeSettings({
+  const settings = resolveSolospecThemeSettings({
     name: isSolospecThemeName(stored.name) ? stored.name : defaults.name,
-    mode: isSolospecThemeMode(stored.mode) ? stored.mode : defaults.mode,
-    themeSwitcher: defaults.themeSwitcher,
   });
+
+  if (isSolospecThemeMode(stored.mode)) {
+    settings.mode = stored.mode;
+  }
+
+  return settings;
 }
 
 function setupRuntime(defaultSettings: SolospecThemeSettings): void {
@@ -364,10 +356,10 @@ function setupRuntime(defaultSettings: SolospecThemeSettings): void {
   const apply = () => {
     applyThemeAttributes(settings);
     ensureSwitcher(settings, (mode) => {
-      settings = resolveSolospecThemeSettings({
+      settings = {
         ...settings,
         mode,
-      });
+      };
 
       writeStoredThemePreferences(settings);
       apply();

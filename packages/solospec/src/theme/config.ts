@@ -11,17 +11,12 @@ export interface CodeHighlightThemeSettings {
 
 export interface SolospecThemeSettings {
   name?: SolospecThemeName;
-  mode?: SolospecThemeMode;
-  themeSwitcher?: boolean;
-  w3cLogo?: boolean;
   codeHighlightTheme?: CodeHighlightThemeSettings;
 }
 
 export interface ResolvedSolospecThemeSettings {
   name: SolospecThemeName;
   mode: SolospecThemeMode;
-  themeSwitcher: boolean;
-  w3cLogo: boolean;
   codeHighlightTheme: CodeHighlightThemeSettings;
 }
 
@@ -33,8 +28,6 @@ export const DEFAULT_CODE_HIGHLIGHT_THEME: CodeHighlightThemeSettings = {
 export const DEFAULT_SOLOSPEC_THEME_SETTINGS: ResolvedSolospecThemeSettings = {
   name: 'bikeshed',
   mode: 'auto',
-  themeSwitcher: false,
-  w3cLogo: false,
   codeHighlightTheme: DEFAULT_CODE_HIGHLIGHT_THEME,
 };
 
@@ -55,18 +48,9 @@ export function resolveSolospecThemeSettings(
   const name = isSolospecThemeName(input?.name)
     ? input.name
     : DEFAULT_SOLOSPEC_THEME_SETTINGS.name;
-  const mode = isSolospecThemeMode(input?.mode)
-    ? input.mode
-    : DEFAULT_SOLOSPEC_THEME_SETTINGS.mode;
-  const themeSwitcher =
-    typeof input?.themeSwitcher === 'boolean'
-      ? input.themeSwitcher
-      : DEFAULT_SOLOSPEC_THEME_SETTINGS.themeSwitcher;
-  const w3cLogo =
-    typeof input?.w3cLogo === 'boolean'
-      ? input.w3cLogo
-      : DEFAULT_SOLOSPEC_THEME_SETTINGS.w3cLogo;
+  
 
+  const mode = DEFAULT_SOLOSPEC_THEME_SETTINGS.mode;
   const codeHighlightTheme = input?.codeHighlightTheme
     ? input.codeHighlightTheme
     : DEFAULT_SOLOSPEC_THEME_SETTINGS.codeHighlightTheme;
@@ -74,8 +58,6 @@ export function resolveSolospecThemeSettings(
   return {
     name,
     mode,
-    themeSwitcher,
-    w3cLogo,
     codeHighlightTheme,
   };
 }
@@ -93,22 +75,6 @@ export const SOLOSPEC_THEME_SETTINGS_SCHEMA = {
       enum: SOLOSPEC_THEME_NAMES,
       default: DEFAULT_SOLOSPEC_THEME_SETTINGS.name,
       description: 'Visual skin name.',
-    },
-    mode: {
-      type: 'string',
-      enum: SOLOSPEC_THEME_MODES,
-      default: DEFAULT_SOLOSPEC_THEME_SETTINGS.mode,
-      description: 'Color mode preference.',
-    },
-    themeSwitcher: {
-      type: 'boolean',
-      default: DEFAULT_SOLOSPEC_THEME_SETTINGS.themeSwitcher,
-      description: 'Whether to render the built-in theme/mode switcher UI.',
-    },
-    w3cLogo: {
-      type: 'boolean',
-      default: DEFAULT_SOLOSPEC_THEME_SETTINGS.w3cLogo,
-      description: 'Whether to render the W3C logo in the bikeshed theme.',
     },
   },
   default: DEFAULT_SOLOSPEC_THEME_SETTINGS,

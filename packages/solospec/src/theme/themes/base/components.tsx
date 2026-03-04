@@ -235,17 +235,6 @@ function BaseFragmentShell({ vm, children }: { vm: RenderPageVm; children?: JSX.
         data-solospec-mode={vm.mode}
       >
         <div class="spec-page">
-          {vm.w3cLogo ? (
-            <a class="w3c-logo" href="https://www.w3.org/">
-              <img
-                alt="W3C"
-                height="48"
-                width="72"
-                src="https://www.w3.org/StyleSheets/TR/2021/logos/W3C"
-              />
-            </a>
-          ) : null}
-
           <BaseHeader vm={vm} />
           <BaseLayout vm={vm}>{children}</BaseLayout>
         </div>

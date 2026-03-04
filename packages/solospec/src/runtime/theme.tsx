@@ -1,5 +1,4 @@
 import {
-  isSolospecThemeMode,
   isSolospecThemeName,
   resolveSolospecThemeSettings,
   type ResolvedSolospecThemeSettings,
@@ -76,14 +75,6 @@ function writeStoredThemePreferences(settings: ResolvedSolospecThemeSettings): v
   }
 }
 
-function removeSwitchers(): void {
-  const containers = document.querySelectorAll<HTMLElement>(`.${SWITCHER_CONTAINER_CLASS}`);
-  for (const container of Array.from(containers)) {
-    render(null, container);
-    container.remove();
-  }
-}
-
 function ThemeSwitcherUi({
   currentMode,
   onModeSelect,
@@ -122,10 +113,6 @@ function ensureSwitcher(
   settings: ResolvedSolospecThemeSettings,
   onModeSelect: (mode: SolospecThemeMode) => void
 ): void {
-  if (!settings.themeSwitcher) {
-    removeSwitchers();
-    return;
-  }
 
   const roots = getRootElements();
 
@@ -156,8 +143,6 @@ function resolveInitialSettings(defaults: ResolvedSolospecThemeSettings): Resolv
 
   return resolveSolospecThemeSettings({
     name: isSolospecThemeName(stored.name) ? stored.name : defaults.name,
-    mode: isSolospecThemeMode(stored.mode) ? stored.mode : defaults.mode,
-    themeSwitcher: defaults.themeSwitcher,
   });
 }
 
@@ -168,10 +153,10 @@ function setupRuntime(defaultSettings: SolospecThemeSettings): void {
   const apply = () => {
     applyThemeAttributes(settings);
     ensureSwitcher(settings, (mode) => {
-      settings = resolveSolospecThemeSettings({
+      settings = {
         ...settings,
         mode,
-      });
+      };
 
       writeStoredThemePreferences(settings);
       apply();
