@@ -89,6 +89,8 @@ export default defineConfig({
         scripts: {
             build: 'vite build',
             dev: 'vite',
+            lint: "speculator-lint"
+
         },
         dependencies: {
             '@openuji/solospec': 'latest',
