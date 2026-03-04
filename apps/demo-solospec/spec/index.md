@@ -1,6 +1,3 @@
-:::include ./includes/abstract.md :::
-:::include ./includes/status.md :::
-
 ## Introduction {#intro}
 
 *This section is non-normative*
@@ -109,7 +106,7 @@ Solid and are used as a primary identifier for Users in this specification.
 Details of the flow are available in [[!SOLID-OIDC-PRIMER]]
 
 <figure id="fig-signature">
-    <img src="sequence.mmd.svg" />
+    :::include ./sequence.mmd:::
     <figcaption>Basic sequence of authenticating the user and the client.</figcaption>
 </figure>
 
@@ -555,8 +552,3 @@ The JSON-LD context is defined as:
     }
   }
 ```
-
-
-:::include ./includes/conformance.md :::
-
-<spec-biblio-references />

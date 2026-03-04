@@ -241,22 +241,59 @@ async function resolveFile(
 
             // Resolve the included file
             const includedPath = fileProvider.resolve(file, include.relativePath);
-            const includedFormat = include.format ?? inferFormat(include.relativePath);
+            const isMermaid = includedPath.toLowerCase().endsWith('.mmd');
+            const includedFormat = isMermaid ? 'markdown' : (include.format ?? inferFormat(include.relativePath));
 
             const includedResult = await resolveFile(
                 includedPath, 
                 includedFormat, 
                 ctx, 
-                currentOffset + resultContent.length
+                currentOffset + resultContent.length + (isMermaid ? '```mermaid\n'.length : 0)
             );
             
-            // Ensure block separation
-            const injectContent = includedResult.content.endsWith('\n') 
-                ? includedResult.content 
-                : includedResult.content + '\n';
+            if (isMermaid) {
+                const sideFiles = await getSideFiles(file, ctx);
+                const startLine = countLinesUpTo(content, include.startOffset);
                 
-            resultContent += injectContent;
-            fragments.push(...includedResult.fragments);
+                // Add opening marker
+                fragments.push({
+                    startOffset: currentOffset + resultContent.length,
+                    endOffset: currentOffset + resultContent.length + '```mermaid\n'.length,
+                    file,
+                    format: 'markdown',
+                    originalStartLine: startLine,
+                    sideFiles,
+                });
+                resultContent += '```mermaid\n';
+                
+                // Add included content
+                resultContent += includedResult.content;
+                fragments.push(...includedResult.fragments);
+                
+                // Ensure newline before closing marker
+                if (!resultContent.endsWith('\n')) {
+                    resultContent += '\n';
+                }
+                
+                // Add closing marker
+                fragments.push({
+                    startOffset: currentOffset + resultContent.length,
+                    endOffset: currentOffset + resultContent.length + '```\n'.length,
+                    file,
+                    format: 'markdown',
+                    originalStartLine: startLine,
+                    sideFiles,
+                });
+                resultContent += '```\n';
+            } else {
+                // Ensure block separation
+                const injectContent = includedResult.content.endsWith('\n') 
+                    ? includedResult.content 
+                    : includedResult.content + '\n';
+                    
+                resultContent += injectContent;
+                fragments.push(...includedResult.fragments);
+            }
 
             lastEnd = include.endOffset;
 

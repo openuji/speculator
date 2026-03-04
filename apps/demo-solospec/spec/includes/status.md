@@ -6,4 +6,3 @@ Please note that under the <a href="https://www.w3.org/community/about/agreement
 there is a limited opt-out and other conditions apply.
 Learn more about <a href="https://www.w3.org/community/">W3C Community and Business Groups</a>.
 
-[STATUSTEXT]

@@ -6,10 +6,39 @@
  *   bikeshed-migrate <input.bs> [--out <dir>] [--id <id>] [--dry-run]
  */
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
 import { migrate } from './migrate.js';
 import { fetchBoilerplate, renderBoilerplateFile, parseLogoSlot, SLOT_HEADINGS } from './boilerplate.js';
+
+/**
+ * Replace <img src="*.mmd.*"> with :::include ./*.mmd::: when the .mmd file exists
+ * next to the input file. The .mmd filename is derived by stripping the extension
+ * after ".mmd" (e.g. "sequence.mmd.svg" → "sequence.mmd").
+ */
+async function resolveMmdImages(content: string, dir: string): Promise<string> {
+    const IMG_RE = /<img\b([^>]*)>/gi;
+    const replacements: Array<[start: number, end: number, text: string]> = [];
+
+    let m: RegExpExecArray | null;
+    while ((m = IMG_RE.exec(content)) !== null) {
+        const srcMatch = m[1].match(/\bsrc="([^"]*\.mmd[^"]*)"/);
+        if (!srcMatch) continue;
+
+        const mmdFile = srcMatch[1].replace(/\.mmd.*$/, '') + '.mmd';
+        try {
+            await access(join(dir, mmdFile));
+            replacements.push([m.index, m.index + m[0].length, `:::include ./${mmdFile}:::`]);
+        } catch { /* .mmd file not found — leave img as-is */ }
+    }
+
+    // Apply from end to start to preserve indices
+    let result = content;
+    for (const [start, end, text] of replacements.reverse()) {
+        result = result.slice(0, start) + text + result.slice(end);
+    }
+    return result;
+}
 
 function printUsage() {
     console.log(`
@@ -84,6 +113,9 @@ async function run() {
         console.error(`Error reading ${inputPath}: ${(err as Error).message}`);
         process.exit(1);
     }
+
+    // Replace <img src="*.mmd.*"> with :::include ./*.mmd::: where .mmd file exists
+    content = await resolveMmdImages(content, dirname(inputPath));
 
     // Migrate
     let result;
