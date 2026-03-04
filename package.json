@@ -25,6 +25,9 @@
             "glob": "*",
             "inflight": "*",
             "rimraf": "*"
+        },
+        "overrides": {
+            "@types/node": "^22.10.0"
         }
     }
 }

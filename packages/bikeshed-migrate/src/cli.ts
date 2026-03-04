@@ -6,19 +6,26 @@
  *   bikeshed-migrate <input.bs> [--out <dir>] [--id <id>] [--dry-run]
  */
 
-import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
+import { readFile, writeFile, copyFile, mkdir, access } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
 import { migrate } from './migrate.js';
 import { fetchBoilerplate, renderBoilerplateFile, parseLogoSlot, SLOT_HEADINGS } from './boilerplate.js';
 
+interface MmdResolution {
+    content: string;
+    /** .mmd files to copy: { src: absolute source path, dest: absolute dest path } */
+    filesToCopy: Array<{ src: string; dest: string }>;
+}
+
 /**
- * Replace <img src="*.mmd.*"> with :::include ./*.mmd::: when the .mmd file exists
- * next to the input file. The .mmd filename is derived by stripping the extension
- * after ".mmd" (e.g. "sequence.mmd.svg" → "sequence.mmd").
+ * Replace <img src="*.mmd.*"> with :::include ./file.mmd::: when the .mmd source
+ * exists next to the input file. Returns the modified content and the list of .mmd
+ * files that must be copied into outputDir so the includes resolve correctly.
  */
-async function resolveMmdImages(content: string, dir: string): Promise<string> {
+async function resolveMmdImages(content: string, inputDir: string, outputDir: string): Promise<MmdResolution> {
     const IMG_RE = /<img\b([^>]*)>/gi;
     const replacements: Array<[start: number, end: number, text: string]> = [];
+    const filesToCopy: MmdResolution['filesToCopy'] = [];
 
     let m: RegExpExecArray | null;
     while ((m = IMG_RE.exec(content)) !== null) {
@@ -26,9 +33,13 @@ async function resolveMmdImages(content: string, dir: string): Promise<string> {
         if (!srcMatch) continue;
 
         const mmdFile = srcMatch[1].replace(/\.mmd.*$/, '') + '.mmd';
+        const srcPath = join(inputDir, mmdFile);
         try {
-            await access(join(dir, mmdFile));
+            await access(srcPath);
             replacements.push([m.index, m.index + m[0].length, `:::include ./${mmdFile}:::`]);
+            if (resolve(inputDir) !== resolve(outputDir)) {
+                filesToCopy.push({ src: srcPath, dest: join(outputDir, mmdFile) });
+            }
         } catch { /* .mmd file not found — leave img as-is */ }
     }
 
@@ -37,7 +48,7 @@ async function resolveMmdImages(content: string, dir: string): Promise<string> {
     for (const [start, end, text] of replacements.reverse()) {
         result = result.slice(0, start) + text + result.slice(end);
     }
-    return result;
+    return { content: result, filesToCopy };
 }
 
 function printUsage() {
@@ -64,12 +75,9 @@ export default defineConfig({
       entry: './index.md',
       configPath: './config.json',
       theme: {
-        name: 'bikeshed',
-        mode: 'auto',
-        themeSwitcher: true,
-        w3cLogo: true,
+        name: 'bikeshed'
       },
-    }) as any,
+    })
   ],
 });
 `;
@@ -176,7 +184,8 @@ async function run() {
     }
 
     // Replace <img src="*.mmd.*"> with :::include ./*.mmd::: where .mmd file exists
-    content = await resolveMmdImages(content, dirname(inputPath));
+    const { content: resolvedContent, filesToCopy } = await resolveMmdImages(content, dirname(inputPath), outputDir);
+    content = resolvedContent;
 
     // Migrate
     let result;
@@ -256,6 +265,13 @@ async function run() {
 
     // Write outputs
     await mkdir(outputDir, { recursive: true });
+
+    for (const { src, dest } of filesToCopy) {
+        await mkdir(dirname(dest), { recursive: true });
+        await copyFile(src, dest);
+        console.log(`✓ Copied ${dest}`);
+    }
+
     await writeFile(mdPath, result.md + '\n', 'utf-8');
     await writeFile(configPath, configJson + '\n', 'utf-8');
 

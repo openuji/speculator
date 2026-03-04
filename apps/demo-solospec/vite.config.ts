@@ -7,21 +7,9 @@ export default defineConfig({
       entry: 'spec/index.md',
       configPath: 'spec/config.json',
       theme: {
-        name: 'bikeshed',
-        mode: 'auto',
-        themeSwitcher: true,
-        w3cLogo: true,
-        // codeHighlightTheme: {
-        //   light: 'solarized-light',
-        //   dark: 'solarized-dark',
-        // },
-      },
-      options: {
-        client: {
-          likec4Workspace: 'spec/diagrams',
-        },
-      },
-    }) as any,
+        name: 'bikeshed'
+      }
+    }),
   ],
 });
 
