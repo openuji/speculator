@@ -25,6 +25,12 @@ sequenceDiagram
 ```
 ````
 
+you can also use include semantics to include mermaid diagrams from other files:
+
+```markdown
+:::include ./diagrams/sequence.mmd:::
+```
+
 ### Theming
 
 Solospec seamlessly manages the Mermaid and LikeC4 initialization configuration to make sure it respects the current runtime mode (e.g., inheriting `dark` mode seamlessly during theme-toggling in the Bikeshed theme).
