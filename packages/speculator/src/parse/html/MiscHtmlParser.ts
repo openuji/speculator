@@ -5,38 +5,9 @@
  * Also handles div elements with note/warning/example classes as informative blocks.
  */
 
-import type { Element, RootContent } from 'hast';
+import type { Element } from 'hast';
 import type { HtmlParserModule, ParseContext, BlockHandlerResult } from '#src/parse/registry';
-import type { BlockThematicBreak, BlockNote, Section, Block, BlockExample } from '#src/types/ast.generated';
-
-/**
- * Note type classifications
- */
-const NOTE_CLASSES = ['note', 'warning', 'example', 'issue', 'advisement'] as const;
-type NoteType = 'note' | 'warning' | 'example' | 'issue';
-
-/**
- * Check if element has a note-like class
- */
-function getNoteTypeFromDiv(element: Element, ctx: ParseContext): NoteType | null {
-    // hast converts 'class' to 'className'
-    const className = ctx.getAttr(element, 'className') ?? '';
-    const classes = className.toLowerCase().split(/\s+/);
-
-    for (const noteClass of NOTE_CLASSES) {
-        if (classes.includes(noteClass)) {
-            // Map advisement to warning
-            if (noteClass === 'advisement') return 'warning';
-            return noteClass as NoteType;
-        }
-    }
-
-    // Check data-type attribute
-    const dataType = ctx.getAttr(element, 'data-type');
-    if (dataType === 'example') return 'example';
-
-    return null;
-}
+import type { BlockThematicBreak, Section, Block } from '#src/types/ast.generated';
 
 /**
  * HTML parser module for miscellaneous elements.
@@ -64,38 +35,6 @@ export const MiscHtmlParser: HtmlParserModule = {
 
         // Container elements
         if (tagName === 'div') {
-            // Check for note/warning/example class
-            const noteType = getNoteTypeFromDiv(element, ctx);
-            if (noteType) {
-                const id = ctx.getAttr(element, 'id');
-                const childBlocks = ctx.transformBlockChildren(element.children as RootContent[]);
-                // Filter out sections - notes only contain blocks
-                const children = childBlocks.filter((c): c is Block => c.type !== 'section');
-
-                if (noteType === 'example') {
-                    const result: BlockExample = {
-                        type: 'example',
-                        children,
-                    };
-                    const title = ctx.getAttr(element, 'title') || ctx.getAttr(element, 'data-title');
-                    if (title) result.title = title;
-                    if (id) result.id = id;
-                    if (sourcePos) result.sourcePos = sourcePos;
-                    return result;
-                }
-
-                const result: BlockNote = {
-                    type: 'note',
-                    noteType,
-                    informative: true,
-                    children,
-                };
-
-                if (id) result.id = id;
-                if (sourcePos) result.sourcePos = sourcePos;
-                return result;
-            }
-
             // Regular div - pass through children
             return ctx.transformBlockChildren(element.children) as (Section | Block)[];
         }

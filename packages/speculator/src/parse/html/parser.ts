@@ -120,8 +120,9 @@ export class HtmlUnitParser implements UnitParser {
                     if (child.type === 'element') {
                         const element = child as Element;
                         const tagName = element.tagName.toLowerCase();
-                        const handler = this.registry.getHtmlBlockHandler(tagName);
-                        const shouldTreatAsBlock = !!handler?.handleBlock || isHtmlBlockTag(tagName);
+                        const handlers = this.registry.getHtmlBlockHandlers(tagName);
+                        const hasHandlers = handlers.length > 0;
+                        const shouldTreatAsBlock = hasHandlers || isHtmlBlockTag(tagName);
                         if (shouldTreatAsBlock) {
                             flushInlines();
                             results.push(...this.transformBlock(child, ctx));
@@ -151,28 +152,40 @@ export class HtmlUnitParser implements UnitParser {
         const element = node as Element;
         const tagName = element.tagName.toLowerCase();
 
-        // Look up handler in registry
-        const handler = this.registry.getHtmlBlockHandler(tagName);
-
-        if (handler?.handleBlock) {
-            const result = handler.handleBlock(element, ctx);
-            if (result === null) return [];
-            if (Array.isArray(result)) return result;
-            return [result];
+        // Look up handlers in registry
+        const handlers = this.registry.getHtmlBlockHandlers(tagName);
+        if (handlers.length > 0) {
+            for (const handler of handlers) {
+                if (handler.handleBlock) {
+                    const result = handler.handleBlock(element, ctx);
+                    if (result !== null) {
+                        if (Array.isArray(result)) return result;
+                        return [result];
+                    }
+                }
+            }
+            // All tried handlers returned null - don't fall back to generic element
+            return [];
         }
 
-        const inlineHandler = this.registry.getHtmlInlineHandler(tagName);
-        if (inlineHandler?.handleInline) {
-            const inlineResult = inlineHandler.handleInline(element, ctx);
-            if (inlineResult === null) return [];
-
-            const sourcePos = ctx.createSourcePos(element);
-            const result: BlockParagraph = {
-                type: 'paragraph',
-                children: Array.isArray(inlineResult) ? inlineResult : [inlineResult],
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return [result];
+        const inlineHandlers = this.registry.getHtmlInlineHandlers(tagName);
+        if (inlineHandlers.length > 0) {
+            for (const inlineHandler of inlineHandlers) {
+                if (inlineHandler.handleInline) {
+                    const inlineResult = inlineHandler.handleInline(element, ctx);
+                    if (inlineResult !== null) {
+                        const sourcePos = ctx.createSourcePos(element);
+                        const result: BlockParagraph = {
+                            type: 'paragraph',
+                            children: Array.isArray(inlineResult) ? inlineResult : [inlineResult],
+                        };
+                        if (sourcePos) result.sourcePos = sourcePos;
+                        return [result];
+                    }
+                }
+            }
+            // All tried inline handlers returned null - don't fall back to generic element
+            return [];
         }
 
         const children = ctx.transformBlockChildren(element.children);
@@ -200,14 +213,20 @@ export class HtmlUnitParser implements UnitParser {
         const element = node as Element;
         const tagName = element.tagName.toLowerCase();
 
-        // Look up handler in registry
-        const handler = this.registry.getHtmlInlineHandler(tagName);
-
-        if (handler?.handleInline) {
-            const result = handler.handleInline(element, ctx);
-            if (result === null) return null;
-            if (Array.isArray(result)) return result.length === 1 ? result[0] : result;
-            return result;
+        // Look up handlers in registry
+        const handlers = this.registry.getHtmlInlineHandlers(tagName);
+        if (handlers.length > 0) {
+            for (const handler of handlers) {
+                if (handler.handleInline) {
+                    const result = handler.handleInline(element, ctx);
+                    if (result !== null) {
+                        if (Array.isArray(result)) return result.length === 1 ? result[0] : result;
+                        return result;
+                    }
+                }
+            }
+            // All tried handlers returned null
+            return null;
         }
 
         const children = this.transformInlineChildren(element.children, sourceMapper);

@@ -114,8 +114,8 @@ export interface HtmlParserModule {
 export class ParseHandlerRegistry {
     private mdBlockHandlers = new Map<string, MarkdownParserModule[]>();
     private mdInlineHandlers = new Map<string, MarkdownParserModule[]>();
-    private htmlBlockHandlers = new Map<string, HtmlParserModule>();
-    private htmlInlineHandlers = new Map<string, HtmlParserModule>();
+    private htmlBlockHandlers = new Map<string, HtmlParserModule[]>();
+    private htmlInlineHandlers = new Map<string, HtmlParserModule[]>();
 
     /**
      * Register a Markdown parser module
@@ -159,17 +159,17 @@ export class ParseHandlerRegistry {
             const normalizedTag = tag.toLowerCase();
             
             if (parser.handleBlock) {
-                const existing = this.htmlBlockHandlers.get(normalizedTag);
-                if (!existing || (parser.order ?? 10) < (existing.order ?? 10)) {
-                    this.htmlBlockHandlers.set(normalizedTag, parser);
-                }
+                const handlers = this.htmlBlockHandlers.get(normalizedTag) || [];
+                handlers.push(parser);
+                handlers.sort((a, b) => (a.order ?? 10) - (b.order ?? 10));
+                this.htmlBlockHandlers.set(normalizedTag, handlers);
             }
             
             if (parser.handleInline) {
-                const existing = this.htmlInlineHandlers.get(normalizedTag);
-                if (!existing || (parser.order ?? 10) < (existing.order ?? 10)) {
-                    this.htmlInlineHandlers.set(normalizedTag, parser);
-                }
+                const handlers = this.htmlInlineHandlers.get(normalizedTag) || [];
+                handlers.push(parser);
+                handlers.sort((a, b) => (a.order ?? 10) - (b.order ?? 10));
+                this.htmlInlineHandlers.set(normalizedTag, handlers);
             }
         }
     }
@@ -177,15 +177,15 @@ export class ParseHandlerRegistry {
     /**
      * Get block handler for an HTML tag
      */
-    getHtmlBlockHandler(tagName: string): HtmlParserModule | undefined {
-        return this.htmlBlockHandlers.get(tagName.toLowerCase());
+    getHtmlBlockHandlers(tagName: string): HtmlParserModule[] {
+        return this.htmlBlockHandlers.get(tagName.toLowerCase()) || [];
     }
 
     /**
      * Get inline handler for an HTML tag
      */
-    getHtmlInlineHandler(tagName: string): HtmlParserModule | undefined {
-        return this.htmlInlineHandlers.get(tagName.toLowerCase());
+    getHtmlInlineHandlers(tagName: string): HtmlParserModule[] {
+        return this.htmlInlineHandlers.get(tagName.toLowerCase()) || [];
     }
 }
 

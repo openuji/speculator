@@ -97,11 +97,17 @@ export function transformHastInline(node: HastRootContent, ctx: ParseContext): I
     const element = node as Element;
     const tagName = element.tagName.toLowerCase();
 
-    // Look up handler in the registry provided in the context
-    const handler = ctx.registry.getHtmlInlineHandler(tagName);
-
-    if (handler?.handleInline) {
-        return handler.handleInline(element, ctx);
+    // Look up handlers in the registry provided in the context
+    const handlers = ctx.registry.getHtmlInlineHandlers(tagName);
+    if (handlers.length > 0) {
+        for (const handler of handlers) {
+            if (handler.handleInline) {
+                const result = handler.handleInline(element, ctx);
+                if (result !== null) return result;
+            }
+        }
+        // All tried handlers returned null
+        return null;
     }
 
     return createInlineHtmlElement(
@@ -120,28 +126,42 @@ export function transformHastBlock(node: HastRootContent, ctx: ParseContext): (S
     const element = node as Element;
     const tagName = element.tagName.toLowerCase();
 
-    const handler = ctx.registry.getHtmlBlockHandler(tagName);
-
-    if (handler?.handleBlock) {
-        const result = handler.handleBlock(element, ctx);
-        if (result === null) return [];
-        if (Array.isArray(result)) return result;
-        return [result];
+    const handlers = ctx.registry.getHtmlBlockHandlers(tagName);
+    if (handlers.length > 0) {
+        for (const handler of handlers) {
+            if (handler.handleBlock) {
+                const result = handler.handleBlock(element, ctx);
+                if (result !== null) {
+                    if (Array.isArray(result)) return result;
+                    return [result];
+                }
+            }
+        }
     }
 
-    const inlineHandler = ctx.registry.getHtmlInlineHandler(tagName);
-    if (inlineHandler?.handleInline) {
-        const inlineResult = inlineHandler.handleInline(element, ctx);
-        if (inlineResult === null) return [];
+    const inlineHandlers = ctx.registry.getHtmlInlineHandlers(tagName);
+    if (inlineHandlers.length > 0) {
+        for (const inlineHandler of inlineHandlers) {
+            if (inlineHandler.handleInline) {
+                const inlineResult = inlineHandler.handleInline(element, ctx);
+                if (inlineResult !== null) {
+                    const sourcePos = ctx.createSourcePos(element);
+                    const inlines = Array.isArray(inlineResult) ? inlineResult : [inlineResult];
+                    const paragraph: BlockParagraph = {
+                        type: 'paragraph',
+                        children: inlines,
+                    };
+                    if (sourcePos) paragraph.sourcePos = sourcePos;
+                    return [paragraph];
+                }
+            }
+        }
+    }
 
-        const sourcePos = ctx.createSourcePos(element);
-        const inlines = Array.isArray(inlineResult) ? inlineResult : [inlineResult];
-        const paragraph: BlockParagraph = {
-            type: 'paragraph',
-            children: inlines,
-        };
-        if (sourcePos) paragraph.sourcePos = sourcePos;
-        return [paragraph];
+    // Only fall back to generic element if NO handlers were registered for this tag at all.
+    // If handlers existed but all returned null, we return an empty block list.
+    if (handlers.length > 0 || inlineHandlers.length > 0) {
+        return [];
     }
 
     return [createBlockHtmlElement(element, ctx, ctx.transformBlockChildren(element.children))];
@@ -280,8 +300,8 @@ export function createHastContext(ctx: ParseContext, parentSourcePos?: SourcePos
                     // We know it's an element, but TS needs help differentiating from the generic object
                     const element = child as Element;
                     const tagName = element.tagName.toLowerCase();
-                    const handler = hastCtx.registry.getHtmlBlockHandler(tagName);
-                    const shouldTreatAsBlock = !!handler?.handleBlock || isHtmlBlockTag(tagName);
+                    const handlers = hastCtx.registry.getHtmlBlockHandlers(tagName);
+                    const shouldTreatAsBlock = handlers.some(h => h.handleBlock) || isHtmlBlockTag(tagName);
                     if (shouldTreatAsBlock) {
                         flushInlines();
                         results.push(...transformHastBlock(child as unknown as HastRootContent, hastCtx));

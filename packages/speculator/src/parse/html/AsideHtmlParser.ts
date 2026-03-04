@@ -82,7 +82,7 @@ function findFirstLinkHref(nodes: unknown[]): string | null {
  */
 export const AsideHtmlParser: HtmlParserModule = {
     name: 'AsideHtmlParser',
-    handles: ['aside', 'div', 'figure'],
+    handles: ['aside', 'div', 'figure', 'p'],
     order: 8, // Run before misc parser but after specialized handlers
 
     handleBlock(element: Element, ctx: ParseContext): BlockHandlerResult {
@@ -102,10 +102,12 @@ export const AsideHtmlParser: HtmlParserModule = {
                 return ctx.transformBlockChildren(element.children as RootContent[]);
             }
         } else {
-            // tagName === 'div'
+            // tagName === 'div' or 'p'
             noteType = getNoteType(element, ctx);
             if (!noteType) {
-                // Not a note-type div - pass through children
+                // Not a note-type div/p - pass through children if div,
+                // or return null if p to let ParagraphsHtmlParser handle it.
+                if (tagName === 'p') return null;
                 return ctx.transformBlockChildren(element.children as RootContent[]);
             }
         }
