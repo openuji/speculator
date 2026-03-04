@@ -122,7 +122,8 @@
         "url": "https://www.rfc-editor.org/info/bcp195",
         "publisher": "IETF"
       }
-    }
+    },
+    "copyright": "Copyright © [YEAR] the Contributors to the [TITLE],\npublished by the <a href=\"https://www.w3.org/community/solid/\">Solid Community Group</a>\nunder the <a href=\"https://www.w3.org/community/about/agreements/cla/\">W3C Community Contributor License Agreement (CLA)</a>.\nA human-readable <a href=\"http://www.w3.org/community/about/agreements/cla-deed/\">summary</a> is available."
   },
   "title": "Solid-OIDC",
   "noConformance": true,

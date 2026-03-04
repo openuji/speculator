@@ -64,6 +64,8 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
     return null;
   };
 
+  console.log('meta.copyright', meta)
+
   return (
     <header class="spec-header spec-header--bikeshed">
       <div class="spec-header-top float-right">
@@ -138,11 +140,17 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
           ) : null}
         </dl>
       </details>
-      {meta.copyright ? (
-        <p class="copyright text-sm">
-           Copyright © 2026 the Contributors to the Solid-OIDC, published by the <a href="https://www.w3.org/community/solid/">Solid Community Group</a> under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>. A human-readable <a href="https://www.w3.org/community/about/agreements/cla-deed/">summary</a> is available.
-        </p>
-      ) : null}
+      {meta.copyright ? (() => {
+        const copyright = String(meta.copyright)
+          .replace(/\[YEAR\]/g, String(new Date().getFullYear()))
+          .replace(/\[TITLE\]/g, vm.titleText);
+        return (
+          <p
+            class="copyright text-sm"
+            dangerouslySetInnerHTML={{ __html: copyright }}
+          />
+        );
+      })() : null}
     </header>
   );
 }

@@ -96,7 +96,6 @@ async function run() {
 
     const mdPath = join(outputDir, `${inputName}.md`);
     const configPath = join(outputDir, 'config.json');
-    const configJson = JSON.stringify(result.config, null, 2);
 
     const styles = result.resources.filter(r => r.type === 'style').map(r => r.content).join('\n\n');
     const scripts = result.resources.filter(r => r.type === 'script').map(r => r.content).join('\n\n');
@@ -113,6 +112,14 @@ async function run() {
         boilerplate = await fetchBoilerplate(group, status);
     }
 
+    // Inject copyright into config (not an include file)
+    if (boilerplate?.copyright) {
+        result.config.respec ??= {};
+        result.config.respec.copyright = renderBoilerplateFile('copyright', boilerplate.copyright).trim();
+    }
+
+    const configJson = JSON.stringify(result.config, null, 2);
+
     if (dryRun) {
         console.log(`\n--- ${inputName}.md ---`);
         console.log(result.md);
@@ -123,6 +130,7 @@ async function run() {
         if (result.abstract) { console.log('\n--- includes/abstract.md ---'); console.log(`${SLOT_HEADINGS['abstract']}\n\n${result.abstract.trim()}`); }
         if (boilerplate) {
             for (const [slot, resolved] of Object.entries(boilerplate)) {
+                if (slot === 'copyright') continue;
                 console.log(`\n--- includes/${slot}.md --- (${resolved.source})`);
                 console.log(resolved.content);
             }
@@ -161,12 +169,12 @@ async function run() {
         const includesDir = join(outputDir, 'includes');
         await mkdir(includesDir, { recursive: true });
         for (const [slot, resolved] of Object.entries(boilerplate)) {
-            if (!resolved) continue;
+            if (!resolved || slot === 'copyright') continue; // copyright goes into config.json
             const filePath = join(includesDir, `${slot}.md`);
             await writeFile(filePath, renderBoilerplateFile(slot, resolved), 'utf-8');
             console.log(`✓ Wrote ${filePath}  (${resolved.source})`);
         }
-        const missing = (['status', 'copyright', 'logo', 'conformance'] as const).filter(
+        const missing = (['status', 'logo', 'conformance'] as const).filter(
             s => !(s in boilerplate!),
         );
         if (missing.length > 0) {

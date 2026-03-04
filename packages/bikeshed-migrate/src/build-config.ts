@@ -27,6 +27,7 @@ export interface RespecConfig {
     repository?: string;
     maxTocLevel?: number;
     editors?: PersonEntry[];
+    copyright?: string;
     localBiblio?: BiblioMap;
 }
 
