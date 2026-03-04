@@ -1,5 +1,12 @@
 # @openuji/speculator-search
 
+## 0.3.6
+
+### Patch Changes
+
+- Updated dependencies [8ebe1a8]
+  - @openuji/speculator@0.8.0
+
 ## 0.3.5
 
 ### Patch Changes

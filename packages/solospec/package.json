@@ -1,0 +1,112 @@
+{
+  "name": "@openuji/solospec",
+  "version": "0.2.0",
+  "description": "Static HTML renderer for Speculator AST runtime",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "imports": {
+    "#src/*": "./dist/*.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./components/*": {
+      "import": "./dist/components/*.js"
+    },
+    "./runtime/theme": {
+      "types": "./dist/runtime/theme.d.ts",
+      "import": "./dist/runtime/theme.js"
+    },
+    "./themes/bikeshed/runtime": {
+      "types": "./dist/theme/themes/bikeshed/runtime.d.ts",
+      "import": "./dist/theme/themes/bikeshed/runtime.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build:tokens": "node ./scripts/build-theme-tokens.mjs",
+    "build:styles": "node ./scripts/build-theme-css.mjs",
+    "build": "pnpm run build:styles && tsc",
+    "prepack": "pnpm build",
+    "dev:styles": "node --watch-path=./tokens --watch-path=./src/styles/themes --watch-path=./src/theme ./scripts/build-theme-css.mjs",
+    "dev:tsc": "tsc --watch",
+    "dev": "pnpm run build:styles && concurrently \"pnpm:dev:*\"",
+    "tokens": "pnpm run build:tokens",
+    "lint": "pnpm exec eslint \"src/**/*.{ts,tsx}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "speculator",
+    "renderer",
+    "html",
+    "mermaid",
+    "likec4"
+  ],
+  "license": "MIT",
+  "bin": {
+    "speculator-lint": "bin/speculator-lint.js"
+  },
+  "dependencies": {
+    "@openuji/speculator": "workspace:*",
+    "@openuji/speculator-lint": "workspace:*",
+    "preact": "^10.28.4",
+    "preact-render-to-string": "^6.6.6",
+    "shiki": "^3.23.0"
+  },
+  "peerDependencies": {
+    "@likec4/core": "^1.49.0",
+    "likec4": "^1.49.0",
+    "mermaid": "^11.12.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "peerDependenciesMeta": {
+    "@likec4/core": {
+      "optional": true
+    },
+    "likec4": {
+      "optional": true
+    },
+    "mermaid": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^9.2.1",
+    "eslint": "8.57.0",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.3.0",
+    "vite": "^6.1.1",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^1.6.1"
+  },
+  "lint-staged": {
+    "src/**/!(*.generated).{ts,tsx}": [
+      "eslint --fix --max-warnings 0",
+      "bash -c 'pnpm typecheck'",
+      "bash -c 'pnpm test --run'"
+    ]
+  }
+}

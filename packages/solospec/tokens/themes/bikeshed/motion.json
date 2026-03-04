@@ -1,0 +1,9 @@
+{
+  "motion": {
+    "$type": "duration",
+    "fast": {
+      "$value": "120ms",
+      "$type": "duration"
+    }
+  }
+}

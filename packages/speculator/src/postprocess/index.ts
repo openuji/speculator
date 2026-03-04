@@ -8,7 +8,7 @@
  */
 
 // Transform plugins
-export { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.js';
+export { noteShorthandsPlugin } from './plugins/note-shorthands.js';
 export { statementDistributePlugin } from './plugins/statement-distribute.js';
 
 // Index plugins
@@ -17,6 +17,8 @@ export { dfnIndexPlugin } from './plugins/dfn-index.js';
 export { biblioIndexPlugin } from './plugins/biblio-index.js';
 export { citationIndexPlugin } from './plugins/citation-index.js';
 export { statementIndexPlugin } from './plugins/statement-index.js';
+export { exampleIndexPlugin } from './plugins/example-index.js';
+export { noteIndexPlugin } from './plugins/note-index.js';
 
 // Resolve plugins
 export { referenceResolvePlugin } from './plugins/reference-resolve.js';
@@ -36,13 +38,15 @@ export { walkDocument, type AstVisitor } from './walk-ast.js';
  * 
  * Phase execution order: transform → index → resolve → compute → render
  */
-import { conformanceBoilerplatePlugin } from './plugins/conformance-boilerplate.js';
+import { noteShorthandsPlugin } from './plugins/note-shorthands.js';
 import { statementDistributePlugin } from './plugins/statement-distribute.js';
 import { sectionIdPlugin } from './plugins/section-id.js';
 import { dfnIndexPlugin } from './plugins/dfn-index.js';
 import { biblioIndexPlugin } from './plugins/biblio-index.js';
 import { citationIndexPlugin } from './plugins/citation-index.js';
 import { statementIndexPlugin } from './plugins/statement-index.js';
+import { exampleIndexPlugin } from './plugins/example-index.js';
+import { noteIndexPlugin } from './plugins/note-index.js';
 import { referenceResolvePlugin } from './plugins/reference-resolve.js';
 import { citationResolvePlugin } from './plugins/citation-resolve.js';
 import { bibliographyGeneratorPlugin } from './plugins/bibliography-generator.js';
@@ -52,7 +56,7 @@ import { statementsJsonLdComputePlugin } from './plugins/statementsJsonLd-comput
 
 export const corePlugins = [
     // Transform plugins
-    conformanceBoilerplatePlugin, // order: { transform: 20 }
+    noteShorthandsPlugin,       // order: { transform: 15 }
     statementDistributePlugin,   // order: { transform: 25 }
     // Index plugins
     sectionIdPlugin,            // order: { index: 5 }
@@ -60,6 +64,8 @@ export const corePlugins = [
     biblioIndexPlugin,          // order: { index: 1 }
     citationIndexPlugin,        // order: { index: 12 }
     statementIndexPlugin,       // order: { index: 15 }
+    exampleIndexPlugin,         // order: { index: 15 }
+    noteIndexPlugin,            // order: { index: 16 }
     // Resolve plugins
     referenceResolvePlugin,     // order: { resolve: 10 }
     citationResolvePlugin,      // order: { resolve: 15 }
@@ -69,4 +75,3 @@ export const corePlugins = [
     sectionResolvePlugin,       // order: { compute: 20 }
     statementsJsonLdComputePlugin, // order: { compute: 25 }
 ];
-

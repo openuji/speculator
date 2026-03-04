@@ -1,0 +1,18 @@
+{
+  "font": {
+    "family": {
+      "body": {
+        "$value": "sans-serif",
+        "$type": "fontFamily"
+      },
+      "ui": {
+        "$value": "{font.family.body}",
+        "$type": "fontFamily"
+      },
+      "mono": {
+        "$value": "Menlo, Consolas, Monaco, \"Liberation Mono\", \"Lucida Console\", monospace",
+        "$type": "fontFamily"
+      }
+    }
+  }
+}

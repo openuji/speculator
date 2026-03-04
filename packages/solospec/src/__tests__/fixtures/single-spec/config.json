@@ -1,0 +1,43 @@
+{
+  "id": "example-spec",
+  "title": "Example Protocol",
+  "maturityLevel": "draft",
+  "lastUpdateDate": "2026-02-19",
+  "deps": ["base-spec"],
+  "respec": {
+    "title": "Example Protocol (ReSpec)",
+    "subtitle": "Static rendering fixture",
+    "specStatus": "ED",
+    "publishDate": "2026-02-15",
+    "shortName": "ex-proto",
+    "version": "0.9.0",
+    "abstract": "An example specification used by integration tests.",
+    "editors": [
+      {
+        "name": "Ada Lovelace",
+        "url": "https://example.com/ada",
+        "company": "OpenUJI"
+      }
+    ],
+    "authors": [
+      {
+        "name": "Grace Hopper"
+      }
+    ],
+    "group": {
+      "name": "OpenUJI Working Group",
+      "url": "https://openuji.org/groups/wg"
+    },
+    "repository": "https://github.com/openuji/speculator",
+    "localBiblio": {
+      "RFC2119": {
+        "title": "Key words for use in RFCs",
+        "url": "https://www.rfc-editor.org/rfc/rfc2119"
+      },
+      "URL-STANDARD": {
+        "title": "URL Standard",
+        "url": "https://url.spec.whatwg.org/"
+      }
+    }
+  }
+}

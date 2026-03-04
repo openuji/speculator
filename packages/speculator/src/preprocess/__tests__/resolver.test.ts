@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { MemoryFileProvider } from '#src/file-provider/memory';
 import { resolveIncludes, IncludeResolveError } from '#src/preprocess/include/resolver';
-import type { SourceUnit } from '#src/preprocess/types';
+
 
 describe('resolveIncludes', () => {
     describe('basic resolution', () => {
@@ -18,9 +18,9 @@ describe('resolveIncludes', () => {
 
             expect(source.entryFile).toBe('/spec/format.md');
             expect(source.entryFormat).toBe('markdown');
-            expect(source.units).toHaveLength(1);
-            expect(source.units[0].file).toBe('/spec/format.md');
-            expect(source.units[0].content).toBe('# Title\n\nSome content.');
+            expect(source.sourceMap.fragments).toHaveLength(1);
+            expect(source.sourceMap.fragments[0].file).toBe('/spec/format.md');
+            expect(source.content).toBe('# Title\n\nSome content.');
         });
 
         it('resolves single include', async () => {
@@ -31,10 +31,10 @@ describe('resolveIncludes', () => {
 
             const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
-            expect(source.units.length).toBeGreaterThanOrEqual(2);
+            expect(source.sourceMap.fragments.length).toBeGreaterThanOrEqual(2);
 
             // Should have content before include, included content, and content after
-            const files = source.units.map((u: SourceUnit) => u.file);
+            const files = source.sourceMap.fragments.map((f) => f.file);
             expect(files).toContain('/spec/format.md');
             expect(files).toContain('/spec/intro.md');
         });
@@ -53,8 +53,8 @@ describe('resolveIncludes', () => {
             const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
             // Find intro and conformance indices
-            const introIdx = source.units.findIndex((u: SourceUnit) => u.file === '/spec/intro.md');
-            const confIdx = source.units.findIndex((u: SourceUnit) => u.file === '/spec/conformance.md');
+            const introIdx = source.sourceMap.fragments.findIndex((f) => f.file === '/spec/intro.md');
+            const confIdx = source.sourceMap.fragments.findIndex((f) => f.file === '/spec/conformance.md');
 
             expect(introIdx).toBeGreaterThan(-1);
             expect(confIdx).toBeGreaterThan(-1);
@@ -72,7 +72,7 @@ describe('resolveIncludes', () => {
 
             const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
 
-            const files = source.units.map((u: SourceUnit) => u.file);
+            const files = source.sourceMap.fragments.map((f) => f.file);
             expect(files).toContain('/spec/format.md');
             expect(files).toContain('/spec/a.md');
             expect(files).toContain('/spec/b.md');
@@ -159,14 +159,14 @@ describe('resolveIncludes', () => {
 
             const source = await resolveIncludes('/spec/format.html', 'html', fp);
 
-            const files = source.units.map((u: SourceUnit) => u.file);
+            const files = source.sourceMap.fragments.map((f) => f.file);
             expect(files).toContain('/spec/intro.md');
         });
     });
 });
 
 describe('determinism', () => {
-    it('produces same unit order across multiple runs', async () => {
+    it('produces same content order across multiple runs', async () => {
         const fp = new MemoryFileProvider({
             '/spec/format.md': `# Doc
 :::include ./a.md :::
@@ -178,17 +178,17 @@ describe('determinism', () => {
             '/spec/c.md': 'C',
         });
 
-        const results: string[][] = [];
+        const results: string[] = [];
 
         for (let i = 0; i < 10; i++) {
             const source = await resolveIncludes('/spec/format.md', 'markdown', fp);
-            results.push(source.units.map((u: SourceUnit) => `${u.file}:${u.content.trim()}`));
+            results.push(source.content);
         }
 
         // All runs should produce identical order
-        const first = JSON.stringify(results[0]);
+        const first = results[0];
         for (let i = 1; i < results.length; i++) {
-            expect(JSON.stringify(results[i])).toBe(first);
+            expect(results[i]).toBe(first);
         }
     });
 });

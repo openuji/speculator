@@ -7,6 +7,8 @@
 import type { SpecConfig, PersonEntry, MaturityLevel } from '#src/preprocess/types';
 import type { ResolvedDocumentConfig, RawPersonEntry } from './types.js';
 
+const DATE_PLACEHOLDER = '[DATE]';
+
 /**
  * Normalize a raw person entry to internal format
  */
@@ -45,6 +47,23 @@ function mapSpecStatusToMaturity(specStatus: string): MaturityLevel | undefined 
         'CG-FINAL': 'stable',
     };
     return mapping[specStatus];
+}
+
+function toISODateString(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function resolveDatePlaceholder(dateValue: string | undefined): string | undefined {
+    if (dateValue === undefined) {
+        return undefined;
+    }
+    if (dateValue.trim() !== DATE_PLACEHOLDER) {
+        return dateValue;
+    }
+    return toISODateString(new Date());
 }
 
 /**
@@ -106,15 +125,22 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     } else if (raw.specStatus !== undefined) {
         config.maturityLevel = mapSpecStatusToMaturity(raw.specStatus);
     }
-    if (raw.publishDate !== undefined) {
-        config.publishDate = raw.publishDate;
+    const publishDate = resolveDatePlaceholder(raw.publishDate);
+    if (publishDate !== undefined) {
+        config.publishDate = publishDate;
+    }
+    const creationDate = resolveDatePlaceholder(raw.creationDate);
+    if (creationDate !== undefined) {
+        config.creationDate = creationDate;
     }
     
     // Priority: root lastUpdateDate > respec.modificationDate
-    if (docConfig.lastUpdateDate !== undefined) {
-        config.lastUpdateDate = docConfig.lastUpdateDate;
-    } else if (raw.modificationDate !== undefined) {
-        config.lastUpdateDate = raw.modificationDate;
+    const rootLastUpdateDate = resolveDatePlaceholder(docConfig.lastUpdateDate);
+    const respecModificationDate = resolveDatePlaceholder(raw.modificationDate);
+    if (rootLastUpdateDate !== undefined) {
+        config.lastUpdateDate = rootLastUpdateDate;
+    } else if (respecModificationDate !== undefined) {
+        config.lastUpdateDate = respecModificationDate;
     }
     
     if (raw.version !== undefined) {
@@ -177,7 +203,10 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     if (raw.group !== undefined) {
         config.group = raw.group;
     }
-    if (raw.repository !== undefined) {
+    // Priority: root repository > respec.repository
+    if (docConfig.repository !== undefined) {
+        config.repository = docConfig.repository;
+    } else if (raw.repository !== undefined) {
         config.repository = raw.repository;
     }
 
@@ -197,11 +226,6 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     // Custom overrides - highest priority, applied last
     if (docConfig.custom !== undefined) {
         config.custom = docConfig.custom;
-    }
-
-    if(docConfig.noConformance || docConfig.respec?.noConformance !== undefined) {
-        const noConformance = docConfig.noConformance || docConfig.respec?.noConformance;
-        config.noConformance = noConformance;
     }
 
     // Cross-references

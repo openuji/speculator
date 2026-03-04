@@ -80,7 +80,7 @@ export const VocabHtmlParser: HtmlParserModule = {
 
     handleBlock(element: Element, ctx: ParseContext): BlockHandlerResult {
         const sourcePos = ctx.createSourcePos(element);
-        const sideFiles = ctx.unit.sideFiles;
+        const sideFiles = sourcePos.offset !== undefined ? ctx.sourceMapper.getSideFiles(sourcePos.offset) : undefined;
         if (!sideFiles || Object.keys(sideFiles).length === 0) return null;
 
         const sideFileEntries = toOrderedSideFileEntries(sideFiles);
@@ -95,7 +95,7 @@ export const VocabHtmlParser: HtmlParserModule = {
         }
 
         if (contextAttr !== undefined) {
-            return resolveContextRequest(contextAttr, sideFileEntries, ctx.unit.file, sourcePos, sideFiles, showExpandedIri);
+            return resolveContextRequest(contextAttr, sideFileEntries, sourcePos.file, sourcePos, sideFiles, showExpandedIri);
         }
 
         const classFallbackTarget = getClassFallbackTargetRequest(element, ctx);

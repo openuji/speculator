@@ -131,67 +131,51 @@ See [Spec Statements](/features/spec-statements) for more on JSON-LD output.
 
 ---
 
-## Unnumbered Sections
+## TOC Exclusion and Unnumbered Sections
 
-Some sections—like **Abstract** and **Status of This Document (SOTD)**—should appear in the Table of Contents without a section number.
+Some sections—like **Abstract** and **Status of This Document (SOTD)**—should appear in the Table of Contents without a section number, or even be excluded entirely from the TOC.
 
 ### How It Works
 
-When a section is marked as `unnumbered`:
+When a section is marked to omit TOC numbering (`data-no-toc-counter`) or excluded entirely (`data-no-toc`):
 
-1. It appears in the TOC **without a number**
-2. Subsequent numbered sections continue from where numbering left off
-3. The section is **not included** in `document.computed.headingNumbers`
+1. **`data-no-toc-counter`**: It appears in the TOC **without a number**. Subsequent numbered sections continue from where numbering left off. The section is **not included** in `document.computed.headingNumbers`.
+2. **`data-no-toc`**: The section and its children are completely excluded from the generated Table of Contents.
 
 ### HTML Syntax
 
-Add one of the following CSS classes to your `<section>` element:
+Add the data attributes to your `<section>` element:
 
 ```html
-<!-- Using 'unnumbered' class -->
-<section id="abstract" class="unnumbered">
+<!-- Exclude from TOC entirely -->
+<section id="abstract" data-no-toc>
   <h1>Abstract</h1>
-  <p>This section is unnumbered in the TOC.</p>
+  <p>This section is excluded from the TOC entirely.</p>
 </section>
 
-<!-- Using 'informative' class (implies unnumbered) -->
-<section id="sotd" class="informative">
+<!-- Include in TOC, but without a number -->
+<section id="sotd" data-no-toc-counter>
   <h1>Status of This Document</h1>
-</section>
-
-<!-- Using 'introductory' class (implies unnumbered) -->
-<section id="intro-note" class="introductory">
-  <h1>About This Spec</h1>
 </section>
 ```
 
 ### Markdown Syntax
 
-Use the `{.unnumbered}` suffix on headings:
+Use the `{data-no-toc}` or `{data-no-toc-counter}` suffix on headings:
 
 ```markdown
-# Abstract {.unnumbered}
+# Abstract {data-no-toc}
 
-This is an unnumbered abstract.
+This is an abstract excluded from TOC.
 
 # Introduction
 
 This should be numbered as "1".
 ```
 
-The `{.unnumbered}` suffix is automatically stripped from the heading text in the output.
-
-### Supported Class Names
-
-| Class          | Effect                                  |
-| -------------- | --------------------------------------- |
-| `unnumbered`   | Explicitly marks section as unnumbered  |
-| `informative`  | Non-normative section (also unnumbered) |
-| `introductory` | Introductory content (also unnumbered)  |
-
 ### Cascading to Children
 
-When a parent section is marked as unnumbered, **all child sections automatically inherit the unnumbered status**.
+When a parent section is marked with `data-no-toc` or `data-no-toc-counter`, **all child sections automatically inherit the status**.
 
 ---
 

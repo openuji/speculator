@@ -1,0 +1,49 @@
+{
+  "color": {
+    "$type": "color",
+    "surface": {
+      "light": {
+        "bg": { "$value": "#ffffff", "$type": "color" },
+        "ink": { "$value": "#141414", "$type": "color" },
+        "muted": { "$value": "#545454", "$type": "color" },
+        "line": { "$value": "#d5d5d5", "$type": "color" },
+        "link": { "$value": "#2977d9", "$type": "color" },
+        "linkHover": { "$value": "#165db6", "$type": "color" },
+        "soft": { "$value": "#f4f6fb", "$type": "color" },
+        "panel": { "$value": "#f8f9fc", "$type": "color" },
+        "panelShadow": {"$value": "rgba(0,0,0,.1)", "$type": "color"}
+      },
+      "dark": {
+        "bg": { "$value": "#000000", "$type": "color" },
+        "ink": { "$value": "#ebebeb", "$type": "color" },
+        "muted": { "$value": "#b3b3b3", "$type": "color" },
+        "line": { "$value": "#2a2a2a", "$type": "color" },
+        "link": { "$value": "#66a8ff", "$type": "color" },
+        "linkHover": { "$value": "#8cbdff", "$type": "color" },
+        "soft": { "$value": "#11131a", "$type": "color" },
+        "panel": { "$value": "#080808", "$type": "color" },
+        "panelShadow": {"$value": "rgba(255,255,255,.1)", "$type": "color"}
+
+      }
+    },
+    "text": {
+      "light": {
+        "heading": { "$value": "#005a9c", "$type": "color" }
+      },
+      "dark": {
+        "heading": { "$value": "#88aaff", "$type": "color" }
+      }
+    },
+    "state": {
+      "note": { "$value": "hsl(120deg, 100%, 35%)", "$type": "color" },
+      "example": { "$value": "hsl(50deg, 90%, 60%)", "$type": "color" },
+      "warning": { "$value": "#e48f1f", "$type": "color" },
+      "issue": { "$value": "#e05252", "$type": "color" }
+    },
+    "badge": {
+      "accent": { "$value": "{color.state.note}", "$type": "color" },
+      "warn": { "$value": "#d6820d", "$type": "color" },
+      "danger": { "$value": "#d54242", "$type": "color" }
+    }
+  }
+}

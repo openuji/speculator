@@ -743,9 +743,14 @@
                                 "$ref": "#/definitions/Inline"
                             }
                         },
-                        "unnumbered": {
+                        "noToc": {
                             "type": "boolean",
-                            "description": "If true, the section created from this heading will be unnumbered.",
+                            "description": "If true, the section created from this heading will not be numbered and will be omitted from the TOC.",
+                            "default": false
+                        },
+                        "noTocCount": {
+                            "type": "boolean",
+                            "description": "If true, this heading and its children will not increment the section counter and will not be numbered, but will still be included in the TOC.",
                             "default": false
                         },
                         "dataCopConcept": {
@@ -1277,6 +1282,14 @@
                             "items": {
                                 "$ref": "#/definitions/Block"
                             }
+                        },
+                        "src": {
+                            "type": "string",
+                            "description": "Optional source URL, e.g., for issue notes."
+                        },
+                        "data": {
+                            "type": "object",
+                            "description": "Optional payload data fetched from the source."
                         }
                     },
                     "required": [
@@ -1451,9 +1464,14 @@
                             "$ref": "#/definitions/BlockHeading",
                             "description": "Optional section heading"
                         },
-                        "unnumbered": {
+                        "noToc": {
                             "type": "boolean",
-                            "description": "If true, this section and its descendants do not increment the TOC counter at this level.",
+                            "description": "If true, this section and its descendants do not increment the TOC counter at this level and are omitted from the TOC.",
+                            "default": false
+                        },
+                        "noTocCount": {
+                            "type": "boolean",
+                            "description": "If true, this section and its descendants do not increment the section counter and are not numbered, but are still included in the TOC.",
                             "default": false
                         },
                         "children": {
@@ -1898,6 +1916,14 @@
                 "version": {
                     "type": "string"
                 },
+                "respec": {
+                    "type": "object",
+                    "properties": {
+                        "thisVersion": { "type": "string" },
+                        "latestVersion": { "type": "string" }
+                    },
+                    "additionalProperties": true
+                },
                 "deps": {
                     "type": "array",
                     "items": { "type": "string" },
@@ -1953,6 +1979,11 @@
                     "type": "string",
                     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
                     "description": "ISO 8601 date format (YYYY-MM-DD)"
+                },
+                "creationDate": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "Original creation date (YYYY-MM-DD)"
                 },
                 "lastUpdateDate": {
                     "type": "string",
@@ -2052,10 +2083,6 @@
                     "type": "object",
                     "description": "Highest priority user-defined properties",
                     "additionalProperties": true
-                },
-                "noConformance": {
-                    "type": "boolean",
-                    "description": "If true, disables automatic conformance section generation."
                 }
             }
         },

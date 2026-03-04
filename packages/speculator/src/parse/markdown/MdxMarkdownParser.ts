@@ -153,6 +153,11 @@ function collectMdxText(node: unknown): string {
         return candidate.value;
     }
 
+    if ((candidate.type === 'mdxTextExpression' || candidate.type === 'mdxFlowExpression')
+        && typeof candidate.value === 'string') {
+        return `{${candidate.value}}`;
+    }
+
     if (Array.isArray(candidate.children)) {
         return candidate.children.map(collectMdxText).join('');
     }
@@ -163,6 +168,22 @@ function collectMdxText(node: unknown): string {
 function createMdxContext(ctx: ParseContext): ParseContext {
     return {
         ...ctx,
+        transformInlineChildren: (children) => {
+            const flattened: MdastRootContent[] = [];
+            for (const child of children as MdastRootContent[]) {
+                if (
+                    child
+                    && typeof child === 'object'
+                    && child.type === 'paragraph'
+                    && Array.isArray((child as Paragraph).children)
+                ) {
+                    flattened.push(...((child as Paragraph).children as unknown as MdastRootContent[]));
+                    continue;
+                }
+                flattened.push(child);
+            }
+            return ctx.transformInlineChildren(flattened);
+        },
         getAttr: (element, name) => {
             if (isMdxVirtualElement(element)) {
                 const value = getMdxAttr(element, name);
@@ -205,7 +226,7 @@ function appendBlockResult(target: (Section | Block)[], result: BlockHandlerResu
 function isBlockLikeMdxTag(node: MdxJsxNode, ctx: ParseContext): boolean {
     const tagName = (node.name ?? '').toLowerCase();
     if (!tagName) return false;
-    if (ctx.registry.getHtmlBlockHandler(tagName)?.handleBlock) return true;
+    if (ctx.registry.getHtmlBlockHandlers(tagName).some(h => h.handleBlock)) return true;
     if (isHtmlBlockTag(tagName)) return true;
     if (tagName.includes('-')) return true;
     return false;
@@ -269,15 +290,27 @@ function handleMdxBlock(node: MdxJsxNode, ctx: ParseContext): BlockHandlerResult
     if (!tagName) return fallbackBlockFromChildren(node, ctx);
 
     const wrapperCtx = createMdxContext(ctx);
-    const blockHandler = ctx.registry.getHtmlBlockHandler(tagName);
-    if (blockHandler?.handleBlock) {
-        return blockHandler.handleBlock(toMdxVirtualElement(node, 'block'), wrapperCtx);
+    const handlers = ctx.registry.getHtmlBlockHandlers(tagName);
+    for (const handler of handlers) {
+        if (handler.handleBlock) {
+            const result = handler.handleBlock(toMdxVirtualElement(node, 'block'), wrapperCtx);
+            if (result !== null) return result;
+        }
     }
 
-    const inlineHandler = ctx.registry.getHtmlInlineHandler(tagName);
-    if (inlineHandler?.handleInline) {
-        const inlineResult = inlineHandler.handleInline(toMdxVirtualElement(node, 'inline'), wrapperCtx);
-        return inlineResultToParagraph(inlineResult, ctx.createSourcePos(node));
+    const inlineHandlers = ctx.registry.getHtmlInlineHandlers(tagName);
+    for (const inlineHandler of inlineHandlers) {
+        if (inlineHandler.handleInline) {
+            const inlineResult = inlineHandler.handleInline(toMdxVirtualElement(node, 'inline'), wrapperCtx);
+            if (inlineResult !== null) {
+                return inlineResultToParagraph(inlineResult, ctx.createSourcePos(node));
+            }
+        }
+    }
+
+    // If handlers existed but all returned null, don't fall back to children
+    if (handlers.length > 0 || inlineHandlers.length > 0) {
+        return [];
     }
 
     return fallbackBlockFromChildren(node, ctx);
@@ -288,9 +321,16 @@ function handleMdxInline(node: MdxJsxNode, ctx: ParseContext): InlineHandlerResu
     if (!tagName) return fallbackInlineFromChildren(node, ctx);
 
     const wrapperCtx = createMdxContext(ctx);
-    const inlineHandler = ctx.registry.getHtmlInlineHandler(tagName);
-    if (inlineHandler?.handleInline) {
-        return inlineHandler.handleInline(toMdxVirtualElement(node, 'inline'), wrapperCtx);
+    const handlers = ctx.registry.getHtmlInlineHandlers(tagName);
+    if (handlers.length > 0) {
+        for (const handler of handlers) {
+            if (handler.handleInline) {
+                const result = handler.handleInline(toMdxVirtualElement(node, 'inline'), wrapperCtx);
+                if (result !== null) return result;
+            }
+        }
+        // All tried handlers returned null
+        return null;
     }
 
     return fallbackInlineFromChildren(node, ctx);
@@ -331,8 +371,10 @@ export const MdxMarkdownParser: MarkdownParserModule = {
                 if (!isMdxJsxNode(onlyChild)) return null;
 
                 const tagName = (onlyChild.name ?? '').toLowerCase();
-                const blockHandler = tagName ? ctx.registry.getHtmlBlockHandler(tagName) : undefined;
-                if (!blockHandler?.handleBlock && !isHtmlBlockTag(tagName) && !tagName.includes('-')) return null;
+                if (!tagName) return null;
+                const handlers = ctx.registry.getHtmlBlockHandlers(tagName);
+                const hasBlockHandler = handlers.some(h => h.handleBlock);
+                if (!hasBlockHandler && !isHtmlBlockTag(tagName) && !tagName.includes('-')) return null;
 
                 return handleMdxBlock(onlyChild, ctx);
             }

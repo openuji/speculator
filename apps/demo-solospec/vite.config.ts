@@ -1,0 +1,29 @@
+import { defineConfig } from 'vite';
+import { solospecPlugin } from '@openuji/solospec/vite';
+
+export default defineConfig({
+  plugins: [
+    solospecPlugin({
+      entry: 'spec/index.md',
+      configPath: 'spec/config.json',
+      theme: {
+        name: 'bikeshed',
+        mode: 'auto',
+        themeSwitcher: true,
+        w3cLogo: true,
+        // codeHighlightTheme: {
+        //   light: 'solarized-light',
+        //   dark: 'solarized-dark',
+        // },
+      },
+      options: {
+        client: {
+          likec4Workspace: 'spec/diagrams',
+        },
+      },
+    }) as any,
+  ],
+});
+
+
+

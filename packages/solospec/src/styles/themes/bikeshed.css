@@ -1,0 +1,1136 @@
+@import "../generated/themes/bikeshed.tokens.css";
+@import "tailwindcss";
+
+@layer base {
+  html:has(.solospec-root),
+  body:has(.solospec-root) {
+    margin: 0;
+    padding: 0;
+    overscroll-behavior: none;
+  }
+
+  .solospec-root,
+  .solospec-root * {
+    box-sizing: border-box;
+  }
+
+  .solospec-root[data-solospec-theme="bikeshed"] {
+    --font-solospec-body: var(--dt-font-family-body);
+    --font-solospec-ui: var(--dt-font-family-ui);
+    --font-solospec-mono: var(--dt-font-family-mono);
+
+    --color-solospec-light-bg: var(--dt-color-surface-light-bg);
+    --color-solospec-light-ink: var(--dt-color-surface-light-ink);
+    --color-solospec-light-muted: var(--dt-color-surface-light-muted);
+    --color-solospec-light-line: var(--dt-color-surface-light-line);
+    --color-solospec-light-link: var(--dt-color-surface-light-link);
+    --color-solospec-light-link-hover: var(--dt-color-surface-light-link-hover);
+    --color-solospec-light-soft: var(--dt-color-surface-light-soft);
+    --color-solospec-light-panel: var(--dt-color-surface-light-panel);
+    --color-solospec-light-panel-shadow: var(
+      --dt-color-surface-light-panel-shadow
+    );
+    --color-solospec-light-heading: var(--dt-color-text-light-heading);
+
+    --color-solospec-dark-bg: var(--dt-color-surface-dark-bg);
+    --color-solospec-dark-ink: var(--dt-color-surface-dark-ink);
+    --color-solospec-dark-muted: var(--dt-color-surface-dark-muted);
+    --color-solospec-dark-line: var(--dt-color-surface-dark-line);
+    --color-solospec-dark-link: var(--dt-color-surface-dark-link);
+    --color-solospec-dark-heading: var(--dt-color-text-dark-heading);
+    --color-solospec-dark-link-hover: var(--dt-color-surface-dark-link-hover);
+    --color-solospec-dark-soft: var(--dt-color-surface-dark-soft);
+    --color-solospec-dark-panel: var(--dt-color-surface-dark-panel);
+    --color-solospec-dark-panel-shadow: var(
+      --dt-color-surface-dark-panel-shadow
+    );
+
+    --color-solospec-callout-note: var(--dt-color-state-note);
+    --color-solospec-callout-example: var(--dt-color-state-example);
+    --color-solospec-callout-warning: var(--dt-color-state-warning);
+    --color-solospec-callout-issue: var(--dt-color-state-issue);
+    --color-solospec-badge-accent: var(--dt-color-badge-accent);
+    --color-solospec-badge-warn: var(--dt-color-badge-warn);
+    --color-solospec-badge-danger: var(--dt-color-badge-danger);
+
+    --size-solospec-logo: var(--dt-size-logo);
+    --spacing-solospec-logo-padding: var(--dt-spacing-logo-padding);
+    --radius-solospec-logo: var(--dt-radius-logo);
+    --size-solospec-shadow-soft: var(--dt-size-shadow-soft);
+    --size-solospec-backdrop-blur: var(--dt-size-blur-backdrop);
+    --breakpoint-mobile: var(--dt-size-breakpoint-mobile);
+    --solospec-bg: var(--color-solospec-light-bg);
+    --solospec-ink: var(--color-solospec-light-ink);
+    --solospec-muted: var(--color-solospec-light-muted);
+    --solospec-line: var(--color-solospec-light-line);
+
+    --solospec-link-hover: var(--color-solospec-light-link-hover);
+    --solospec-soft: var(--color-solospec-light-soft);
+    --solospec-panel: var(--color-solospec-light-panel);
+    --solospec-panel-shadow: var(--color-solospec-light-panel-shadow);
+    --solospec-watermark: url(https://www.w3.org/StyleSheets/TR/2016/logos/UD-watermark);
+    --solospec-watermark-vertical: url(https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-light-draft.svg);
+    --solospec-heading: var(--color-solospec-light-heading);
+    --solospec-link: var(--solospec-heading);
+    --solospec-toc-heading-text: hsla(203, 20%, 40%, 0.7);
+    --solospec-a-visited-underline: #707070;
+    --solospec-a-underline: #707070;
+
+    --solospec-w3c-logo-size: 120px;
+    --solospec-content-max-with: 848px;
+  }
+
+  .solospec-root[data-solospec-theme="bikeshed"][data-solospec-mode="dark"],
+  .solospec-root[data-solospec-theme="bikeshed"][data-solospec-effective-mode="dark"] {
+    --solospec-bg: var(--color-solospec-dark-bg);
+    --solospec-ink: var(--color-solospec-dark-ink);
+    --solospec-muted: var(--color-solospec-dark-muted);
+    --solospec-line: var(--color-solospec-dark-line);
+    --solospec-link-hover: var(--color-solospec-dark-link-hover);
+    --solospec-soft: var(--color-solospec-dark-soft);
+    --solospec-panel: var(--color-solospec-dark-panel);
+    --solospec-panel-shadow: var(--color-solospec-dark-panel-shadow);
+    --solospec-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
+    --solospec-watermark-vertical: url("https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-dark-draft");
+    --solospec-heading: var(--color-solospec-dark-heading);
+    --solospec-link: var(--solospec-heading);
+    --solospec-a-hover: rgba(25%, 25%, 25%, 0.25);
+    --solospec-a-underline: #555;
+    --solospec-a-visited-underline: #555;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .solospec-root[data-solospec-theme="bikeshed"][data-solospec-mode="auto"]:not(
+        [data-solospec-effective-mode]
+      ) {
+      --solospec-bg: var(--color-solospec-dark-bg);
+      --solospec-ink: var(--color-solospec-dark-ink);
+      --solospec-muted: var(--color-solospec-dark-muted);
+      --solospec-line: var(--color-solospec-dark-line);
+      --solospec-link-hover: var(--color-solospec-dark-link-hover);
+      --solospec-soft: var(--color-solospec-dark-soft);
+      --solospec-panel: var(--color-solospec-dark-panel);
+      --solospec-panel-shadow: var(--color-solospec-dark-panel-shadow);
+      --solospec-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
+      --solospec-watermark-vertical: url("https://www.w3.org/StyleSheets/TR/2021/logos/UD-watermark-dark-draft");
+      --solospec-a-hover: rgba(25%, 25%, 25%, 0.25);
+      --solospec-a-underline: #555;
+      --solospec-a-visited-underline: #555;
+      --solospec-link: var(--solospec-heading);
+    }
+  }
+
+  .solospec-root {
+    min-height: 100dvh;
+    background: var(--solospec-bg);
+    color: var(--solospec-ink);
+    font-family: var(--font-solospec-body);
+    font-size: 1rem;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+  }
+
+  .solospec-root a {
+    color: var(--solospec-link);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.12em;
+    text-decoration: underline;
+    text-decoration-color: var(--solospec-a-underline);
+    &:visited {
+      text-decoration-color: var(--solospec-a-visited-underline);
+    }
+  }
+
+  dd > p:first-child,
+  li > p:first-child {
+    margin-top: 0;
+  }
+
+  ul,
+  ol {
+    margin-left: 0;
+    padding-left: 2em;
+  }
+
+  li {
+    margin: 0.25em 0 0.5em;
+    padding: 0;
+  }
+
+  dt {
+    font-weight: bold;
+  }
+  dl dd {
+    margin: 0 0 0.5em 2em;
+  }
+
+  .head dd + dd {
+    /* compact for header */
+    margin-top: -0.5em;
+  }
+  .solospec-root a:hover {
+    color: var(--solospec-link-hover);
+  }
+
+  .solospec-root :is(code, pre, var, kbd, samp) {
+    font-family: var(--font-solospec-mono);
+  }
+
+  .solospec-root hr {
+    border: 0;
+    border-top: 1px solid var(--solospec-line);
+    margin: 1.25rem 0;
+  }
+
+  .solospec-root .spec-page {
+    display: flex;
+    flex-direction: row;
+    gap: calc(var(--spacing) * 18);
+    .spec-content {
+      min-width: 0;
+      overflow: hidden;
+      width: 100%;
+      max-width: var(--solospec-content-max-with);
+      padding: calc(var(--spacing) * 6);
+    }
+  }
+
+  ol,
+  menu {
+    list-style: decimal;
+  }
+  ul {
+    list-style: disc;
+  }
+
+  pre,
+  pre > code {
+    overflow-x: auto;
+    display: block;
+  }
+
+  .solospec-root.bikeshed-theme-bg {
+    background-position: left, right;
+    background-image:
+      var(--solospec-watermark-vertical), var(--solospec-watermark);
+    background-repeat: repeat-y;
+  }
+
+  .solospec-root .spec-header {
+    grid-column: 2;
+    border-bottom: 1px solid var(--solospec-line);
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+  }
+
+  #w3c-state {
+    margin-top: 0;
+    margin-bottom: 1.5em;
+    font-size: 1.4rem;
+    font-family: inherit;
+    line-height: 1.2;
+    hyphens: manual;
+
+    color: var(--solospec-heading);
+  }
+
+  .solospec-root .spec-abstract {
+    margin-top: 1rem;
+    max-width: 76ch;
+  }
+
+  .solospec-root .spec-abstract p {
+    margin: 0;
+  }
+
+  .solospec-root .spec-more {
+    max-width: 76ch;
+    margin-top: 0.95rem;
+    border: 1px solid var(--solospec-line);
+    background: var(--solospec-panel);
+    padding: 0.3rem 0.8rem 0.8rem;
+  }
+
+  .solospec-root .bikeshed-more-details {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .solospec-root .spec-more > summary {
+    margin: 0.15rem 0;
+    cursor: pointer;
+    font-family: var(--font-solospec-ui);
+    font-size: 1.01rem;
+    font-weight: 700;
+  }
+
+  .solospec-root .spec-more[open] > summary {
+    margin-bottom: 0.8rem;
+  }
+
+  .solospec-root .spec-meta {
+    margin: 0;
+    display: grid;
+    font-family: var(--font-solospec-ui);
+    line-height: 1.3;
+  }
+
+  .solospec-root .spec-meta-row {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .solospec-root .spec-meta-row dt {
+    color: var(--solospec-ink);
+    font-weight: 700;
+  }
+
+  .solospec-root .spec-meta-row dd {
+    margin: 0;
+    color: var(--solospec-ink);
+  }
+
+  .solospec-root .spec-layout {
+    display: contents;
+  }
+
+  .solospec-root > :first-child {
+    margin-top: 0;
+  }
+
+  .solospec-root > :last-child {
+    margin-bottom: 0;
+  }
+
+  .solospec-root p,
+  .solospec-root ul,
+  .solospec-root ol,
+  .solospec-root table,
+  .solospec-root pre,
+  .solospec-root blockquote,
+  .solospec-root figure,
+  .solospec-root details,
+  .solospec-root .ui-callout,
+  .solospec-root .idl-block {
+    margin: 0.95rem 0;
+  }
+
+  .solospec-root :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-solospec-ui);
+    line-height: 1.2;
+    font-weight: 700;
+    hyphens: manual;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    min-width: 0;
+    width: fit-content;
+  }
+  .solospec-root :is(h1, h2, h3) {
+    color: var(--solospec-heading);
+  }
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 3rem;
+    margin-bottom: 1em;
+  }
+
+  h2 + section > h3,
+  h3 + section > h4,
+  h4 + section > h5,
+  h5 + section > h6 {
+    margin-top: 1.2rem;
+  }
+
+  .solospec-root h1 {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin: 0 0 0.1em;
+  }
+
+  .solospec-root h2 {
+    font-size: 1.4rem;
+    font-weight: 400;
+  }
+
+  .solospec-root h3 {
+    font-size: 1.2rem;
+
+    font-weight: 400;
+  }
+
+  .solospec-root h4 {
+    font-size: 1rem;
+  }
+
+  .solospec-root .section-heading {
+    scroll-margin-top: 0.5rem;
+    position: relative;
+  }
+
+  .solospec-root .section-heading > .self-link {
+    position: absolute;
+    top: 0;
+    left: -2ex;
+    width: 2ex;
+    height: 100%;
+    text-align: center;
+    border: none;
+    text-decoration: none;
+    opacity: 0.5;
+  }
+
+  .solospec-root .section-heading > .self-link::before {
+    content: "§";
+    color: var(--solospec-muted);
+  }
+
+  .solospec-root .section-heading:hover > .self-link {
+    opacity: 1;
+  }
+
+  .solospec-root .section-number {
+    margin-right: 0.25rem;
+    font-family: var(--font-solospec-ui);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .solospec-root ul,
+  .solospec-root ol {
+    padding-left: 1.25rem;
+  }
+
+  .solospec-root blockquote {
+    border-left: 0.28rem solid var(--solospec-line);
+    margin: 1rem 0;
+    padding: 0.35rem 0.85rem;
+    color: var(--solospec-muted);
+    background: color-mix(in oklab, var(--solospec-soft) 48%, transparent);
+  }
+
+  .solospec-root table {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 1px solid var(--solospec-line);
+    border-bottom: 1px solid var(--solospec-line);
+    font-size: 0.97em;
+  }
+
+  .solospec-root th,
+  .solospec-root td {
+    padding: 0.44rem 0.52rem;
+    border-bottom: 1px solid var(--solospec-line);
+    vertical-align: top;
+    text-align: left;
+  }
+
+  .solospec-root th {
+    font-weight: 700;
+  }
+
+  .solospec-root :is(code, kbd, var, samp) {
+    background: color-mix(in oklab, var(--solospec-soft) 70%, transparent);
+    border: 1px solid var(--solospec-line);
+    border-radius: 0.16rem;
+    padding: 0.02em 0.3em;
+    font-size: 0.9em;
+  }
+
+  .solospec-root :is(pre:not(.mermaid), .ui-code-block, .idl-block) {
+    border: 1px solid var(--solospec-line);
+    background: var(--solospec-soft);
+    overflow: auto;
+  }
+  .solospec-root pre.mermaid {
+    border: none;
+    background: var(--solospec-bg);
+  }
+
+  /* Shiki dual-theme: light mode (default) */
+  .solospec-root .shiki,
+  .solospec-root .shiki span {
+    color: var(--shiki-light);
+    background-color: var(--shiki-light-bg);
+  }
+
+  /* Shiki adds line backgrounds sometimes (e.g., jsonld strings), force them transparent to match the block */
+  .solospec-root .shiki span {
+    background-color: transparent !important;
+  }
+
+  .solospec-root .shiki-highlighted .shiki {
+    overflow-x: auto;
+    min-width: 0;
+    padding: 0.65rem;
+  }
+
+  .solospec-root .shiki-highlighted .shiki,
+  .solospec-root .shiki-highlighted .shiki code {
+    border: none;
+    background: transparent;
+  }
+
+  .solospec-root .ui-code-block.shiki-highlighted {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+
+  .solospec-root .shiki-highlighted .shiki pre {
+    margin: 0;
+  }
+
+  /* Shiki dual-theme: dark mode via theme switcher */
+  .solospec-root[data-solospec-effective-mode="dark"] .shiki,
+  .solospec-root[data-solospec-effective-mode="dark"] .shiki span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+
+  /* Shiki dual-theme: dark mode via system preference */
+  @media (prefers-color-scheme: dark) {
+    .solospec-root[data-solospec-mode="system"]:not(
+        [data-solospec-effective-mode]
+      )
+      .shiki,
+    .solospec-root[data-solospec-mode="system"]:not(
+        [data-solospec-effective-mode]
+      )
+      .shiki
+      span {
+      color: var(--shiki-dark);
+      background-color: var(--shiki-dark-bg);
+    }
+  }
+
+  .solospec-root :is(.ui-code-header, .idl-block-header) {
+    border-bottom: 1px solid var(--solospec-line);
+    color: var(--solospec-muted);
+    font-family: var(--font-solospec-ui);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.32rem 0.52rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+
+  .solospec-root :is(.ui-code-block pre, .idl-block-pre) {
+    margin: 0;
+    padding: 0.65rem;
+    font-size: 0.9em;
+  }
+
+  .solospec-root :is(.idl-copy-btn, .ui-code-copy-btn) {
+    border: 1px solid var(--solospec-line);
+    background: transparent;
+    color: inherit;
+    padding: 0.08rem 0.45rem;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.2s ease-out;
+  }
+
+  .solospec-root :is(.idl-copy-btn, .ui-code-copy-btn):hover {
+    background: color-mix(in oklab, var(--solospec-soft) 80%, transparent);
+  }
+
+  .solospec-root :is(.idl-copy-btn, .ui-code-copy-btn).copied {
+    /* Use a very subtle green to fit the aesthetics */
+    background: color-mix(in oklab, #4caf50 15%, transparent);
+    transition: all 0s; /* Flash immediately */
+  }
+
+  .solospec-root a.logo {
+    display: block;
+
+    img[src*="logos/W3C"] {
+      box-sizing: content-box;
+      border-radius: 50%;
+      width: var(--solospec-w3c-logo-size);
+      height: var(--solospec-w3c-logo-size);
+      padding: 10px;
+      display: block;
+      background: var(--color-solospec-light-bg);
+    }
+  }
+}
+
+@layer components {
+  .solospec-root .ui-callout,
+  .solospec-root :is(.note, .example, .warning) {
+    border: 1px solid var(--solospec-line);
+    border-left-width: 0.32rem;
+    background: color-mix(
+      in oklab,
+      var(--solospec-panel) 85%,
+      var(--solospec-soft)
+    );
+    padding: 0.55rem 0.75rem;
+  }
+
+  .solospec-root .ui-callout-note,
+  .solospec-root .note {
+    border-left-color: var(--color-solospec-callout-note);
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .solospec-root .ui-callout-note > header {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .solospec-root .ui-callout-note > header .ui-badge {
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--color-solospec-callout-note);
+  }
+
+  .solospec-root .ui-callout-note > header .ui-badge::after {
+    content: ":";
+  }
+
+  .solospec-root .ui-callout-note > div {
+    min-width: 0;
+  }
+
+  .solospec-root .ui-callout-note > div > p {
+    margin: 0;
+  }
+
+  .solospec-root .ui-callout-example,
+  .solospec-root .example {
+    border-left-color: var(--color-solospec-callout-example);
+  }
+
+  .solospec-root .ui-callout-warning,
+  .solospec-root .warning {
+    border-left-color: var(--color-solospec-callout-warning);
+  }
+
+  .solospec-root .ui-callout-issue {
+    border-left-color: var(--color-solospec-callout-issue);
+  }
+
+  .solospec-root .issue.no-marker {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    border: 1px solid var(--color-solospec-callout-issue);
+    border-left-width: 0.32rem;
+    border-left-color: var(--color-solospec-callout-issue);
+    background: color-mix(
+      in oklab,
+      var(--solospec-panel) 85%,
+      var(--solospec-soft)
+    );
+    padding: 0.55rem 0.75rem;
+    margin: 0.95rem 0;
+    position: relative;
+  }
+
+
+  .solospec-root .issue.no-marker .marker {
+    display: block;
+    font-family: var(--font-solospec-ui);
+    font-weight: 400;
+    color: var(--color-solospec-callout-issue);
+    text-decoration: none;
+    
+  }
+
+  .solospec-root .issue.no-marker .marker:hover {
+    text-decoration: underline;
+  }
+
+  .solospec-root .issue.no-marker > a:last-child {
+    display: block;
+    color: var(--solospec-ink);
+    text-decoration: none;
+  }
+
+  .solospec-root .issue.no-marker > a:last-child:hover {
+    text-decoration: underline;
+  }
+
+  .solospec-root .ui-callout header {
+    margin: 0 0 0.35rem;
+  }
+
+  .solospec-root .ui-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--solospec-line);
+    padding: 0.08rem 0.45rem;
+    border-radius: 0.9rem;
+    font-size: 0.74rem;
+    font-family: var(--font-solospec-ui);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .solospec-root .ui-badge-accent {
+    color: var(--color-solospec-badge-accent);
+    border-color: color-mix(
+      in oklab,
+      var(--color-solospec-badge-accent) 40%,
+      var(--solospec-line)
+    );
+  }
+
+  .solospec-root .ui-badge-warn {
+    color: var(--color-solospec-badge-warn);
+    border-color: color-mix(
+      in oklab,
+      var(--color-solospec-badge-warn) 40%,
+      var(--solospec-line)
+    );
+  }
+
+  .solospec-root .ui-badge-danger {
+    color: var(--color-solospec-badge-danger);
+    border-color: color-mix(
+      in oklab,
+      var(--color-solospec-badge-danger) 40%,
+      var(--solospec-line)
+    );
+  }
+
+  .solospec-root .solospec-theme-switcher {
+    position: fixed;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid var(--solospec-line);
+    background: color-mix(
+      in oklab,
+      var(--solospec-bg) 74%,
+      var(--solospec-soft)
+    );
+    padding: 0.24rem 0.34rem;
+    font-family: var(--font-solospec-ui);
+    font-size: 0.75rem;
+    backdrop-filter: blur(var(--size-solospec-backdrop-blur));
+    opacity: 0.88;
+  }
+
+  .solospec-root .solospec-theme-switcher:hover {
+    opacity: 1;
+  }
+
+  .solospec-root .solospec-theme-switcher-label {
+    color: var(--solospec-muted);
+    margin-right: 0.2rem;
+  }
+
+  .solospec-root .solospec-theme-switcher button {
+    border: 1px solid var(--solospec-line);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 0.05rem 0.42rem;
+    cursor: pointer;
+  }
+
+  .solospec-root .solospec-theme-switcher button[data-active="true"] {
+    border-color: var(--solospec-link);
+    color: var(--solospec-link);
+    font-weight: 700;
+  }
+
+  .solospec-root .solospec-theme-switcher button:focus-visible {
+    outline: 2px solid var(--solospec-link);
+    outline-offset: 1px;
+  }
+}
+
+/* === Unlayered Overrides (must stay outside @layer) === */
+
+@media (width <= 78em) {
+  #toc {
+    display: none;
+  }
+
+  .solospec-root .spec-page {
+    flex-direction: column;
+    gap: 0;
+    .spec-content {
+      margin-inline: auto;
+    }
+  }
+}
+
+/**
+ * TOC Toggler.
+ * taken from https://www.w3.org/StyleSheets/TR/2021/base.css
+ */
+
+@media print {
+  #toc-nav {
+    display: none;
+  }
+}
+@media not print {
+  #toc-nav {
+    position: fixed;
+    z-index: 3;
+    bottom: 0;
+    left: 0;
+    margin: 0;
+    min-width: 1.33em;
+    border-top-right-radius: 2rem;
+    box-shadow: 0 0 var(--size-solospec-shadow-soft);
+    font-size: 1.5em;
+    background: var(--solospec-bg);
+    border-top-right-radius: 1.33rem;
+
+    button {
+      display: none !important;
+      font-weight: normal;
+      padding: 0rem 1rem;
+      border-radius: 2rem;
+    }
+
+    &:hover {
+      button {
+        display: block !important;
+        cursor: pointer;
+      }
+    }
+  }
+  #toc-nav > a {
+    display: block;
+    white-space: nowrap;
+
+    padding: 0.1em 0.3em;
+    margin: 0;
+
+    border-top: 1px solid var(--solospec-line);
+    border-right: 1px solid var(--solospec-line);
+
+    border-top-right-radius: 1.33rem;
+    color: var(--solospec-a-underline);
+
+    background: var(--solospec-bg);
+
+    
+  }
+  
+
+  #toc-nav > #toc-theme-toggle {
+    display: flex !important;
+    align-items: center;
+    gap: 0.2rem;
+    height: 3rem;
+    text-decoration: none;
+    & span {
+      margin-right: 0.4rem;
+    }
+    & button[data-active="true"] {
+      border-color: var(--solospec-link);
+      color: var(--solospec-bg);
+      background: var(--solospec-link);
+    }
+  }
+
+  /* statusbar gets in the way on keyboard focus; remove once browsers fix */
+  #toc-nav > a[href="#toc"]:not(:hover):focus:last-child {
+    padding-bottom: 1.5rem;
+  }
+
+  #toc-nav:not(:hover) > a:not(:focus) > span + span {
+    /* Ideally this uses :focus-within on #toc-nav */
+    display: none;
+  }
+  #toc-nav > a > span + span {
+    padding-right: 0.2em;
+  }
+
+  [data-solospec-theme="bikeshed"] {
+    &.toc-collapsed {
+      #toc {
+        display: none !important;
+      }
+    }
+
+    &.toc-expanded {
+      #toc {
+        display: block !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        bottom: 0;
+        margin: 0;
+        box-shadow: 0 0 var(--size-solospec-shadow-soft);
+        background: var(--solospec-bg);
+      }
+      #toc-mobile {
+        display: none !important;
+      }
+    }
+  }
+}
+
+/** Table of Contents *********************************************************/
+.solospec-root {
+  &:not(.toc-collapsed) .toc-sidebar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    max-height: 100dvh;
+    overflow: auto;
+    margin: 0;
+
+    background-position: left, right;
+    background-image:
+      var(--solospec-watermark-vertical), var(--solospec-watermark);
+    background-repeat: repeat-y;
+
+    background-color: var(--solospec-panel);
+    z-index: 1;
+    box-shadow: -0.1em 0 0.25em rgba(0, 0, 0, 0.1) inset;
+    box-shadow: -0.1em 0 0.25em var(--solospec-panel-shadow) inset;
+
+    width: 376px;
+    padding: 0 1rem 0 calc(26px + 1rem);
+    box-sizing: content-box;
+    flex-shrink: 0;
+  }
+
+  @media screen and (min-width: 78em) {
+    &:not(.toc-collapsed) #toc h2 {
+      margin-top: 0.8rem;
+      font-variant: small-caps;
+      font-variant: all-small-caps;
+      text-transform: lowercase;
+      font-weight: bold;
+      color: var(--solospec-toc-heading-text);
+    }
+  }
+
+  .toc a {
+    color: var(--solospec-ink);
+    /* More spacing; use padding to make it part of the click target. */
+    padding: 0.1rem 1px 0;
+    /* Larger, more consistently-sized click target */
+    display: block;
+    /* Switch to using border-bottom */
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+
+  .toc a:focus,
+  .toc a:hover {
+    background: var(--solospec-a-hover, rgba(75%, 75%, 75%, 0.25));
+    border-bottom-color: var(--toclink-underline, #3980b5);
+  }
+  .toc a:visited:focus,
+  .toc a:visited:hover {
+    border-bottom-color: var(--toclink-visited-underline, #054572);
+  }
+
+  .toc,
+  .toc ol,
+  .toc ul,
+  .toc li {
+    list-style: none; /* Numbers must be inlined into source */
+    /* because generated content isn't search/selectable and markers can't do multilevel yet */
+    margin: 0;
+    padding: 0;
+  }
+  .toc {
+    line-height: 1.1em; /* consistent spacing */
+  }
+
+  /* ToC not indented until third level, but font style & margins show hierarchy */
+  .toc > li {
+    font-weight: bold;
+  }
+  .toc > li li {
+    font-weight: normal;
+  }
+  .toc > li li li {
+    font-size: 95%;
+  }
+  .toc > li li li li {
+    font-size: 90%;
+  }
+  .toc > li li li li li {
+    font-size: 85%;
+  }
+
+  .toc > li {
+    margin: 1.5rem 0;
+  }
+  .toc > li li {
+    margin: 0.3rem 0;
+  }
+  .toc > li li li {
+    margin-left: 2rem;
+  }
+
+  /* Section numbers in a column of their own */
+  .toc .toc-number {
+    float: left;
+    width: 4rem;
+    white-space: nowrap;
+  }
+  .toc > li li li li .toc-number {
+    font-size: 85%;
+  }
+  .toc > li li li li li .toc-number {
+    font-size: 100%;
+  }
+
+  :not(li) > .toc {
+    margin-left: 5rem;
+  }
+  .toc .toc-number {
+    margin-left: -5rem;
+  }
+  .toc > li li li .toc-number {
+    margin-left: -7rem;
+  }
+  .toc > li li li li .toc-number {
+    margin-left: -9rem;
+  }
+  .toc > li li li li li .toc-number {
+    margin-left: -11rem;
+  }
+
+  /* Tighten up indentation in narrow ToCs */
+  @media (max-width: 30em) {
+    :not(li) > .toc {
+      margin-left: 4rem;
+    }
+    .toc .toc-number {
+      margin-left: -4rem;
+    }
+    .toc > li li li {
+      margin-left: 1rem;
+    }
+    .toc > li li li .toc-number {
+      margin-left: -5rem;
+    }
+    .toc > li li li li .toc-number {
+      margin-left: -6rem;
+    }
+    .toc > li li li li li .toc-number {
+      margin-left: -7rem;
+    }
+  }
+  @media screen and (min-width: 78em) {
+    &:not(.toc-collapsed) :not(li) > .toc {
+      margin-left: 4rem;
+    }
+    &:not(.toc-collapsed) .toc .toc-number {
+      margin-left: -4rem;
+    }
+    &:not(.toc-collapsed) .toc > li li li {
+      margin-left: 1rem;
+    }
+    &:not(.toc-collapsed) .toc > li li li .toc-number {
+      margin-left: -5rem;
+    }
+    &:not(.toc-collapsed) .toc > li li li li .toc-number {
+      margin-left: -6rem;
+    }
+    &:not(.toc-collapsed) .toc > li li li li li .toc-number {
+      margin-left: -7rem;
+    }
+  }
+  .toc-sidebar #toc :not(li) > .toc {
+    margin-left: 4rem;
+  }
+  .toc-sidebar #toc .toc .toc-number {
+    margin-left: -4rem;
+  }
+  .toc-sidebar #toc .toc > li li li {
+    margin-left: 1rem;
+  }
+  .toc-sidebar #toc .toc > li li li .toc-number {
+    margin-left: -5rem;
+  }
+  .toc-sidebar #toc .toc > li li li li .toc-number {
+    margin-left: -6rem;
+  }
+  .toc-sidebar #toc .toc > li li li li li .toc-number {
+    margin-left: -7rem;
+  }
+
+  .toc li {
+    clear: both;
+  }
+}
+
+
+.solospec-root .ui-callout-example,
+.solospec-root .example {
+  border-left-color: var(--color-solospec-callout-example) !important; /* Gold/Yellow */
+}
+
+.solospec-root .ui-callout-example header,
+.solospec-root .example header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.solospec-root .ui-callout-example .ui-badge,
+.solospec-root .example .ui-badge {
+  background: transparent !important;
+  border: none !important;
+  color: var(--color-solospec-callout-example) !important;
+  font-weight: bold;
+  font-size: 0.9rem;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+
+.solospec-root .ui-callout .self-link {
+  display: inline-block;
+  color: #4b8cc7;
+  text-decoration: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  /* margin-left: 0.5rem; */
+  margin-left: auto;
+}
+
+.solospec-root .ui-callout .self-link::after {
+  content: "¶";
+}
+.solospec-root .issue .self-link {
+  margin-left: auto;
+}
+
+.solospec-root .ui-callout .self-link:hover {
+  color: var(--solospec-link-hover);
+}
+
+/* Dark mode adjustments for callouts */
+.solospec-root[data-solospec-theme="bikeshed"][data-solospec-effective-mode="dark"]
+  .ui-callout,
+.solospec-root[data-solospec-theme="bikeshed"][data-solospec-effective-mode="dark"]
+  :is(.note, .example, .warning) {
+  background: color-mix(in oklab, var(--solospec-panel) 60%, transparent);
+}

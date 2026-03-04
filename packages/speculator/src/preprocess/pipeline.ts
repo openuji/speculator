@@ -84,7 +84,12 @@ export async function preprocess(options: PreprocessOptions): Promise<Preprocess
     // Load document config (includes ID resolution)
     let config: SpecConfig;
     try {
-        const docConfig = await loadDocConfig(fileProvider, canonicalEntry, options.env);
+        const docConfig = await loadDocConfig(
+            fileProvider,
+            canonicalEntry,
+            options.env,
+            options.configPath
+        );
         config = normalizeConfig(docConfig);
     } catch (error) {
         if (error instanceof ConfigLoadError) {

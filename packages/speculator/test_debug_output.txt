@@ -1,0 +1,47 @@
+
+ RUN  v1.6.1 /Users/zavalit/Projects/openuji/speculator/packages/speculator
+
+stdout | src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > enforces include boundaries: sections in include are closed when returning to parent
+[Assembler] File: /spec/includes/conformance.md, firstMatchIndex: -1, Stack size: 1
+[Assembler] File: /spec/includes/conformance.md, firstMatchIndex: 1, Stack size: 2
+[Assembler] File: /spec/includes/conformance.md, firstMatchIndex: 1, Stack size: 3
+[Assembler] Popping 1 sections to return to /spec/includes/conformance.md
+[Assembler] File: /spec/index.md, firstMatchIndex: -1, Stack size: 2
+
+stdout | src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > preserves nesting for nested includes
+[Assembler] File: index.md, firstMatchIndex: -1, Stack size: 1
+[Assembler] File: sub.md, firstMatchIndex: -1, Stack size: 2
+[Assembler] File: sub.md, firstMatchIndex: 2, Stack size: 3
+[Assembler] File: index.md, firstMatchIndex: 1, Stack size: 3
+[Assembler] Popping 1 sections to return to index.md
+
+ ❯ src/parse/__tests__/assembler-include-nesting.test.ts  (2 tests | 1 failed) 5ms
+   ❯ src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > enforces include boundaries: sections in include are closed when returning to parent
+     → expected [ { type: 'section', …(3) } ] to have a length of 2 but got 1
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > enforces include boundaries: sections in include are closed when returning to parent
+AssertionError: expected [ { type: 'section', …(3) } ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ src/parse/__tests__/assembler-include-nesting.test.ts:47:24
+     45|         // ]
+     46| 
+     47|         expect(result).toHaveLength(2);
+       |                        ^
+     48|         expect(result[0]).toMatchObject({
+     49|             type: 'section',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  11:05:40
+   Duration  187ms (transform 26ms, setup 0ms, collect 23ms, tests 5ms, environment 0ms, prepare 43ms)
+

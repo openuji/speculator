@@ -55,4 +55,35 @@ describe('Config Loading with Env Vars', () => {
         expect(config.title).toBe('My Awesome Spec');
         expect(config.id).toBe('my-spec');
     });
+
+    it('loadDocConfig uses explicit configPath when provided', async () => {
+        const fp = new MemoryFileProvider({
+            '/spec/config.json': JSON.stringify({
+                id: 'sibling-config',
+                title: 'Sibling Config',
+            }),
+            '/shared/custom-config.json': JSON.stringify({
+                id: 'explicit-config',
+                title: '${SPEC_TITLE}',
+            }),
+            '/spec/index.md': '# Hello',
+        });
+
+        vi.stubGlobal('process', {
+            ...process,
+            env: {
+                SPEC_TITLE: 'Explicit Config Title',
+            },
+        });
+
+        const config = await loadDocConfig(
+            fp,
+            '/spec/index.md',
+            undefined,
+            '/shared/custom-config.json'
+        );
+
+        expect(config.id).toBe('explicit-config');
+        expect(config.title).toBe('Explicit Config Title');
+    });
 });

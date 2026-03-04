@@ -17,7 +17,6 @@ describe('bibliography-generator', () => {
             children: [],
             indexes: {
                 citations,
-                bibliography: [], // unused by plugin here directly?
                 definitions: [],
                 requirements: [],
                 issues: [],
@@ -31,7 +30,6 @@ describe('bibliography-generator', () => {
         const globalIndex: RuntimeGlobalIndex = {
             definitions: new Map(),
             bibliography: bibMap,
-            statements: []
         };
 
         const workspace: RuntimeWorkspace = {
@@ -74,7 +72,9 @@ describe('bibliography-generator', () => {
             }
         ];
 
+        const mockTag = { type: 'htmlElement' as const, tagName: 'spec-biblio-references', children: [] };
         const ctx = createMockContext(citations, bibliography);
+        ctx.document.children.push(mockTag);
         // Note: In real pipeline, citationIndexPlugin populates this. 
         // Here we mock it via createMockContext.
         await bibliographyGeneratorPlugin.compute!(ctx);
@@ -83,7 +83,7 @@ describe('bibliography-generator', () => {
         const refSection = children.find(c => c.type === 'section' && c.id === 'references') as Section;
 
         expect(refSection).toBeDefined();
-        expect(refSection.unnumbered).toBe(true);
+        expect(refSection.noTocCount).toBe(true);
         expect(refSection.children).toHaveLength(2);
 
         const normativeSec = refSection.children.find(c => c.type === 'section' && c.id === 'bibliography-generator-normative-references') as Section;
@@ -118,7 +118,10 @@ describe('bibliography-generator', () => {
              { key: 'RFC2119', title: 'RFC 2119', sourcePos: { file: 'config.json', line: 1, column: 1 } }
         ];
 
+        const mockTag = { type: 'htmlElement' as const, tagName: 'spec-biblio-references', children: [] };
         const ctx = createMockContext(citations, bibliography);
+        ctx.document.children.push(mockTag);
+
         await bibliographyGeneratorPlugin.compute!(ctx);
 
         const refSection = ctx.document.children.find(c => c.type === 'section' && c.id === 'references') as Section;
@@ -129,5 +132,22 @@ describe('bibliography-generator', () => {
 
         const informativeSec = refSection.children.find(c => c.type === 'section' && c.id === 'bibliography-generator-informative-references');
         expect(informativeSec).toBeUndefined();
+    });
+
+    it('should not inject references if <spec-biblio-references /> is missing', async () => {
+        const citations: IndexCiteEntry[] = [
+            { key: 'RFC2119', kind: 'normative', sourcePos: { file: 'doc.md', line: 1, column: 1 } }
+        ];
+
+        const bibliography: IndexBiblioEntry[] = [
+             { key: 'RFC2119', title: 'RFC 2119', sourcePos: { file: 'config.json', line: 1, column: 1 } }
+        ];
+
+        const ctx = createMockContext(citations, bibliography);
+
+        await bibliographyGeneratorPlugin.compute!(ctx);
+
+        const refSection = ctx.document.children.find(c => c.type === 'section' && c.id === 'references');
+        expect(refSection).toBeUndefined();
     });
 });

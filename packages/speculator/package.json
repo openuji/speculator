@@ -1,6 +1,6 @@
 {
     "name": "@openuji/speculator",
-    "version": "0.7.5",
+    "version": "0.8.0",
     "description": "AST-first specification processor with schema-central architecture",
     "type": "module",
     "main": "dist/index.js",
@@ -22,7 +22,7 @@
     "devDependencies": {
         "@types/hast": "^3.0.4",
         "@types/mdast": "^4.0.4",
-        "@types/node": "^20.10.0",
+        "@types/node": "^22.10.0",
         "@typescript-eslint/eslint-plugin": "^7.0.0",
         "@typescript-eslint/parser": "^7.0.0",
         "ajv": "^8.12.0",

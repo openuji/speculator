@@ -4,33 +4,80 @@
 
 import { describe, it, expect } from 'vitest';
 import { parse, parseCompositeSource } from '#src/parse/pipeline';
-import type { PreprocessedSpec, SourceUnit, CompositeSource } from '#src/preprocess/types';
+import type { PreprocessedSpec, SourceMapFragment, SourceFormat } from '#src/preprocess/types';
 import type { Section, Block } from '#src/types/ast.generated';
 
 function createPreprocessedSpec(
-    units: SourceUnit[],
-    config: PreprocessedSpec['config'] = { id: 'test-doc' }
+    units: { file: string; format: string; content: string; startLine: number }[],
+    config: PreprocessedSpec['config'] = { 
+        id: 'test-doc',
+        deps: [],
+        specIri: 'https://example.org/spec'
+    }
 ): PreprocessedSpec {
+    let content = '';
+    const fragments: SourceMapFragment[] = [];
+
+    for (const unit of units) {
+        const startOffset = content.length;
+        content += unit.content;
+        const endOffset = content.length;
+
+        fragments.push({
+            startOffset,
+            endOffset,
+            file: unit.file,
+            format: unit.format as SourceFormat,
+            originalStartLine: unit.startLine,
+        });
+
+        // Add newline if missing to avoid gluing content (standard resolver behavior)
+        if (!content.endsWith('\n')) {
+            content += '\n';
+        }
+    }
+
     return {
         config,
         source: {
             entryFile: units[0]?.file ?? '/spec/format.md',
-            entryFormat: units[0]?.format ?? 'markdown',
-            units,
+            entryFormat: (units[0]?.format as SourceFormat) ?? 'markdown',
+            content,
+            sourceMap: { fragments },
             includeGraph: new Map(),
         },
     };
+}
+
+function getInlineText(inlines: unknown[] | undefined): string {
+    if (!Array.isArray(inlines)) return '';
+    return inlines
+        .map((inline) => {
+            if (!inline || typeof inline !== 'object') return '';
+            if ('value' in inline && typeof inline.value === 'string') return inline.value;
+            if ('children' in inline && Array.isArray(inline.children)) return getInlineText(inline.children);
+            return '';
+        })
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 describe('parse', () => {
     describe('markdown parsing', () => {
         it('parses simple markdown document', () => {
             const spec = createPreprocessedSpec([{
-                file: '/spec/format.md',
+                file: '/spec/index.md',
                 format: 'markdown',
-                content: '# Title\n\nParagraph text.',
+                content: '# Title',
                 startLine: 1,
-            }]);
+            }], { 
+                id: 'test-spec',
+                title: 'Design Tokens Format',
+                status: 'ED',
+                deps: [],
+                specIri: 'https://example.org/spec'
+            });
 
             const result = parse(spec);
 
@@ -148,7 +195,7 @@ describe('parse', () => {
                     content: '# Title',
                     startLine: 1,
                 }],
-                { id: 'test-doc', title: 'My Spec', status: 'ED' }
+                { id: 'test-doc', title: 'My Spec', status: 'ED', deps: [], specIri: 'https://example.org/spec' }
             );
 
             const result = parse(spec);
@@ -160,18 +207,24 @@ describe('parse', () => {
         it('populates document metadata from config', () => {
             const spec = createPreprocessedSpec(
                 [{
-                    file: '/spec/format.md',
+                    file: '/spec/index.md',
                     format: 'markdown',
                     content: '# Title',
                     startLine: 1,
                 }],
-                { id: 'test-doc', title: 'Test Spec', shortName: 'test' }
+                { 
+                    id: 'test-spec',
+                    title: 'Design Tokens Format',
+                    shortName: 'design-tokens',
+                    deps: [],
+                    specIri: 'https://example.org/spec'
+                }
             );
 
             const result = parse(spec);
 
-            expect(result.result?.document.metadata?.title).toBe('Test Spec');
-            expect(result.result?.document.metadata?.shortName).toBe('test');
+            expect(result.result?.document.metadata?.title).toBe('Design Tokens Format');
+            expect(result.result?.document.metadata?.shortName).toBe('design-tokens');
         });
     });
 
@@ -194,6 +247,8 @@ describe('parse', () => {
                 id: 'design-tokens',
                 title: 'Design Tokens Format',
                 shortName: 'design-tokens',
+                deps: [],
+                specIri: 'https://example.org/spec'
             });
 
             const result = parse(spec);
@@ -207,13 +262,13 @@ describe('parse', () => {
                 {
                     file: '/spec/format.html',
                     format: 'html',
-                    content: '<section id="abstract"><h2>Abstract</h2><p>Short summary</p></section>',
+                    content: '<section id="abstract">\n<h2>Abstract</h2>\n\n## Introduction\n\nText...\n\n</section>',
                     startLine: 1,
                 },
                 {
                     file: '/spec/intro.md',
                     format: 'markdown',
-                    content: '## Introduction\nText...',
+                    content: '## Appendix\nTail',
                     startLine: 1,
                 },
             ]);
@@ -223,28 +278,33 @@ describe('parse', () => {
             // Find nodes from each file
             const doc = result.result?.document;
             const htmlSection = doc?.children.find(
-                (c): c is Section | Block => typeof c === 'object' && c !== null && 'sourcePos' in c && c.sourcePos?.file === '/spec/format.html'
+                (c): c is Section =>
+                    c.type === 'section'
+                    && typeof c === 'object'
+                    && c !== null
+                    && 'sourcePos' in c
+                    && c.sourcePos?.file === '/spec/format.html'
             );
             expect(htmlSection).toBeDefined();
+            const introHeading = htmlSection?.children.find(
+                (child): child is Block => child.type === 'heading'
+            );
+            expect(getInlineText(introHeading?.children)).toBe('Introduction');
         });
     });
 });
 
 describe('parseCompositeSource', () => {
     it('parses without full PreprocessedSpec', () => {
-        const source: CompositeSource = {
-            entryFile: '/spec/format.md',
-            entryFormat: 'markdown',
-            units: [{
-                file: '/spec/format.md',
-                format: 'markdown',
-                content: '# Title',
-                startLine: 1,
-            }],
-            includeGraph: new Map(),
-        };
-
-        const result = parseCompositeSource(source);
+        const units = [{
+            file: '/spec/format.md',
+            format: 'markdown',
+            content: '# Title',
+            startLine: 1,
+        }];
+        
+        const spec = createPreprocessedSpec(units);
+        const result = parseCompositeSource(spec.source);
 
         expect(result.result?.document.type).toBe('document');
     });

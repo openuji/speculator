@@ -4,11 +4,22 @@
 
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
-import type { SourceUnit } from '#src/preprocess/types';
 import type { BlockParagraph, InlineWorkspaceDfnReference, InlineSectionReference } from '#src/types/ast.generated';
+import { SourceMapper } from '#src/parse/source-mapper';
 
-function createUnit(content: string, file = '/spec/test.md'): SourceUnit {
-    return { file, format: 'markdown', content, startLine: 1 };
+function createUnit(content: string, file = '/spec/test.md'): [string, SourceMapper] {
+    return [
+        content,
+        new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file,
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        })
+    ];
 }
 
 describe('ShorthandsMarkdownParser', () => {
@@ -16,8 +27,8 @@ describe('ShorthandsMarkdownParser', () => {
 
     describe('references [[REF]]', () => {
         it('parses basic reference as InlineCite', () => {
-            const unit = createUnit('See [[RFC2119]].');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('See [[RFC2119]].');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children).toHaveLength(3);
@@ -27,34 +38,84 @@ describe('ShorthandsMarkdownParser', () => {
         });
 
         it('parses forced normative [[!REF]]', () => {
-            const unit = createUnit('[[!HTML]] is required.');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('[[!HTML]] is required.');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[0]).toMatchObject({ type: 'cite', key: 'HTML', forcedNormative: true });
         });
 
         it('parses forced informative [[?FOO]]', () => {
-            const unit = createUnit('Check [[?FOO]].');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('Check [[?FOO]].');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({ type: 'cite', key: 'FOO', forcedInformative: true });
         });
 
         it('parses expanded reference [[[REF]]]', () => {
-            const unit = createUnit('Title: [[[FULLSCREEN]]]');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('Title: [[[FULLSCREEN]]]');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({ type: 'cite', key: 'FULLSCREEN', expanded: true });
+        });
+
+        it('parses reference with fragment/path locator', () => {
+            const [content, mapper] = createUnit('See [[UMA#rfc.section.2]] and [[RFC2119/section-2#anchor]].');
+            const blocks = parser.parse(content, mapper);
+            const para = blocks[0] as BlockParagraph;
+
+            const cites = para.children.filter((child) => child.type === 'cite');
+            expect(cites).toHaveLength(2);
+            expect(cites[0]).toMatchObject({
+                type: 'cite',
+                key: 'UMA',
+                fragment: 'rfc.section.2',
+            });
+            expect(cites[1]).toMatchObject({
+                type: 'cite',
+                key: 'RFC2119',
+                path: 'section-2',
+                fragment: 'anchor',
+            });
+        });
+
+        it('parses reference alias [[REF|text]] as cite children', () => {
+            const [content, mapper] = createUnit('See [[RFC2119|keywords]].');
+            const blocks = parser.parse(content, mapper);
+            const para = blocks[0] as BlockParagraph;
+
+            expect(para.children[1]).toMatchObject({
+                type: 'cite',
+                key: 'RFC2119',
+                children: [{ type: 'text', value: 'keywords' }],
+            });
+        });
+
+        it('parses ReSpec section reference [[#id]] as sectionReference', () => {
+            const [content, mapper] = createUnit('See [[#intro]] and [[#details|the details]].');
+            const blocks = parser.parse(content, mapper);
+            const para = blocks[0] as BlockParagraph;
+
+            const refs = para.children.filter((child) => child.type === 'sectionReference');
+            expect(refs).toHaveLength(2);
+            expect(refs[0]).toMatchObject({
+                type: 'sectionReference',
+                targetId: 'intro',
+            });
+            expect(refs[1]).toMatchObject({
+                type: 'sectionReference',
+                targetId: 'details',
+                children: [{ type: 'text', value: 'the details' }],
+            });
         });
     });
 
     describe('concepts [=concept=]', () => {
         it('parses basic concept as InlineWorkspaceReference', () => {
-            const unit = createUnit('Let [=queue a task=] be...');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('Let [=queue a task=] be...');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({
@@ -66,8 +127,8 @@ describe('ShorthandsMarkdownParser', () => {
         });
 
         it('parses concept with alias [=concept|alias=]', () => {
-            const unit = createUnit('Use [=convoluted|simple=] terms.');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('Use [=convoluted|simple=] terms.');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({
@@ -81,8 +142,8 @@ describe('ShorthandsMarkdownParser', () => {
 
     describe('variables |var|', () => {
         it('parses variable as InlineVariable', () => {
-            const unit = createUnit('Let |value| be 1.');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('Let |value| be 1.');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({
@@ -94,8 +155,8 @@ describe('ShorthandsMarkdownParser', () => {
 
     describe('nested and mixed contents', () => {
         it('handles multiple shorthands in one line', () => {
-            const unit = createUnit('In [[HTML]], people [=fire an event=] with |data|.');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('In [[HTML]], people [=fire an event=] with |data|.');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             // In (text) [[HTML]] (cite) , people (text) [=fire an event=] (ref) with (text) |data| (variable) . (text)
@@ -106,8 +167,8 @@ describe('ShorthandsMarkdownParser', () => {
         });
 
         it('parses WebIDL and element shorthands', () => {
-            const unit = createUnit('Uses {{Interface}} and [^tag^].');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('Uses {{Interface}} and [^tag^].');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children).toHaveLength(5);
@@ -118,8 +179,8 @@ describe('ShorthandsMarkdownParser', () => {
 
     describe('sections [§#id]', () => {
         it('parses basic section reference', () => {
-            const unit = createUnit('See [§#intro].');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('See [§#intro].');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({
@@ -129,8 +190,8 @@ describe('ShorthandsMarkdownParser', () => {
         });
 
         it('parses section reference with alias', () => {
-            const unit = createUnit('Go to [§#details|the details].');
-            const blocks = parser.parse(unit);
+            const [content, mapper] = createUnit('Go to [§#details|the details].');
+            const blocks = parser.parse(content, mapper);
             const para = blocks[0] as BlockParagraph;
 
             expect(para.children[1]).toMatchObject({

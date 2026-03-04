@@ -1,0 +1,33 @@
+{
+  "id": "ed-clean-profiles",
+  "deps": ["ed-clean-foundation", "ed-clean-interop"],
+  "maturityLevel": "stable",
+  "lastUpdateDate": "2026-02-12",
+  "baseUrl": "${SPEC_BASE_URL}/workspaces/ed-clean",
+  "custom": {
+    "demoArea": "profiles",
+    "vocabModules": ["core"]
+  },
+  "respec": {
+    "title": "Profiles (Fallback)",
+    "shortName": "ed-clean-profiles",
+    "specStatus": "ED",
+    "modificationDate": "2026-02-01",
+    "abstract": "Profile matrix that references foundation and interop constructs.",
+    "localBiblio": {
+        "JSON": {
+                "title": "JSON",
+                "url": "https://www.rfc-editor.org/rfc/rfc8259"
+            },
+            "JSON-LD 1.1.": {
+                "title": "JSON 1.1.",
+                "url": "https://www.w3.org/TR/2020/REC-json-ld11-20200716/"
+            },
+            "RFC3339": {
+                "title": "RFC 3339",
+                "url": "https://www.rfc-editor.org/rfc/rfc3339"
+            }
+
+    }
+  }
+}

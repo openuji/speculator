@@ -90,6 +90,7 @@ export class SpeculatorPipeline {
         env?: Record<string, string | undefined>;
     }): Promise<SpeculateResult> {
         const results: { doc: Document; entry: string; config: SpecConfig }[] = [];
+        const errors: string[] = [];
 
         // 1. Initial run: Preprocess + Parse
         for (const entryConfig of options.entries) {
@@ -105,20 +106,26 @@ export class SpeculatorPipeline {
                 registerCoreParsers(registry);
                 const parseResult = parseWithRegistry(preprocessedSpec, registry);
 
+                if (parseResult.errors && parseResult.errors.length > 0) {
+                    errors.push(...parseResult.errors);
+                }
+
                 if (!parseResult.result) continue;
                 results.push({ 
                     doc: parseResult.result.document, 
                     entry: entryConfig.entry,
                     config: preprocessedSpec.config
                 });
-            } catch {
-                // Preprocess errors are now thrown, skip this entry
+            } catch (err) {
+                // Preprocess errors are now collected instead of just throwing
+                const msg = err instanceof Error ? err.message : String(err);
+                errors.push(`Error processing ${entryConfig.entry}: ${msg}`);
                 continue;
             }
         }
 
         if (results.length === 0) {
-            return {};
+            return { errors: errors.length > 0 ? errors : undefined };
         }
 
         const runtimeWorkspace: RuntimeWorkspace = {
@@ -194,6 +201,6 @@ export class SpeculatorPipeline {
             runtimeWorkspace.globalIndex
         );
 
-        return { workspace };
+        return { workspace, errors: errors.length > 0 ? errors : undefined };
     }
 }

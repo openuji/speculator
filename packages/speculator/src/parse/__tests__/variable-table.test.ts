@@ -4,11 +4,22 @@
 
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
-import type { SourceUnit } from '#src/preprocess/types';
 import type { BlockTable, TableRow, TableCell } from '#src/types/ast.generated';
+import { SourceMapper } from '#src/parse/source-mapper';
 
-function createUnit(content: string, file = '/spec/test.md'): SourceUnit {
-    return { file, format: 'markdown', content, startLine: 1 };
+function createUnit(content: string, file = '/spec/test.md'): [string, SourceMapper] {
+    return [
+        content,
+        new SourceMapper(content, {
+            fragments: [{
+                startOffset: 0,
+                endOffset: content.length,
+                file,
+                format: 'markdown',
+                originalStartLine: 1,
+            }]
+        })
+    ];
 }
 
 describe('Variables in Tables', () => {
@@ -20,8 +31,8 @@ describe('Variables in Tables', () => {
 | :------- |
 | |var|    |
 `;
-        const unit = createUnit(content);
-        const blocks = parser.parse(unit);
+        const [parsedContent, mapper] = createUnit(content);
+        const blocks = parser.parse(parsedContent, mapper);
 
         const table = blocks[0] as BlockTable;
         const cell = (table.children[1] as TableRow).children[0] as TableCell;

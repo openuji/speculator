@@ -10,7 +10,8 @@ import type { BlockHeading } from '#src/types/ast.generated';
 
 type HeadingProperties = {
     id?: string;
-    unnumbered?: string | boolean;
+    'data-no-toc'?: string | boolean;
+    'data-no-toc-count'?: string | boolean;
     'data-cop-concept'?: string;
 };
 
@@ -35,7 +36,8 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
         // Read attributes from data (populated by remarkHeadingAttrBlocks)
         const props = headingNode.data?.hProperties ?? {};
         
-        const unnumbered = props.unnumbered === 'true' || props.unnumbered === true;
+        const noToc = props['data-no-toc'] !== undefined && props['data-no-toc'] !== 'false' && props['data-no-toc'] !== false;
+        const noTocCount = props['data-no-toc-count'] !== undefined && props['data-no-toc-count'] !== 'false' && props['data-no-toc-count'] !== false;
         const explicitId = props.id as string | undefined;
         const dataCopConcept = props['data-cop-concept'] as string | undefined;
 
@@ -47,7 +49,8 @@ export const HeadingsMarkdownParser: MarkdownParserModule = {
             dataCopConcept,
         };
 
-        if (unnumbered) result.unnumbered = true;
+        if (noToc) result.noToc = true;
+        if (noTocCount) result.noTocCount = true;
         if (sourcePos) result.sourcePos = sourcePos;
 
         return result;

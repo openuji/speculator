@@ -59,14 +59,15 @@ function extractHeadingText(heading: BlockHeading): string {
 
 /**
  * Build TOC entries recursively from sections
- * @param parentUnnumbered - If true, this section is inside an unnumbered parent and should also be unnumbered
+ * @param parentNoToc - If true, this section is inside a no-TOC parent and should also be excluded from TOC and numbering
  */
 function buildTocFromSections(
     children: (Section | import('#src/types/ast.generated').Block)[],
     counters: number[],
     headingNumbers: Map<string, string>,
     headingTitles: Map<string, string>,
-    parentUnnumbered: boolean = false
+    parentNoToc: boolean = false,
+    parentNoTocCount: boolean = false
 ): TocEntry[] {
     const entries: TocEntry[] = [];
 
@@ -90,12 +91,13 @@ function buildTocFromSections(
             counters.push(0);
         }
 
-        // Section is unnumbered if explicitly marked OR if parent is unnumbered
-        const isUnnumbered = section.unnumbered || parentUnnumbered;
+        // Section is unnumbered/excluded-from-TOC if explicitly marked OR if parent is so marked
+        const isNoToc = section.noToc || parentNoToc;
+        const isNoTocCount = section.noTocCount || parentNoTocCount;
 
         // Determine numbering
         let number = '';
-        if (!isUnnumbered) {
+        if (!isNoToc && !isNoTocCount) {
             // Increment counter at current depth
             counters[depthIndex]++;
 
@@ -118,27 +120,30 @@ function buildTocFromSections(
         }
 
         // Recursively process nested sections
-        // Pass isUnnumbered to children so they inherit unnumbered status
+        // Pass isNoToc/isNoTocCount to children so they inherit the status
         const nestedChildren = buildTocFromSections(
             section.children,
             [...counters], // Pass a copy to avoid mutation issues
             headingNumbers,
             headingTitles,
-            isUnnumbered   // Cascade unnumbered status to children
+            isNoToc,       // Cascade status to children
+            isNoTocCount   // Cascade unnumbered status to children
         );
 
-        const entry: TocEntry = {
-            id: section.id,
-            depth,
-            text,
-            number,
-        };
+        if (!isNoToc) {
+            const entry: TocEntry = {
+                id: section.id,
+                depth,
+                text,
+                number,
+            };
 
-        if (nestedChildren.length > 0) {
-            entry.children = nestedChildren;
+            if (nestedChildren.length > 0) {
+                entry.children = nestedChildren;
+            }
+
+            entries.push(entry);
         }
-
-        entries.push(entry);
     }
 
     return entries;

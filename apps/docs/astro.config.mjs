@@ -95,6 +95,10 @@ export default defineConfig({
 					autogenerate: { directory: 'diagrams' },
 				},
 				{
+					label: 'Solospec',
+					autogenerate: { directory: 'solospec' },
+				},
+				{
 					label: 'Quality Assurance',
 					autogenerate: { directory: 'qa' },
 				},

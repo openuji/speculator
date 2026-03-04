@@ -50,18 +50,20 @@ describe('LikeC4 view parsing', () => {
 
     it('is wired in core parser registry', () => {
         const result = parse({
-            config: { id: 'test', specIri: 'http://example.com/' },
+            config: { id: 'test', specIri: 'http://example.com/', deps: [] },
             source: {
                 entryFile: '/spec/index.md',
                 entryFormat: 'markdown',
-                units: [
-                    {
+                content: '<likec4-view src="architecture/oidc.c4" view-id="oidc" />',
+                sourceMap: {
+                    fragments: [{
+                        startOffset: 0,
+                        endOffset: 57,
                         file: '/spec/index.md',
                         format: 'markdown',
-                        content: '<likec4-view src="architecture/oidc.c4" view-id="oidc" />',
-                        startLine: 1,
-                    },
-                ],
+                        originalStartLine: 1,
+                    }]
+                },
                 includeGraph: new Map(),
             },
         });

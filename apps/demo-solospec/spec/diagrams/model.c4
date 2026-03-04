@@ -1,0 +1,13 @@
+specification {
+  element system
+}
+
+model {
+  backend = system 'Backend'
+}
+
+views {
+  view example-flow {
+    include *
+  }
+}

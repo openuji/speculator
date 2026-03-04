@@ -170,5 +170,7 @@ export interface SpeculateOptions {
 export interface SpeculateResult {
     /** The root Workspace AST */
     workspace?: Workspace;
+    /** Encountered errors */
+    errors?: string[];
 }
 

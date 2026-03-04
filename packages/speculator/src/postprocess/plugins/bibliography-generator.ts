@@ -6,7 +6,7 @@
  */
 
 import type { Plugin, ComputeContext } from '#src/pipeline/types';
-import type { Section, BlockHtml, IndexBiblioEntry } from '#src/types/ast.generated';
+import type { Section, BlockHtml, IndexBiblioEntry, Block, Inline } from '#src/types/ast.generated';
 
 function generateBiblioHtml(entry: IndexBiblioEntry): string {
     const authors = entry.authors?.map(a => `<span class="person-name">${a}</span>`).join(', ') || '';
@@ -117,7 +117,7 @@ export const bibliographyGeneratorPlugin: Plugin = {
         // 4. Create wrapper section
         const wrapperSection: Section = {
             type: 'section',
-            unnumbered: true,
+            noTocCount: true,
             id: 'references',
             heading: {
                 type: 'heading',
@@ -130,7 +130,25 @@ export const bibliographyGeneratorPlugin: Plugin = {
         if (normativeSection) wrapperSection.children.push(normativeSection);
         if (informativeSection) wrapperSection.children.push(informativeSection);
 
-        // 5. Append to document
-        document.children.push(wrapperSection);
+        // 5. Find the <spec-biblio-references /> tag and replace it
+        function replaceInContainer(children: Array<Section | Block | Inline>): boolean {
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                if ((child.type === 'htmlElement' || child.type === 'htmlInlineElement') && 
+                    ((child as { tagName?: string }).tagName || '').toLowerCase() === 'spec-biblio-references') {
+                    children.splice(i, 1, wrapperSection as Section);
+                    return true;
+                }
+                const childWithChildren = child as { children?: Array<Section | Block | Inline> };
+                if (childWithChildren.children && Array.isArray(childWithChildren.children)) {
+                    if (replaceInContainer(childWithChildren.children)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        replaceInContainer(document.children as Section[]);
     }
 };

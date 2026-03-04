@@ -1,14 +1,18 @@
-/**
- * Section Resolve Plugin Tests
- */
-
 import { describe, it, expect } from 'vitest';
 import { MarkdownUnitParser } from '#src/parse/markdown/index';
+import { SourceMapper } from '#src/parse/source-mapper';
 import { assembleDocument } from '#src/parse/assembler';
 import { sectionIdPlugin } from '../plugins/section-id';
 import { tocPlugin } from '../plugins/toc';
 import { sectionResolvePlugin } from '../plugins/section-resolve';
 import type { BlockParagraph, InlineSectionReference } from '#src/types/ast.generated';
+
+function parseContent(parser: MarkdownUnitParser, content: string, file = 'test.md') {
+    const mapper = new SourceMapper(content, {
+        fragments: [{ startOffset: 0, endOffset: content.length, file, format: 'markdown', originalStartLine: 1 }]
+    });
+    return parser.parse(content, mapper);
+}
 
 describe('sectionResolvePlugin', () => {
     const parser = new MarkdownUnitParser();
@@ -21,7 +25,7 @@ See [§#details].
 ## Details {#details}
 Content.
 `;
-        const blocks = parser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
+        const blocks = parseContent(parser, content);
         const config = { id: 'test', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
         const document = assembleDocument(blocks, config, 'test.md');
 
@@ -53,7 +57,7 @@ See [§#details|the details].
 ## Details {#details}
 Content.
 `;
-        const blocks = parser.parse({ file: 'test.md', format: 'markdown', content, startLine: 1 });
+        const blocks = parseContent(parser, content);
         const config = { id: 'test-alias', title: 'Test', specIri: 'https://example.org/spec/1.0.0' };
         const document = assembleDocument(blocks, config, 'test.md');
 

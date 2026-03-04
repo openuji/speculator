@@ -111,6 +111,11 @@ exports[`Granular Markdown Parser Tests > shows project own ast with inline-like
     },
   ],
   "id": "test-inline",
+  "metadata": {
+    "respec": {
+      "thisVersion": "https://example.org/inline",
+    },
+  },
   "sourcePos": {
     "column": 1,
     "file": "test.md",

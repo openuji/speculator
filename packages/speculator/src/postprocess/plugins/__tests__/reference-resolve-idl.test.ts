@@ -2,14 +2,21 @@
  * Tests for WebIDL Reference Resolution
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { referenceResolvePlugin } from '../reference-resolve.js';
 import type { ResolveContext, RuntimeWorkspace } from '#src/pipeline/types';
 import type { Document, InlineWorkspaceIdlReference, InlineExternalIdlReference } from '#src/types/ast.generated';
 import type { SpecConfig } from '#src/preprocess/types';
 
 describe('reference-resolve plugin (WebIDL)', () => {
-    it('resolves external IDL reference using xref config (batch API)', async () => {
+    it('prefers WebIDL resolution before xref resolution', async () => {
+        const fetchMock = vi.fn().mockImplementation(async () => {
+            throw new Error('fetch should not be called when WebIDL fallback succeeds');
+        });
+
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = fetchMock as unknown as typeof fetch;
+
         // Mock document with an unresolved IDL reference
         const ref: InlineWorkspaceIdlReference = {
             type: 'workspaceIdlReference',
@@ -47,22 +54,26 @@ describe('reference-resolve plugin (WebIDL)', () => {
             } as unknown as RuntimeWorkspace
         };
 
-        await referenceResolvePlugin.resolve!(ctx);
+        try {
+            await referenceResolvePlugin.resolve!(ctx);
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
 
-        // Expect conversion to external reference with resolved URL from API
+        // Expect conversion to deterministic WebIDL reference (xref path skipped)
         const extRef = ref as unknown as InlineExternalIdlReference;
         expect(extRef.type).toBe('externalIdlReference');
-        expect(extRef.xrefSpec).toBe('dom');
-        // The URL should be resolved to the actual spec URL via the xref API
-        expect(extRef.url).toContain('dom.spec.whatwg.org');
-        expect(extRef.url).toContain('#nodelist');
+        expect(extRef.xrefSpec).toBe('webidl');
+        expect(extRef.targetId).toBe('idl-NodeList');
+        expect(extRef.url).toBe('https://webidl.spec.whatwg.org/#idl-NodeList');
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it('resolves external IDL reference using manual mapping', async () => {
+    it('uses manual xref mapping when WebIDL resolution does not apply', async () => {
         const ref: InlineWorkspaceIdlReference = {
             type: 'workspaceIdlReference',
-            targetTerm: 'NodeList',
-            children: [{ type: 'text', value: 'NodeList' }]
+            targetTerm: 'Document/getElementsByTagName(qualifiedName)',
+            children: [{ type: 'text', value: 'Document/getElementsByTagName(qualifiedName)' }]
         };
 
         const doc: Document = {
@@ -84,7 +95,7 @@ describe('reference-resolve plugin (WebIDL)', () => {
                 id: 'test-doc',
                 specIri: 'http://example.com',
                 xref: {
-                    'NodeList': 'https://dom.spec.whatwg.org/#interface-nodelist'
+                    'Document/getElementsByTagName(qualifiedName)': 'https://dom.spec.whatwg.org/#dom-document-getelementsbytagname'
                 }
             } as unknown as SpecConfig,
             workspace: {
@@ -100,14 +111,14 @@ describe('reference-resolve plugin (WebIDL)', () => {
         const extRef = ref as unknown as InlineExternalIdlReference;
         expect(extRef.type).toBe('externalIdlReference');
         expect(extRef.xrefSpec).toBe('manual');
-        expect(extRef.url).toBe('https://dom.spec.whatwg.org/#interface-nodelist');
+        expect(extRef.url).toBe('https://dom.spec.whatwg.org/#dom-document-getelementsbytagname');
     });
 
-    it('does not resolve external IDL reference without xref config', async () => {
+    it('keeps unresolved workspace reference without xref when WebIDL fallback does not apply', async () => {
         const ref: InlineWorkspaceIdlReference = {
             type: 'workspaceIdlReference',
-            targetTerm: 'Unknown',
-            children: [{ type: 'text', value: 'Unknown' }]
+            targetTerm: 'Unknown()',
+            children: [{ type: 'text', value: 'Unknown()' }]
         };
 
         const doc: Document = {

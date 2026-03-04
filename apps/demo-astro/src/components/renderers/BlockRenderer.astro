@@ -1,0 +1,371 @@
+---
+import type { Block, BlockHeading, Inline, Section } from "@openuji/speculator";
+import RecursiveBlockRenderer from "./BlockRenderer.astro";
+import InlineRenderer from "./InlineRenderer.astro";
+import Mermaid from "./Mermaid.astro";
+import LikeC4 from "./LikeC4.astro";
+import Callout from "@/components/ui/Callout.astro";
+import CodeBlock from "@/components/ui/CodeBlock.astro";
+
+interface Props {
+  node: Block | Section;
+  basePath?: string;
+  headingNumbers?: Record<string, string | undefined>;
+}
+
+const { node, basePath, headingNumbers } = Astro.props;
+
+const inlineProps = { basePath };
+const blockProps = { basePath, headingNumbers };
+
+type HeadingTagName = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+const getHeadingTag = (heading: BlockHeading): HeadingTagName => {
+  const level = Math.min(heading.depth, 6) as 1 | 2 | 3 | 4 | 5 | 6;
+  return `h${level}`;
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+const serializeHtmlAttributes = (
+  attributes: Record<string, string | number | boolean | null> = {},
+): string =>
+  Object.entries(attributes)
+    .flatMap(([name, value]) => {
+      if (value === null || value === false || value === undefined) return [];
+      if (value === true) return [` ${name}`];
+      return [` ${name}="${escapeHtml(String(value))}"`];
+    })
+    .join("");
+
+const renderIdlInlines = (nodes: Inline[]): string =>
+  nodes.map((inline) => renderIdlInline(inline)).join("");
+
+type HtmlAttrs = Record<string, string | number | boolean>;
+
+const toHtmlAttrs = (raw: unknown, id?: string): HtmlAttrs => {
+  const attrs: HtmlAttrs = {};
+  if (raw && typeof raw === "object") {
+    for (const [name, value] of Object.entries(
+      raw as Record<string, unknown>,
+    )) {
+      if (value === null || value === false || value === undefined) continue;
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        attrs[name] = value;
+      }
+    }
+  }
+  if (id && attrs.id === undefined) {
+    attrs.id = id;
+  }
+  return attrs;
+};
+
+const renderIdlInline = (node: Inline): string => {
+  switch (node.type) {
+    case "text":
+      return escapeHtml(node.value);
+
+    case "definition": {
+      const id = node.explicitId || node.id;
+      const dfnFor = node.forContexts?.filter(Boolean).join(", ");
+      const dfnType =
+        node.dfnType && node.dfnType !== "dfn" ? node.dfnType : "";
+      const text =
+        node.children.length > 0
+          ? renderIdlInlines(node.children)
+          : escapeHtml(node.term);
+      return `<dfn${id ? ` id="${escapeHtml(id)}"` : ""}${dfnFor ? ` data-dfn-for="${escapeHtml(dfnFor)}"` : ""}${dfnType ? ` data-dfn-type="${escapeHtml(dfnType)}"` : ""}>${text}</dfn>`;
+    }
+
+    case "workspaceIdlReference": {
+      const href =
+        node.targetDocumentId && basePath
+          ? `${basePath}/${node.targetDocumentId}${node.targetId ? `#${node.targetId}` : ""}`
+          : node.targetId
+            ? `#${node.targetId}`
+            : "#";
+      const text =
+        node.children.length > 0
+          ? renderIdlInlines(node.children)
+          : escapeHtml(node.targetTerm);
+      return `<a href="${escapeHtml(href)}" class="xref" title="${escapeHtml(node.targetTerm)}">${text}</a>`;
+    }
+
+    case "externalIdlReference": {
+      const href = node.url || "#";
+      const text =
+        node.children.length > 0
+          ? renderIdlInlines(node.children)
+          : escapeHtml(node.targetTerm);
+      return `<a href="${escapeHtml(href)}" class="xref external" title="${escapeHtml(node.targetTerm)}" target="_blank" rel="noreferrer">${text}</a>`;
+    }
+
+    case "strong":
+      return `<strong>${renderIdlInlines(node.children)}</strong>`;
+
+    case "emphasis":
+      return `<em>${renderIdlInlines(node.children)}</em>`;
+
+    case "inlineCode":
+      return `<code>${escapeHtml(node.value)}</code>`;
+
+    case "htmlInlineElement": {
+      const attrs = serializeHtmlAttributes((node as any).attributes || {});
+      return `<${(node as any).tagName}${attrs}>${renderIdlInlines(node.children || [])}</${(node as any).tagName}>`;
+    }
+
+    default:
+      if ("children" in node && Array.isArray(node.children)) {
+        return renderIdlInlines(node.children as Inline[]);
+      }
+      if (
+        "value" in node &&
+        typeof (node as { value?: unknown }).value === "string"
+      ) {
+        return escapeHtml(String((node as { value: string }).value));
+      }
+      return "";
+  }
+};
+---
+
+{
+  (() => {
+    switch (node.type) {
+      case "section": {
+        const HeadingTag = node.heading ? getHeadingTag(node.heading) : "h2";
+        const sectionNumber = node.id ? headingNumbers?.[node.id] : undefined;
+        return (
+          <section class="spec-section" id={node.id}>
+            {node.heading && (
+              <HeadingTag id={node.heading.id as any} class="section-heading">
+                {sectionNumber && (
+                  <span class="section-number">{sectionNumber}</span>
+                )}
+                <InlineRenderer
+                  nodes={node.heading.children}
+                  {...inlineProps}
+                />
+              </HeadingTag>
+            )}
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </section>
+        );
+      }
+
+      case "paragraph":
+        return (
+          <p id={node.id}>
+            <InlineRenderer nodes={node.children} {...inlineProps} />
+          </p>
+        );
+
+      case "heading": {
+        const Heading = getHeadingTag(node);
+        return (
+          <Heading id={node.id}>
+            <InlineRenderer nodes={node.children} {...inlineProps} />
+          </Heading>
+        );
+      }
+
+      case "codeBlock":
+        if (node.lang === "mermaid") {
+          return <Mermaid code={node.value} id={node.id} />;
+        }
+        return (
+          <CodeBlock
+            code={node.value}
+            language={node.lang || "text"}
+            id={node.id}
+          />
+        );
+
+      case "blockquote":
+        return (
+          <blockquote id={node.id}>
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </blockquote>
+        );
+
+      case "list": {
+        const ListTag = node.ordered ? "ol" : "ul";
+        return (
+          <ListTag
+            id={node.id as any}
+            start={node.ordered ? (node.start as any) : undefined}
+          >
+            {node.children.map((item) => (
+              <li id={item.id}>
+                {item.children.map((child) => (
+                  <RecursiveBlockRenderer node={child} {...blockProps} />
+                ))}
+              </li>
+            ))}
+          </ListTag>
+        );
+      }
+
+      case "table":
+        return (
+          <table id={node.id}>
+            <tbody>
+              {node.children.map((row) => (
+                <tr id={row.id}>
+                  {row.children.map((cell) =>
+                    cell.header ? (
+                      <th style={{ textAlign: cell.align || "left" }}>
+                        <InlineRenderer
+                          nodes={cell.children}
+                          {...inlineProps}
+                        />
+                      </th>
+                    ) : (
+                      <td style={{ textAlign: cell.align || "left" }}>
+                        <InlineRenderer
+                          nodes={cell.children}
+                          {...inlineProps}
+                        />
+                      </td>
+                    ),
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+
+      case "thematicBreak":
+        return <hr id={node.id} />;
+
+      case "likeC4View":
+        return (
+          <LikeC4
+            viewId={node.viewId}
+            dynamicVariant={node.dynamicVariant}
+            id={node.id}
+          />
+        );
+
+      case "idl": {
+        const idlMarkup = renderIdlInlines(node.children);
+        return (
+          <div class="idl-block" id={node.id}>
+            <div class="idl-block-header">
+              <span>IDL</span>
+              <button
+                type="button"
+                class="idl-copy-btn"
+                onclick={`navigator.clipboard.writeText(this.closest('.idl-block')?.querySelector('.idl-block-code')?.textContent || '')`}
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="idl-block-pre">
+              <code class="idl-block-code" set:html={idlMarkup} />
+            </pre>
+          </div>
+        );
+      }
+
+      case "html":
+        return <div id={node.id} set:html={node.value} />;
+
+      case "example":
+        return (
+          <Callout kind="example" title={node.title || "Example"}>
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </Callout>
+        );
+
+      case "note": {
+        const typedNode = node as any;
+        const noteType = typedNode.noteType || "note";
+        const kind =
+          noteType === "warning"
+            ? "warning"
+            : noteType === "issue"
+              ? "issue"
+              : noteType === "example"
+                ? "example"
+                : "note";
+        return (
+          <Callout kind={kind} title={noteType.toUpperCase()}>
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </Callout>
+        );
+      }
+
+      case "specStatement": {
+        const statement = node as any;
+        const level = String(statement.level || "statement").toUpperCase();
+        const kind = level.includes("MUST") ? "warning" : "note";
+        const statementChildren = node.children as Inline[];
+        return (
+          <Callout
+            kind={kind}
+            title={`Spec Statement ${level === "STATEMENT" ? "" : `(${level})`}`}
+          >
+            <p id={node.id}>
+              <InlineRenderer nodes={statementChildren} {...inlineProps} />
+            </p>
+          </Callout>
+        );
+      }
+
+      case "specStatementGroup": {
+        return (
+          <div
+            class="spec-statement-group"
+            id={node.id}
+            data-cop-concept={node.dataCopConcept}
+          >
+            {node.children.map((child) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </div>
+        );
+      }
+
+      case "htmlElement": {
+        const element = node as any;
+        const Tag = element.tagName as any;
+        const attrs = toHtmlAttrs(element.attributes, element.id);
+
+        return (
+          <Tag {...attrs}>
+            {element.children.map((child: Block) => (
+              <RecursiveBlockRenderer node={child} {...blockProps} />
+            ))}
+          </Tag>
+        );
+      }
+
+      default:
+        return (
+          <Callout kind="issue" title="Unknown block">
+            {(node as any).type}
+          </Callout>
+        );
+    }
+  })()
+}

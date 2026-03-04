@@ -8,14 +8,14 @@
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
 import type { Root, Element, Text as HastText, RootContent } from 'hast';
-import type { SourceUnit } from '#src/preprocess/types';
 import type { UnitParser } from '#src/parse/types';
+import { SourceMapper } from '#src/parse/source-mapper';
+import type { SourceFormat } from '#src/preprocess/types';
 import type {
     Section,
     Block,
     Inline,
     BlockParagraph,
-    SourcePos,
 } from '#src/types/ast.generated';
 import {
     ParseHandlerRegistry,
@@ -27,38 +27,7 @@ import { getAttr, getTextContent } from '#src/parse/utils/hast-utils';
 import { isHtmlBlockTag } from '#src/parse/utils/markdown-utils';
 import { createBlockHtmlElement, createInlineHtmlElement } from '#src/parse/utils/html-element-utils';
 
-/**
- * Create source position from hast node position
- */
-function createSourcePos(unit: SourceUnit, node: NodeWithPosition): SourcePos {
-    if (!node.position) {
-        return {
-            file: unit.file,
-            line: unit.startLine,
-            column: 1,
-        };
-    }
-
-    const pos = node.position;
-    const result: SourcePos = {
-        file: unit.file,
-        line: unit.startLine + pos.start.line - 1,
-        column: pos.start.column,
-    };
-
-    if (pos.start.offset !== undefined) {
-        result.offset = pos.start.offset;
-    }
-    if (pos.end) {
-        result.endLine = unit.startLine + pos.end.line - 1;
-        result.endColumn = pos.end.column;
-        if (pos.end.offset !== undefined) {
-            result.endOffset = pos.end.offset;
-        }
-    }
-
-    return result;
-}
+// No longer need createSourcePos wrapper here, SourceMapper handles it natively
 
 
 /**
@@ -75,13 +44,41 @@ export class HtmlUnitParser implements UnitParser {
     }
 
     /**
-     * Parse HTML unit to AST blocks
+     * Parse HTML composed string to AST blocks
+     * Overload 1: New API with content string and SourceMapper
+     * Overload 2: Legacy API with SourceUnit-like object (backwards compat for tests)
      */
-    parse(unit: SourceUnit): (Section | Block)[] {
-        const tree = this.processor.parse(unit.content) as Root;
+    parse(content: string, sourceMapper: SourceMapper): (Section | Block)[];
+    parse(unit: { content: string; file: string; format: string; startLine: number; sideFiles?: Record<string, string> }): (Section | Block)[];
+    parse(
+        contentOrUnit: string | { content: string; file: string; format: string; startLine: number; sideFiles?: Record<string, string> },
+        sourceMapper?: SourceMapper
+    ): (Section | Block)[] {
+        let content: string;
+        if (typeof contentOrUnit === 'string') {
+            content = contentOrUnit;
+        } else {
+            // Legacy SourceUnit-like object
+            content = contentOrUnit.content;
+            sourceMapper = new SourceMapper(content, {
+                fragments: [{
+                    startOffset: 0,
+                    endOffset: content.length,
+                    file: contentOrUnit.file,
+                    format: contentOrUnit.format as SourceFormat,
+                    originalStartLine: contentOrUnit.startLine,
+                    sideFiles: contentOrUnit.sideFiles,
+                }]
+            });
+        }
+
+        if (!sourceMapper) {
+            throw new Error('sourceMapper is required in non-legacy mode');
+        }
+        const tree = this.processor.parse(content) as Root;
 
         // Create context for handlers
-        const ctx = this.createContext(unit);
+        const ctx = this.createContext(sourceMapper);
 
         const results: (Section | Block)[] = [];
 
@@ -96,19 +93,19 @@ export class HtmlUnitParser implements UnitParser {
     /**
      * Create parse context for handlers
      */
-    private createContext(unit: SourceUnit): ParseContext {
+    private createContext(sourceMapper: SourceMapper): ParseContext {
         return {
-            unit,
-            createSourcePos: (node: NodeWithPosition) => createSourcePos(unit, node),
-            transformInlineChildren: (children) => this.transformInlineChildren(children as RootContent[], unit),
+            sourceMapper,
+            createSourcePos: (node: NodeWithPosition) => (node.position ? sourceMapper.createSourcePos(node.position) : undefined) || { file: 'unknown', line: 1, column: 1 },
+            transformInlineChildren: (children) => this.transformInlineChildren(children as RootContent[], sourceMapper),
             transformBlockChildren: (children) => {
                 const results: (Section | Block)[] = [];
-                const ctx = this.createContext(unit);
+                const ctx = this.createContext(sourceMapper);
                 let currentInlines: RootContent[] = [];
 
                 const flushInlines = () => {
                     if (currentInlines.length > 0) {
-                        const inlines = this.transformInlineChildren(currentInlines, unit);
+                        const inlines = this.transformInlineChildren(currentInlines, sourceMapper);
                         if (inlines.length > 0) {
                             results.push({
                                 type: 'paragraph',
@@ -123,8 +120,9 @@ export class HtmlUnitParser implements UnitParser {
                     if (child.type === 'element') {
                         const element = child as Element;
                         const tagName = element.tagName.toLowerCase();
-                        const handler = this.registry.getHtmlBlockHandler(tagName);
-                        const shouldTreatAsBlock = !!handler?.handleBlock || isHtmlBlockTag(tagName);
+                        const handlers = this.registry.getHtmlBlockHandlers(tagName);
+                        const hasHandlers = handlers.length > 0;
+                        const shouldTreatAsBlock = hasHandlers || isHtmlBlockTag(tagName);
                         if (shouldTreatAsBlock) {
                             flushInlines();
                             results.push(...this.transformBlock(child, ctx));
@@ -154,28 +152,40 @@ export class HtmlUnitParser implements UnitParser {
         const element = node as Element;
         const tagName = element.tagName.toLowerCase();
 
-        // Look up handler in registry
-        const handler = this.registry.getHtmlBlockHandler(tagName);
-
-        if (handler?.handleBlock) {
-            const result = handler.handleBlock(element, ctx);
-            if (result === null) return [];
-            if (Array.isArray(result)) return result;
-            return [result];
+        // Look up handlers in registry
+        const handlers = this.registry.getHtmlBlockHandlers(tagName);
+        if (handlers.length > 0) {
+            for (const handler of handlers) {
+                if (handler.handleBlock) {
+                    const result = handler.handleBlock(element, ctx);
+                    if (result !== null) {
+                        if (Array.isArray(result)) return result;
+                        return [result];
+                    }
+                }
+            }
+            // All tried handlers returned null - don't fall back to generic element
+            return [];
         }
 
-        const inlineHandler = this.registry.getHtmlInlineHandler(tagName);
-        if (inlineHandler?.handleInline) {
-            const inlineResult = inlineHandler.handleInline(element, ctx);
-            if (inlineResult === null) return [];
-
-            const sourcePos = ctx.createSourcePos(element);
-            const result: BlockParagraph = {
-                type: 'paragraph',
-                children: Array.isArray(inlineResult) ? inlineResult : [inlineResult],
-            };
-            if (sourcePos) result.sourcePos = sourcePos;
-            return [result];
+        const inlineHandlers = this.registry.getHtmlInlineHandlers(tagName);
+        if (inlineHandlers.length > 0) {
+            for (const inlineHandler of inlineHandlers) {
+                if (inlineHandler.handleInline) {
+                    const inlineResult = inlineHandler.handleInline(element, ctx);
+                    if (inlineResult !== null) {
+                        const sourcePos = ctx.createSourcePos(element);
+                        const result: BlockParagraph = {
+                            type: 'paragraph',
+                            children: Array.isArray(inlineResult) ? inlineResult : [inlineResult],
+                        };
+                        if (sourcePos) result.sourcePos = sourcePos;
+                        return [result];
+                    }
+                }
+            }
+            // All tried inline handlers returned null - don't fall back to generic element
+            return [];
         }
 
         const children = ctx.transformBlockChildren(element.children);
@@ -183,9 +193,10 @@ export class HtmlUnitParser implements UnitParser {
     }
 
     /**
-     * Transform hast inline content to Speculator inline
+     * Transform hast inline node to Speculator inline(s)
      */
-    private transformInline(node: RootContent, unit: SourceUnit): Inline | null {
+    private transformInline(node: RootContent, sourceMapper: SourceMapper): Inline | Inline[] | null {
+        const ctx = this.createContext(sourceMapper);
         if (node.type === 'text') {
             const textNode = node as HastText;
             // Skip whitespace-only text
@@ -201,51 +212,41 @@ export class HtmlUnitParser implements UnitParser {
 
         const element = node as Element;
         const tagName = element.tagName.toLowerCase();
-        const ctx = this.createContext(unit);
 
-        // Look up handler in registry
-        const handler = this.registry.getHtmlInlineHandler(tagName);
-
-        if (handler?.handleInline) {
-            const result = handler.handleInline(element, ctx);
-            if (result === null) return null;
-            if (Array.isArray(result)) return result.length === 1 ? result[0] : null;
-            return result;
+        // Look up handlers in registry
+        const handlers = this.registry.getHtmlInlineHandlers(tagName);
+        if (handlers.length > 0) {
+            for (const handler of handlers) {
+                if (handler.handleInline) {
+                    const result = handler.handleInline(element, ctx);
+                    if (result !== null) {
+                        if (Array.isArray(result)) return result.length === 1 ? result[0] : result;
+                        return result;
+                    }
+                }
+            }
+            // All tried handlers returned null
+            return null;
         }
 
-        const children = this.transformInlineChildren(element.children, unit);
+        const children = this.transformInlineChildren(element.children, sourceMapper);
         return createInlineHtmlElement(element, ctx, children);
     }
 
     /**
      * Transform array of inline children
      */
-    private transformInlineChildren(children: RootContent[], unit: SourceUnit): Inline[] {
+    private transformInlineChildren(children: RootContent[], sourceMapper: SourceMapper): Inline[] {
         const results: Inline[] = [];
 
         for (const child of children) {
-            if (child.type === 'element') {
-                const element = child as Element;
-                const tagName = element.tagName.toLowerCase();
-                const ctx = this.createContext(unit);
-                const handler = this.registry.getHtmlInlineHandler(tagName);
-
-                if (handler?.handleInline) {
-                    const result = handler.handleInline(element, ctx);
-                    if (result !== null) {
-                        if (Array.isArray(result)) {
-                            results.push(...result);
-                        } else {
-                            results.push(result);
-                        }
-                        continue;
-                    }
-                }
-            }
-
-            const inline = this.transformInline(child, unit);
+            const inline = this.transformInline(child, sourceMapper);
             if (inline) {
-                results.push(inline);
+                if (Array.isArray(inline)) {
+                    results.push(...inline);
+                } else {
+                    results.push(inline);
+                }
             }
         }
 

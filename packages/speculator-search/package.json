@@ -1,6 +1,6 @@
 {
     "name": "@openuji/speculator-search",
-    "version": "0.3.5",
+    "version": "0.3.6",
     "description": "Search index builder for Speculator with content mapping and navigation support",
     "type": "module",
     "main": "dist/index.js",
@@ -41,7 +41,7 @@
         "@openuji/speculator": "workspace:*"
     },
     "devDependencies": {
-        "@types/node": "^20.10.0",
+        "@types/node": "^22.10.0",
         "@typescript-eslint/eslint-plugin": "^7.0.0",
         "@typescript-eslint/parser": "^7.0.0",
         "eslint": "^8.57.0",

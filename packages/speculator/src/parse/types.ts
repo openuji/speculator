@@ -4,8 +4,9 @@
  * Types for parsing source units into AST nodes.
  */
 
-import type { SourceUnit, SourceFormat, SpecConfig } from '#src/preprocess/types';
-import type { Section, Block, SourcePos, Document } from '#src/types/ast.generated';
+import type { SourceFormat, SpecConfig } from '#src/preprocess/types';
+import type { Section, Block, Document } from '#src/types/ast.generated';
+import type { SourceMapper } from '#src/parse/source-mapper';
 
 
 // ============================================================================
@@ -23,12 +24,18 @@ export interface UnitParser {
     readonly format: SourceFormat;
 
     /**
-     * Parse a source unit into AST blocks
+     * Parse a final composed string into AST blocks using a source mapper
+     * for location tracking.
      * 
-     * @param unit - Source unit to parse
+     * Overload 1: New API with content string and SourceMapper
+     * Overload 2: Legacy API with SourceUnit-like object (backwards compat for tests)
+     * 
+     * @param content - Full composed source string
+     * @param sourceMapper - Mapper to resolve absolute offsets to original files
      * @returns Array of top-level blocks/sections
      */
-    parse(unit: SourceUnit): (Section | Block)[];
+    parse(content: string, sourceMapper: SourceMapper): (Section | Block)[];
+    parse(unit: { content: string; file: string; format: string; startLine: number; sideFiles?: Record<string, string> }): (Section | Block)[];
 }
 
 // ============================================================================
@@ -56,23 +63,8 @@ export interface ParsedSpec {
 export interface ParseResult {
     /** Parsed spec (may be partial if errors) */
     result?: ParsedSpec;
+    /** Encountered errors */
+    errors?: string[];
 }
 
-// ============================================================================
-// Helpers
-// ============================================================================
-
-/**
- * Create a source position from unit context
- */
-export function createSourcePos(
-    unit: SourceUnit,
-    line: number,
-    column: number
-): SourcePos {
-    return {
-        file: unit.file,
-        line: unit.startLine + line - 1,
-        column,
-    };
-}
+// Keep file valid but removed helpers not needed for offset-based mapping

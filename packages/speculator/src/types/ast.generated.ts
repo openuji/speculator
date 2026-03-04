@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-02-24T17:07:17.521Z
+ * Generated at: 2026-03-04T13:04:41.342Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -25,18 +25,26 @@ export type Section = BaseNode & {
     id?: string;
     children: Inline[];
     /**
-     * If true, the section created from this heading will be unnumbered.
+     * If true, the section created from this heading will not be numbered and will be omitted from the TOC.
      */
-    unnumbered?: boolean;
+    noToc?: boolean;
+    /**
+     * If true, this heading and its children will not increment the section counter and will not be numbered, but will still be included in the TOC.
+     */
+    noTocCount?: boolean;
     /**
      * Optional Class of Products (COP) identifier for this heading/section scope.
      */
     dataCopConcept?: string;
   };
   /**
-   * If true, this section and its descendants do not increment the TOC counter at this level.
+   * If true, this section and its descendants do not increment the TOC counter at this level and are omitted from the TOC.
    */
-  unnumbered?: boolean;
+  noToc?: boolean;
+  /**
+   * If true, this section and its descendants do not increment the section counter and are not numbered, but are still included in the TOC.
+   */
+  noTocCount?: boolean;
   children: (Section | Block)[];
   /**
    * Optional Class of Products (COP) identifier for this section scope.
@@ -294,9 +302,13 @@ export type BlockHeading = BaseNode & {
   id?: string;
   children: Inline[];
   /**
-   * If true, the section created from this heading will be unnumbered.
+   * If true, the section created from this heading will not be numbered and will be omitted from the TOC.
    */
-  unnumbered?: boolean;
+  noToc?: boolean;
+  /**
+   * If true, this heading and its children will not increment the section counter and will not be numbered, but will still be included in the TOC.
+   */
+  noTocCount?: boolean;
   /**
    * Optional Class of Products (COP) identifier for this heading/section scope.
    */
@@ -445,6 +457,14 @@ export type BlockNote = BaseNode & {
    */
   informative: true;
   children: Block[];
+  /**
+   * Optional source URL, e.g., for issue notes.
+   */
+  src?: string;
+  /**
+   * Optional payload data fetched from the source.
+   */
+  data?: {};
 };
 export type BlockSpecStatement = BaseNode & {
   type: 'specStatement';
@@ -531,6 +551,11 @@ export interface DocumentMetadata {
   shortName?: string;
   status?: string;
   version?: string;
+  respec?: {
+    thisVersion?: string;
+    latestVersion?: string;
+    [k: string]: unknown | undefined;
+  };
   /**
    * Dependencies from config.json
    */
@@ -553,6 +578,10 @@ export interface DocumentMetadata {
    * ISO 8601 date format (YYYY-MM-DD)
    */
   publishDate?: string;
+  /**
+   * Original creation date (YYYY-MM-DD)
+   */
+  creationDate?: string;
   /**
    * Last update date (YYYY-MM-DD)
    */
@@ -588,10 +617,6 @@ export interface DocumentMetadata {
   custom?: {
     [k: string]: unknown | undefined;
   };
-  /**
-   * If true, disables automatic conformance section generation.
-   */
-  noConformance?: boolean;
 }
 export interface BaseNode {
   sourcePos?: SourcePos;

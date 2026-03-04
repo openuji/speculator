@@ -1,0 +1,9 @@
+{
+  "radius": {
+    "$type": "dimension",
+    "logo": {
+      "$value": "50%",
+      "$type": "dimension"
+    }
+  }
+}

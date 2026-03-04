@@ -36,6 +36,7 @@ export interface RawRespecConfig {
     specStatus?: string;
     version?: string;
     publishDate?: string;
+    creationDate?: string;
     modificationDate?: string;
     thisVersion?: string;
     latestVersion?: string;
@@ -66,9 +67,6 @@ export interface RawRespecConfig {
     // Bibliography
     localBiblio?: Record<string, unknown>;
 
-    // Conformance
-    noConformance?: boolean;
-
     // Cross-references
     xref?: string | string[] | Record<string, string>;
 }
@@ -86,14 +84,14 @@ export interface ResolvedDocumentConfig {
   /** Last update date (core config setting, takes priority over respec.modificationDate) */
   lastUpdateDate?: ISODateString;
 
+  /** Repository URL or descriptor (core config setting, takes priority over respec.repository) */
+  repository?: string | { url: string; branch?: string; type?: 'github' | 'gitlab' | 'manual' };
+
   /** Maturity level (core config setting, takes priority over mapped respec.specStatus) */
   maturityLevel?: MaturityLevel;
 
   /** Base URL for assembling thisVersion when not explicitly set */
   baseUrl?: string;
-
-  /** If true, suppresses the automatic generation of the conformance section. */
-  noConformance?: boolean;
 
   /** Optional ReSpec configuration embedded in config.json */
   respec?: RawRespecConfig;

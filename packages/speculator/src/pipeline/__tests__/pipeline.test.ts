@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { speculate, corePlugins } from '#src/index';
 import { MemoryFileProvider } from '#src/file-provider/memory';
-import type { Section } from '#src/types/ast.generated';
+import type { Section, BlockNote } from '#src/types/ast.generated';
 
 describe('speculate', () => {
     it('processes a simple markdown spec', async () => {
@@ -41,6 +41,51 @@ describe('speculate', () => {
 
         expect(result.workspace?.documents[0].metadata?.title).toBe('Test Spec');
 
+    });
+
+    it('passes env through speculate() to config interpolation', async () => {
+        const fileProvider = new MemoryFileProvider({
+            '/spec/index.md': '# Title\n\nContent',
+            '/spec/config.json': JSON.stringify({
+                title: '${SPEC_TITLE}',
+            }),
+        });
+
+        const result = await speculate({
+            entry: '/spec/index.md',
+            plugins: corePlugins,
+            fileProvider,
+            env: {
+                SPEC_TITLE: 'Interpolated Spec Title',
+            },
+        });
+
+        expect(result.workspace?.documents[0].metadata?.title).toBe('Interpolated Spec Title');
+    });
+
+    it('converts Issue(78): shorthand using repository from config', async () => {
+        const fileProvider = new MemoryFileProvider({
+            '/spec/index.md': 'Issue(78):',
+            '/spec/config.json': JSON.stringify({
+                repository: 'https://github.com/solid/solid-oidc',
+            }),
+        });
+
+        const result = await speculate({
+            entry: '/spec/index.md',
+            plugins: corePlugins,
+            fileProvider,
+        });
+
+        const issue = result.workspace?.documents[0].children.find(
+            (node): node is BlockNote => node.type === 'note' && node.noteType === 'issue'
+        );
+        expect(issue).toBeDefined();
+        expect(issue).toMatchObject({
+            type: 'note',
+            noteType: 'issue',
+            src: 'https://github.com/solid/solid-oidc/issues/78',
+        });
     });
 
     it('processes HTML spec with sections', async () => {

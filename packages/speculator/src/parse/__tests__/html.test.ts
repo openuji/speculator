@@ -54,22 +54,21 @@ describe('HtmlUnitParser', () => {
             expect(parent.children.some((c) => c.type === 'section' && 'id' in c && c.id === 'child')).toBe(true);
         });
 
-        it('sets unnumbered flag for class="unnumbered"', () => {
-            const unit = createUnit('<section id="abstract" class="unnumbered"><h1>Abstract</h1></section>');
+        it('sets noToc flag for data-no-toc', () => {
+            const unit = createUnit('<section id="abstract" data-no-toc><h1>Abstract</h1></section>');
             const blocks = parser.parse(unit);
 
             expect(blocks).toHaveLength(1);
             const section = blocks[0] as Section;
-            expect(section.unnumbered).toBe(true);
+            expect(section.noToc).toBe(true);
         });
 
-        it('sets unnumbered flag for class="informative"', () => {
-            const unit = createUnit('<section id="sotd" class="informative"><h1>Status</h1></section>');
+        it('sets noToc flag for data-no-toc on heading', () => {
+            const unit = createUnit('<h1 data-no-toc>Abstract</h1>');
             const blocks = parser.parse(unit);
 
             expect(blocks).toHaveLength(1);
-            const section = blocks[0] as Section;
-            expect(section.unnumbered).toBe(true);
+            expect(blocks[0]).toMatchObject({ type: 'heading', noToc: true });
         });
     });
 
@@ -152,6 +151,16 @@ describe('HtmlUnitParser', () => {
                 lang: 'javascript',
             });
         });
+
+        it('extracts language from highlight attribute', () => {
+            const unit = createUnit('<pre highlight="sparql">code</pre>');
+            const blocks = parser.parse(unit);
+
+            expect(blocks[0]).toMatchObject({
+                type: 'codeBlock',
+                lang: 'sparql',
+            });
+        });
     });
 
     describe('links and images', () => {
@@ -207,16 +216,16 @@ describe('HtmlUnitParser', () => {
 
     describe('generic html elements', () => {
         it('preserves unhandled block tags as htmlElement', () => {
-            const unit = createUnit('<figure id="f-1"><figcaption>Caption</figcaption></figure>');
+            const unit = createUnit('<details id="f-1"><summary>Caption</summary></details>');
             const blocks = parser.parse(unit);
 
-            const figure = blocks[0] as BlockHtmlElement;
-            expect(figure.type).toBe('htmlElement');
-            expect(figure.tagName).toBe('figure');
-            expect(figure.id).toBe('f-1');
-            expect(figure.children).toHaveLength(1);
-            expect((figure.children[0] as BlockHtmlElement).type).toBe('htmlElement');
-            expect((figure.children[0] as BlockHtmlElement).tagName).toBe('figcaption');
+            const details = blocks[0] as BlockHtmlElement;
+            expect(details.type).toBe('htmlElement');
+            expect(details.tagName).toBe('details');
+            expect(details.id).toBe('f-1');
+            expect(details.children).toHaveLength(1);
+            expect((details.children[0] as BlockHtmlElement).type).toBe('htmlElement');
+            expect((details.children[0] as BlockHtmlElement).tagName).toBe('summary');
         });
 
         it('preserves unhandled inline tags as htmlInlineElement', () => {

@@ -29,14 +29,11 @@ export const HeadingsHtmlParser: HtmlParserModule = {
 
         const id = ctx.getAttr(element, 'id');
         const dataCopConcept = ctx.getAttr(element, 'data-cop-concept');
-        const className = ctx.getAttr(element, 'className') ?? '';
-        const unnumbered = className.split(/\s+/).some(c => 
-            ['unnumbered', 'informative', 'introductory'].includes(c)
-        );
+        const noToc = ctx.getAttr(element, 'data-no-toc') !== undefined;
 
         if (id) result.id = id;
         if (dataCopConcept) result.dataCopConcept = dataCopConcept;
-        if (unnumbered) result.unnumbered = true;
+        if (noToc) result.noToc = true;
         if (sourcePos) result.sourcePos = sourcePos;
 
         return result;

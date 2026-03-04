@@ -293,7 +293,7 @@ Statements can contain rich Markdown formatting:
 
 ## Related
 
-- [Section Attributes](/features/section-attributes) – `data-cop-concept` inheritance and `.unnumbered`
+- [Section Attributes](/features/section-attributes) – `data-cop-concept` inheritance and `data-no-toc`
 - [Configuration](/configuration) – `baseUrl` and spec metadata
 - [Solid QA](https://solidproject.org/ED/qa)
 - [solid-contrib/specification-tests](https://github.com/solid-contrib/specification-tests) Test coverage report

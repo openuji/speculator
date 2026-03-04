@@ -138,6 +138,28 @@ interface XrefResult {
     uri: string;
 }
 
+const SAFE_WEBIDL_IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+function extractTargetIdFromUrl(url?: string): string | undefined {
+    if (!url) return undefined;
+
+    try {
+        const parsed = new URL(url);
+        if (parsed.hash.length > 1) {
+            return parsed.hash.slice(1);
+        }
+    } catch {
+        // Non-absolute URLs are expected in some flows; fallback to string parsing below.
+    }
+
+    const hashIdx = url.indexOf('#');
+    if (hashIdx >= 0 && hashIdx < url.length - 1) {
+        return decodeURIComponent(url.slice(hashIdx + 1));
+    }
+
+    return undefined;
+}
+
 /**
  * Parse a targetTerm like "Document/getElementsByTagName(qualifiedName)" 
  * into { term, forContext } for the xref API.
@@ -268,9 +290,11 @@ async function resolveExternalXrefs(
                     // Construct absolute URL: base + relative URI
                     // URI from xref is typically a fragment like "#document"
                     ref.url = baseUrl.replace(/\/$/, '') + '/' + result.uri.replace(/^\//, '');
+                    ref.targetId = extractTargetIdFromUrl(result.uri) ?? extractTargetIdFromUrl(ref.url);
                 } else {
                     // Fallback: link to the xref search page
                     ref.url = `https://respec.org/xref/?term=${encodeURIComponent(ref.targetTerm)}`;
+                    ref.targetId = undefined;
                 }
             }
         }
@@ -316,6 +340,7 @@ function handleExternalResolution(
         if (directUrl) {
             ref.xrefSpec = 'manual';
             ref.url = directUrl;
+            ref.targetId = extractTargetIdFromUrl(directUrl);
             return;
         }
     }
@@ -330,6 +355,27 @@ function handleExternalResolution(
 
     ref.xrefSpec = specs.length > 0 ? specs[0] : 'web-platform';
     pendingQueue.push({ ref, specs, origType: ref.type });
+}
+
+function resolveWebIdlTypeFallback(ref: WorkspaceReference): boolean {
+    if (ref.type !== 'workspaceIdlReference') {
+        return false;
+    }
+
+    const candidateTerms = ref.candidateTerms || [ref.targetTerm];
+    for (const candidate of candidateTerms) {
+        const term = candidate.trim();
+        if (!SAFE_WEBIDL_IDENTIFIER.test(term)) continue;
+
+        const extRef = promoteWorkspaceToExternal(ref);
+        const targetId = `idl-${term}`;
+        extRef.xrefSpec = 'webidl';
+        extRef.targetId = targetId;
+        extRef.url = `https://webidl.spec.whatwg.org/#${encodeURIComponent(targetId)}`;
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -372,10 +418,16 @@ export const referenceResolvePlugin: Plugin = {
                     return;
                 }
 
-                // 3. Optional: Fallback to External Resolution (only for workspace refs)
+                // 3. Prefer deterministic WebIDL resolution for unresolved IDL references.
+                if (WORKSPACE_REF_TYPES.has(ref.type) && resolveWebIdlTypeFallback(ref as WorkspaceReference)) {
+                    return;
+                }
+
+                // 4. Optional: Fallback to xref external resolution (only when WebIDL resolution didn't apply).
                 if (WORKSPACE_REF_TYPES.has(ref.type) && xrefConfig) {
                     const extRef = promoteWorkspaceToExternal(ref as WorkspaceReference);
                     handleExternalResolution(extRef, xrefConfig, pendingExternalRefs);
+                    return;
                 }
             }
         });

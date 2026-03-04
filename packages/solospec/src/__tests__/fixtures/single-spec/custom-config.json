@@ -1,0 +1,15 @@
+{
+  "id": "custom-config-id",
+  "title": "Custom Config Title",
+  "respec": {
+    "title": "Custom Config Title",
+    "specStatus": "ED",
+    "publishDate": "2026-02-20",
+    "localBiblio": {
+      "RFC2119": {
+        "title": "Key words for use in RFCs",
+        "url": "https://www.rfc-editor.org/rfc/rfc2119"
+      }
+    }
+  }
+}
