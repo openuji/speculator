@@ -1,5 +1,15 @@
 # apps-astro-demo
 
+## 0.1.2
+
+### Patch Changes
+
+- 8ebe1a8: Introduce bikeshed theme
+- Updated dependencies [8ebe1a8]
+  - @openuji/speculator@0.8.0
+  - @openuji/speculator-lint@0.3.6
+  - @openuji/speculator-search@0.3.6
+
 ## 0.1.1
 
 ### Patch Changes
