@@ -64,9 +64,6 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
     return null;
   };
 
-
-  console.log('metadata', meta)
-
   return (
     <header class="spec-header spec-header--bikeshed">
       <div class="spec-header-top float-right">

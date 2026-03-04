@@ -11,6 +11,10 @@ export default defineConfig({
         mode: 'auto',
         themeSwitcher: true,
         w3cLogo: true,
+        // codeHighlightTheme: {
+        //   light: 'solarized-light',
+        //   dark: 'solarized-dark',
+        // },
       },
       options: {
         client: {
