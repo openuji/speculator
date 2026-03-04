@@ -1,6 +1,6 @@
 {
   "name": "@openuji/solospec",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Static HTML renderer for Speculator AST runtime",
   "type": "module",
   "main": "dist/index.js",
@@ -70,8 +70,8 @@
     "@likec4/core": "^1.49.0",
     "likec4": "^1.49.0",
     "mermaid": "^11.12.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.x",
+    "react-dom": "^19.x"
   },
   "peerDependenciesMeta": {
     "@likec4/core": {

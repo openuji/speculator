@@ -48,9 +48,67 @@ Options:
   --out <dir>         Output directory (default: same directory as input file)
   --id <id>           Override document ID in config.json
   --no-boilerplate    Skip fetching boilerplate overrides (includes/*.md)
+  --init              Scaffold a solospec app (vite.config.ts, package.json, index.html)
   --dry-run           Print outputs to stdout without writing files
   --help              Show this help message
 `.trim());
+}
+
+async function scaffoldSolospecApp(outputDir: string, id: string): Promise<void> {
+    const viteConfig = `import { defineConfig } from 'vite';
+import { solospecPlugin } from '@openuji/solospec/vite';
+
+export default defineConfig({
+  plugins: [
+    solospecPlugin({
+      entry: './index.md',
+      configPath: './config.json',
+      theme: {
+        name: 'bikeshed',
+        mode: 'auto',
+        themeSwitcher: true,
+        w3cLogo: true,
+      },
+    }) as any,
+  ],
+});
+`;
+
+    const packageJson = JSON.stringify({
+        name: id,
+        private: true,
+        type: 'module',
+        scripts: {
+            build: 'vite build',
+            dev: 'vite',
+        },
+        dependencies: {
+            '@openuji/solospec': 'latest',
+        },
+        devDependencies: {
+            vite: '^6.1.1',
+        },
+    }, null, 2);
+
+    const indexHtml = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${id}</title>
+</head>
+<body>
+  <!-- @openuji/solospec -->
+</body>
+</html>
+`;
+
+    await writeFile(join(outputDir, 'vite.config.ts'), viteConfig, 'utf-8');
+    console.log(`✓ Wrote ${join(outputDir, 'vite.config.ts')}`);
+    await writeFile(join(outputDir, 'package.json'), packageJson + '\n', 'utf-8');
+    console.log(`✓ Wrote ${join(outputDir, 'package.json')}`);
+    await writeFile(join(outputDir, 'index.html'), indexHtml, 'utf-8');
+    console.log(`✓ Wrote ${join(outputDir, 'index.html')}`);
 }
 
 async function run() {
@@ -67,6 +125,7 @@ async function run() {
     let idOverride: string | undefined;
     let dryRun = false;
     let skipBoilerplate = false;
+    let init = false;
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -78,6 +137,8 @@ async function run() {
             dryRun = true;
         } else if (arg === '--no-boilerplate') {
             skipBoilerplate = true;
+        } else if (arg === '--init') {
+            init = true;
         } else if (!arg.startsWith('-')) {
             if (!inputFile) {
                 inputFile = arg;
@@ -239,6 +300,10 @@ async function run() {
         if (missing.length > 0) {
             console.warn(`⚠ No boilerplate found for: ${missing.join(', ')}`);
         }
+    }
+
+    if (init) {
+        await scaffoldSolospecApp(outputDir, result.config.id);
     }
 }
 
