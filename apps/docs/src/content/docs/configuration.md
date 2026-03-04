@@ -135,6 +135,10 @@ Speculator supports environment variable interpolation in `config.json` files.
 > [!IMPORTANT]
 > **Security Restriction:** For security reasons, Speculator only interpolates variables starting with the `SPEC_` prefix.
 
+### Date Placeholders
+
+Speculator supports special date placeholders in configuration metadata strings. You can insert `[DATE]` anywhere in `config.json` text fields, and it will be automatically resolved to today's date (formatted appropriately) during preprocessing. This is especially useful for setting automatically updating version dates or publication dates.
+
 ### Framework Integration (Astro/Vite)
 
 In frameworks like Astro, variable injection must be explicit:

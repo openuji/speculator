@@ -142,23 +142,23 @@ This example uses [JSON-LD ](https://www.w3.org/TR/json-ld/) for the Client ID D
 <div class="example">
 <p>https://app.example/id</p>
 
-```jsonld
+<pre highlight="jsonld">
 {
-          "@context": ["https://www.w3.org/ns/solid/oidc-context.jsonld"],
-          "client_id": "https://app.example/id",
-          "client_name": "Solid Application Name",
-          "redirect_uris": ["https://app.example/callback"],
-          "post_logout_redirect_uris": ["https://app.example/logout"],
-          "client_uri": "https://app.example/",
-          "logo_uri" : "https://app.example/logo.png",
-          "tos_uri" : "https://app.example/tos.html",
-          "scope" : "openid profile offline_access webid",
-          "grant_types" : ["refresh_token","authorization_code"],
-          "response_types" : ["code"],
-          "default_max_age" : 3600,
-          "require_auth_time" : true
-        }
-```
+    "@context": ["https://www.w3.org/ns/solid/oidc-context.jsonld"],
+    "client_id": "https://app.example/id",
+    "client_name": "Solid Application Name",
+    "redirect_uris": ["https://app.example/callback"],
+    "post_logout_redirect_uris": ["https://app.example/logout"],
+    "client_uri": "https://app.example/",
+    "logo_uri" : "https://app.example/logo.png",
+    "tos_uri" : "https://app.example/tos.html",
+    "scope" : "openid profile offline_access webid",
+    "grant_types" : ["refresh_token","authorization_code"],
+    "response_types" : ["code"],
+    "default_max_age" : 3600,
+    "require_auth_time" : true
+}
+</pre>
 </div>
 
 Issue(95):
