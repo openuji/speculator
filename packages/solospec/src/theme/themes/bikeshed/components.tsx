@@ -65,6 +65,8 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
   };
 
 
+  console.log('metadata', meta)
+
   return (
     <header class="spec-header spec-header--bikeshed">
       <div class="spec-header-top float-right">
@@ -79,16 +81,16 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
       <details class="spec-more bikeshed-more-details" open>
         <summary>More details about this document</summary>
         <dl class="spec-meta">
-          {custom.thisVersion ? (<>
+          {meta.respec?.thisVersion || custom.thisVersion ? (<>
               <dt>This version:</dt>
-              <dd><a href={String(custom.thisVersion)}>{String(custom.thisVersion)}</a></dd>
+              <dd><a href={String(meta.respec?.thisVersion || custom.thisVersion)}>{String(meta.respec?.thisVersion || custom.thisVersion)}</a></dd>
               </>
           ) : null}
           
-          {custom.latestVersion ? (
+          {meta.respec?.latestVersion || custom.latestVersion ? (
             <>
               <dt>Latest published version:</dt>
-              <dd><a href={String(custom.latestVersion)}>{String(custom.latestVersion)}</a></dd>
+              <dd><a href={String(meta.respec?.latestVersion || custom.latestVersion)}>{String(meta.respec?.latestVersion || custom.latestVersion)}</a></dd>
             </>
           ) : null}
 
@@ -117,12 +119,22 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
             </>
           ) : null}
 
-          {custom.feedback ? (
-            <>
-               <dt>Feedback:</dt>
-               <dd><a href="https://github.com/solid/solid-oidc">{String(custom.feedback)}</a></dd>
-            </>
-          ) : null}
+          {custom.feedback || meta.repository ? (() => {
+            const repoUrl = meta.repository 
+              ? (typeof meta.repository === 'string' ? meta.repository : meta.repository.url)
+              : '';
+            const feedbackUrl = custom.feedback 
+              ? String(custom.feedback) 
+              : `${repoUrl.replace(/\/$/, '')}/issues`;
+            const text = custom.feedback ? String(custom.feedback) : `${repoUrl.replace(/\/$/, '')}/issues`;
+            
+            return (
+              <>
+                 <dt>Feedback:</dt>
+                 <dd><a href={feedbackUrl}>{text}</a></dd>
+              </>
+            );
+          })() : null}
 
           {meta.editors && meta.editors.length > 0 ? (
             <>

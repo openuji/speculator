@@ -134,7 +134,7 @@ export function buildConfig(
     // Boilerplate handling
     let noConformance: boolean | undefined;
     const boilerplate = getString(metadata, 'boilerplate');
-    if (boilerplate && boilerplate.toLowerCase().includes('issues-index no')) {
+    if (boilerplate && boilerplate.toLowerCase().includes('omit conformance')) {
         noConformance = true;
     }
 

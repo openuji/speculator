@@ -13,8 +13,6 @@ export function buildRenderPageVm(args: {
   const { document, options, runtimeHeadHtml, runtimeBodyHtml, likec4DumpScript } = args;
   const metadata = document.metadata || {};
   const title = String(metadata.title || document.id);
-  const subtitle = metadata.subtitle ? String(metadata.subtitle) : '';
-  const abstract = metadata.abstract ? String(metadata.abstract) : '';
   const headingNumbers = document.computed?.headingNumbers || {};
 
   const blockCtx = {
@@ -30,13 +28,13 @@ export function buildRenderPageVm(args: {
     ? `<script type="application/ld+json">${JSON.stringify(statementsJsonLd, null, 2).replace(/</g, '\\u003C')}</script>`
     : '';
 
+
   return {
     lang: options?.language || 'en',
     titleText: title,
     titleTagText: title,
-    subtitleText: subtitle,
-    abstractText: abstract,
-
+    
+    
     themeName: themeSettings.name,
     mode: themeSettings.mode,
     w3cLogo: !!themeSettings.w3cLogo,

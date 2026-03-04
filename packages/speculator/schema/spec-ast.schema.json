@@ -1916,6 +1916,14 @@
                 "version": {
                     "type": "string"
                 },
+                "respec": {
+                    "type": "object",
+                    "properties": {
+                        "thisVersion": { "type": "string" },
+                        "latestVersion": { "type": "string" }
+                    },
+                    "additionalProperties": true
+                },
                 "deps": {
                     "type": "array",
                     "items": { "type": "string" },

@@ -126,7 +126,6 @@
     "copyright": "Copyright © [YEAR] the Contributors to the [TITLE],\npublished by the <a href=\"https://www.w3.org/community/solid/\">Solid Community Group</a>\nunder the <a href=\"https://www.w3.org/community/about/agreements/cla/\">W3C Community Contributor License Agreement (CLA)</a>.\nA human-readable <a href=\"http://www.w3.org/community/about/agreements/cla-deed/\">summary</a> is available."
   },
   "title": "Solid-OIDC",
-  "noConformance": true,
   "custom": {
     "formerEditors": [
       {
@@ -144,11 +143,11 @@
     ],
     "testSuite": "https://solid-contrib.github.io/solid-oidc-tests/",
     "logo": {
-      "href": "https://webmachinelearning.github.io/",
-      "src": "https://webmachinelearning.github.io/webmachinelearning-logo.png",
-      "alt": "Logo",
-      "height": "100",
-      "width": "100"
+      "href": "https://www.w3.org/",
+      "src": "https://www.w3.org/StyleSheets/TR/2021/logos/W3C",
+      "alt": "W3C",
+      "height": "48",
+      "width": "72"
     }
   }
 }

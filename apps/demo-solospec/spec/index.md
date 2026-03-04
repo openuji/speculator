@@ -1,3 +1,6 @@
+:::include ./includes/abstract.md :::
+:::include ./includes/status.md :::
+
 ## Introduction {#intro}
 
 *This section is non-normative*
@@ -552,3 +555,7 @@ The JSON-LD context is defined as:
     }
   }
 ```
+
+:::include ./includes/conformance.md :::
+
+<spec-biblio-references />

@@ -404,7 +404,13 @@ export function renderBoilerplateFile(
     slot: string,
     resolved: BoilerplateSlot,
 ): string {
-    const body = boilerplateHtmlToMd(resolved.content);
+    let body = boilerplateHtmlToMd(resolved.content);
+
+    if (slot === 'conformance') {
+        // Add data-no-toc-count to the top-level heading (e.g. {#w3c-conformance} → {#w3c-conformance data-no-toc-count})
+        body = body.replace(/^(#{1,6} [^{]+\{#[^}]+)(\})/m, '$1 data-no-toc-count$2');
+    }
+
     const heading = SLOT_HEADINGS[slot];
     return (heading ? `${heading}\n\n${body}` : body) + '\n';
 }

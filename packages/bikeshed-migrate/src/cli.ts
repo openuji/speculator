@@ -159,6 +159,20 @@ async function run() {
         }
     }
 
+    // Build include injection for index.md
+    const headerIncludes: string[] = [];
+    if (result.abstract) headerIncludes.push(':::include ./includes/abstract.md :::');
+    if (boilerplate?.status) headerIncludes.push(':::include ./includes/status.md :::');
+
+    const footerIncludes: string[] = [];
+    if (boilerplate?.conformance && !result.config.noConformance) {
+        footerIncludes.push(':::include ./includes/conformance.md :::');
+    }
+    footerIncludes.push('<spec-biblio-references />');
+
+    if (headerIncludes.length) result.md = headerIncludes.join('\n') + '\n\n' + result.md;
+    result.md = result.md + '\n\n' + footerIncludes.join('\n\n');
+
     const configJson = JSON.stringify(result.config, null, 2);
 
     if (dryRun) {

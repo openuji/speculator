@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-03-02T11:43:26.190Z
+ * Generated at: 2026-03-04T13:04:41.342Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -551,6 +551,11 @@ export interface DocumentMetadata {
   shortName?: string;
   status?: string;
   version?: string;
+  respec?: {
+    thisVersion?: string;
+    latestVersion?: string;
+    [k: string]: unknown | undefined;
+  };
   /**
    * Dependencies from config.json
    */

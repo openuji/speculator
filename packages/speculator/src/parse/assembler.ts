@@ -219,6 +219,12 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
         meta.version = config.version;
         hasContent = true;
     }
+    if (config.specIri || config.latestVersion) {
+        meta.respec = {};
+        if (config.specIri) meta.respec.thisVersion = config.specIri;
+        if (config.latestVersion) meta.respec.latestVersion = config.latestVersion;
+        hasContent = true;
+    }
     if (config.deps && config.deps.length > 0) {
         meta.deps = config.deps;
         hasContent = true;
