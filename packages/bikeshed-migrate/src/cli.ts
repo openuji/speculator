@@ -9,7 +9,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
 import { migrate } from './migrate.js';
-import { fetchBoilerplate, renderBoilerplateFile, SLOT_HEADINGS } from './boilerplate.js';
+import { fetchBoilerplate, renderBoilerplateFile, parseLogoSlot, SLOT_HEADINGS } from './boilerplate.js';
 
 function printUsage() {
     console.log(`
@@ -118,6 +118,15 @@ async function run() {
         result.config.respec.copyright = renderBoilerplateFile('copyright', boilerplate.copyright).trim();
     }
 
+    // Inject logo into config.custom.logo (not an include file)
+    if (boilerplate?.logo) {
+        const logo = parseLogoSlot(boilerplate.logo);
+        if (logo) {
+            result.config.custom ??= {};
+            result.config.custom.logo = logo;
+        }
+    }
+
     const configJson = JSON.stringify(result.config, null, 2);
 
     if (dryRun) {
@@ -130,7 +139,7 @@ async function run() {
         if (result.abstract) { console.log('\n--- includes/abstract.md ---'); console.log(`${SLOT_HEADINGS['abstract']}\n\n${result.abstract.trim()}`); }
         if (boilerplate) {
             for (const [slot, resolved] of Object.entries(boilerplate)) {
-                if (slot === 'copyright') continue;
+                if (slot === 'copyright' || slot === 'logo') continue;
                 console.log(`\n--- includes/${slot}.md --- (${resolved.source})`);
                 console.log(resolved.content);
             }
@@ -169,12 +178,16 @@ async function run() {
         const includesDir = join(outputDir, 'includes');
         await mkdir(includesDir, { recursive: true });
         for (const [slot, resolved] of Object.entries(boilerplate)) {
-            if (!resolved || slot === 'copyright') continue; // copyright goes into config.json
+            if (!resolved || slot === 'copyright' || slot === 'logo') continue; // go into config.json
             const filePath = join(includesDir, `${slot}.md`);
-            await writeFile(filePath, renderBoilerplateFile(slot, resolved), 'utf-8');
+            let content = renderBoilerplateFile(slot, resolved);
+            if (slot === 'status') {
+                content = content.replace(/\[STATUSTEXT\]/g, result.statusText?.trim() ?? '').replace(/\n{3,}/g, '\n\n');
+            }
+            await writeFile(filePath, content, 'utf-8');
             console.log(`✓ Wrote ${filePath}  (${resolved.source})`);
         }
-        const missing = (['status', 'logo', 'conformance'] as const).filter(
+        const missing = (['status', 'conformance'] as const).filter(
             s => !(s in boilerplate!),
         );
         if (missing.length > 0) {

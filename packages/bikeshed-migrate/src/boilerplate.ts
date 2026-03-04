@@ -342,6 +342,54 @@ export function boilerplateHtmlToMd(html: string): string {
     return parts.join('\n\n').trim();
 }
 
+export interface LogoData {
+    src?: string;
+    alt?: string;
+    height?: string;
+    width?: string;
+    href?: string;
+}
+
+/**
+ * Parse the logo boilerplate slot into structured data.
+ * Extracts href from <a class="logo">, and src/alt/height/width from the nested <img>.
+ */
+export function parseLogoSlot(resolved: BoilerplateSlot): LogoData | null {
+    const hast = fromHtml(resolved.content, { fragment: true });
+    const logo: LogoData = {};
+
+    for (const node of hast.children) {
+        if (node.type !== 'element') continue;
+        const el = node as Element;
+
+        let a: Element | null = null;
+        let img: Element | null = null;
+
+        if (el.tagName === 'a') {
+            a = el;
+            for (const child of el.children) {
+                if (child.type === 'element' && (child as Element).tagName === 'img') {
+                    img = child as Element;
+                    break;
+                }
+            }
+        } else if (el.tagName === 'img') {
+            img = el;
+        }
+
+        if (a?.properties?.href) logo.href = String(a.properties.href);
+        if (img) {
+            const p = img.properties ?? {};
+            if (p.src) logo.src = String(p.src);
+            if (p.alt !== undefined) logo.alt = String(p.alt);
+            if (p.height !== undefined) logo.height = String(p.height);
+            if (p.width !== undefined) logo.width = String(p.width);
+        }
+    }
+
+    return Object.keys(logo).length > 0 ? logo : null;
+}
+
 /** Headings prepended to specific slots in the generated includes/*.md files. */
 export const SLOT_HEADINGS: Record<string, string> = {
     abstract: '## Abstract {data-no-toc}',

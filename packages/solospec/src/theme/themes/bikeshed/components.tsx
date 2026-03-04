@@ -64,12 +64,11 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
     return null;
   };
 
-  console.log('meta.copyright', meta)
 
   return (
     <header class="spec-header spec-header--bikeshed">
       <div class="spec-header-top float-right">
-        <W3CCommunityLogo />
+        {meta.custom?.logo && <SpecLogo logo={meta.custom.logo as SpecLogoType}/> || null}
       </div>
       <h1 class="spec-title" id="title">
         {vm.titleText}
@@ -216,12 +215,14 @@ const W3CCommunityDraftReportLogo = () => (
     />
 );
 
-const W3CCommunityLogo = () => (
-  <a  href="https://www.w3.org/community/">
+type SpecLogoType = {href: string, alt: string, src: string, width: string, height: string}
+const SpecLogo = ({logo}: {logo: SpecLogoType}) => (
+  <a class="logo" href={logo.href}>
     <img
-      class="p-3 rounded-full"
-      alt="W3C Community Group"
-      src="https://www.w3.org/StyleSheets/TR/2021/logos/W3C"
+      alt={logo.alt}
+      src={logo.src}
+      width={logo.width}
+      height={logo.height}
     />
   </a>
 );

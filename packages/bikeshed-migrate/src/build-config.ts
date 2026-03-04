@@ -62,6 +62,8 @@ export interface BuildConfigResult {
     config: SpeculatorConfig;
     /** Raw abstract text (for includes/abstract.md); not stored in config.json */
     abstract?: string;
+    /** Status Text: value; replaces [STATUSTEXT] in includes/status.md */
+    statusText?: string;
 }
 
 export function buildConfig(
@@ -146,6 +148,7 @@ export function buildConfig(
     if (Object.keys(custom).length > 0) config.custom = custom;
 
     const abstract = getString(metadata, 'abstract') || undefined;
+    const statusText = getString(metadata, 'status text') || undefined;
 
-    return { config, abstract };
+    return { config, abstract, statusText };
 }

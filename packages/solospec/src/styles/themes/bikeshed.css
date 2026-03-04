@@ -76,7 +76,7 @@
     --solospec-a-visited-underline: #707070;
     --solospec-a-underline: #707070;
 
-    --solospec-w3c-logo-size: 130px;
+    --solospec-w3c-logo-size: 120px;
     --solospec-content-max-with: 848px;
   }
 
@@ -548,11 +548,18 @@
     transition: all 0s; /* Flash immediately */
   }
 
-  .solospec-root img[src*="logos/W3C"] {
+  .solospec-root a.logo {
     display: block;
-    width: var(--solospec-w3c-logo-size);
-    aspect-ratio: 1/1;
-    background: var(--color-solospec-light-bg);
+
+    img[src*="logos/W3C"] {
+      box-sizing: content-box;
+      border-radius: 50%;
+      width: var(--solospec-w3c-logo-size);
+      height: var(--solospec-w3c-logo-size);
+      padding: 10px;
+      display: block;
+      background: var(--color-solospec-light-bg);
+    }
   }
 }
 

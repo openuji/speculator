@@ -27,6 +27,8 @@ export interface MigrationResult {
     resources: Resource[];
     /** Abstract text for includes/abstract.md; not stored in config.json */
     abstract?: string;
+    /** Status Text: value; replaces [STATUSTEXT] in includes/status.md */
+    statusText?: string;
 }
 
 export interface MigrateOptions {
@@ -124,7 +126,7 @@ export async function migrate(content: string, options: MigrateOptions = {}): Pr
     });
 
     // Step 8: Build the config object
-    const { config, abstract } = buildConfig(metadata, biblio, options.id);
+    const { config, abstract, statusText } = buildConfig(metadata, biblio, options.id);
 
-    return { md, config, resources, abstract };
+    return { md, config, resources, abstract, statusText };
 }
