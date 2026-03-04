@@ -73,15 +73,15 @@ function createSectionFromHeading(heading: BlockHeading): Section {
  * Converts headings to sections and nests content based on heading depth.
  * Pre-existing sections (from HTML) are inserted at their natural position.
  */
-export function buildSectionHierarchy(blocks: (Section | Block)[]): (Section | Block)[] {
+export function buildSectionHierarchy(blocks: (Section | Block)[], entryFile?: string): (Section | Block)[] {
     if (blocks.length === 0) return [];
 
     const result: (Section | Block)[] = [];
 
-    // Stack of (section, depth) for tracking hierarchy
+    // Stack of (section, depth, file) for tracking hierarchy
     // depth 0 means top-level content before any heading
-    const sectionStack: Array<{ section: Section | null; depth: number }> = [
-        { section: null, depth: 0 }
+    const sectionStack: Array<{ section: Section | null; depth: number; file: string | undefined }> = [
+        { section: null, depth: 0, file: entryFile }
     ];
 
     /**
@@ -106,7 +106,53 @@ export function buildSectionHierarchy(blocks: (Section | Block)[]): (Section | B
         }
     }
 
+    /**
+     * Pop sections that were started in a different file than the current one,
+     * unless the current file is a "child" (nested include) of the stack's file.
+     * 
+     * Since we don't have the full include graph here, we use a heuristic:
+     * if the file actually changes, we pop everything that was deeper than the 
+     * first occurrence of the NEW file in the stack.
+     */
+    function handleFileBoundary(currentFile: string | undefined): void {
+        if (!currentFile) return;
+
+        // Find the LATEST (deepest) point in the stack that belongs to this file.
+        // We want to return to the most recent context of this file.
+        let matchIndex = -1;
+        for (let i = sectionStack.length - 1; i >= 0; i--) {
+            if (sectionStack[i].file === currentFile) {
+                matchIndex = i;
+                break;
+            }
+        }
+
+        // If we found a match and it's not the current top, we MIGHT be returning 
+        // from an include.
+        if (matchIndex !== -1 && matchIndex < sectionStack.length - 1) {
+            // Check if there are any sections from a DIFFERENT file "on top" of our match.
+            let hasIncludeToPop = false;
+            for (let i = matchIndex + 1; i < sectionStack.length; i++) {
+                if (sectionStack[i].file !== currentFile) {
+                    hasIncludeToPop = true;
+                    break;
+                }
+            }
+
+            // If we have sections from a different file, we MUST pop them all 
+            // to return to our file's context.
+            if (hasIncludeToPop) {
+                while (sectionStack.length > matchIndex + 1) {
+                    sectionStack.pop();
+                }
+            }
+        }
+    }
+
     for (const node of blocks) {
+        const currentFile = node.sourcePos?.file;
+        handleFileBoundary(currentFile);
+
         if (isSection(node)) {
             // Pre-existing section - determine its depth from heading or default to 1
             const sectionDepth = node.heading?.depth ?? 1;
@@ -118,7 +164,7 @@ export function buildSectionHierarchy(blocks: (Section | Block)[]): (Section | B
             getCurrentContainer().push(node);
 
             // Push this section onto stack
-            sectionStack.push({ section: node, depth: sectionDepth });
+            sectionStack.push({ section: node, depth: sectionDepth, file: currentFile });
         } else if (isHeading(node)) {
             const headingDepth = node.depth;
 
@@ -132,7 +178,7 @@ export function buildSectionHierarchy(blocks: (Section | Block)[]): (Section | B
             getCurrentContainer().push(newSection);
 
             // Push new section onto stack
-            sectionStack.push({ section: newSection, depth: headingDepth });
+            sectionStack.push({ section: newSection, depth: headingDepth, file: currentFile });
         } else {
             // Regular block - add to current container
             getCurrentContainer().push(node);
@@ -261,7 +307,7 @@ export function assembleDocument(
     entryFile: string
 ): Document {
     // Build section hierarchy
-    const children = buildSectionHierarchy(blocks);
+    const children = buildSectionHierarchy(blocks, entryFile);
 
     // Create document
     const doc: Document = {

@@ -1,0 +1,45 @@
+
+ RUN  v1.6.1 /Users/zavalit/Projects/openuji/speculator/packages/speculator
+
+stdout | src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > enforces include boundaries: sections in include are closed when returning to parent
+[Assembler] File: /spec/index.md, lastMatchIndex: 0, Stack: [{"d":0,"f":"/spec/index.md"},{"d":2,"f":"/spec/includes/conformance.md"},{"d":3,"f":"/spec/includes/conformance.md"}]
+[Assembler] hasIncludeInBetween: true
+[Assembler] Popped section from /spec/includes/conformance.md depth 3
+[Assembler] Popped section from /spec/includes/conformance.md depth 2
+
+ ❯ src/parse/__tests__/assembler-include-nesting.test.ts  (2 tests | 1 failed) 5ms
+   ❯ src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > enforces include boundaries: sections in include are closed when returning to parent
+     → expected [ { type: 'section', …(3) } ] to have a length of 2 but got 1
+stdout | src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > preserves nesting for nested includes
+[Assembler] File: index.md, lastMatchIndex: -1, Stack: [{"d":0}]
+[Assembler] File: index.md, lastMatchIndex: 1, Stack: [{"d":0},{"d":1,"f":"index.md"},{"d":2,"f":"sub.md"}]
+[Assembler] hasIncludeInBetween: true
+[Assembler] Popped section from sub.md depth 2
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/parse/__tests__/assembler-include-nesting.test.ts > buildSectionHierarchy include nesting > enforces include boundaries: sections in include are closed when returning to parent
+AssertionError: expected [ { type: 'section', …(3) } ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ src/parse/__tests__/assembler-include-nesting.test.ts:58:38
+     56| 
+     57|         const conformance = result[0] as Section;
+     58|         expect(conformance.children).toHaveLength(2);
+       |                                      ^
+     59|         expect(conformance.children[1]).toMatchObject({ children: [{ v…
+     60|         const conventions = conformance.children[0] as Section;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  11:09:01
+   Duration  212ms (transform 19ms, setup 0ms, collect 19ms, tests 5ms, environment 0ms, prepare 38ms)
+

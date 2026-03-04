@@ -1105,7 +1105,8 @@
   text-decoration: none;
   font-size: 1.2rem;
   line-height: 1;
-  margin-left: 0.5rem;
+  /* margin-left: 0.5rem; */
+  margin-left: auto;
 }
 
 .solospec-root .ui-callout .self-link::after {
