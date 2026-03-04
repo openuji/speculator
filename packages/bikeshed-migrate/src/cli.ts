@@ -9,7 +9,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
 import { migrate } from './migrate.js';
-import { fetchBoilerplate, renderBoilerplateFile } from './boilerplate.js';
+import { fetchBoilerplate, renderBoilerplateFile, SLOT_HEADINGS } from './boilerplate.js';
 
 function printUsage() {
     console.log(`
@@ -120,6 +120,7 @@ async function run() {
         console.log(configJson);
         if (styles) { console.log('\n--- style.css ---'); console.log(styles); }
         if (scripts) { console.log('\n--- script.js ---'); console.log(scripts); }
+        if (result.abstract) { console.log('\n--- includes/abstract.md ---'); console.log(`${SLOT_HEADINGS['abstract']}\n\n${result.abstract.trim()}`); }
         if (boilerplate) {
             for (const [slot, resolved] of Object.entries(boilerplate)) {
                 console.log(`\n--- includes/${slot}.md --- (${resolved.source})`);
@@ -144,6 +145,16 @@ async function run() {
     if (scriptPath) {
         await writeFile(scriptPath, scripts + '\n', 'utf-8');
         console.log(`✓ Wrote ${scriptPath}  (${result.resources.filter(r => r.type === 'script').length} script block(s))`);
+    }
+
+    // Write includes/abstract.md from metadata Abstract: field (always, not tied to boilerplate)
+    if (result.abstract) {
+        const abstract = result.abstract;
+        const includesDir = join(outputDir, 'includes');
+        await mkdir(includesDir, { recursive: true });
+        const abstractPath = join(includesDir, 'abstract.md');
+        await writeFile(abstractPath, `${SLOT_HEADINGS['abstract']}\n\n${abstract.trim()}\n`, 'utf-8');
+        console.log(`✓ Wrote ${abstractPath}  (from metadata Abstract:)`);
     }
 
     if (boilerplate) {

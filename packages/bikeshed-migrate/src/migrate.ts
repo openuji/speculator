@@ -25,6 +25,8 @@ export interface MigrationResult {
     config: SpeculatorConfig;
     /** Extracted <style> and <script> blocks, in source order */
     resources: Resource[];
+    /** Abstract text for includes/abstract.md; not stored in config.json */
+    abstract?: string;
 }
 
 export interface MigrateOptions {
@@ -122,7 +124,7 @@ export async function migrate(content: string, options: MigrateOptions = {}): Pr
     });
 
     // Step 8: Build the config object
-    const config = buildConfig(metadata, biblio, options.id);
+    const { config, abstract } = buildConfig(metadata, biblio, options.id);
 
-    return { md, config, resources };
+    return { md, config, resources, abstract };
 }

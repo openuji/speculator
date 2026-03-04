@@ -1,3 +1,4 @@
+## Status of this document {data-no-toc}
 
 <p>
   This report was published by the <a href="https://www.w3.org/community/solid/">Solid Community Group</a>.

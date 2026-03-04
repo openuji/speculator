@@ -27,7 +27,6 @@ export interface RespecConfig {
     repository?: string;
     maxTocLevel?: number;
     editors?: PersonEntry[];
-    abstract?: string;
     localBiblio?: BiblioMap;
 }
 
@@ -58,11 +57,17 @@ function getAll(map: MetadataMap, key: string): string[] {
  * @param biblio   - Parsed Bikeshed bibliography
  * @param idOverride - Optional ID override; defaults to shortname or 'spec'
  */
+export interface BuildConfigResult {
+    config: SpeculatorConfig;
+    /** Raw abstract text (for includes/abstract.md); not stored in config.json */
+    abstract?: string;
+}
+
 export function buildConfig(
     metadata: MetadataMap,
     biblio: BiblioMap,
     idOverride?: string
-): SpeculatorConfig {
+): BuildConfigResult {
     const shortName = getString(metadata, 'shortname');
     const title = getString(metadata, 'title');
     const id = idOverride ?? shortName ?? 'spec';
@@ -105,10 +110,6 @@ export function buildConfig(
         respec.editors = editorStrings.map(parsePersonEntry);
     }
 
-    // Abstract (may be multi-line joined with spaces)
-    const abstract = getString(metadata, 'abstract');
-    if (abstract) respec.abstract = abstract;
-
     // Bibliography
     if (Object.keys(biblio).length > 0) {
         respec.localBiblio = biblio;
@@ -143,5 +144,7 @@ export function buildConfig(
     if (noConformance) config.noConformance = noConformance;
     if (Object.keys(custom).length > 0) config.custom = custom;
 
-    return config;
+    const abstract = getString(metadata, 'abstract') || undefined;
+
+    return { config, abstract };
 }

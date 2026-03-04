@@ -342,13 +342,21 @@ export function boilerplateHtmlToMd(html: string): string {
     return parts.join('\n\n').trim();
 }
 
+/** Headings prepended to specific slots in the generated includes/*.md files. */
+export const SLOT_HEADINGS: Record<string, string> = {
+    abstract: '## Abstract {data-no-toc}',
+    status: '## Status of this document {data-no-toc}',
+};
+
 /**
  * Render a resolved boilerplate slot as a local override .md file.
  * Converts the raw HTML content to Speculator-compatible Markdown.
  */
 export function renderBoilerplateFile(
-    _slot: string,
+    slot: string,
     resolved: BoilerplateSlot,
 ): string {
-    return boilerplateHtmlToMd(resolved.content) + '\n';
+    const body = boilerplateHtmlToMd(resolved.content);
+    const heading = SLOT_HEADINGS[slot];
+    return (heading ? `${heading}\n\n${body}` : body) + '\n';
 }
