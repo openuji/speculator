@@ -190,13 +190,19 @@ export function solospecPlugin(pluginOptions: SolospecPluginOptions): Plugin {
               if (res.type === 'script') {
                 tags.push({
                   tag: 'script',
-                  attrs: { src: res.src, ...res.attrs },
+                  attrs: { ...res.attrs },
                   injectTo: res.injectTo || 'body',
                 });
               } else if (res.type === 'style') {
                 tags.push({
                   tag: 'link',
-                  attrs: { rel: 'stylesheet', href: res.src, ...res.attrs },
+                  attrs: { rel: 'stylesheet', ...res.attrs },
+                  injectTo: res.injectTo || 'head',
+                });
+              } else if (res.type === 'link') {
+                tags.push({
+                  tag: 'link',
+                  attrs: { ...res.attrs },
                   injectTo: res.injectTo || 'head',
                 });
               }

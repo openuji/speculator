@@ -48,7 +48,9 @@ export function buildConfig(
     biblio: BiblioMap,
 ): BuildConfigResult {
     
-    const bikeshed: RawBikeshedConfig = {};
+    const bikeshed: RawBikeshedConfig = {
+        'modified': '[DATE]',
+    };
 
     const config: SpeculatorConfig = {
         bikeshed,

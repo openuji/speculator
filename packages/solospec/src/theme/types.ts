@@ -52,8 +52,7 @@ export interface ThemeSlots {
 }
 
 export interface ThemeResource {
-  src: string;
-  type: 'script' | 'style';
+  type: 'script' | 'style' | 'link';
   injectTo?: 'head' | 'body';
   attrs?: Record<string, string>;
 }

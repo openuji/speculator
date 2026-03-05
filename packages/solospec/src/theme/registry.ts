@@ -6,7 +6,17 @@ const bikeshedTheme: SolospecThemeRenderer = {
   name: 'bikeshed',
   getCss: () => getThemeCss('bikeshed'),
   slots: bikeshedSlots,
-  runtimeImport: '@openuji/solospec/themes/bikeshed/runtime'
+  runtimeImport: '@openuji/solospec/themes/bikeshed/runtime',
+  resources: [
+    {
+      type: 'link',
+      injectTo: 'head',
+      attrs: {
+        rel: 'icon',
+        href: 'https://www.w3.org/2008/site/images/favicon.ico',
+      }
+    }
+  ]
 };
 
 export function getThemeRenderer(name: string): SolospecThemeRenderer {
