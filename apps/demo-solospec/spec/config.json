@@ -5,8 +5,8 @@
     "level": "None",
     "status": "CG-DRAFT",
     "group": "webml",
-    "repository": "webmachinelearning/webmcp",
-    "url": "https://webmachinelearning.github.io/webmcp",
+    "repository": "https://github.com/webmachinelearning/webmcp",
+    "ed": "https://webmachinelearning.github.io/webmcp",
     "editor": [
       {
         "name": "Brandon Walderman",

@@ -11,7 +11,7 @@ import { parsePersonEntry } from './extract/editor-parser.js';
 type RawBikeshedConfig = Preprocess.RawBikeshedConfig;
 export interface SpeculatorConfig {
     bikeshed?: RawBikeshedConfig;
-    custom?: Record<string, unknown>;
+    custom: Record<string, unknown>;
 }
 
 function getString(map: MetadataMap, key: string): string | undefined {
@@ -48,8 +48,13 @@ export function buildConfig(
     biblio: BiblioMap,
 ): BuildConfigResult {
     
-
     const bikeshed: RawBikeshedConfig = {};
+
+    const config: SpeculatorConfig = {
+        bikeshed,
+        custom: {}
+    };
+
 
     // Map bikeshed metadata directly, replacing spaces/symbols
     for (const k of metadata.keys()) {
@@ -60,12 +65,26 @@ export function buildConfig(
         }
         
         // Ensure arrays for people
-        if (key === 'editor' || key === 'formereditor' || key === 'author' || key === 'formerauthor') {
+        if (key === 'editor' || key === 'author') {
              const arr = getAll(metadata, k).map(parsePersonEntry);
-             if (arr.length > 0) (bikeshed as any)[key] = arr;
-        } else {
+             if (arr.length > 0) (bikeshed)[key] = arr;
+        }else if (key === 'formereditor' || key === 'formerauthor') {
+             const arr = getAll(metadata, k).map(parsePersonEntry);
+             if (arr.length > 0) (config.custom)[key] = arr;
+        }else if (key.toLocaleLowerCase() === 'url') {
              const str = getString(metadata, k);
-             if (str !== undefined) (bikeshed as any)[key] = str;
+             if (str !== undefined) (bikeshed)['ed'] = str;
+        }else if (key.toLocaleLowerCase() === 'repository') {
+             let str = getString(metadata, k);
+             if (str !== undefined) {
+                 if (!str.startsWith('https://')) {
+                     str = 'https://github.com/' + str;
+                 }
+                (bikeshed)[key] = str;
+             }
+        }else {
+             const str = getString(metadata, k);
+             if (str !== undefined) (bikeshed)[key] = str;
         }
     }
 
@@ -74,13 +93,11 @@ export function buildConfig(
         (bikeshed).biblio = biblio;
     }
 
-    const config: SpeculatorConfig = {
-        
-    };
 
     if (Object.keys(bikeshed).length > 0) {
         config.bikeshed = bikeshed;
     }
+
 
 
     const abstract = getString(metadata, 'abstract') || undefined;

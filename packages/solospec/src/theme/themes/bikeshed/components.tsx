@@ -141,16 +141,16 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
             </>
           ) : null}
 
-          {custom.formerEditors && Array.isArray(custom.formerEditors) && custom.formerEditors.length > 0 ? (
+          {custom.formereditor && Array.isArray(custom.formereditor) && custom.formereditor.length > 0 ? (
             <>
               <dt>Former Editors:</dt>
-              <dd>{formatPersonList(custom.formerEditors as PersonEntry[])}</dd>
+              <dd>{formatPersonList(custom.formereditor)}</dd>
             </>
           ) : null}
         </dl>
       </details>
-      {meta.copyright ? (() => {
-        const copyright = String(meta.copyright)
+      {custom.copyright ? (() => {
+        const copyright = String(custom.copyright)
           .replace(/\[YEAR\]/g, String(new Date().getFullYear()))
           .replace(/\[TITLE\]/g, vm.titleText);
         return (
