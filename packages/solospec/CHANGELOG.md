@@ -1,5 +1,17 @@
 # @openuji/solospec
 
+## 0.3.0
+
+### Minor Changes
+
+- 399ff54: bikeshed native config
+
+### Patch Changes
+
+- Updated dependencies [399ff54]
+  - @openuji/speculator@0.9.0
+  - @openuji/speculator-lint@0.3.7
+
 ## 0.2.0
 
 ### Minor Changes
