@@ -1,15 +1,14 @@
 /**
- * Transform <div algorithm="x"> and <div algorithm> to <section data-algorithm="x">.
+ * Transform <div algorithm="x"> and <div algorithm> to <div data-algorithm="x">.
  *
  * Bikeshed uses <div algorithm> to mark algorithm blocks. Speculator uses
- * <section data-algorithm> (following the WHATWG pattern). We rename the element
- * so downstream parsers can handle it correctly.
+ * <div data-algorithm>. We rename the attribute and keep the element as a div.
  */
 
 import type { Element } from 'hast';
 
 /**
- * Mutate a <div algorithm> element in-place to <section data-algorithm>.
+ * Mutate a <div algorithm> element in-place to <div data-algorithm>.
  * Returns true if a transformation was applied, false otherwise.
  */
 export function tryAlgorithmDiv(node: Element): boolean {
@@ -23,13 +22,12 @@ export function tryAlgorithmDiv(node: Element): boolean {
     if (!('algorithm' in props)) return false;
 
     const algorithmValue = props.algorithm;
+    // Use boolean true for a valueless attribute (renders as data-algorithm, not data-algorithm="")
     const dataAlgorithmValue =
         algorithmValue === true || algorithmValue === ''
-            ? ''
+            ? true
             : String(algorithmValue);
 
-    // Rename to section and set data-algorithm
-    node.tagName = 'section';
     delete node.properties!.algorithm;
     node.properties = {
         ...node.properties,

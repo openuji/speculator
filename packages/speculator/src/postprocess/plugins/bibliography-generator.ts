@@ -132,25 +132,52 @@ export const bibliographyGeneratorPlugin: Plugin = {
         if (normativeSection) wrapperSection.children.push(normativeSection);
         if (informativeSection) wrapperSection.children.push(informativeSection);
 
-        // 5. Find the <spec-biblio-references /> tag and replace it
-        function replaceInContainer(children: Array<Section | Block | Inline>): boolean {
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                if ((child.type === 'htmlElement' || child.type === 'htmlInlineElement') && 
-                    ((child as { tagName?: string }).tagName || '').toLowerCase() === 'spec-biblio-references') {
-                    children.splice(i, 1, wrapperSection as Section);
+
+        function findAndReplaceLifting(container: Array<Section | Block | Inline>): boolean {
+            for (let i = 0; i < container.length; i++) {
+                const node = container[i];
+
+                // 1. Check if node is the tag
+                if ((node.type === 'htmlElement' || node.type === 'htmlInlineElement') && 
+                    ((node as { tagName?: string }).tagName || '').toLowerCase() === 'spec-biblio-references') {
+                    container.splice(i, 1, wrapperSection);
                     return true;
                 }
-                const childWithChildren = child as { children?: Array<Section | Block | Inline> };
-                if (childWithChildren.children && Array.isArray(childWithChildren.children)) {
-                    if (replaceInContainer(childWithChildren.children)) {
+
+                // 2. If it's a section, search its children
+                if (node.type === 'section') {
+                    const section = node as Section;
+                    if (findAndReplaceLifting(section.children)) {
+                        // Tag was found and replaced somewhere inside this section's subtree.
+                        // Check if the wrapperSection is now a DIRECT child of this section.
+                        const idx = section.children.indexOf(wrapperSection);
+                        if (idx !== -1) {
+                            // It's a direct child. Check depths.
+                            const sectionDepth = section.heading?.depth ?? 1;
+                            const wrapperDepth = wrapperSection.heading?.depth ?? 2;
+
+                            if (wrapperDepth <= sectionDepth) {
+                                // LIFT: Split the section at idx
+                                const movedSiblings = section.children.splice(idx);
+                                // Insert them after the current section in the container
+                                container.splice(i + 1, 0, ...movedSiblings);
+                            }
+                        }
                         return true;
+                    }
+                } else {
+                    // 3. Regular block with children?
+                    const nodeWithChildren = node as { children?: Array<Section | Block | Inline> };
+                    if (nodeWithChildren.children && Array.isArray(nodeWithChildren.children)) {
+                        if (findAndReplaceLifting(nodeWithChildren.children)) {
+                            return true;
+                        }
                     }
                 }
             }
             return false;
         }
 
-        replaceInContainer(document.children as Section[]);
+        findAndReplaceLifting(document.children as Section[]);
     }
 };
