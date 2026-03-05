@@ -57,7 +57,6 @@ Usage: bikeshed-migrate <input.bs> [options]
 
 Options:
   --out <dir>         Output directory (default: same directory as input file)
-  --id <id>           Override document ID in config.json
   --no-boilerplate    Skip fetching boilerplate overrides (includes/*.md)
   --init              Scaffold a solospec app (vite.config.ts, package.json, index.html)
   --dry-run           Print outputs to stdout without writing files
@@ -132,7 +131,6 @@ async function run() {
     // Parse arguments
     let inputFile: string | undefined;
     let outDir: string | undefined;
-    let idOverride: string | undefined;
     let dryRun = false;
     let skipBoilerplate = false;
     let init = false;
@@ -141,8 +139,6 @@ async function run() {
         const arg = args[i];
         if (arg === '--out' || arg === '-o') {
             outDir = args[++i];
-        } else if (arg === '--id') {
-            idOverride = args[++i];
         } else if (arg === '--dry-run') {
             dryRun = true;
         } else if (arg === '--no-boilerplate') {
@@ -192,7 +188,7 @@ async function run() {
     // Migrate
     let result;
     try {
-        result = await migrate(content, { id: idOverride });
+        result = await migrate(content);
     } catch (err) {
         console.error(`Migration failed: ${(err as Error).message}`);
         process.exit(1);
@@ -207,8 +203,8 @@ async function run() {
     const scriptPath = scripts ? join(outputDir, 'script.js') : null;
 
     // Fetch boilerplate includes by default when Group + Status are present
-    const group = result.config.respec?.group;
-    const status = result.config.respec?.specStatus;
+    const group = result.config.bikeshed?.group as string | undefined;
+    const status = result.config.bikeshed?.status as string | undefined;
     let boilerplate: Awaited<ReturnType<typeof fetchBoilerplate>> | null = null;
 
     if (!skipBoilerplate && group && status) {
@@ -218,8 +214,8 @@ async function run() {
 
     // Inject copyright into config (not an include file)
     if (boilerplate?.copyright) {
-        result.config.respec ??= {};
-        result.config.respec.copyright = renderBoilerplateFile('copyright', boilerplate.copyright).trim();
+        result.config.custom ??= {};
+        result.config.custom.copyright = renderBoilerplateFile('copyright', boilerplate.copyright).trim();
     }
 
     // Inject logo into config.custom.logo (not an include file)
@@ -237,7 +233,11 @@ async function run() {
     if (boilerplate?.status) headerIncludes.push(':::include ./includes/status.md :::');
 
     const footerIncludes: string[] = [];
-    if (boilerplate?.conformance && !result.config.noConformance) {
+    const boilerplateConfig = result.config.bikeshed?.boilerplate;
+    const omitConformance = typeof boilerplateConfig === 'string' && 
+        boilerplateConfig.toLowerCase().includes('omit conformance');
+
+    if (boilerplate?.conformance && !omitConformance) {
         footerIncludes.push(':::include ./includes/conformance.md :::');
     }
     footerIncludes.push('<spec-biblio-references />');
@@ -321,7 +321,7 @@ async function run() {
     }
 
     if (init) {
-        await scaffoldSolospecApp(outputDir, result.config.id);
+        await scaffoldSolospecApp(outputDir, result.config.bikeshed?.shortname ?? inputName);
     }
 }
 

@@ -35,7 +35,7 @@ export {
     normalizeConfig,
     ConfigLoadError,
 } from '#src/preprocess/config/index';
-export type { RawRespecConfig, RawPersonEntry, DocumentConfig, ResolvedDocumentConfig } from '#src/preprocess/config/index';
+export type { RawRespecConfig, RawBikeshedConfig, DocumentConfig, ResolvedDocumentConfig } from '#src/preprocess/config/index';
 
 // Include submodule (for advanced use)
 export {

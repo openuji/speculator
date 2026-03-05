@@ -880,6 +880,8 @@
         margin: 0;
         box-shadow: 0 0 var(--size-solospec-shadow-soft);
         background: var(--solospec-bg);
+        max-width: 100dvh;
+        overflow-y: auto;
       }
       #toc-mobile {
         display: none !important;

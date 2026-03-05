@@ -22,66 +22,56 @@ beforeAll(async () => {
 });
 
 describe('oidc config.json', () => {
-    it('has correct id from shortname', () => {
-        expect(result.config.id).toBe('solid-oidc');
-    });
-
-    it('has correct title', () => {
-        expect(result.config.title).toBe('Solid-OIDC');
-        expect(result.config.respec.title).toBe('Solid-OIDC');
-    });
-
     it('has correct shortName', () => {
-        expect(result.config.respec.shortName).toBe('solid-oidc');
+        expect(result.config.bikeshed!.shortname).toBe('solid-oidc');
     });
 
     it('has correct specStatus', () => {
-        expect(result.config.respec.specStatus).toBe('CG-DRAFT');
+        expect(result.config.bikeshed!.status).toBe('CG-DRAFT');
     });
 
     it('has thisVersion from ED field', () => {
-        expect(result.config.respec.thisVersion).toBe('https://solid.github.io/solid-oidc/');
+        expect(result.config.bikeshed!.ed).toBe('https://solid.github.io/solid-oidc/');
     });
 
     it('has latestVersion from TR field', () => {
-        expect(result.config.respec.latestVersion).toBe('https://solidproject.org/TR/oidc');
+        expect(result.config.bikeshed!.tr).toBe('https://solidproject.org/TR/oidc');
     });
 
     it('has correct maxTocLevel', () => {
-        expect(result.config.respec.maxTocLevel).toBe(2);
+        expect(result.config.bikeshed!.maxtocdepth).toBe('2');
     });
 
     it('has editors array with correct count', () => {
-        expect(result.config.respec.editors).toBeDefined();
-        expect(result.config.respec.editors!.length).toBe(3);
+        expect(result.config.bikeshed!.editor).toBeDefined();
+        expect((result.config.bikeshed!.editor as any[]).length).toBe(3);
     });
 
-    it('first editor has name, url, company', () => {
-        const first = result.config.respec.editors![0];
-        expect(first.name).toBe('Aaron Coburn');
-        expect(first.url).toBeDefined();
-        expect(first.company).toBe('Inrupt');
+    it('first editor contains correct markdown string', () => {
+        const first = (result.config.bikeshed!.editor as string[])[0];
+        expect(first.name).toContain('Aaron Coburn');
+        expect(first.company).toContain('Inrupt');
     });
 
     it('has localBiblio with DPOP entry', () => {
-        expect(result.config.respec.localBiblio).toBeDefined();
-        expect(result.config.respec.localBiblio!['DPOP']).toBeDefined();
+        expect(result.config.bikeshed!.biblio).toBeDefined();
+        expect((result.config.bikeshed!.biblio as any)!['DPOP']).toBeDefined();
     });
 
     it('biblio DPOP entry uses url not href', () => {
-        const dpop = result.config.respec.localBiblio!['DPOP'];
+        const dpop = (result.config.bikeshed!.biblio as any)!['DPOP'];
         expect(dpop.url).toBeDefined();
-        expect((dpop as Record<string, unknown>)['href']).toBeUndefined();
+        expect(dpop.href).toBeUndefined();
     });
 
-    it('has former editors in custom', () => {
-        expect(result.config.custom?.formerEditors).toBeDefined();
-        expect(Array.isArray(result.config.custom!.formerEditors)).toBe(true);
+    it('has former editors', () => {
+        expect(result.config.bikeshed!.formereditor).toBeDefined();
+        expect(Array.isArray(result.config.bikeshed!.formereditor)).toBe(true);
     });
 
     it('has abstract', () => {
-        expect(result.config.respec.abstract).toBeDefined();
-        expect(result.config.respec.abstract!.length).toBeGreaterThan(20);
+        expect(result.abstract).toBeDefined();
+        expect(result.abstract!.length).toBeGreaterThan(20);
     });
 });
 

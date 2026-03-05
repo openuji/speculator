@@ -1,5 +1,18 @@
 # apps-docs
 
+## 0.1.0
+
+### Minor Changes
+
+- 399ff54: bikeshed native config
+
+### Patch Changes
+
+- Updated dependencies [399ff54]
+  - @openuji/speculator@0.9.0
+  - @openuji/speculator-lint@0.3.7
+  - @openuji/speculator-search@0.3.7
+
 ## 0.0.8
 
 ### Patch Changes

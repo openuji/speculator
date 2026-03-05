@@ -12,6 +12,11 @@ export interface ParsedPerson {
     url?: string;
     company?: string;
     companyUrl?: string;
+    email?: string;
+    /** Optional note about the person's role (e.g., "Main Editor") */
+    note?: string;
+    /** W3C ID if applicable */
+    w3cid?: string;
 }
 
 // Matches: [Name](url) ([Company](companyUrl))
@@ -36,22 +41,43 @@ function parseCommaSeparated(s: string): ParsedPerson | null {
 
     const result: ParsedPerson = { name };
 
-    // Second part: "Company https://url" or just "Company"
-    if (parts[1]) {
-        const m = parts[1].match(/^(.+?)\s+(https?:\/\/\S+)$/);
-        if (m) {
-            result.company = m[1].trim();
-            result.companyUrl = m[2].trim();
-        } else {
-            result.company = parts[1];
+    for (let i = 1; i < parts.length; i++) {
+        const p = parts[i];
+        
+        // W3C ID: "w3cid 12345"
+        if (p.toLowerCase().startsWith('w3cid')) {
+            result.w3cid = p.replace(/w3cid\s+/i, '').trim();
+            continue;
         }
-    }
 
-    // Remaining parts: take first non-w3cid value as person URL/email
-    for (let i = 2; i < parts.length; i++) {
-        if (parts[i].startsWith('w3cid')) continue;
-        result.url = parts[i];
-        break;
+        // Email: contains @ but not :// (to avoid confusion with URLs)
+        if (p.includes('@') && !p.includes('://')) {
+            result.email = p;
+            continue;
+        }
+
+        // URL or Company URL
+        if (p.startsWith('http')) {
+            // If we don't have a company yet, then this might be a standalone URL or we should check if it's following a company name in the same part (legacy logic check)
+            // But usually in comma separated, it's its own part.
+            if (!result.url) {
+                result.url = p;
+            }
+            continue;
+        }
+
+        // Second part is often company
+        if (i === 1 && !result.company) {
+            // Check if it's "Company https://url"
+            const m = p.match(/^(.+?)\s+(https?:\/\/\S+)$/);
+            if (m) {
+                result.company = m[1].trim();
+                result.companyUrl = m[2].trim();
+            } else {
+                result.company = p;
+            }
+            continue;
+        }
     }
 
     return result;

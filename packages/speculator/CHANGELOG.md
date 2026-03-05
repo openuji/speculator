@@ -1,5 +1,11 @@
 # @openuji/speculator
 
+## 0.9.0
+
+### Minor Changes
+
+- 399ff54: bikeshed native config
+
 ## 0.8.0
 
 ### Minor Changes

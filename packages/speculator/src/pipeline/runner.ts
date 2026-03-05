@@ -201,6 +201,7 @@ export class SpeculatorPipeline {
             runtimeWorkspace.globalIndex
         );
 
+
         return { workspace, errors: errors.length > 0 ? errors : undefined };
     }
 }

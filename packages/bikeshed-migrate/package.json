@@ -1,6 +1,6 @@
 {
     "name": "@openuji/bikeshed-migrate",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "Migration tool: converts Bikeshed (.bs) specs to Speculator-compatible index.md + config.json",
     "type": "module",
     "main": "dist/index.js",

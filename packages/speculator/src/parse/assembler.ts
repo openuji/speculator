@@ -242,23 +242,11 @@ function configToMetadata(config: SpecConfig): DocumentMetadata | undefined {
         hasContent = true;
     }
     if (config.editors && config.editors.length > 0) {
-        meta.editors = config.editors.map(e => ({
-            name: e.name,
-            url: e.url,
-            company: e.company,
-            note: e.note,
-            w3cid: e.w3cid,
-        }));
+        meta.editors = config.editors;
         hasContent = true;
     }
     if (config.authors && config.authors.length > 0) {
-        meta.authors = config.authors.map(a => ({
-            name: a.name,
-            url: a.url,
-            company: a.company,
-            note: a.note,
-            w3cid: a.w3cid,
-        }));
+        meta.authors = config.authors;
         hasContent = true;
     }
     if (config.abstract) {

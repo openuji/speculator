@@ -1,5 +1,14 @@
 # apps-astro-demo
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [399ff54]
+  - @openuji/speculator@0.9.0
+  - @openuji/speculator-lint@0.3.7
+  - @openuji/speculator-search@0.3.7
+
 ## 0.1.2
 
 ### Patch Changes

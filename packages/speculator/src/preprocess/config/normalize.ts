@@ -5,29 +5,11 @@
  */
 
 import type { SpecConfig, PersonEntry, MaturityLevel } from '#src/preprocess/types';
-import type { ResolvedDocumentConfig, RawPersonEntry } from './types.js';
+import type { ResolvedDocumentConfig, RawRespecConfig, RawBikeshedConfig } from './types.js';
 
 const DATE_PLACEHOLDER = '[DATE]';
 
-/**
- * Normalize a raw person entry to internal format
- */
-function normalizePerson(raw: RawPersonEntry): PersonEntry | null {
-    // Name is required
-    if (!raw.name) {
-        return null;
-    }
 
-    return {
-        name: raw.name,
-        url: raw.url,
-        company: raw.company,
-        companyURL: raw.companyURL,
-        email: raw.mailto || raw.email,
-        note: raw.note,
-        w3cid: raw.w3cid,
-    };
-}
 
 /**
  * Map respec specStatus to maturity level
@@ -66,45 +48,72 @@ function resolveDatePlaceholder(dateValue: string | undefined): string | undefin
     return toISODateString(new Date());
 }
 
-/**
- * Normalize a ResolvedDocumentConfig to internal SpecConfig
- * 
- * Priority order (lowest to highest):
- * 1. respec.* - ReSpec-compatible fallback settings
- * 2. Root-level properties (title, lastUpdateDate, maturityLevel)
- * 3. custom.* - Highest priority, overwrites everything
- * 
- * @param docConfig - Resolved document config with ID
- * @returns Normalized SpecConfig with defaults applied
- */
-export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
-    
-    const id = docConfig.id;
-    
-      // baseUrl for assembling thisVersion (defaults to empty string)
-    const baseUrl = docConfig.baseUrl;
-    
-    const raw = docConfig.respec ?? {};
-    let thisVersion: string;
-    // Priority: root baseUrl > respec.thisVersion > assembled from baseUrl + id
-    if (baseUrl !== undefined) {
-        thisVersion = `${baseUrl.replace(/\/$/, '')}/${id}`;
-    } else if (raw.thisVersion !== undefined) {
-        thisVersion = raw.thisVersion;
-    } else {
-        thisVersion = id;
+function normalizeBikeshedConfig(bsRaw: RawBikeshedConfig, config: SpecConfig) {
+    const bs: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(bsRaw)) {
+        bs[k.toLowerCase().replace(/[\s!]/g, '')] = v;
     }
 
-    const config: SpecConfig = {
-        id: docConfig.id,
-        deps: docConfig.deps,
-        specIri: thisVersion,
-    };
+    if (bs.ed !== undefined && typeof bs.ed === 'string') {
+        config.specIri = bs.ed;
+    }
+    if (bs.title !== undefined) {
+        config.title = bs.title as string;
+    }
+    if (bs.shortname !== undefined) {
+        config.shortName = bs.shortname as string;
+    }
+    if (bs.status !== undefined) {
+        config.status = bs.status as string;
+        config.maturityLevel = mapSpecStatusToMaturity(bs.status as string);
+    }
+    
+    const bsCreated = typeof bs.created === 'string' ? bs.created : undefined;
+    const creationDate = resolveDatePlaceholder(bsCreated);
+    if (creationDate !== undefined) {
+        config.creationDate = creationDate;
+    }
+    
+    const bsModified = typeof bs.modified === 'string' ? bs.modified : undefined;
+    const bsModificationDate = resolveDatePlaceholder(bsModified);
+    if (bsModificationDate !== undefined) {
+        config.lastUpdateDate = bsModificationDate;
+    }
 
-    // Document metadata - Priority: root title > respec.title
-    if (docConfig.title !== undefined) {
-        config.title = docConfig.title;
-    } else if (raw.title !== undefined) {
+    if (bs.tr !== undefined) {
+        config.latestVersion = bs.tr as string;
+    }
+
+    const bsEditors = Array.isArray(bs.editor) ? bs.editor : (bs.editor ? [bs.editor] : undefined);
+    if (bsEditors) {
+        config.editors = bsEditors;   
+    }
+    if (bs.abstract !== undefined) {
+        config.abstract = bs.abstract as string;
+    }
+
+    if (bs.group !== undefined) {
+        config.group = bs.group as string;
+    }
+    
+    if (bs.repository !== undefined) {
+        config.repository = bs.repository as string;
+    }
+
+    if (bs.maxtocdepth !== undefined) {
+        config.maxTocLevel = typeof bs.maxtocdepth === 'string' ? parseInt(bs.maxtocdepth, 10) : (bs.maxtocdepth as number);
+    }
+
+    if (bs.biblio !== undefined) {
+        config.localBiblio = bs.biblio as Record<string, { title: string; url?: string }>;
+    }
+}
+
+function normalizeRespecConfig(raw: RawRespecConfig, config: SpecConfig) {
+    if (raw.thisVersion !== undefined) {
+        config.specIri = raw.thisVersion;
+    }
+    if (raw.title !== undefined) {
         config.title = raw.title;
     }
     if (raw.shortName !== undefined) {
@@ -113,44 +122,30 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
     if (raw.subtitle !== undefined) {
         config.subtitle = raw.subtitle;
     }
-
-    // Status and versioning - specStatus is preserved as fallback
     if (raw.specStatus !== undefined) {
         config.status = raw.specStatus;
+        const mappedMaturity = mapSpecStatusToMaturity(raw.specStatus);
+        if (mappedMaturity) config.maturityLevel = mappedMaturity;
     }
-
-    // Priority: root maturityLevel > mapped respec.specStatus
-    if (docConfig.maturityLevel !== undefined) {
-        config.maturityLevel = docConfig.maturityLevel;
-    } else if (raw.specStatus !== undefined) {
-        config.maturityLevel = mapSpecStatusToMaturity(raw.specStatus);
-    }
+    
     const publishDate = resolveDatePlaceholder(raw.publishDate);
     if (publishDate !== undefined) {
         config.publishDate = publishDate;
     }
+    
     const creationDate = resolveDatePlaceholder(raw.creationDate);
     if (creationDate !== undefined) {
         config.creationDate = creationDate;
     }
     
-    // Priority: root lastUpdateDate > respec.modificationDate
-    const rootLastUpdateDate = resolveDatePlaceholder(docConfig.lastUpdateDate);
     const respecModificationDate = resolveDatePlaceholder(raw.modificationDate);
-    if (rootLastUpdateDate !== undefined) {
-        config.lastUpdateDate = rootLastUpdateDate;
-    } else if (respecModificationDate !== undefined) {
+    if (respecModificationDate !== undefined) {
         config.lastUpdateDate = respecModificationDate;
     }
     
     if (raw.version !== undefined) {
         config.version = raw.version;
     }
-
-  
-
-
-
     if (raw.latestVersion !== undefined) {
         config.latestVersion = raw.latestVersion;
     }
@@ -158,10 +153,8 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         config.previousVersion = raw.prevVersion;
     }
 
-    // People
     if (raw.editors && Array.isArray(raw.editors)) {
         const editors = raw.editors
-            .map(normalizePerson)
             .filter((p): p is PersonEntry => p !== null);
         if (editors.length > 0) {
             config.editors = editors;
@@ -170,19 +163,16 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
 
     if (raw.authors && Array.isArray(raw.authors)) {
         const authors = raw.authors
-            .map(normalizePerson)
             .filter((p): p is PersonEntry => p !== null);
         if (authors.length > 0) {
             config.authors = authors;
         }
     }
 
-    // Content
     if (raw.abstract !== undefined) {
         config.abstract = raw.abstract;
     }
 
-    // Legal
     if (raw.license !== undefined) {
         config.license = raw.license;
     }
@@ -190,7 +180,6 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         config.copyright = raw.copyright;
     }
 
-    // Branding - normalize logo format
     if (raw.logos && Array.isArray(raw.logos)) {
         config.logos = raw.logos.map(logo => ({
             src: logo.src,
@@ -199,28 +188,74 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         }));
     }
 
-    // Organization
     if (raw.group !== undefined) {
         config.group = raw.group;
     }
-    // Priority: root repository > respec.repository
-    if (docConfig.repository !== undefined) {
-        config.repository = docConfig.repository;
-    } else if (raw.repository !== undefined) {
+    
+    if (raw.repository !== undefined) {
         config.repository = raw.repository;
     }
 
-    // Structure
-    // ReSpec uses noTOC=true to disable, we use tocEnabled=true to enable
-    config.tocEnabled = raw.noTOC !== true;
+    if (raw.noTOC === true) {
+        config.tocEnabled = false;
+    }
 
     if (raw.maxTocLevel !== undefined && typeof raw.maxTocLevel === 'number') {
         config.maxTocLevel = raw.maxTocLevel;
     }
 
-    // Bibliography
     if (raw.localBiblio !== undefined) {
         config.localBiblio = raw.localBiblio as Record<string, { title: string; url?: string }>;
+    }
+
+    if (raw.xref !== undefined) {
+        config.xref = raw.xref;
+    }
+}
+
+/**
+ * Normalize a ResolvedDocumentConfig to internal SpecConfig
+ * 
+ * Priority order (lowest to highest):
+ * 1. bikeshed.* OR respec.* 
+ * 2. Root-level properties (title, lastUpdateDate, maturityLevel, repository)
+ * 3. custom.* - Highest priority, overwrites everything
+ * 
+ * @param docConfig - Resolved document config with ID
+ * @returns Normalized SpecConfig with defaults applied
+ */
+export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
+    const id = docConfig.id;
+    const baseUrl = docConfig.baseUrl;
+
+    const config: SpecConfig = {
+        id: docConfig.id,
+        deps: docConfig.deps,
+        specIri: baseUrl !== undefined ? `${baseUrl.replace(/\/$/, '')}/${id}` : id,
+        tocEnabled: true,
+    };
+
+    if (docConfig.bikeshed) {
+        normalizeBikeshedConfig(docConfig.bikeshed, config);
+    } else if (docConfig.respec) {
+        normalizeRespecConfig(docConfig.respec, config);
+    }
+
+    // Root-level overrides
+    if (docConfig.title !== undefined) {
+        config.title = docConfig.title;
+    }
+    if (docConfig.maturityLevel !== undefined) {
+        config.maturityLevel = docConfig.maturityLevel;
+    }
+    if (docConfig.lastUpdateDate !== undefined) {
+        const rootLastUpdateDate = resolveDatePlaceholder(docConfig.lastUpdateDate);
+        if (rootLastUpdateDate !== undefined) {
+            config.lastUpdateDate = rootLastUpdateDate;
+        }
+    }
+    if (docConfig.repository !== undefined) {
+        config.repository = docConfig.repository;
     }
 
     // Custom overrides - highest priority, applied last
@@ -228,10 +263,6 @@ export function normalizeConfig(docConfig: ResolvedDocumentConfig): SpecConfig {
         config.custom = docConfig.custom;
     }
 
-    // Cross-references
-    if (raw.xref !== undefined) {
-        config.xref = raw.xref;
-    }
 
     return config;
 }

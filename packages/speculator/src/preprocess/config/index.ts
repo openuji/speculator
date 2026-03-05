@@ -10,7 +10,7 @@ export type {
     DocumentConfig, 
     ResolvedDocumentConfig, 
     RawRespecConfig, 
-    RawPersonEntry,
+    RawBikeshedConfig,
     DocumentId,
     ISODateString,
     MaturityLevel,

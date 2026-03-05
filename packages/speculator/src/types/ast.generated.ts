@@ -7,6 +7,8 @@
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
 
+import { PersonEntry } from "#src/preprocess/types";
+
 export type Section = BaseNode & {
   type: 'section';
   /**
@@ -556,24 +558,17 @@ export interface DocumentMetadata {
     latestVersion?: string;
     [k: string]: unknown | undefined;
   };
+  bikeshed?: {
+    ed?: string;
+    tr?: string;
+    [k: string]: unknown | undefined;
+  };
   /**
    * Dependencies from config.json
    */
   deps?: string[];
-  editors?: {
-    name?: string;
-    url?: string;
-    company?: string;
-    note?: string;
-    w3cid?: string;
-  }[];
-  authors?: {
-    name?: string;
-    url?: string;
-    company?: string;
-    note?: string;
-    w3cid?: string;
-  }[];
+  editors?: PersonEntry[];
+  authors?: PersonEntry[];
   /**
    * ISO 8601 date format (YYYY-MM-DD)
    */
