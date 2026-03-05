@@ -22,8 +22,9 @@ export const biblioIndexPlugin: Plugin = {
 
         for (const [key, entry] of Object.entries(config.localBiblio)) {
             if (!globalBiblio.has(key)) {
-                globalBiblio.set(key, {
-                    key,
+                
+                globalBiblio.set(key.toUpperCase(), {
+                    key: key.toUpperCase(),
                     title: entry.title,
                     url: entry.url,
                     authors: entry.authors,

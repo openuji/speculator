@@ -1,20 +1,21 @@
 import type { ThemeSlots, RenderPageVm } from '#src/theme/types';
-import type { DocumentMetadata, TocEntry } from '@openuji/speculator';
+import type { TocEntry, Preprocess } from '@openuji/speculator';
 import { baseSlots, baseComponents } from '#src/theme/themes/base/components';
 import { AstComponentsContext } from '#src/theme/themes/base/context';
 // import { TocNav } from '#src/theme/themes/bikeshed/TocNav';
 
 import type { JSX } from 'preact';
-
-function formatPersonList(people: DocumentMetadata['editors'] | DocumentMetadata['authors']): JSX.Element | null {
+type PersonEntry = Preprocess.PersonEntry;
+function formatPersonList(people: PersonEntry[]): JSX.Element | null {
   if (!people || people.length === 0) return null;
+
   return (
     <>
       {people.map((person, i) => (
         <span key={i}>
           {i > 0 ? <br /> : null}
-          {person.url ? <a href={person.url}>{person.name}</a> : person.name}
-          {person.company ? ` (${person.company})` : null}
+          {person.url ? <a href={person.url}>{person.name}</a> : (person.email ? <a href={`mailto:${person.email}`}>{person.name}</a> : person.name) }
+          {person.company ? person.companyUrl ? <> (<a href={person.companyUrl}>{person.company}</a>)</> : <>(person.company)</> : null}
         </span>
       ))}
     </>
@@ -143,7 +144,7 @@ function BikeshedHeader(props: Parameters<ThemeSlots['Header']>[0]) {
           {custom.formerEditors && Array.isArray(custom.formerEditors) && custom.formerEditors.length > 0 ? (
             <>
               <dt>Former Editors:</dt>
-              <dd>{formatPersonList(custom.formerEditors as DocumentMetadata['editors'])}</dd>
+              <dd>{formatPersonList(custom.formerEditors as PersonEntry[])}</dd>
             </>
           ) : null}
         </dl>

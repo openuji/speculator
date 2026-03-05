@@ -1943,6 +1943,9 @@
                             "company": {
                                 "type": "string"
                             },
+                            "companyUrl": {
+                                "type": "string"
+                            },
                             "note": {
                                 "type": "string"
                             },
@@ -1964,6 +1967,9 @@
                                 "type": "string"
                             },
                             "company": {
+                                "type": "string"
+                            },
+                            "companyUrl": {
                                 "type": "string"
                             },
                             "note": {

@@ -42,7 +42,8 @@ function createReferenceSection(title: string, id: string, citations: string[], 
     if (citations.length === 0) return null;
 
     const dlContent = citations.map(key => {
-        const entry = biblioMap.get(key) || { key, title: key, url: '' }; // Fallback
+        
+        const entry = biblioMap.get(key.toUpperCase()) || { key, title: key, url: '' }; // Fallback
         return generateBiblioHtml(entry);
     }).join('\n');
 
@@ -70,6 +71,7 @@ export const bibliographyGeneratorPlugin: Plugin = {
 
     async compute(ctx: ComputeContext): Promise<void> {
         const { workspace, document } = ctx;
+
         if (!workspace || !workspace.globalIndex?.bibliography) return;
 
         // 1. Identify citations relevant to this document
@@ -78,7 +80,7 @@ export const bibliographyGeneratorPlugin: Plugin = {
 
         // 2. Resolve entries
         const biblioMap = new Map<string, IndexBiblioEntry>();
-        workspace.globalIndex.bibliography.forEach(entry => biblioMap.set(entry.key, entry));
+        workspace.globalIndex.bibliography.forEach(entry => biblioMap.set(entry.key.toUpperCase(), entry));
 
         // 3. Group by kind
         const normativeKeys = new Set<string>();
@@ -104,7 +106,7 @@ export const bibliographyGeneratorPlugin: Plugin = {
             Array.from(normativeKeys).sort(), 
             biblioMap
         );
-
+        
         const informativeSection = createReferenceSection(
             'Informative References', 
             'bibliography-generator-informative-references', 

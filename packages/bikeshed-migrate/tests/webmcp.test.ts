@@ -23,32 +23,24 @@ beforeAll(async () => {
 });
 
 describe('webmcp config.json', () => {
-    it('has correct id from shortname', () => {
-        expect(result.config.id).toBe('webmcp');
-    });
-
-    it('has correct title', () => {
-        expect(result.config.title).toBe('WebMCP');
-        expect(result.config.respec.title).toBe('WebMCP');
-    });
 
     it('has group set to webml', () => {
-        expect(result.config.respec.group).toBe('webml');
+        expect(result.config.bikeshed!.group).toBe('webml');
     });
 
     it('has editors', () => {
-        expect(result.config.respec.editors).toBeDefined();
-        expect(result.config.respec.editors!.length).toBeGreaterThan(0);
+        expect(result.config.bikeshed!.editor).toBeDefined();
+        expect((result.config.bikeshed!.editor as any[]).length).toBeGreaterThan(0);
     });
 
     it('has localBiblio with MCP entry', () => {
-        expect(result.config.respec.localBiblio?.['mcp']).toBeDefined();
+        expect((result.config.bikeshed!.biblio as any)?.['mcp']).toBeDefined();
     });
 
     it('biblio MCP entry uses url not href', () => {
-        const mcp = result.config.respec.localBiblio!['mcp'];
+        const mcp = (result.config.bikeshed!.biblio as any)!['mcp'];
         expect(mcp.url).toBeDefined();
-        expect((mcp as Record<string, unknown>)['href']).toBeUndefined();
+        expect(mcp.href).toBeUndefined();
     });
 });
 

@@ -8,20 +8,32 @@
 export type DocumentId = string;
 export type ISODateString = `${number}-${number}-${number}`;
 export type MaturityLevel = 'incubating' | 'draft' | 'prerelease' | 'stable';
+import { PersonEntry } from "#src/preprocess/types";
 
 /**
- * Raw person entry from ReSpec config
+ * Raw Bikeshed configuration as embedded in config.json
  */
-export interface RawPersonEntry {
-    name: string;
-    url?: string;
-    company?: string;
-    companyURL?: string;
-    mailto?: string;
-    email?: string;
-    note?: string;
-    w3cid?: string;
+export interface RawBikeshedConfig {
+    title?: string;
+    shortname?: string;
+    status?: string;
+    level?: number | string;
+    group?: string;
+    ed?: string;
+    tr?: string;
+    created?: string;
+    modified?: string;
+    repository?: string;
+    maxtocdepth?: number | string;
+    editor?: PersonEntry[];
+    formereditor?:PersonEntry[];
+    abstract?: string;
+    boilerplate?: string;
+    testsuite?: string;
+    [key: string]: unknown;
 }
+
+
 
 /**
  * Raw ReSpec configuration as embedded in config.json
@@ -43,8 +55,8 @@ export interface RawRespecConfig {
     prevVersion?: string;
 
     // People
-    editors?: RawPersonEntry[];
-    authors?: RawPersonEntry[];
+    editors?: PersonEntry[];
+    authors?: PersonEntry[];
 
     // Content
     abstract?: string;
@@ -95,6 +107,9 @@ export interface ResolvedDocumentConfig {
 
   /** Optional ReSpec configuration embedded in config.json */
   respec?: RawRespecConfig;
+
+  /** Optional Bikeshed configuration embedded in config.json */
+  bikeshed?: RawBikeshedConfig;
 
   /** 
    * Custom user-defined properties. 

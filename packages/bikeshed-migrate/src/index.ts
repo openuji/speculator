@@ -6,6 +6,6 @@
 
 export { migrate } from './migrate.js';
 export type { MigrationResult, MigrateOptions } from './migrate.js';
-export type { SpeculatorConfig, RespecConfig, PersonEntry } from './build-config.js';
+export type { SpeculatorConfig } from './build-config.js';
 export { fetchBoilerplate, renderBoilerplateFile } from './boilerplate.js';
 export type { BoilerplateResult, BoilerplateSlot } from './boilerplate.js';

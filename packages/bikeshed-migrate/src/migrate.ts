@@ -52,7 +52,7 @@ const BS_ATX_HEADING_RE = /^(#{1,6} .+?) #+(?: (\{#[^}]+\}))?\s*$/gm;
  * @param options - Migration options
  * @returns MigrationResult with md string and config object
  */
-export async function migrate(content: string, options: MigrateOptions = {}): Promise<MigrationResult> {
+export async function migrate(content: string): Promise<MigrationResult> {
     // Step 1: Extract and strip the metadata block
     const { block: metaBlock, rest: afterMeta } = extractMetadataBlock(content);
     const metadata = parseMetadataBlock(metaBlock);
@@ -126,7 +126,7 @@ export async function migrate(content: string, options: MigrateOptions = {}): Pr
     });
 
     // Step 8: Build the config object
-    const { config, abstract, statusText } = buildConfig(metadata, biblio, options.id);
+    const { config, abstract, statusText } = buildConfig(metadata, biblio);
 
     return { md, config, resources, abstract, statusText };
 }

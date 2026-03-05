@@ -173,7 +173,7 @@ export interface PersonEntry {
     name: string;
     url?: string;
     company?: string;
-    companyURL?: string;
+    companyUrl?: string;
     email?: string;
     /** Optional note about the person's role (e.g., "Main Editor") */
     note?: string;
