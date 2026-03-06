@@ -19,6 +19,9 @@ export type {
 } from './import-bikeshed-spec.js';
 export type {
     DocumentNode,
+    FigureBlockNode,
+    ImageAssetNode,
+    ImageInlineNode,
     SemanticBlockNode,
     SemanticInlineNode,
 } from './import/semantic-ir.js';

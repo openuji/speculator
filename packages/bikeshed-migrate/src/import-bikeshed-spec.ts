@@ -1,3 +1,5 @@
+import { access } from 'node:fs/promises';
+import { dirname, isAbsolute, resolve as pathResolve } from 'node:path';
 import { toHtml } from 'hast-util-to-html';
 import { fromHtml } from 'hast-util-from-html';
 import { DefaultBoilerplateResolver, type BoilerplateResolver } from './boilerplate-resolver.js';
@@ -24,6 +26,7 @@ import {
 } from './import/html-to-ir.js';
 import type {
     DocumentNode,
+    ImageAssetNode,
     SectionNode,
     SemanticBlockNode,
     SemanticInlineNode,
@@ -176,6 +179,21 @@ export async function importBikeshedSpec(
         sotd: sotdBoilerplate?.blocks ?? status?.blocks,
         conformance: conformance?.blocks,
     });
+
+    const assetResolutionContext = createAssetResolutionContext(options.sourcePath, diagnostics);
+    if (abstract) {
+        abstract.blocks = await resolveImageAssetsInBlocks(abstract.blocks, assetResolutionContext);
+    }
+    if (status) {
+        status.blocks = await resolveImageAssetsInBlocks(status.blocks, assetResolutionContext);
+    }
+    if (conformance) {
+        conformance.blocks = await resolveImageAssetsInBlocks(
+            conformance.blocks,
+            assetResolutionContext,
+        );
+    }
+    document = await resolveImageAssetsInDocument(document, assetResolutionContext);
 
     return {
         metadata: source.metadata,
@@ -529,6 +547,222 @@ function inlineText(nodes: SemanticInlineNode[]): string {
             return '';
         })
         .join('');
+}
+
+interface AssetResolutionContext {
+    sourceDir?: string;
+    diagnostics: ImportDiagnostic[];
+    existenceCache: Map<string, boolean>;
+    warnedMissing: Set<string>;
+}
+
+function createAssetResolutionContext(
+    sourcePath: string | undefined,
+    diagnostics: ImportDiagnostic[],
+): AssetResolutionContext {
+    return {
+        sourceDir: sourcePath ? dirname(sourcePath) : undefined,
+        diagnostics,
+        existenceCache: new Map(),
+        warnedMissing: new Set(),
+    };
+}
+
+async function resolveImageAssetsInDocument(
+    document: DocumentNode,
+    context: AssetResolutionContext,
+): Promise<DocumentNode> {
+    for (const child of document.children) {
+        await resolveImageAssetsInBlock(child as SemanticBlockNode, context);
+    }
+    return document;
+}
+
+async function resolveImageAssetsInBlocks(
+    blocks: SemanticBlockNode[],
+    context: AssetResolutionContext,
+): Promise<SemanticBlockNode[]> {
+    for (const block of blocks) {
+        await resolveImageAssetsInBlock(block, context);
+    }
+    return blocks;
+}
+
+async function resolveImageAssetsInBlock(
+    block: SemanticBlockNode,
+    context: AssetResolutionContext,
+): Promise<void> {
+    if (block.type === 'Section') {
+        for (const inline of block.heading) {
+            await resolveImageAssetsInInline(inline, context);
+        }
+        for (const child of block.children) {
+            await resolveImageAssetsInBlock(child, context);
+        }
+        return;
+    }
+
+    if (block.type === 'Paragraph') {
+        for (const inline of block.children) {
+            await resolveImageAssetsInInline(inline, context);
+        }
+        return;
+    }
+
+    if (
+        block.type === 'AlgorithmBlock' ||
+        block.type === 'DomIntroBlock' ||
+        block.type === 'NoteBlock'
+    ) {
+        for (const child of block.children) {
+            await resolveImageAssetsInBlock(child, context);
+        }
+        return;
+    }
+
+    if (block.type === 'DefinitionList') {
+        for (const item of block.items) {
+            for (const termInline of item.term) {
+                await resolveImageAssetsInInline(termInline, context);
+            }
+            for (const descriptionBlock of item.description) {
+                await resolveImageAssetsInBlock(descriptionBlock, context);
+            }
+        }
+        return;
+    }
+
+    if (block.type === 'List') {
+        for (const item of block.items) {
+            for (const child of item.children) {
+                await resolveImageAssetsInBlock(child, context);
+            }
+        }
+        return;
+    }
+
+    if (block.type === 'ListItem') {
+        for (const child of block.children) {
+            await resolveImageAssetsInBlock(child, context);
+        }
+        return;
+    }
+
+    if (block.type === 'FigureBlock') {
+        if (block.image) {
+            await resolveImageAsset(block.image, context);
+        }
+        for (const captionInline of block.caption) {
+            await resolveImageAssetsInInline(captionInline, context);
+        }
+        for (const child of block.children) {
+            await resolveImageAssetsInBlock(child, context);
+        }
+        return;
+    }
+
+    if (block.type === 'ImageAsset') {
+        await resolveImageAsset(block, context);
+    }
+}
+
+async function resolveImageAssetsInInline(
+    inline: SemanticInlineNode,
+    context: AssetResolutionContext,
+): Promise<void> {
+    if (inline.type === 'Definition' || inline.type === 'LinkRef') {
+        for (const child of inline.children) {
+            await resolveImageAssetsInInline(child, context);
+        }
+        return;
+    }
+
+    if (inline.type === 'ImageInline') {
+        await resolveImageAsset(inline.asset, context);
+    }
+}
+
+async function resolveImageAsset(
+    asset: ImageAssetNode,
+    context: AssetResolutionContext,
+): Promise<void> {
+    const srcOriginal = asset.srcOriginal.trim();
+    if (!isLocalRelativeAssetSource(srcOriginal)) {
+        return;
+    }
+
+    const lookupSrc = stripQueryAndHash(srcOriginal);
+    if (!lookupSrc) {
+        return;
+    }
+
+    const resolution = resolveAssetSource(lookupSrc);
+    asset.srcResolved = resolution.srcResolved;
+    if (resolution.generatedFrom) {
+        asset.generatedFrom = resolution.generatedFrom;
+    }
+
+    if (!context.sourceDir) {
+        return;
+    }
+
+    const absolutePath = pathResolve(context.sourceDir, resolution.srcResolved);
+    let exists = context.existenceCache.get(absolutePath);
+    if (exists === undefined) {
+        exists = await fileExists(absolutePath);
+        context.existenceCache.set(absolutePath, exists);
+    }
+
+    asset.exists = exists;
+    if (!exists && !context.warnedMissing.has(absolutePath)) {
+        context.warnedMissing.add(absolutePath);
+        context.diagnostics.push({
+            stage: 'import',
+            level: 'warning',
+            code: 'ASSET_SOURCE_MISSING',
+            message: `Image asset source "${srcOriginal}" resolved to "${resolution.srcResolved}" but file was not found.`,
+        });
+    }
+}
+
+function isLocalRelativeAssetSource(src: string): boolean {
+    if (!src || src.startsWith('#')) return false;
+    if (src.startsWith('//')) return false;
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(src)) return false;
+    if (src.startsWith('/')) return false;
+    if (isAbsolute(src)) return false;
+    return true;
+}
+
+function stripQueryAndHash(src: string): string {
+    const hashIndex = src.indexOf('#');
+    const queryIndex = src.indexOf('?');
+    let end = src.length;
+    if (queryIndex >= 0) end = Math.min(end, queryIndex);
+    if (hashIndex >= 0) end = Math.min(end, hashIndex);
+    return src.slice(0, end).trim();
+}
+
+function resolveAssetSource(lookupSrc: string): {
+    srcResolved: string;
+    generatedFrom?: 'mermaid-mmd';
+} {
+    if (/\.mmd\.svg$/i.test(lookupSrc)) {
+        return {
+            srcResolved: lookupSrc.replace(/\.mmd\.svg$/i, '.mmd'),
+            generatedFrom: 'mermaid-mmd',
+        };
+    }
+    return { srcResolved: lookupSrc };
+}
+
+async function fileExists(path: string): Promise<boolean> {
+    try {
+        await access(path);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 export function serializeDocumentIr(document: DocumentNode): string {

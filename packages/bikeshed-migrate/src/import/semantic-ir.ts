@@ -3,7 +3,8 @@ export type SemanticInlineNode =
     | LinkRefNode
     | DefinitionNode
     | CodeSpanNode
-    | VariableNode;
+    | VariableNode
+    | ImageInlineNode;
 
 export type SemanticBlockNode =
     | SectionNode
@@ -15,7 +16,9 @@ export type SemanticBlockNode =
     | IdlBlockNode
     | AlgorithmBlockNode
     | NoteBlockNode
-    | DomIntroBlockNode;
+    | DomIntroBlockNode
+    | FigureBlockNode
+    | ImageAssetNode;
 
 export interface DocumentNode {
     type: 'Document';
@@ -65,6 +68,29 @@ export interface CodeSpanNode {
 export interface VariableNode {
     type: 'Variable';
     value: string;
+}
+
+export interface ImageInlineNode {
+    type: 'ImageInline';
+    asset: ImageAssetNode;
+}
+
+export interface ImageAssetNode {
+    type: 'ImageAsset';
+    srcOriginal: string;
+    srcResolved?: string;
+    alt?: string;
+    title?: string;
+    exists?: boolean;
+    generatedFrom?: 'mermaid-mmd';
+}
+
+export interface FigureBlockNode {
+    type: 'FigureBlock';
+    id?: string;
+    image?: ImageAssetNode;
+    caption: SemanticInlineNode[];
+    children: SemanticBlockNode[];
 }
 
 export interface CodeBlockNode {

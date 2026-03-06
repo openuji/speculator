@@ -9,6 +9,9 @@ import type {
     DefinitionNode,
     DocumentNode,
     DomIntroBlockNode,
+    FigureBlockNode,
+    ImageAssetNode,
+    ImageInlineNode,
     IdlBlockNode,
     LinkRefNode,
     ListItemNode,
@@ -24,6 +27,7 @@ import type {
 
 const BLOCK_TAGS = new Set([
     'p',
+    'img',
     'pre',
     'ul',
     'ol',
@@ -150,6 +154,14 @@ function parseBlockElement(element: Element): SemanticBlockNode[] {
         return parseFlow(element.children);
     }
 
+    if (tag === 'figure') {
+        return [parseFigureBlock(element)];
+    }
+
+    if (tag === 'img') {
+        return [parseImageAsset(element)];
+    }
+
     if (isAlgorithmElement(element)) {
         return [parseAlgorithmBlock(element)];
     }
@@ -192,6 +204,43 @@ function parseBlockElement(element: Element): SemanticBlockNode[] {
     }
 
     return parseFlow(element.children);
+}
+
+function parseFigureBlock(element: Element): FigureBlockNode {
+    const figure: FigureBlockNode = {
+        type: 'FigureBlock',
+        id: getAttr(element, 'id'),
+        caption: [],
+        children: [],
+    };
+
+    const flowChildren: RootContent[] = [];
+
+    for (const child of element.children) {
+        if (child.type === 'text') {
+            if ((child as Text).value.trim().length === 0) continue;
+            flowChildren.push(child);
+            continue;
+        }
+
+        if (!isElement(child)) continue;
+
+        const tag = child.tagName.toLowerCase();
+        if (tag === 'figcaption') {
+            figure.caption = normalizeInlineWhitespace(parseInlineChildren(child.children));
+            continue;
+        }
+
+        if (tag === 'img' && !figure.image) {
+            figure.image = parseImageAsset(child);
+            continue;
+        }
+
+        flowChildren.push(child);
+    }
+
+    figure.children = parseFlow(flowChildren);
+    return figure;
 }
 
 function parseList(element: Element, ordered: boolean): ListNode {
@@ -274,6 +323,15 @@ function parsePre(element: Element): CodeBlockNode | IdlBlockNode {
     };
 }
 
+function parseImageAsset(element: Element): ImageAssetNode {
+    return {
+        type: 'ImageAsset',
+        srcOriginal: getAttr(element, 'src') ?? '',
+        alt: getAttr(element, 'alt'),
+        title: getAttr(element, 'title'),
+    };
+}
+
 function parseAlgorithmBlock(element: Element): AlgorithmBlockNode {
     const name =
         getAttr(element, 'data-algorithm') ?? getAttr(element, 'dataAlgorithm') ?? undefined;
@@ -340,6 +398,14 @@ function parseInlineNode(node: RootContent): SemanticInlineNode[] {
             value: textContent(node).trim(),
         };
         return [variable];
+    }
+
+    if (tag === 'img') {
+        const image: ImageInlineNode = {
+            type: 'ImageInline',
+            asset: parseImageAsset(node),
+        };
+        return [image];
     }
 
     if (tag === 'dfn') {
