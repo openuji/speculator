@@ -35,6 +35,7 @@ export interface BoilerplateSlot {
 }
 
 export interface BoilerplateResult {
+    abstract?: BoilerplateSlot;
     status?: BoilerplateSlot;
     copyright?: BoilerplateSlot;
     logo?: BoilerplateSlot;
@@ -184,7 +185,8 @@ export async function fetchBoilerplate(
 ): Promise<BoilerplateResult> {
     const org = await getGroupOrg(group);
 
-    const [statusSlot, copyrightSlot, logoSlot, footerSlot] = await Promise.all([
+    const [abstractSlot, statusSlot, copyrightSlot, logoSlot, footerSlot] = await Promise.all([
+        resolveSlot(group, org, status, 'abstract'),
         resolveSlot(group, org, status, 'status'),
         resolveSlot(group, org, status, 'copyright'),
         resolveSlot(group, org, status, 'logo'),
@@ -192,6 +194,7 @@ export async function fetchBoilerplate(
     ]);
 
     const result: BoilerplateResult = {};
+    if (abstractSlot) result.abstract = abstractSlot;
     if (statusSlot) result.status = statusSlot;
     if (copyrightSlot) result.copyright = copyrightSlot;
     if (logoSlot) result.logo = logoSlot;

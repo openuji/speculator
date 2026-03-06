@@ -46,9 +46,25 @@ beforeAll(async () => {
                 boilerplateMetadataGroup = valueAsString(metadata.get('group'));
                 boilerplateMetadataStatus = valueAsString(metadata.get('status'));
                 const resolved: BoilerplateResult = {
+                    abstract: {
+                        content: '<section id="abstract"><h2 class="no-num no-toc no-ref" id="abstract">Abstract</h2><p>[ABSTRACT]</p></section>',
+                        source: 'fixture://abstract',
+                    },
                     status: {
-                        content: '<section id="status">Status boilerplate slot</section>',
+                        content: '<section id="status"><h2>Status of This Document</h2><p>Status boilerplate slot</p><p>[STATUSTEXT]</p></section>',
                         source: 'fixture://status',
+                    },
+                    conformance: {
+                        content: '<div><h2 id="conformance">Conformance</h2><p>Conformance requirements stay around their context.</p></div>',
+                        source: 'fixture://conformance',
+                    },
+                    copyright: {
+                        content: '<p>Copyright OpenUJI WG.</p>',
+                        source: 'fixture://copyright',
+                    },
+                    logo: {
+                        content: '<a class=\"logo\" href=\"https://example.org\"><img src=\"https://example.org/logo.svg\" alt=\"OpenUJI\"></a>',
+                        source: 'fixture://logo',
                     },
                 };
                 return resolved;
@@ -73,7 +89,18 @@ describe('importBikeshedSpec source extractors', () => {
     it('integrates boilerplate resolver using metadata-derived group/status', () => {
         expect(boilerplateMetadataGroup).toBe('webml');
         expect(boilerplateMetadataStatus).toBe('CG-DRAFT');
+        expect(result.boilerplate.abstract?.source).toBe('fixture://abstract');
         expect(result.boilerplate.status?.source).toBe('fixture://status');
+        expect(result.boilerplate.conformance?.source).toBe('fixture://conformance');
+    });
+
+    it('enriches config.custom with boilerplate copyright and logo', () => {
+        expect(result.config.custom.copyright).toBe('<p>Copyright OpenUJI WG.</p>');
+        expect(result.config.custom.logo).toEqual({
+            href: 'https://example.org',
+            src: 'https://example.org/logo.svg',
+            alt: 'OpenUJI',
+        });
     });
 });
 
@@ -129,6 +156,30 @@ describe('semantic importer (HTML -> IR)', () => {
         expect(JSON.stringify(result.regions.status?.blocks ?? [], null, 2)).toMatchSnapshot(
             'status-blocks-ir',
         );
+        expect(JSON.stringify(result.regions.conformance?.blocks ?? [], null, 2)).toMatchSnapshot(
+            'conformance-blocks-ir',
+        );
+    });
+
+    it('marks/injects boilerplate sections in semantic IR', () => {
+        const topSections = result.document.children.filter(
+            (node): node is SectionNode => node.type === 'Section',
+        );
+        const kinds = topSections
+            .map((section) => section.boilerplate)
+            .filter((value): value is 'abstract' | 'sotd' | 'conformance' => !!value);
+
+        expect(kinds).toContain('abstract');
+        expect(kinds).toContain('sotd');
+        expect(kinds).toContain('conformance');
+
+        const abstractSection = topSections.find((section) => section.boilerplate === 'abstract');
+        const sotdSection = topSections.find((section) => section.boilerplate === 'sotd');
+        expect(JSON.stringify(abstractSection, null, 2)).toContain(
+            'The WebMCP API enables web applications to provide JavaScript-based tools to AI agents.',
+        );
+        expect(JSON.stringify(sotdSection, null, 2)).toContain('Status boilerplate slot');
+        expect(JSON.stringify(sotdSection, null, 2)).not.toContain('[STATUSTEXT]');
     });
 });
 

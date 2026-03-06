@@ -79,14 +79,16 @@ async function runSemanticImport(options: SemanticImportRunOptions): Promise<voi
 
     const semanticIrPath = join(options.outputDir, 'semantic-ir.json');
     const renderedHtmlPath = join(options.outputDir, 'index.html');
-
-    console.log('config', JSON.stringify(result.config, null, 2))
+    const configPath = join(options.outputDir, 'config.json');
+    const configJson = JSON.stringify(result.config, null, 2);
 
     if (options.dryRun) {
         console.log('\n--- semantic-ir.json ---');
         console.log(semanticIrJson);
         console.log('\n--- index.html ---');
         console.log(renderedHtml);
+        console.log('\n--- config.json ---');
+        console.log(configJson);
         if (result.rendererLogs.length > 0) {
             console.log('\n--- renderer logs ---');
             console.log(result.rendererLogs.join('\n'));
@@ -106,9 +108,11 @@ async function runSemanticImport(options: SemanticImportRunOptions): Promise<voi
     await mkdir(options.outputDir, { recursive: true });
     await writeFile(semanticIrPath, semanticIrJson + '\n', 'utf-8');
     await writeFile(renderedHtmlPath, renderedHtml.trimEnd() + '\n', 'utf-8');
+    await writeFile(configPath, configJson + '\n', 'utf-8');
 
     console.log(`✓ Wrote ${semanticIrPath}`);
     console.log(`✓ Wrote ${renderedHtmlPath}`);
+    console.log(`✓ Wrote ${configPath}`);
 
     if (result.rendererDiagnostics.length > 0 || result.diagnostics.length > 0) {
         console.warn('⚠ Import diagnostics were reported:');
@@ -127,7 +131,7 @@ Usage: bikeshed-migrate <input.bs> [options]
 
 Options:
   --out <dir>         Output directory (default: same directory as input file)
-  --semantic-ir       Use Bikeshed HTML importer (outputs semantic-ir.json + index.html)
+  --semantic-ir       Use Bikeshed HTML importer (outputs semantic-ir.json + index.html + config.json)
   --html-import       Alias for --semantic-ir
   --docker-image <i>  Docker image for Bikeshed renderer (default: openuji/bikeshed-renderer:latest)
   --docker-command <c> Docker binary/command (default: docker)

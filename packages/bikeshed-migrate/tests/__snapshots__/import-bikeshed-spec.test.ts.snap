@@ -191,6 +191,45 @@ exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks 
 ]"
 `;
 
+exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks > conformance-blocks-ir 1`] = `
+"[
+  {
+    "type": "Section",
+    "level": 2,
+    "heading": [
+      {
+        "type": "Text",
+        "value": "Conformance"
+      }
+    ],
+    "children": [
+      {
+        "type": "Section",
+        "level": 2,
+        "id": "conformance",
+        "heading": [
+          {
+            "type": "Text",
+            "value": "Conformance"
+          }
+        ],
+        "children": [
+          {
+            "type": "Paragraph",
+            "children": [
+              {
+                "type": "Text",
+                "value": "Conformance requirements stay around their context."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]"
+`;
+
 exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks > status-blocks-ir 1`] = `
 "[
   {
@@ -225,7 +264,7 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
     {
       "type": "Section",
       "level": 2,
-      "id": "abstract-heading",
+      "id": "abstract",
       "heading": [
         {
           "type": "Text",
@@ -238,11 +277,12 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
           "children": [
             {
               "type": "Text",
-              "value": "The WebMCP API enables web applications to provide tools to AI agents."
+              "value": "The WebMCP API enables web applications to provide JavaScript-based tools to AI agents."
             }
           ]
         }
-      ]
+      ],
+      "boilerplate": "abstract"
     },
     {
       "type": "Section",
@@ -260,11 +300,12 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
           "children": [
             {
               "type": "Text",
-              "value": "This document is a draft specification."
+              "value": "Status boilerplate slot"
             }
           ]
         }
-      ]
+      ],
+      "boilerplate": "sotd"
     },
     {
       "type": "Section",
@@ -443,6 +484,41 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
           ]
         }
       ]
+    },
+    {
+      "type": "Section",
+      "level": 2,
+      "heading": [
+        {
+          "type": "Text",
+          "value": "Conformance"
+        }
+      ],
+      "children": [
+        {
+          "type": "Section",
+          "level": 2,
+          "id": "conformance",
+          "heading": [
+            {
+              "type": "Text",
+              "value": "Conformance"
+            }
+          ],
+          "children": [
+            {
+              "type": "Paragraph",
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "Conformance requirements stay around their context."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "boilerplate": "conformance"
     }
   ]
 }"
