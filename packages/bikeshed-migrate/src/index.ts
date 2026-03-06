@@ -18,6 +18,7 @@ export type {
     ImportDiagnostic,
 } from './import-bikeshed-spec.js';
 export type {
+    BiblioRefNode,
     DocumentNode,
     FigureBlockNode,
     ImageAssetNode,

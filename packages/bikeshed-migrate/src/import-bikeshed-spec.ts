@@ -6,7 +6,7 @@ import { DefaultBoilerplateResolver, type BoilerplateResolver } from './boilerpl
 import { parseLogoSlot, type BoilerplateResult } from './boilerplate.js';
 import { buildConfig, type SpeculatorConfig } from './build-config.js';
 import { extractBikeshedSource } from './extract/source.js';
-import type { BiblioMap } from './extract/biblio.js';
+import type { BiblioEntry, BiblioMap } from './extract/biblio.js';
 import type { MetadataMap } from './extract/metadata.js';
 import type { Resource } from './extract/resources.js';
 import {
@@ -23,6 +23,7 @@ import {
 import {
     importNormalizedBikeshedHtmlToIr,
     importNormalizedRegionToIr,
+    type HtmlToIrOptions,
 } from './import/html-to-ir.js';
 import type {
     DocumentNode,
@@ -97,6 +98,9 @@ export async function importBikeshedSpec(
     const source = extractBikeshedSource(content);
     const { config } = buildConfig(source.metadata, source.biblio);
     const boilerplateMacroValues = buildBoilerplateMacroValues(source.metadata, config);
+    const irOptions: HtmlToIrOptions = {
+        biblio: aggregateBiblio(config, source.biblio),
+    };
 
     const boilerplate = await resolveBoilerplate(source.metadata, options, diagnostics);
     const rendered = await renderBikeshed(content, source.metadata, options);
@@ -125,13 +129,13 @@ export async function importBikeshedSpec(
     const normalized = normalizeSelectedBikeshedRegions(selected, options);
     const normalizedSnapshot = snapshotNormalizedRegions(normalized);
 
-    let document = importNormalizedBikeshedHtmlToIr(normalized.main);
+    let document = importNormalizedBikeshedHtmlToIr(normalized.main, irOptions);
 
     const abstract = normalized.abstract
         ? {
               selectedHtml: selectedSnapshot.abstractHtml ?? '',
               normalizedHtml: normalizedSnapshot.abstractHtml ?? '',
-              blocks: importNormalizedRegionToIr(normalized.abstract),
+              blocks: importNormalizedRegionToIr(normalized.abstract, irOptions),
           }
         : undefined;
 
@@ -139,7 +143,7 @@ export async function importBikeshedSpec(
         ? {
               selectedHtml: selectedSnapshot.statusHtml ?? '',
               normalizedHtml: normalizedSnapshot.statusHtml ?? '',
-              blocks: importNormalizedRegionToIr(normalized.status),
+              blocks: importNormalizedRegionToIr(normalized.status, irOptions),
           }
         : undefined;
 
@@ -150,6 +154,7 @@ export async function importBikeshedSpec(
               'Abstract',
               options,
               boilerplateMacroValues,
+              irOptions,
           )
         : undefined;
 
@@ -160,6 +165,7 @@ export async function importBikeshedSpec(
               'Status of This Document',
               options,
               boilerplateMacroValues,
+              irOptions,
           )
         : undefined;
 
@@ -170,6 +176,7 @@ export async function importBikeshedSpec(
               'Conformance',
               options,
               boilerplateMacroValues,
+              irOptions,
           )
         : undefined;
 
@@ -275,18 +282,31 @@ function enrichConfigFromBoilerplate(
     }
 }
 
+function aggregateBiblio(config: SpeculatorConfig, sourceBiblio: BiblioMap): BiblioMap {
+    const aggregated: BiblioMap = { ...sourceBiblio };
+    const configBiblioRaw = (config.bikeshed?.biblio ?? {}) as Record<string, unknown>;
+
+    for (const [key, value] of Object.entries(configBiblioRaw)) {
+        if (!value || typeof value !== 'object') continue;
+        aggregated[key] = value as BiblioEntry;
+    }
+
+    return aggregated;
+}
+
 function importBoilerplateRegion(
     content: string,
     slot: 'abstract' | 'sotd' | 'conformance',
     fallbackHeading: string,
     options: ImportBikeshedSpecOptions,
     macroValues: Record<string, string>,
+    irOptions: HtmlToIrOptions,
 ): ImportedRegion {
     const resolvedContent = resolveBoilerplateMacros(content, macroValues);
     const wrapper = wrapHtmlInSection(resolvedContent, slot, fallbackHeading);
     const normalizedWrapper = normalizeBikeshedRegion(wrapper, options);
     const normalizedHtml = toHtml(normalizedWrapper, { closeSelfClosing: true }).trim();
-    const blocks = importNormalizedRegionToIr(normalizedWrapper);
+    const blocks = importNormalizedRegionToIr(normalizedWrapper, irOptions);
 
     return {
         selectedHtml: resolvedContent.trim(),

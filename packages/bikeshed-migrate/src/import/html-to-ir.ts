@@ -1,4 +1,5 @@
 import type { Element, RootContent, Text } from 'hast';
+import type { BiblioEntry, BiblioMap } from '../extract/biblio.js';
 import { asClassList, findFirstElement, getAttr, isElement, textContent } from '../html/utils.js';
 import type {
     AlgorithmBlockNode,
@@ -41,18 +42,31 @@ const BLOCK_TAGS = new Set([
     'table',
 ]);
 
-export function importNormalizedBikeshedHtmlToIr(main: Element): DocumentNode {
+const BIBLIO_SHORTCODE_RE = /\[\[([^\]]+)\]\]/g;
+const BRACKETED_REF_RE = /^\[([^\]]+)\]$/;
+
+export interface HtmlToIrOptions {
+    biblio?: BiblioMap;
+}
+
+export function importNormalizedBikeshedHtmlToIr(
+    main: Element,
+    options: HtmlToIrOptions = {},
+): DocumentNode {
     return {
         type: 'Document',
-        children: parseFlow(main.children),
+        children: parseFlow(main.children, options),
     };
 }
 
-export function importNormalizedRegionToIr(region: Element): SemanticBlockNode[] {
-    return parseFlow(region.children);
+export function importNormalizedRegionToIr(
+    region: Element,
+    options: HtmlToIrOptions = {},
+): SemanticBlockNode[] {
+    return parseFlow(region.children, options);
 }
 
-function parseFlow(children: RootContent[]): SemanticBlockNode[] {
+function parseFlow(children: RootContent[], options: HtmlToIrOptions): SemanticBlockNode[] {
     const output: SemanticBlockNode[] = [];
     const sectionStack: SectionNode[] = [];
     let pendingInline: SemanticInlineNode[] = [];
@@ -73,7 +87,7 @@ function parseFlow(children: RootContent[]): SemanticBlockNode[] {
 
     for (const child of children) {
         if (child.type === 'text') {
-            pendingInline.push({ type: 'Text', value: (child as Text).value });
+            pendingInline.push(...parseInlineText((child as Text).value, options));
             continue;
         }
 
@@ -83,7 +97,7 @@ function parseFlow(children: RootContent[]): SemanticBlockNode[] {
 
         if (isHeadingTag(tag)) {
             flushPendingInline();
-            const section = createSectionFromHeading(child, tag);
+            const section = createSectionFromHeading(child, tag, options);
 
             while (
                 sectionStack.length > 0 &&
@@ -99,12 +113,12 @@ function parseFlow(children: RootContent[]): SemanticBlockNode[] {
 
         if (isBlockElement(child)) {
             flushPendingInline();
-            const parsed = parseBlockElement(child);
+            const parsed = parseBlockElement(child, options);
             getCurrentContainer(output, sectionStack).push(...parsed);
             continue;
         }
 
-        pendingInline.push(...parseInlineNode(child));
+        pendingInline.push(...parseInlineNode(child, options));
     }
 
     flushPendingInline();
@@ -123,9 +137,13 @@ function isHeadingTag(tag: string): tag is `h${number}` {
     return /^h[1-6]$/.test(tag);
 }
 
-function createSectionFromHeading(element: Element, tag: `h${number}`): SectionNode {
+function createSectionFromHeading(
+    element: Element,
+    tag: `h${number}`,
+    options: HtmlToIrOptions,
+): SectionNode {
     const level = Number.parseInt(tag.slice(1), 10);
-    const heading = normalizeInlineWhitespace(parseInlineChildren(element.children));
+    const heading = normalizeInlineWhitespace(parseInlineChildren(element.children, options));
 
     return {
         type: 'Section',
@@ -147,15 +165,18 @@ function isBlockElement(element: Element): boolean {
     return false;
 }
 
-function parseBlockElement(element: Element): SemanticBlockNode[] {
+function parseBlockElement(
+    element: Element,
+    options: HtmlToIrOptions,
+): SemanticBlockNode[] {
     const tag = element.tagName.toLowerCase();
 
     if (tag === 'section' || tag === 'article' || tag === 'main') {
-        return parseFlow(element.children);
+        return parseFlow(element.children, options);
     }
 
     if (tag === 'figure') {
-        return [parseFigureBlock(element)];
+        return [parseFigureBlock(element, options)];
     }
 
     if (tag === 'img') {
@@ -163,32 +184,32 @@ function parseBlockElement(element: Element): SemanticBlockNode[] {
     }
 
     if (isAlgorithmElement(element)) {
-        return [parseAlgorithmBlock(element)];
+        return [parseAlgorithmBlock(element, options)];
     }
 
     if (isNoteElement(element)) {
-        return [parseNoteBlock(element)];
+        return [parseNoteBlock(element, options)];
     }
 
     if (isDomIntroElement(element) && tag !== 'dl') {
-        return [parseDomIntroBlock(element)];
+        return [parseDomIntroBlock(element, options)];
     }
 
     if (tag === 'p') {
         return [
             {
                 type: 'Paragraph',
-                children: normalizeInlineWhitespace(parseInlineChildren(element.children)),
+                children: normalizeInlineWhitespace(parseInlineChildren(element.children, options)),
             },
         ];
     }
 
     if (tag === 'ul' || tag === 'ol') {
-        return [parseList(element, tag === 'ol')];
+        return [parseList(element, tag === 'ol', options)];
     }
 
     if (tag === 'dl') {
-        const dl = parseDefinitionList(element);
+        const dl = parseDefinitionList(element, options);
         if (isDomIntroElement(element)) {
             const domIntro: DomIntroBlockNode = {
                 type: 'DomIntroBlock',
@@ -203,10 +224,10 @@ function parseBlockElement(element: Element): SemanticBlockNode[] {
         return [parsePre(element)];
     }
 
-    return parseFlow(element.children);
+    return parseFlow(element.children, options);
 }
 
-function parseFigureBlock(element: Element): FigureBlockNode {
+function parseFigureBlock(element: Element, options: HtmlToIrOptions): FigureBlockNode {
     const figure: FigureBlockNode = {
         type: 'FigureBlock',
         id: getAttr(element, 'id'),
@@ -227,7 +248,7 @@ function parseFigureBlock(element: Element): FigureBlockNode {
 
         const tag = child.tagName.toLowerCase();
         if (tag === 'figcaption') {
-            figure.caption = normalizeInlineWhitespace(parseInlineChildren(child.children));
+            figure.caption = normalizeInlineWhitespace(parseInlineChildren(child.children, options));
             continue;
         }
 
@@ -239,16 +260,16 @@ function parseFigureBlock(element: Element): FigureBlockNode {
         flowChildren.push(child);
     }
 
-    figure.children = parseFlow(flowChildren);
+    figure.children = parseFlow(flowChildren, options);
     return figure;
 }
 
-function parseList(element: Element, ordered: boolean): ListNode {
+function parseList(element: Element, ordered: boolean, options: HtmlToIrOptions): ListNode {
     const items: ListItemNode[] = [];
 
     for (const child of element.children) {
         if (!isElement(child) || child.tagName.toLowerCase() !== 'li') continue;
-        const parsedChildren = parseFlow(child.children);
+        const parsedChildren = parseFlow(child.children, options);
         items.push({
             type: 'ListItem',
             children: parsedChildren,
@@ -266,7 +287,7 @@ function parseList(element: Element, ordered: boolean): ListNode {
     };
 }
 
-function parseDefinitionList(element: Element): DefinitionListNode {
+function parseDefinitionList(element: Element, options: HtmlToIrOptions): DefinitionListNode {
     const items: DefinitionListItem[] = [];
 
     let currentTerm: SemanticInlineNode[] | null = null;
@@ -288,13 +309,13 @@ function parseDefinitionList(element: Element): DefinitionListNode {
 
         if (tag === 'dt') {
             flush();
-            currentTerm = parseInlineChildren(child.children);
+            currentTerm = parseInlineChildren(child.children, options);
             continue;
         }
 
         if (tag === 'dd') {
             if (!currentTerm) currentTerm = [];
-            currentDescription.push(...parseFlow(child.children));
+            currentDescription.push(...parseFlow(child.children, options));
         }
     }
 
@@ -332,18 +353,18 @@ function parseImageAsset(element: Element): ImageAssetNode {
     };
 }
 
-function parseAlgorithmBlock(element: Element): AlgorithmBlockNode {
+function parseAlgorithmBlock(element: Element, options: HtmlToIrOptions): AlgorithmBlockNode {
     const name =
         getAttr(element, 'data-algorithm') ?? getAttr(element, 'dataAlgorithm') ?? undefined;
 
     return {
         type: 'AlgorithmBlock',
         name: name && name.trim() ? name : undefined,
-        children: parseFlow(element.children),
+        children: parseFlow(element.children, options),
     };
 }
 
-function parseNoteBlock(element: Element): NoteBlockNode {
+function parseNoteBlock(element: Element, options: HtmlToIrOptions): NoteBlockNode {
     const classes = asClassList(element.properties?.className);
 
     let noteType: NoteBlockNode['noteType'] = 'note';
@@ -354,28 +375,31 @@ function parseNoteBlock(element: Element): NoteBlockNode {
     return {
         type: 'NoteBlock',
         noteType,
-        children: parseFlow(element.children),
+        children: parseFlow(element.children, options),
     };
 }
 
-function parseDomIntroBlock(element: Element): DomIntroBlockNode {
+function parseDomIntroBlock(element: Element, options: HtmlToIrOptions): DomIntroBlockNode {
     return {
         type: 'DomIntroBlock',
-        children: parseFlow(element.children),
+        children: parseFlow(element.children, options),
     };
 }
 
-function parseInlineChildren(children: RootContent[]): SemanticInlineNode[] {
+function parseInlineChildren(
+    children: RootContent[],
+    options: HtmlToIrOptions,
+): SemanticInlineNode[] {
     const output: SemanticInlineNode[] = [];
     for (const child of children) {
-        output.push(...parseInlineNode(child));
+        output.push(...parseInlineNode(child, options));
     }
     return output;
 }
 
-function parseInlineNode(node: RootContent): SemanticInlineNode[] {
+function parseInlineNode(node: RootContent, options: HtmlToIrOptions): SemanticInlineNode[] {
     if (node.type === 'text') {
-        return [{ type: 'Text', value: (node as Text).value }];
+        return parseInlineText((node as Text).value, options);
     }
 
     if (!isElement(node)) {
@@ -414,23 +438,117 @@ function parseInlineNode(node: RootContent): SemanticInlineNode[] {
             id: getAttr(node, 'id'),
             dfnType: getAttr(node, 'data-dfn-type'),
             dfnFor: getAttr(node, 'data-dfn-for'),
-            children: normalizeInlineWhitespace(parseInlineChildren(node.children)),
+            children: normalizeInlineWhitespace(parseInlineChildren(node.children, options)),
         };
         return [definition];
     }
 
     if (tag === 'a') {
+        const rawChildren = normalizeInlineWhitespace(parseInlineChildren(node.children, options));
+        const dataLinkType = getAttr(node, 'data-link-type');
+        const citation = parseBiblioCitationFromChildren(rawChildren, dataLinkType ?? undefined);
+        const biblioRef = citation
+            ? findBiblioEntry(options.biblio, citation.key)
+            : undefined;
         const link: LinkRefNode = {
             type: 'LinkRef',
             href: getAttr(node, 'href'),
-            dataLinkType: getAttr(node, 'data-link-type'),
+            dataLinkType,
             dataLinkFor: getAttr(node, 'data-link-for'),
-            children: normalizeInlineWhitespace(parseInlineChildren(node.children)),
+            citationKey: citation?.key,
+            citationNormative: citation?.normative,
+            biblioRef,
+            children: rawChildren,
         };
         return [link];
     }
 
-    return parseInlineChildren(node.children);
+    return parseInlineChildren(node.children, options);
+}
+
+function parseInlineText(value: string, options: HtmlToIrOptions): SemanticInlineNode[] {
+    const output: SemanticInlineNode[] = [];
+    let cursor = 0;
+    let match: RegExpExecArray | null;
+
+    BIBLIO_SHORTCODE_RE.lastIndex = 0;
+    while ((match = BIBLIO_SHORTCODE_RE.exec(value)) !== null) {
+        const start = match.index;
+        const end = start + match[0].length;
+
+        if (start > cursor) {
+            output.push({ type: 'Text', value: value.slice(cursor, start) });
+        }
+
+        const citation = parseCitationInner(match[1]);
+        if (!citation) {
+            output.push({ type: 'Text', value: match[0] });
+            cursor = end;
+            continue;
+        }
+
+        const biblioRef = findBiblioEntry(options.biblio, citation.key);
+        const link: LinkRefNode = {
+            type: 'LinkRef',
+            dataLinkType: 'biblio',
+            href: biblioRef ? `#biblio-${citation.key.toLowerCase()}` : undefined,
+            citationKey: citation.key,
+            citationNormative: citation.normative,
+            biblioRef,
+            children: [{ type: 'Text', value: `[${citation.key}]` }],
+        };
+        output.push(link);
+        cursor = end;
+    }
+
+    if (cursor < value.length) {
+        output.push({ type: 'Text', value: value.slice(cursor) });
+    }
+
+    return output;
+}
+
+function parseCitationInner(rawInner: string): { key: string; normative: boolean } | undefined {
+    const inner = rawInner.trim();
+    if (!inner) return undefined;
+
+    const normative = inner.startsWith('!');
+    const key = (normative ? inner.slice(1) : inner).trim();
+    if (!key) return undefined;
+
+    return { key, normative };
+}
+
+function parseBiblioCitationFromChildren(
+    children: SemanticInlineNode[],
+    dataLinkType?: string,
+): { key: string; normative: boolean } | undefined {
+    if (dataLinkType !== 'biblio') return undefined;
+    if (children.length !== 1 || children[0].type !== 'Text') return undefined;
+
+    const text = children[0].value.trim();
+    const bracketMatch = text.match(BRACKETED_REF_RE);
+    if (!bracketMatch) return undefined;
+
+    const key = bracketMatch[1].trim();
+    if (!key) return undefined;
+    return { key, normative: false };
+}
+
+function findBiblioEntry(
+    biblio: BiblioMap | undefined,
+    key: string,
+): BiblioEntry | undefined {
+    if (!biblio) return undefined;
+
+    if (biblio[key]) return biblio[key];
+
+    const lower = key.toLowerCase();
+    for (const [entryKey, entryValue] of Object.entries(biblio)) {
+        if (entryKey.toLowerCase() === lower) return entryValue;
+    }
+
+    return undefined;
 }
 
 function normalizeInlineWhitespace(inlines: SemanticInlineNode[]): SemanticInlineNode[] {

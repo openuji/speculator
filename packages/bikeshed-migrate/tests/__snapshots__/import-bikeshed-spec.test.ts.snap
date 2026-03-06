@@ -219,7 +219,41 @@ exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks 
             "children": [
               {
                 "type": "Text",
-                "value": "Conformance requirements stay around their context."
+                "value": "Conformance requirements stay around their context. "
+              },
+              {
+                "type": "LinkRef",
+                "dataLinkType": "biblio",
+                "href": "#biblio-mcp",
+                "citationKey": "MCP",
+                "citationNormative": true,
+                "biblioRef": {
+                  "title": "Model Context Protocol (MCP) Specification",
+                  "url": "https://modelcontextprotocol.io/specification/latest",
+                  "publisher": "The Linux Foundation"
+                },
+                "children": [
+                  {
+                    "type": "Text",
+                    "value": "[MCP]"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " and "
+              },
+              {
+                "type": "LinkRef",
+                "dataLinkType": "biblio",
+                "citationKey": "RFC2119",
+                "citationNormative": true,
+                "children": [
+                  {
+                    "type": "Text",
+                    "value": "[RFC2119]"
+                  }
+                ]
               }
             ]
           }
@@ -511,7 +545,41 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
               "children": [
                 {
                   "type": "Text",
-                  "value": "Conformance requirements stay around their context."
+                  "value": "Conformance requirements stay around their context. "
+                },
+                {
+                  "type": "LinkRef",
+                  "dataLinkType": "biblio",
+                  "href": "#biblio-mcp",
+                  "citationKey": "MCP",
+                  "citationNormative": true,
+                  "biblioRef": {
+                    "title": "Model Context Protocol (MCP) Specification",
+                    "url": "https://modelcontextprotocol.io/specification/latest",
+                    "publisher": "The Linux Foundation"
+                  },
+                  "children": [
+                    {
+                      "type": "Text",
+                      "value": "[MCP]"
+                    }
+                  ]
+                },
+                {
+                  "type": "Text",
+                  "value": " and "
+                },
+                {
+                  "type": "LinkRef",
+                  "dataLinkType": "biblio",
+                  "citationKey": "RFC2119",
+                  "citationNormative": true,
+                  "children": [
+                    {
+                      "type": "Text",
+                      "value": "[RFC2119]"
+                    }
+                  ]
                 }
               ]
             }

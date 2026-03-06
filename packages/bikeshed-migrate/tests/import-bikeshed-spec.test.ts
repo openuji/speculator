@@ -55,7 +55,7 @@ beforeAll(async () => {
                         source: 'fixture://status',
                     },
                     conformance: {
-                        content: '<div><h2 id="conformance">Conformance</h2><p>Conformance requirements stay around their context.</p></div>',
+                        content: '<div><h2 id="conformance">Conformance</h2><p>Conformance requirements stay around their context. [[!MCP]] and [[!RFC2119]]</p></div>',
                         source: 'fixture://conformance',
                     },
                     copyright: {
@@ -159,6 +159,17 @@ describe('semantic importer (HTML -> IR)', () => {
         expect(JSON.stringify(result.regions.conformance?.blocks ?? [], null, 2)).toMatchSnapshot(
             'conformance-blocks-ir',
         );
+    });
+
+    it('converts boilerplate citation shorthand into semantic biblio references', () => {
+        const conformanceText = JSON.stringify(result.regions.conformance?.blocks ?? [], null, 2);
+        expect(conformanceText).toContain('"citationKey": "MCP"');
+        expect(conformanceText).toContain('"citationNormative": true');
+        expect(conformanceText).toContain('"href": "#biblio-mcp"');
+        expect(conformanceText).toContain('"title": "Model Context Protocol (MCP) Specification"');
+
+        expect(conformanceText).toContain('"citationKey": "RFC2119"');
+        expect(conformanceText).not.toContain('"href": "#biblio-rfc2119"');
     });
 
     it('marks/injects boilerplate sections in semantic IR', () => {

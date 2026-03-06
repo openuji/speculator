@@ -49,7 +49,20 @@ export interface LinkRefNode {
     href?: string;
     dataLinkType?: string;
     dataLinkFor?: string;
+    citationKey?: string;
+    citationNormative?: boolean;
+    biblioRef?: BiblioRefNode;
     children: SemanticInlineNode[];
+}
+
+export interface BiblioRefNode {
+    title?: string;
+    url?: string;
+    authors?: string[];
+    date?: string;
+    publisher?: string;
+    status?: string;
+    raw?: string;
 }
 
 export interface DefinitionNode {
