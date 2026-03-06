@@ -3,12 +3,15 @@
  * CLI for @openuji/bikeshed-migrate
  *
  * Usage:
- *   bikeshed-migrate <input.bs> [--out <dir>] [--id <id>] [--dry-run]
+ *   bikeshed-migrate <input.bs> [--out <dir>] [--dry-run]
+ *   bikeshed-migrate <input.bs> --semantic-ir [--out <dir>] [--docker-image <image>]
  */
 
 import { readFile, writeFile, copyFile, mkdir, access } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
 import { migrate } from './migrate.js';
+import { importBikeshedSpec } from './import-bikeshed-spec.js';
+import { DockerBikeshedRenderer } from './renderer/docker.js';
 import { fetchBoilerplate, renderBoilerplateFile, parseLogoSlot, SLOT_HEADINGS } from './boilerplate.js';
 
 interface MmdResolution {
@@ -51,12 +54,83 @@ async function resolveMmdImages(content: string, inputDir: string, outputDir: st
     return { content: result, filesToCopy };
 }
 
+interface SemanticImportRunOptions {
+    inputPath: string;
+    outputDir: string;
+    content: string;
+    dryRun: boolean;
+    dockerImage?: string;
+    dockerCommand?: string;
+}
+
+async function runSemanticImport(options: SemanticImportRunOptions): Promise<void> {
+    const renderer = new DockerBikeshedRenderer({
+        image: options.dockerImage,
+        command: options.dockerCommand,
+    });
+
+    const result = await importBikeshedSpec(options.content, {
+        renderer,
+        sourcePath: options.inputPath,
+    });
+
+    const semanticIrJson = JSON.stringify(result.document, null, 2);
+    const renderedHtml = result.renderedHtml;
+
+    const semanticIrPath = join(options.outputDir, 'semantic-ir.json');
+    const renderedHtmlPath = join(options.outputDir, 'index.html');
+
+    console.log('config', JSON.stringify(result.config, null, 2))
+
+    if (options.dryRun) {
+        console.log('\n--- semantic-ir.json ---');
+        console.log(semanticIrJson);
+        console.log('\n--- index.html ---');
+        console.log(renderedHtml);
+        if (result.rendererLogs.length > 0) {
+            console.log('\n--- renderer logs ---');
+            console.log(result.rendererLogs.join('\n'));
+        }
+        if (result.rendererDiagnostics.length > 0 || result.diagnostics.length > 0) {
+            console.log('\n--- diagnostics ---');
+            for (const diagnostic of result.rendererDiagnostics) {
+                console.log(`[renderer:${diagnostic.level}] ${diagnostic.message}`);
+            }
+            for (const diagnostic of result.diagnostics) {
+                console.log(`[${diagnostic.stage}:${diagnostic.level}] ${diagnostic.message}`);
+            }
+        }
+        return;
+    }
+
+    await mkdir(options.outputDir, { recursive: true });
+    await writeFile(semanticIrPath, semanticIrJson + '\n', 'utf-8');
+    await writeFile(renderedHtmlPath, renderedHtml.trimEnd() + '\n', 'utf-8');
+
+    console.log(`✓ Wrote ${semanticIrPath}`);
+    console.log(`✓ Wrote ${renderedHtmlPath}`);
+
+    if (result.rendererDiagnostics.length > 0 || result.diagnostics.length > 0) {
+        console.warn('⚠ Import diagnostics were reported:');
+        for (const diagnostic of result.rendererDiagnostics) {
+            console.warn(`  [renderer:${diagnostic.level}] ${diagnostic.message}`);
+        }
+        for (const diagnostic of result.diagnostics) {
+            console.warn(`  [${diagnostic.stage}:${diagnostic.level}] ${diagnostic.message}`);
+        }
+    }
+}
+
 function printUsage() {
     console.log(`
 Usage: bikeshed-migrate <input.bs> [options]
 
 Options:
   --out <dir>         Output directory (default: same directory as input file)
+  --semantic-ir       Use Bikeshed HTML importer (outputs semantic-ir.json + index.html)
+  --html-import       Alias for --semantic-ir
+  --docker-image <i>  Docker image for Bikeshed renderer (default: openuji/bikeshed-renderer:latest)
+  --docker-command <c> Docker binary/command (default: docker)
   --no-boilerplate    Skip fetching boilerplate overrides (includes/*.md)
   --init              Scaffold a solospec app (vite.config.ts, package.json, index.html)
   --dry-run           Print outputs to stdout without writing files
@@ -134,11 +208,20 @@ async function run() {
     let dryRun = false;
     let skipBoilerplate = false;
     let init = false;
+    let semanticIrMode = false;
+    let dockerImage: string | undefined;
+    let dockerCommand: string | undefined;
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
         if (arg === '--out' || arg === '-o') {
             outDir = args[++i];
+        } else if (arg === '--semantic-ir' || arg === '--html-import') {
+            semanticIrMode = true;
+        } else if (arg === '--docker-image') {
+            dockerImage = args[++i];
+        } else if (arg === '--docker-command') {
+            dockerCommand = args[++i];
         } else if (arg === '--dry-run') {
             dryRun = true;
         } else if (arg === '--no-boilerplate') {
@@ -179,6 +262,23 @@ async function run() {
     } catch (err) {
         console.error(`Error reading ${inputPath}: ${(err as Error).message}`);
         process.exit(1);
+    }
+
+    if (semanticIrMode) {
+        try {
+            await runSemanticImport({
+                inputPath,
+                outputDir,
+                content,
+                dryRun,
+                dockerImage,
+                dockerCommand,
+            });
+        } catch (err) {
+            console.error(`Semantic import failed: ${(err as Error).message}`);
+            process.exit(1);
+        }
+        return;
     }
 
     // Replace <img src="*.mmd.*"> with :::include ./*.mmd::: where .mmd file exists

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>WebMCP</title>
+  <script src="https://speced.github.io/bikeshed/boilerplate.js"></script>
+</head>
+<body>
+  <nav id="toc">
+    <ol>
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#api">API</a></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+    <section id="abstract">
+      <h2 id="abstract-heading">Abstract<a class="self-link" href="#abstract-heading"></a></h2>
+      <p>The WebMCP API enables web applications to provide tools to AI agents.</p>
+    </section>
+
+    <section id="status-of-this-document">
+      <h2 id="sotd-heading">Status of This Document<a class="self-link" href="#sotd-heading"></a></h2>
+      <p>This document is a draft specification.</p>
+    </section>
+
+    <section id="intro">
+      <h2 id="intro-heading">Introduction<a class="self-link" href="#intro-heading"></a></h2>
+      <p>
+        An
+        <dfn id="dfn-agent" data-dfn-type="dfn">agent</dfn>
+        can invoke
+        <a href="#dfn-tool-definition" data-link-type="dfn">tool definitions</a>.
+      </p>
+
+      <div class="note">
+        <p>This is an informative note for WebMCP implementers.</p>
+      </div>
+    </section>
+
+    <section id="api">
+      <h2 id="api-heading">API<a class="self-link" href="#api-heading"></a></h2>
+
+      <pre class="highlight idl"><code class="idl">
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute ModelContext modelContext;
+};
+      </code></pre>
+
+      <div class="algorithm" data-algorithm="provideContext(options)">
+        <p>
+          The
+          <dfn id="dfn-provide-context" data-dfn-type="method" data-dfn-for="ModelContext">
+            provideContext(options)
+          </dfn>
+          method steps are:
+        </p>
+        <ol>
+          <li>Initialize the context map.</li>
+          <li>Register each tool entry.</li>
+        </ol>
+      </div>
+
+      <dl class="domintro">
+        <dt>
+          <code><var>navigator</var>.modelContext.provideContext()</code>
+        </dt>
+        <dd>
+          <p>Registers all tools with the browser.</p>
+        </dd>
+      </dl>
+    </section>
+
+    <section id="idl-index">
+      <h2>IDL Index</h2>
+      <pre class="idl">interface IgnoredByDefault {};</pre>
+    </section>
+
+    <section id="references">
+      <h2>References</h2>
+      <ol>
+        <li>[MCP] Model Context Protocol</li>
+      </ol>
+    </section>
+  </main>
+
+  <aside class="dfn-panel">Interactive dfn panel should be dropped.</aside>
+  <script>
+    window.__bikeshedHelper = true;
+  </script>
+</body>
+</html>

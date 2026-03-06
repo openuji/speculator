@@ -1,7 +1,7 @@
 {
     "name": "@openuji/bikeshed-migrate",
     "version": "0.3.0",
-    "description": "Migration tool: converts Bikeshed (.bs) specs to Speculator-compatible index.md + config.json",
+    "description": "Bikeshed source + rendered HTML importer for Speculator semantic IR (with legacy markdown migration path)",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -36,7 +36,8 @@
         "unist-util-visit": "^5.0.0"
     },
     "files": [
-        "dist"
+        "dist",
+        "docker"
     ],
     "keywords": [
         "bikeshed",

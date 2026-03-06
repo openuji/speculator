@@ -8,15 +8,9 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { extractMetadataBlock, parseMetadataBlock } from './extract/metadata.js';
 import { extractBiblioBlock } from './extract/biblio.js';
+import { extractResources, type Resource } from './extract/resources.js';
 import { buildConfig, type SpeculatorConfig } from './build-config.js';
 import { remarkBikeshed } from './transform/remark-bikeshed.js';
-
-export interface Resource {
-    /** 'style' for <style> blocks, 'script' for <script> blocks */
-    type: 'style' | 'script';
-    /** Raw inner content of the block (without the wrapping tags) */
-    content: string;
-}
 
 export interface MigrationResult {
     /** Content for index.md */
@@ -48,6 +42,9 @@ const BS_ATX_HEADING_RE = /^(#{1,6} .+?) #+(?: (\{#[^}]+\}))?\s*$/gm;
 /**
  * Migrate a Bikeshed .bs file to Speculator index.md + config.json.
  *
+ * @deprecated Legacy Markdown migration path. Use importBikeshedSpec() for the
+ * Bikeshed-HTML importer pipeline.
+ *
  * @param content - Raw .bs file content
  * @param options - Migration options
  * @returns MigrationResult with md string and config object
@@ -61,20 +58,8 @@ export async function migrate(content: string): Promise<MigrationResult> {
     const { biblio, rest: afterBiblio } = extractBiblioBlock(afterMeta);
 
     // Step 2b: Extract <style> and <script> blocks into resources, remove them from content.
-    // Authors embed these in .bs for Bikeshed's output pipeline; in Speculator they are
-    // separate concerns (loaded via config or a custom CSS file).
-    const resources: Resource[] = [];
-    const noStyleScript = afterBiblio
-        .replace(/<style(?:\s[^>]*)?>[\s\S]*?<\/style>/gi, (match) => {
-            const inner = match.replace(/^<style[^>]*>\n?/, '').replace(/\n?<\/style>$/, '');
-            resources.push({ type: 'style', content: inner });
-            return '';
-        })
-        .replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, (match) => {
-            const inner = match.replace(/^<script[^>]*>\n?/, '').replace(/\n?<\/script>$/, '');
-            resources.push({ type: 'script', content: inner });
-            return '';
-        });
+    // Shared extractor keeps source ownership independent from Markdown logic.
+    const { resources, rest: noStyleScript } = extractResources(afterBiblio);
 
     // Step 2c: Strip HTML comments (<!-- ... -->).
     // MDX does not support HTML comment syntax — <!-- causes a parse error ("Unexpected

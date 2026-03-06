@@ -1,0 +1,232 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { importBikeshedSpec } from '../src/import-bikeshed-spec.js';
+import type { BoilerplateResult } from '../src/boilerplate.js';
+import type { BikeshedRenderer } from '../src/renderer/types.js';
+import type {
+    DocumentNode,
+    SectionNode,
+    SemanticBlockNode,
+    SemanticInlineNode,
+} from '../src/import/semantic-ir.js';
+
+const PACKAGE_ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
+const WEBMCP_SOURCE = resolve(PACKAGE_ROOT, 'samples/webmcp/index.bs');
+const RENDERED_HTML_FIXTURE = resolve(
+    PACKAGE_ROOT,
+    'tests/fixtures/webmcp-html-import/rendered.html',
+);
+
+let result: Awaited<ReturnType<typeof importBikeshedSpec>>;
+let boilerplateMetadataGroup: string | undefined;
+let boilerplateMetadataStatus: string | undefined;
+
+beforeAll(async () => {
+    const [sourceBs, renderedHtml] = await Promise.all([
+        readFile(WEBMCP_SOURCE, 'utf-8'),
+        readFile(RENDERED_HTML_FIXTURE, 'utf-8'),
+    ]);
+
+    const renderer: BikeshedRenderer = {
+        async render() {
+            return {
+                html: renderedHtml,
+                logs: ['fixture renderer used'],
+                diagnostics: [],
+            };
+        },
+    };
+
+    result = await importBikeshedSpec(sourceBs, {
+        renderer,
+        boilerplateResolver: {
+            async resolve(metadata) {
+                boilerplateMetadataGroup = valueAsString(metadata.get('group'));
+                boilerplateMetadataStatus = valueAsString(metadata.get('status'));
+                const resolved: BoilerplateResult = {
+                    status: {
+                        content: '<section id="status">Status boilerplate slot</section>',
+                        source: 'fixture://status',
+                    },
+                };
+                return resolved;
+            },
+        },
+    });
+});
+
+describe('importBikeshedSpec source extractors', () => {
+    it('extracts metadata and biblio from source .bs', () => {
+        expect(result.metadata.get('shortname')).toBe('webmcp');
+        expect(result.metadata.get('group')).toBe('webml');
+        expect(result.biblio['mcp']).toBeDefined();
+    });
+
+    it('extracts style/script resources independently from markdown pipeline', () => {
+        const styleBlocks = result.resources.filter((item) => item.type === 'style');
+        expect(styleBlocks.length).toBeGreaterThan(0);
+        expect(styleBlocks[0].content).toContain('.domintro');
+    });
+
+    it('integrates boilerplate resolver using metadata-derived group/status', () => {
+        expect(boilerplateMetadataGroup).toBe('webml');
+        expect(boilerplateMetadataStatus).toBe('CG-DRAFT');
+        expect(result.boilerplate.status?.source).toBe('fixture://status');
+    });
+});
+
+describe('rendered HTML region selection + normalization', () => {
+    it('captures selected regions (main, abstract, status)', () => {
+        expect(result.regions.main.selectedHtml).toMatchSnapshot('selected-main');
+        expect(result.regions.abstract?.selectedHtml ?? '').toMatchSnapshot('selected-abstract');
+        expect(result.regions.status?.selectedHtml ?? '').toMatchSnapshot('selected-status');
+    });
+
+    it('normalizes selected regions and strips generated chrome', () => {
+        expect(result.regions.main.normalizedHtml).toMatchSnapshot('normalized-main');
+        expect(result.regions.abstract?.normalizedHtml ?? '').toMatchSnapshot('normalized-abstract');
+        expect(result.regions.status?.normalizedHtml ?? '').toMatchSnapshot('normalized-status');
+
+        expect(result.regions.main.normalizedHtml).not.toContain('self-link');
+        expect(result.regions.main.normalizedHtml).not.toContain('<script');
+        expect(result.regions.main.normalizedHtml).not.toContain('IDL Index');
+        expect(result.regions.main.normalizedHtml).not.toContain('References');
+    });
+});
+
+describe('semantic importer (HTML -> IR)', () => {
+    it('imports main region into a semantic document IR snapshot', () => {
+        expect(JSON.stringify(result.document, null, 2)).toMatchSnapshot('document-ir');
+    });
+
+    it('includes required semantic node families', () => {
+        const blocks = flattenBlocks(result.document);
+
+        expect(blocks.some((node) => node.type === 'IdlBlock')).toBe(true);
+        expect(blocks.some((node) => node.type === 'AlgorithmBlock')).toBe(true);
+        expect(blocks.some((node) => node.type === 'DomIntroBlock')).toBe(true);
+        expect(blocks.some((node) => node.type === 'NoteBlock')).toBe(true);
+
+        const definitions = flattenInlines(result.document).filter(
+            (node) => node.type === 'Definition',
+        );
+        expect(definitions.length).toBeGreaterThan(0);
+
+        const linkRefs = flattenInlines(result.document).filter(
+            (node) => node.type === 'LinkRef',
+        );
+        expect(
+            linkRefs.some((node) => node.type === 'LinkRef' && node.dataLinkType === 'dfn'),
+        ).toBe(true);
+    });
+
+    it('imports abstract/status region blocks', () => {
+        expect(JSON.stringify(result.regions.abstract?.blocks ?? [], null, 2)).toMatchSnapshot(
+            'abstract-blocks-ir',
+        );
+        expect(JSON.stringify(result.regions.status?.blocks ?? [], null, 2)).toMatchSnapshot(
+            'status-blocks-ir',
+        );
+    });
+});
+
+function flattenBlocks(document: DocumentNode): SemanticBlockNode[] {
+    const out: SemanticBlockNode[] = [];
+
+    const visitBlock = (node: SemanticBlockNode): void => {
+        out.push(node);
+
+        if (node.type === 'Section') {
+            node.children.forEach(visitBlock);
+            return;
+        }
+
+        if (
+            node.type === 'AlgorithmBlock' ||
+            node.type === 'DomIntroBlock' ||
+            node.type === 'NoteBlock'
+        ) {
+            node.children.forEach(visitBlock);
+            return;
+        }
+
+        if (node.type === 'List') {
+            node.items.forEach((item) => item.children.forEach(visitBlock));
+            return;
+        }
+
+        if (node.type === 'ListItem') {
+            node.children.forEach(visitBlock);
+            return;
+        }
+
+        if (node.type === 'DefinitionList') {
+            node.items.forEach((item) => item.description.forEach(visitBlock));
+        }
+    };
+
+    document.children.forEach((node) => {
+        if (node.type === 'Section') {
+            visitBlock(node);
+        } else {
+            visitBlock(node as SemanticBlockNode);
+        }
+    });
+
+    return out;
+}
+
+function flattenInlines(document: DocumentNode): SemanticInlineNode[] {
+    const out: SemanticInlineNode[] = [];
+
+    const visitInline = (node: SemanticInlineNode): void => {
+        out.push(node);
+        if (node.type === 'Definition' || node.type === 'LinkRef') {
+            node.children.forEach(visitInline);
+        }
+    };
+
+    const visitBlock = (node: SemanticBlockNode): void => {
+        if (node.type === 'Paragraph') {
+            node.children.forEach(visitInline);
+            return;
+        }
+
+        if (node.type === 'Section') {
+            node.heading.forEach(visitInline);
+            node.children.forEach(visitBlock);
+            return;
+        }
+
+        if (node.type === 'AlgorithmBlock' || node.type === 'DomIntroBlock' || node.type === 'NoteBlock') {
+            node.children.forEach(visitBlock);
+            return;
+        }
+
+        if (node.type === 'DefinitionList') {
+            node.items.forEach((item) => {
+                item.term.forEach(visitInline);
+                item.description.forEach(visitBlock);
+            });
+            return;
+        }
+
+        if (node.type === 'List') {
+            node.items.forEach((item) => item.children.forEach(visitBlock));
+        }
+    };
+
+    for (const child of document.children) {
+        visitBlock(child as SectionNode);
+    }
+
+    return out;
+}
+
+function valueAsString(value: string | string[] | undefined): string | undefined {
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value[0];
+    return value;
+}

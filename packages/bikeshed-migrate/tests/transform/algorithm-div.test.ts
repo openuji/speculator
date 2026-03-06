@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { migrate } from '../../src/migrate.js';
 
 describe('algorithm-div transform', () => {
-    it('converts <div algorithm> to <section data-algorithm>', async () => {
+    it('converts <div algorithm> to <div data-algorithm>', async () => {
         const bs = `<div algorithm>
 1. Do something.
 </div>
 `;
         const { md } = await migrate(bs);
-        expect(md).toContain('<section');
+        expect(md).toContain('<div');
         expect(md).toContain('data-algorithm');
         expect(md).not.toContain('<div algorithm');
     });
@@ -19,7 +19,7 @@ describe('algorithm-div transform', () => {
 </div>
 `;
         const { md } = await migrate(bs);
-        expect(md).toContain('<section');
+        expect(md).toContain('<div');
         expect(md).not.toContain('<div algorithm');
     });
 });

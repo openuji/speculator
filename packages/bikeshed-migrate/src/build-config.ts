@@ -4,11 +4,15 @@
 
 import type { MetadataMap } from './extract/metadata.js';
 import type { BiblioMap } from './extract/biblio.js';
-import type { Preprocess } from '@openuji/speculator';
 
 import { parsePersonEntry } from './extract/editor-parser.js';
 
-type RawBikeshedConfig = Preprocess.RawBikeshedConfig;
+type RawBikeshedConfig = {
+    shortname?: string;
+    status?: string;
+    group?: string;
+    [key: string]: unknown;
+};
 export interface SpeculatorConfig {
     bikeshed?: RawBikeshedConfig;
     custom: Record<string, unknown>;
