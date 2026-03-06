@@ -586,7 +586,8 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
           ]
         }
       ],
-      "boilerplate": "conformance"
+      "boilerplate": "conformance",
+      "omited": true
     }
   ]
 }"

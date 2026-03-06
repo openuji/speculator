@@ -191,6 +191,11 @@ describe('semantic importer (HTML -> IR)', () => {
         );
         expect(JSON.stringify(sotdSection, null, 2)).toContain('Status boilerplate slot');
         expect(JSON.stringify(sotdSection, null, 2)).not.toContain('[STATUSTEXT]');
+
+        const conformanceSection = topSections.find(
+            (section) => section.boilerplate === 'conformance',
+        );
+        expect(conformanceSection?.omited).toBe(true);
     });
 });
 

@@ -144,13 +144,49 @@ function createSectionFromHeading(
 ): SectionNode {
     const level = Number.parseInt(tag.slice(1), 10);
     const heading = normalizeInlineWhitespace(parseInlineChildren(element.children, options));
+    const extracted = extractSectionNumber(heading);
 
     return {
         type: 'Section',
         level,
         id: getAttr(element, 'id'),
-        heading,
+        number: extracted.number,
+        heading: extracted.heading,
         children: [],
+    };
+}
+
+function extractSectionNumber(heading: SemanticInlineNode[]): {
+    number?: string;
+    heading: SemanticInlineNode[];
+} {
+    if (heading.length === 0) {
+        return { heading };
+    }
+
+    const first = heading[0];
+    if (first.type !== 'Text') {
+        return { heading };
+    }
+
+    const match = first.value.match(/^\s*(\d+(?:\.\d+)*)\.\s+(.+)$/);
+    if (!match) {
+        return { heading };
+    }
+
+    const number = match[1];
+    const textRemainder = match[2];
+    const nextHeading = [...heading];
+
+    if (textRemainder.trim().length > 0) {
+        nextHeading[0] = { type: 'Text', value: textRemainder };
+    } else {
+        nextHeading.shift();
+    }
+
+    return {
+        number,
+        heading: normalizeInlineWhitespace(nextHeading),
     };
 }
 

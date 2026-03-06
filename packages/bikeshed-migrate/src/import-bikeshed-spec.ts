@@ -181,10 +181,12 @@ export async function importBikeshedSpec(
         : undefined;
 
     enrichConfigFromBoilerplate(config, boilerplate);
+    const omitConformance = isConformanceOmitted(config);
     document = injectBoilerplateSections(document, {
         abstract: abstractBoilerplate?.blocks ?? abstract?.blocks,
         sotd: sotdBoilerplate?.blocks ?? status?.blocks,
         conformance: conformance?.blocks,
+        omitConformance,
     });
 
     const assetResolutionContext = createAssetResolutionContext(options.sourcePath, diagnostics);
@@ -460,6 +462,7 @@ function injectBoilerplateSections(
         abstract?: SemanticBlockNode[];
         sotd?: SemanticBlockNode[];
         conformance?: SemanticBlockNode[];
+        omitConformance?: boolean;
     },
 ): DocumentNode {
     const nextDocument: DocumentNode = {
@@ -467,9 +470,23 @@ function injectBoilerplateSections(
         children: [...document.children],
     };
 
-    applyBoilerplateSection(nextDocument, sections.abstract, 'abstract', 'Abstract', 'prepend');
-    applyBoilerplateSection(nextDocument, sections.sotd, 'sotd', 'Status of This Document', 'prepend');
-    applyBoilerplateSection(nextDocument, sections.conformance, 'conformance', 'Conformance', 'append');
+    applyBoilerplateSection(nextDocument, sections.abstract, 'abstract', 'Abstract', 'prepend', false);
+    applyBoilerplateSection(
+        nextDocument,
+        sections.sotd,
+        'sotd',
+        'Status of This Document',
+        'prepend',
+        false,
+    );
+    applyBoilerplateSection(
+        nextDocument,
+        sections.conformance,
+        'conformance',
+        'Conformance',
+        'append',
+        sections.omitConformance === true,
+    );
 
     return nextDocument;
 }
@@ -480,13 +497,19 @@ function applyBoilerplateSection(
     boilerplate: 'abstract' | 'sotd' | 'conformance',
     fallbackHeading: string,
     placement: 'prepend' | 'append',
+    omited: boolean,
 ): void {
-    const section = toBoilerplateSection(blocks, boilerplate, fallbackHeading);
+    const section = toBoilerplateSection(blocks, boilerplate, fallbackHeading, omited);
     if (!section) return;
 
     const existing = findMatchingSection(document.children, section);
     if (existing) {
         existing.boilerplate = boilerplate;
+        if (omited) {
+            existing.omited = true;
+        } else {
+            delete existing.omited;
+        }
         existing.id = section.id ?? existing.id;
         existing.level = section.level;
         existing.heading = section.heading;
@@ -506,6 +529,7 @@ function toBoilerplateSection(
     blocks: SemanticBlockNode[] | undefined,
     boilerplate: 'abstract' | 'sotd' | 'conformance',
     fallbackHeading: string,
+    omited: boolean,
 ): SectionNode | undefined {
     if (!blocks || blocks.length === 0) return undefined;
 
@@ -516,6 +540,7 @@ function toBoilerplateSection(
         const cloned: SectionNode = {
             ...section,
             boilerplate,
+            ...(omited ? { omited: true } : {}),
             children: [...section.children, ...rest],
         };
         return cloned;
@@ -526,9 +551,17 @@ function toBoilerplateSection(
         type: 'Section',
         level: 2,
         boilerplate,
+        ...(omited ? { omited: true } : {}),
         heading: [heading],
         children: blocks,
     };
+}
+
+function isConformanceOmitted(config: SpeculatorConfig): boolean {
+    const boilerplateConfig = config.bikeshed?.boilerplate;
+    if (typeof boilerplateConfig !== 'string') return false;
+
+    return /\bomit\s+conformance\b/i.test(boilerplateConfig);
 }
 
 function findMatchingSection(

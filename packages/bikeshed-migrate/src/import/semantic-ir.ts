@@ -29,6 +29,8 @@ export interface SectionNode {
     type: 'Section';
     level: number;
     id?: string;
+    number?: string;
+    omited?: boolean;
     boilerplate?: 'abstract' | 'sotd' | 'conformance';
     heading: SemanticInlineNode[];
     children: SemanticBlockNode[];
