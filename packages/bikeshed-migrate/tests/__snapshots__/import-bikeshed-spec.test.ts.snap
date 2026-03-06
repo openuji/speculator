@@ -223,7 +223,8 @@ exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks 
               },
               {
                 "type": "LinkRef",
-                "dataLinkType": "biblio",
+                "kind": "biblio",
+                "linkTypeRaw": "biblio",
                 "href": "#biblio-mcp",
                 "citationKey": "MCP",
                 "citationNormative": true,
@@ -245,7 +246,8 @@ exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks 
               },
               {
                 "type": "LinkRef",
-                "dataLinkType": "biblio",
+                "kind": "biblio",
+                "linkTypeRaw": "biblio",
                 "citationKey": "RFC2119",
                 "citationNormative": true,
                 "children": [
@@ -376,8 +378,9 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
             },
             {
               "type": "LinkRef",
+              "kind": "dfn",
               "href": "#dfn-tool-definition",
-              "dataLinkType": "dfn",
+              "linkTypeRaw": "dfn",
               "children": [
                 {
                   "type": "Text",
@@ -549,7 +552,8 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
                 },
                 {
                   "type": "LinkRef",
-                  "dataLinkType": "biblio",
+                  "kind": "biblio",
+                  "linkTypeRaw": "biblio",
                   "href": "#biblio-mcp",
                   "citationKey": "MCP",
                   "citationNormative": true,
@@ -571,7 +575,8 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
                 },
                 {
                   "type": "LinkRef",
-                  "dataLinkType": "biblio",
+                  "kind": "biblio",
+                  "linkTypeRaw": "biblio",
                   "citationKey": "RFC2119",
                   "citationNormative": true,
                   "children": [

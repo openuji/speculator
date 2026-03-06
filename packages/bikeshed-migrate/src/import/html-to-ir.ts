@@ -14,6 +14,7 @@ import type {
     ImageAssetNode,
     ImageInlineNode,
     IdlBlockNode,
+    LinkRefKind,
     LinkRefNode,
     ListItemNode,
     ListNode,
@@ -44,6 +45,31 @@ const BLOCK_TAGS = new Set([
 
 const BIBLIO_SHORTCODE_RE = /\[\[([^\]]+)\]\]/g;
 const BRACKETED_REF_RE = /^\[([^\]]+)\]$/;
+const URI_SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
+const KNOWN_IDL_LINK_TYPES = new Set([
+    'idl',
+    'interface',
+    'namespace',
+    'constructor',
+    'method',
+    'attribute',
+    'dict-member',
+    'dictionary',
+    'enum',
+    'enum-value',
+    'callback',
+    'callback-interface',
+    'typedef',
+    'argument',
+    'const',
+    'extended-attribute',
+    'serializer',
+    'stringifier',
+    'iterable',
+    'maplike',
+    'setlike',
+    'promise',
+]);
 
 export interface HtmlToIrOptions {
     biblio?: BiblioMap;
@@ -481,15 +507,22 @@ function parseInlineNode(node: RootContent, options: HtmlToIrOptions): SemanticI
 
     if (tag === 'a') {
         const rawChildren = normalizeInlineWhitespace(parseInlineChildren(node.children, options));
+        const href = getAttr(node, 'href');
         const dataLinkType = getAttr(node, 'data-link-type');
         const citation = parseBiblioCitationFromChildren(rawChildren, dataLinkType ?? undefined);
         const biblioRef = citation
             ? findBiblioEntry(options.biblio, citation.key)
             : undefined;
+        const kind = classifyLinkRef({
+            href,
+            dataLinkType,
+            hasCitation: !!citation,
+        });
         const link: LinkRefNode = {
             type: 'LinkRef',
-            href: getAttr(node, 'href'),
-            dataLinkType,
+            kind,
+            href,
+            linkTypeRaw: dataLinkType,
             dataLinkFor: getAttr(node, 'data-link-for'),
             citationKey: citation?.key,
             citationNormative: citation?.normative,
@@ -526,7 +559,8 @@ function parseInlineText(value: string, options: HtmlToIrOptions): SemanticInlin
         const biblioRef = findBiblioEntry(options.biblio, citation.key);
         const link: LinkRefNode = {
             type: 'LinkRef',
-            dataLinkType: 'biblio',
+            kind: 'biblio',
+            linkTypeRaw: 'biblio',
             href: biblioRef ? `#biblio-${citation.key.toLowerCase()}` : undefined,
             citationKey: citation.key,
             citationNormative: citation.normative,
@@ -559,7 +593,7 @@ function parseBiblioCitationFromChildren(
     children: SemanticInlineNode[],
     dataLinkType?: string,
 ): { key: string; normative: boolean } | undefined {
-    if (dataLinkType !== 'biblio') return undefined;
+    if (dataLinkType?.trim().toLowerCase() !== 'biblio') return undefined;
     if (children.length !== 1 || children[0].type !== 'Text') return undefined;
 
     const text = children[0].value.trim();
@@ -569,6 +603,29 @@ function parseBiblioCitationFromChildren(
     const key = bracketMatch[1].trim();
     if (!key) return undefined;
     return { key, normative: false };
+}
+
+function classifyLinkRef(input: {
+    href?: string;
+    dataLinkType?: string;
+    hasCitation: boolean;
+}): LinkRefKind {
+    const normalizedType = input.dataLinkType?.trim().toLowerCase();
+
+    if (input.hasCitation || normalizedType === 'biblio') return 'biblio';
+    if (normalizedType && KNOWN_IDL_LINK_TYPES.has(normalizedType)) return 'idl';
+    if (normalizedType) return 'dfn';
+
+    const href = input.href?.trim() ?? '';
+    if (!href) return 'unknown';
+    if (href.startsWith('#idl-')) return 'idl';
+    if (isExternalHref(href)) return 'external';
+    return 'unknown';
+}
+
+function isExternalHref(href: string): boolean {
+    if (href.startsWith('//')) return true;
+    return URI_SCHEME_RE.test(href);
 }
 
 function findBiblioEntry(

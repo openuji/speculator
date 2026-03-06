@@ -48,14 +48,17 @@ export interface TextNode {
 
 export interface LinkRefNode {
     type: 'LinkRef';
+    kind: LinkRefKind;
     href?: string;
-    dataLinkType?: string;
+    linkTypeRaw?: string;
     dataLinkFor?: string;
     citationKey?: string;
     citationNormative?: boolean;
     biblioRef?: BiblioRefNode;
     children: SemanticInlineNode[];
 }
+
+export type LinkRefKind = 'dfn' | 'biblio' | 'idl' | 'external' | 'unknown';
 
 export interface BiblioRefNode {
     title?: string;

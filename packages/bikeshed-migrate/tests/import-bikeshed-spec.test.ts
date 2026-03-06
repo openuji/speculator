@@ -145,7 +145,7 @@ describe('semantic importer (HTML -> IR)', () => {
             (node) => node.type === 'LinkRef',
         );
         expect(
-            linkRefs.some((node) => node.type === 'LinkRef' && node.dataLinkType === 'dfn'),
+            linkRefs.some((node) => node.type === 'LinkRef' && node.kind === 'dfn'),
         ).toBe(true);
     });
 
