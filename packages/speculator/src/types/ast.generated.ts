@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-03-09T09:48:13.353Z
+ * Generated at: 2026-03-09T12:18:49.325Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
@@ -617,7 +617,7 @@ export interface DocumentMetadata {
    */
   deps?: string[];
   editors?: {
-    name?: string;
+    name: string;
     url?: string;
     company?: string;
     companyUrl?: string;

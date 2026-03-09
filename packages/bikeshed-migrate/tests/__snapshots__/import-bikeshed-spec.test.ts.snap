@@ -316,7 +316,9 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
           ]
         }
       ],
-      "boilerplate": "abstract"
+      "boilerplate": "abstract",
+      "noToc": true,
+      "noTocCount": true
     },
     {
       "type": "Section",
@@ -339,7 +341,9 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
           ]
         }
       ],
-      "boilerplate": "sotd"
+      "boilerplate": "sotd",
+      "noToc": true,
+      "noTocCount": true
     },
     {
       "type": "Section",
@@ -606,7 +610,8 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
         }
       ],
       "boilerplate": "conformance",
-      "omitted": true
+      "omitted": true,
+      "noTocCount": true
     }
   ]
 }"

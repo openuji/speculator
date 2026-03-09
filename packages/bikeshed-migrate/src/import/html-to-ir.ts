@@ -172,15 +172,31 @@ function createSectionFromHeading(
     const level = Number.parseInt(tag.slice(1), 10);
     const heading = normalizeInlineWhitespace(parseInlineChildren(element.children, options));
     const extracted = extractSectionNumber(heading);
+    const classList = asClassList(element.properties?.className);
+    const noToc = classList.includes('no-toc') || hasTruthyBooleanAttr(element, 'data-no-toc');
+    const noTocCount =
+        classList.includes('no-num') || hasTruthyBooleanAttr(element, 'data-no-toc-count');
+
 
     return {
         type: 'Section',
         level,
         id: getAttr(element, 'id'),
         number: extracted.number,
+        ...(noToc ? { noToc: true } : {}),
+        ...(noTocCount && !noToc ? { noTocCount: true } : {}),
         heading: extracted.heading,
         children: [],
     };
+}
+
+function hasTruthyBooleanAttr(element: Element, attrName: string): boolean {
+    const value = getAttr(element, attrName);
+    if (value === undefined) return false;
+    if (value === '') return true;
+
+    const normalized = value.trim().toLowerCase();
+    return normalized !== 'false' && normalized !== '0' && normalized !== 'no';
 }
 
 function extractSectionNumber(heading: SemanticInlineNode[]): {

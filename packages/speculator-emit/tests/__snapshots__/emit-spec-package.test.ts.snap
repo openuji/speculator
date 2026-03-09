@@ -1,0 +1,56 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`emitSpecPackage > emits deterministic index.md + canonical config.json snapshots > config-json 1`] = `
+"{
+  "id": "sample-spec",
+  "deps": [],
+  "specIri": "https://example.com/sample-spec",
+  "title": "Sample Spec",
+  "shortName": "sample",
+  "status": "CG-DRAFT",
+  "lastUpdateDate": "[DATE]",
+  "group": "samplecg",
+  "localBiblio": {
+    "RFC2119": {
+      "title": "Key words for use in RFCs to Indicate Requirement Levels",
+      "url": "https://www.rfc-editor.org/rfc/rfc2119"
+    }
+  }
+}
+"
+`;
+
+exports[`emitSpecPackage > emits deterministic index.md + canonical config.json snapshots > diagnostics 1`] = `[]`;
+
+exports[`emitSpecPackage > emits deterministic index.md + canonical config.json snapshots > index-md 1`] = `
+"## Introduction {id="intro"}
+
+The <code><a data-link-type="idl">Navigator</a></code> interface extends <dfn>agent</dfn> and follows [[!RFC2119]].
+
+<pre class="idl">
+  partial interface <a data-link-type="interface">Navigator</a> {
+    readonly attribute <a data-link-type="idl-name">ModelContext</a> <dfn data-dfn-type="attribute">modelContext</dfn>;
+  };
+</pre>
+
+<dl>
+  <dt>Foo</dt>
+  <dd>Bar</dd>
+</dl>
+
+<div data-algorithm="true">
+  Run steps.
+</div>
+
+<div class="domintro">
+  DOM intro text.
+</div>
+
+<figure id="fig-1">
+  <img alt="Flow" data-asset-exists="true" data-generated-from="mermaid-mmd" data-src-original="sequence.mmd.svg" data-src-resolved="sequence.mmd" src="sequence.mmd" />
+  <figcaption>Flow caption</figcaption>
+</figure>
+
+<img alt="Diagram" data-src-original="diagram.svg" src="diagram.svg" />
+"
+`;

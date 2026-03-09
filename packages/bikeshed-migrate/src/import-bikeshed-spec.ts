@@ -512,6 +512,16 @@ function applyBoilerplateSection(
         }
         existing.id = section.id ?? existing.id;
         existing.level = section.level;
+        if (section.noToc) {
+            existing.noToc = true;
+        } else {
+            delete existing.noToc;
+        }
+        if (section.noTocCount) {
+            existing.noTocCount = true;
+        } else {
+            delete existing.noTocCount;
+        }
         existing.heading = section.heading;
         existing.children = section.children;
         return;
@@ -537,24 +547,46 @@ function toBoilerplateSection(
     if (firstSectionIndex >= 0) {
         const section = blocks[firstSectionIndex] as SectionNode;
         const rest = blocks.filter((_node, idx) => idx !== firstSectionIndex);
-        const cloned: SectionNode = {
+        const cloned: SectionNode = applyBoilerplateDefaultSectionFlags({
             ...section,
             boilerplate,
             ...(omitted ? { omitted: true } : {}),
             children: [...section.children, ...rest],
-        };
+        }, boilerplate);
         return cloned;
     }
 
     const heading: TextNode = { type: 'Text', value: fallbackHeading };
-    return {
+    return applyBoilerplateDefaultSectionFlags({
         type: 'Section',
         level: 2,
         boilerplate,
         ...(omitted ? { omitted: true } : {}),
         heading: [heading],
         children: blocks,
-    };
+    }, boilerplate);
+}
+
+function applyBoilerplateDefaultSectionFlags(
+    section: SectionNode,
+    boilerplate: 'abstract' | 'sotd' | 'conformance',
+): SectionNode {
+    if (boilerplate === 'abstract' || boilerplate === 'sotd') {
+        return {
+            ...section,
+            noToc: true,
+            noTocCount: true,
+        };
+    }
+
+    if (boilerplate === 'conformance') {
+        return {
+            ...section,
+            noTocCount: section.noTocCount ?? true,
+        };
+    }
+
+    return section;
 }
 
 function isConformanceOmitted(config: SpeculatorConfig): boolean {

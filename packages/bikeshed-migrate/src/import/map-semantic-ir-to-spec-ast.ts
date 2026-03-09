@@ -161,6 +161,12 @@ function mapSection(node: SectionNode, ctx: MapContext, frame: MapFrame): Sectio
     if (node.id) {
         heading.id = node.id;
     }
+    if (node.noToc) {
+        heading.noToc = true;
+    }
+    if (node.noTocCount) {
+        heading.noTocCount = true;
+    }
 
     const sectionChildren = mapSectionChildren(node.children, ctx, {
         path: `${frame.path}.children`,
@@ -173,6 +179,8 @@ function mapSection(node: SectionNode, ctx: MapContext, frame: MapFrame): Sectio
     };
 
     if (node.id) section.id = node.id;
+    if (node.noToc) section.noToc = true;
+    if (node.noTocCount) section.noTocCount = true;
     if (node.number) section.number = node.number;
     if (node.boilerplate) section.boilerplate = node.boilerplate;
     if (node.omitted) section.omitted = true;
@@ -240,6 +248,12 @@ function flattenSectionToBlocks(node: SectionNode, ctx: MapContext, frame: MapFr
 
     if (node.id) {
         heading.id = node.id;
+    }
+    if (node.noToc) {
+        heading.noToc = true;
+    }
+    if (node.noTocCount) {
+        heading.noTocCount = true;
     }
 
     return [

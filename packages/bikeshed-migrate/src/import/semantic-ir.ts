@@ -30,6 +30,8 @@ export interface SectionNode {
     level: number;
     id?: string;
     number?: string;
+    noToc?: boolean;
+    noTocCount?: boolean;
     omitted?: boolean;
     boilerplate?: 'abstract' | 'sotd' | 'conformance';
     heading: SemanticInlineNode[];
