@@ -167,6 +167,9 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.19.11
+      prettier:
+        specifier: ^3.1.0
+        version: 3.7.4
       typescript:
         specifier: ^5.3.0
         version: 5.9.3
@@ -319,6 +322,28 @@ importers:
       ts-node:
         specifier: ^10.9.0
         version: 10.9.2(@types/node@22.19.11)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@22.19.11)(lightningcss@1.30.2)
+
+  packages/speculator-emit:
+    dependencies:
+      '@openuji/bikeshed-migrate':
+        specifier: workspace:*
+        version: link:../bikeshed-migrate
+      '@openuji/speculator':
+        specifier: workspace:*
+        version: link:../speculator
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.11
+      prettier:
+        specifier: ^3.1.0
+        version: 3.7.4
       typescript:
         specifier: ^5.3.0
         version: 5.9.3

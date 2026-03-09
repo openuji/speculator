@@ -1,49 +1,63 @@
 {
-    "name": "@openuji/bikeshed-migrate",
-    "version": "0.3.0",
-    "description": "Migration tool: converts Bikeshed (.bs) specs to Speculator-compatible index.md + config.json",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "bin": {
-        "bikeshed-migrate": "dist/cli.js"
-    },
-    "imports": {
-        "#src/*": "./dist/*.js"
-    },
-    "scripts": {
-        "build": "tsc",
-        "prepack": "pnpm build",
-        "dev": "tsc --watch",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "typecheck": "tsc --noEmit"
-    },
-    "devDependencies": {
-        "@openuji/speculator": "workspace:*",
-        "@types/hast": "^3.0.4",
-        "@types/mdast": "^4.0.4",
-        "@types/node": "^22.10.0",
-        "typescript": "^5.3.0",
-        "vitest": "^1.0.0"
-    },
-    "dependencies": {
-        "hast-util-from-html": "^2.0.3",
-        "hast-util-to-html": "^9.0.5",
-        "remark-parse": "^11.0.0",
-        "remark-stringify": "^11.0.0",
-        "unified": "^11.0.5",
-        "unist-util-visit": "^5.0.0"
-    },
-    "files": [
-        "dist"
+  "name": "@openuji/bikeshed-migrate",
+  "version": "0.3.0",
+  "description": "Bikeshed source + rendered HTML importer for Speculator semantic IR (with legacy markdown migration path)",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "bikeshed-migrate": "dist/cli.js"
+  },
+  "imports": {
+    "#src/*": "./dist/*.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepack": "pnpm build",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@openuji/speculator": "workspace:*",
+    "@types/hast": "^3.0.4",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^22.10.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "hast-util-from-html": "^2.0.3",
+    "hast-util-to-html": "^9.0.5",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "docker"
+  ],
+  "keywords": [
+    "bikeshed",
+    "speculator",
+    "migration",
+    "specification",
+    "w3c"
+  ],
+  "lint-staged": {
+    "{src,tests,docker}/**/*.{ts,tsx,js,mjs,cjs,json,md,html,css,yml,yaml,bs}": [
+      "pnpm --filter @openuji/bikeshed-migrate exec prettier --write --ignore-unknown"
     ],
-    "keywords": [
-        "bikeshed",
-        "speculator",
-        "migration",
-        "specification",
-        "w3c"
+    "{README.md,package.json,tsconfig.json}": [
+      "pnpm --filter @openuji/bikeshed-migrate exec prettier --write --ignore-unknown"
     ],
-    "license": "MIT"
+    "{src,tests,docker}/**/*": [
+      "bash -c 'pnpm --filter @openuji/bikeshed-migrate typecheck'",
+      "bash -c 'pnpm --filter @openuji/bikeshed-migrate test'"
+    ]
+  },
+  "license": "MIT"
 }

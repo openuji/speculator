@@ -1,176 +1,66 @@
 # @openuji/bikeshed-migrate
 
-One-time migration tool that converts [Bikeshed](https://speced.github.io/bikeshed/) `.bs` specification files into the format used by [@openuji/speculator](../speculator).
+Bikeshed importer package for Speculator-oriented pipelines.
 
-Given a single `index.bs`, it produces:
+This package now has two paths:
 
-- **`index.md`** — spec content in Speculator-compatible Markdown
-- **`config.json`** — document metadata and bibliography for the Speculator workspace
+- Primary: `importBikeshedSpec()` (Bikeshed source + rendered HTML -> semantic IR)
+- Legacy: `migrate()` (Bikeshed source -> Markdown), kept for compatibility only
 
-After migration, you work exclusively with Speculator and never touch Bikeshed again.
+## Primary pipeline (`importBikeshedSpec`)
 
----
+```ts
+import { importBikeshedSpec } from "@openuji/bikeshed-migrate";
+
+const result = await importBikeshedSpec(bsSource, {
+  renderer, // BikeshedRenderer
+  // optional: renderedHtml, boilerplateResolver, includeGeneratedIndexes
+});
+```
+
+### What it does
+
+1. Extracts metadata, biblio, and resource blocks (`<style>`, `<script>`) from `index.bs`
+2. Resolves boilerplate from metadata (`Group`, `Status`) via resolver abstraction
+3. Renders Bikeshed source to HTML through `BikeshedRenderer`
+4. Parses rendered HTML and selects semantic regions (`<main>`, optional abstract/status)
+5. Normalizes Bikeshed output (remove chrome/self-links/scripts/index UI)
+6. Imports normalized HTML into semantic IR (Document/Section/Paragraph/IDL/Algorithm/etc.)
 
 ## CLI
 
 ```bash
-# Migrate in-place (writes index.md + config.json next to index.bs)
-npx @openuji/bikeshed-migrate index.bs
+# Legacy markdown migration path
+bikeshed-migrate ./index.bs --out ./out
 
-# Write outputs to a specific directory (two equivalent forms)
-npx @openuji/bikeshed-migrate index.bs ./output/
-npx @openuji/bikeshed-migrate index.bs --out ./output/
+# New HTML importer path (writes semantic-ir.json + rendered index.html)
+bikeshed-migrate ./index.bs --semantic-ir --out ./out
 
-# Preview without writing files
-npx @openuji/bikeshed-migrate index.bs --dry-run
-
-# Override the document ID in config.json
-npx @openuji/bikeshed-migrate index.bs --id my-spec
+# Override Docker image/command used for Bikeshed rendering
+bikeshed-migrate ./index.bs --semantic-ir --docker-image ghcr.io/speced/bikeshed:latest --docker-command docker
 ```
 
----
+The default renderer image is `openuji/bikeshed-renderer:latest`. If it is missing,
+the CLI auto-builds it from `docker/bikeshed-renderer/Dockerfile` on first run.
 
-## Programmatic API
+### Key outputs
 
-```typescript
-import { migrate } from '@openuji/bikeshed-migrate';
-import { readFile, writeFile } from 'node:fs/promises';
+- `result.document` semantic IR (`Document` root)
+- `result.regions.main|abstract|status` selected + normalized HTML and region IR blocks
+- `result.metadata`, `result.biblio`, `result.resources`
+- `result.config` (metadata/biblio mapped to Speculator config)
+- `result.rendererDiagnostics` + pipeline diagnostics
 
-const content = await readFile('index.bs', 'utf-8');
-const { md, config } = await migrate(content);
+## Module ownership
 
-await writeFile('index.md', md + '\n');
-await writeFile('config.json', JSON.stringify(config, null, 2) + '\n');
-```
+- `src/extract/*` source-owned extraction (metadata, biblio, resources)
+- `src/boilerplate-resolver.ts` metadata -> boilerplate integration
+- `src/renderer/*` renderer abstraction and docker adapter
+- `src/html/*` parse/select/normalize Bikeshed-rendered HTML
+- `src/import/*` semantic HTML -> IR importer
+- `src/import-bikeshed-spec.ts` top-level orchestration
 
-### `migrate(content, options?)`
+## Legacy markdown path
 
-| Parameter | Type | Description |
-|---|---|---|
-| `content` | `string` | Raw `.bs` file contents |
-| `options.id` | `string` | Override document ID (default: `shortname` from metadata, or `"spec"`) |
-
-Returns `Promise<{ md: string; config: object }>`.
-
----
-
-## What gets transformed
-
-### Metadata block → `config.json`
-
-The `<pre class='metadata'>` block is extracted and converted to a Speculator `config.json`:
-
-| Bikeshed key | `config.json` path |
-|---|---|
-| `Title:` | `title` + `respec.title` |
-| `Shortname:` | `respec.shortName` |
-| `Status:` | `respec.specStatus` |
-| `ED:` | `respec.thisVersion` |
-| `TR:` | `respec.latestVersion` |
-| `!Created:` | `respec.creationDate` |
-| `!Modified:` | `respec.modificationDate` |
-| `Editor:` | `respec.editors[]` |
-| `Former Editor:` | `custom.formerEditors[]` |
-| `Repository:` | `respec.repository` |
-| `Group:` | `respec.group` |
-| `Abstract:` | `respec.abstract` |
-| `Max ToC Depth:` | `respec.maxTocLevel` |
-| `Test Suite:` | `custom.testSuite` |
-| `Boilerplate: issues-index no` | `noConformance: true` |
-
-### Bibliography block → `config.json`
-
-The `<pre class=biblio>` JSON block is stripped from the content and its entries are placed under `respec.localBiblio`. Bikeshed's `href` field is remapped to `url`.
-
-### Content transforms → `index.md`
-
-| Bikeshed construct | Output |
-|---|---|
-| `<xmp class="idl">` | `` ```webidl `` fenced code block |
-| `<pre highlight="lang">` | `` ```lang `` fenced code block |
-| `<pre class="idl">` | `` ```webidl `` fenced code block |
-| `<figure class="example"><pre highlight="lang">` | `` ```lang `` fenced code block (figure wrapper stripped) |
-| `<h1>`–`<h6 id="x">Text</h6>` | `## Text ## {#x}` Markdown heading |
-| `<div algorithm="x">` | `<section data-algorithm="x">` |
-| `[[!REF]]`, `[=term=]`, `{{Interface}}` | passed through unchanged |
-| `Issue(N):` | passed through unchanged |
-| `<dfn>`, `<dl>`, `<figure>`, `<div class="example">` | HTML passthrough |
-
----
-
-## Example output
-
-**Input** (`index.bs` excerpt):
-
-```bikeshed
-<pre class='metadata'>
-Title: Solid-OIDC
-Shortname: solid-oidc
-Status: CG-DRAFT
-ED: https://solid.github.io/solid-oidc/
-TR: https://solidproject.org/TR/oidc
-Editor: [Aaron Coburn](https://people.apache.org/~acoburn/#i) ([Inrupt](https://inrupt.com))
-Abstract:
-  The Solid OpenID Connect specification defines how resource servers
-  verify the identity of relying parties and end users.
-</pre>
-
-# Introduction # {#intro}
-
-The OAuth 2.0 [[!RFC6749]] framework...
-
-<figure class="example">
-  <pre highlight="turtle">
-    PREFIX solid: &lt;http://www.w3.org/ns/solid/terms#&gt;
-  </pre>
-</figure>
-```
-
-**Output `index.md`**:
-
-```markdown
-# Introduction # {#intro}
-
-The OAuth 2.0 [[!RFC6749]] framework...
-
-```turtle
-PREFIX solid: <http://www.w3.org/ns/solid/terms#>
-```
-```
-
-**Output `config.json`**:
-
-```json
-{
-  "id": "solid-oidc",
-  "title": "Solid-OIDC",
-  "respec": {
-    "title": "Solid-OIDC",
-    "shortName": "solid-oidc",
-    "specStatus": "CG-DRAFT",
-    "thisVersion": "https://solid.github.io/solid-oidc/",
-    "latestVersion": "https://solidproject.org/TR/oidc",
-    "editors": [
-      { "name": "Aaron Coburn", "url": "...", "company": "Inrupt", "companyUrl": "..." }
-    ],
-    "abstract": "The Solid OpenID Connect specification...",
-    "localBiblio": {}
-  }
-}
-```
-
----
-
-## Extending for new Bikeshed constructs
-
-When you encounter a Bikeshed construct not yet handled:
-
-1. **Block to strip from content** → add an extractor in [`src/extract/`](src/extract/)
-2. **In-content transform** → add a transform in [`src/transform/`](src/transform/) and register it in [`remark-bikeshed.ts`](src/transform/remark-bikeshed.ts)
-3. **New metadata key** → add a mapping in [`src/build-config.ts`](src/build-config.ts)
-4. Add a test case
-
-## Known limitations
-
-- **Comma-separated editor format** (e.g. `Editor: Name, Company url, email, w3cid N`) is not parsed into structured fields — the full string is used as the `name`. Clean up manually after migration.
-- `<figure>` and `<div class="example">` wrappers are stripped when hoisting code blocks; caption text is not preserved in the output.
+`migrate()` remains exported for backward compatibility. It is no longer the preferred import architecture.
+New work should use `importBikeshedSpec()` and avoid adding Markdown/MDX-specific transforms.

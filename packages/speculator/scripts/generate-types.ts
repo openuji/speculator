@@ -97,7 +97,8 @@ export function isBlock(node: unknown): node is Block {
   return [
     'paragraph', 'heading', 'codeBlock', 'example',
     'blockquote', 'list', 'table', 'thematicBreak', 'html', 'htmlElement', 'likeC4View',
-    'note', 'specStatement', 'specStatementGroup', 'idl'
+    'note', 'specStatement', 'specStatementGroup', 'idl',
+    'definitionList', 'algorithm', 'domIntro', 'figure', 'imageAsset'
   ].includes(type);
 }
 

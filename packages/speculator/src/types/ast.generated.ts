@@ -2,12 +2,10 @@
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
  * Generated from: schema/spec-ast.schema.json
- * Generated at: 2026-03-04T13:04:41.342Z
+ * Generated at: 2026-03-09T12:18:49.325Z
  *
  * Regenerate with: npx ts-node scripts/generate-types.ts
  */
-
-import { PersonEntry } from "#src/preprocess/types";
 
 export type Section = BaseNode & {
   type: 'section';
@@ -52,6 +50,18 @@ export type Section = BaseNode & {
    * Optional Class of Products (COP) identifier for this section scope.
    */
   dataCopConcept?: string;
+  /**
+   * Optional hierarchical section number from source (for lossless import).
+   */
+  number?: string;
+  /**
+   * Optional marker when section originates from Bikeshed boilerplate slots.
+   */
+  boilerplate?: 'abstract' | 'sotd' | 'conformance';
+  /**
+   * Optional marker for boilerplate sections explicitly omitted by source metadata.
+   */
+  omitted?: boolean;
 };
 export type Inline =
   | InlineText
@@ -83,18 +93,24 @@ export type InlineStrong = BaseNode & {
 export type InlineCode = BaseNode & {
   type: 'inlineCode';
   value: string;
+  /**
+   * Optional rich inline code semantics in source order.
+   */
+  children?: Inline[];
 };
 export type InlineLink = BaseNode & {
   type: 'link';
   url: string;
   title?: string | null;
   children: Inline[];
+  source?: ReferenceSource;
 };
 export type InlineImage = BaseNode & {
   type: 'image';
   url: string;
   alt?: string | null;
   title?: string | null;
+  asset?: ImageAsset;
 };
 export type InlineDefinition = BaseNode & {
   type: 'definition';
@@ -206,6 +222,7 @@ export type InlineCite = BaseNode & {
    * Optional inline content that represents the cite text.
    */
   children?: Inline[];
+  source?: ReferenceSource;
 };
 export type InlineSectionReference = BaseNode & {
   type: 'sectionReference';
@@ -284,7 +301,12 @@ export type Block =
   | BlockIdl
   | BlockNote
   | BlockSpecStatement
-  | BlockSpecStatementGroup;
+  | BlockSpecStatementGroup
+  | BlockDefinitionList
+  | BlockAlgorithm
+  | BlockDomIntro
+  | BlockFigure
+  | BlockImageAsset;
 export type BlockParagraph = BaseNode & {
   type: 'paragraph';
   id?: string;
@@ -513,6 +535,38 @@ export type BlockSpecStatementGroup = BaseNode & {
    */
   dataIdPattern?: string;
 };
+export type BlockDefinitionList = BaseNode & {
+  type: 'definitionList';
+  id?: string;
+  items: DefinitionListItem[];
+};
+export type DefinitionListItem = BaseNode & {
+  term: Inline[];
+  description: Block[];
+};
+export type BlockAlgorithm = BaseNode & {
+  type: 'algorithm';
+  id?: string;
+  name?: string;
+  children: Block[];
+};
+export type BlockDomIntro = BaseNode & {
+  type: 'domIntro';
+  id?: string;
+  children: Block[];
+};
+export type BlockFigure = BaseNode & {
+  type: 'figure';
+  id?: string;
+  image?: ImageAsset;
+  caption: Inline[];
+  children: Block[];
+};
+export type BlockImageAsset = BaseNode & {
+  type: 'imageAsset';
+  id?: string;
+  asset: ImageAsset;
+};
 
 /**
  * AST-first schema for Speculator workspace. A workspace contains one or more specification documents. Semantic marker nodes are introduced during parse and may be refined during resolve. Global indexing aggregates definitions across documents.
@@ -558,17 +612,26 @@ export interface DocumentMetadata {
     latestVersion?: string;
     [k: string]: unknown | undefined;
   };
-  bikeshed?: {
-    ed?: string;
-    tr?: string;
-    [k: string]: unknown | undefined;
-  };
   /**
    * Dependencies from config.json
    */
   deps?: string[];
-  editors?: PersonEntry[];
-  authors?: PersonEntry[];
+  editors?: {
+    name: string;
+    url?: string;
+    company?: string;
+    companyUrl?: string;
+    note?: string;
+    w3cid?: string;
+  }[];
+  authors?: {
+    name?: string;
+    url?: string;
+    company?: string;
+    companyUrl?: string;
+    note?: string;
+    w3cid?: string;
+  }[];
   /**
    * ISO 8601 date format (YYYY-MM-DD)
    */
@@ -640,6 +703,25 @@ export interface SourcePos {
   endColumn?: number;
   endOffset?: number;
 }
+/**
+ * Optional source fidelity metadata from the original Bikeshed anchor/link.
+ */
+export interface ReferenceSource {
+  kind?: 'dfn' | 'biblio' | 'idl' | 'external' | 'unknown';
+  href?: string;
+  dataLinkType?: string;
+  dataLinkFor?: string;
+  id?: string;
+  className?: string[];
+}
+export interface ImageAsset {
+  srcOriginal: string;
+  srcResolved?: string;
+  alt?: string;
+  title?: string;
+  exists?: boolean;
+  generatedFrom?: 'mermaid-mmd';
+}
 export interface WorkspaceReferenceBase {
   targetTerm: string;
   candidateTerms?: string[];
@@ -647,6 +729,7 @@ export interface WorkspaceReferenceBase {
   targetId?: string;
   targetDocumentId?: string;
   children: Inline[];
+  source?: ReferenceSource;
 }
 export interface ExternalReferenceBase {
   targetTerm: string;
@@ -656,6 +739,7 @@ export interface ExternalReferenceBase {
   targetId?: string;
   url?: string;
   children: Inline[];
+  source?: ReferenceSource;
 }
 export interface HtmlAttributes {
   [k: string]: HtmlAttributeValue | undefined;
@@ -884,7 +968,8 @@ export function isBlock(node: unknown): node is Block {
   return [
     'paragraph', 'heading', 'codeBlock', 'example',
     'blockquote', 'list', 'table', 'thematicBreak', 'html', 'htmlElement', 'likeC4View',
-    'note', 'specStatement', 'specStatementGroup', 'idl'
+    'note', 'specStatement', 'specStatementGroup', 'idl',
+    'definitionList', 'algorithm', 'domIntro', 'figure', 'imageAsset'
   ].includes(type);
 }
 

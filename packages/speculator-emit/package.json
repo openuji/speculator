@@ -1,0 +1,57 @@
+{
+  "name": "@openuji/speculator-emit",
+  "version": "0.1.0",
+  "description": "Deterministic Markdown/MDX emitter for Speculator AST",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "speculator-emit": "bin/speculator-emit.js"
+  },
+  "imports": {
+    "#src/*": "./dist/*.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepack": "pnpm build",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "keywords": [
+    "speculator",
+    "markdown",
+    "mdx",
+    "serializer",
+    "ast"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@openuji/bikeshed-migrate": "workspace:*",
+    "@openuji/speculator": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "lint-staged": {
+    "{src,tests,bin}/**/*.{ts,tsx,js,mjs,cjs,json,md,html,css,yml,yaml,bs}": [
+      "pnpm --filter @openuji/speculator-emit exec prettier --write --ignore-unknown"
+    ],
+    "{README.md,package.json,tsconfig.json}": [
+      "pnpm --filter @openuji/speculator-emit exec prettier --write --ignore-unknown"
+    ],
+    "{src,tests,bin}/**/*": [
+      "bash -c 'pnpm --filter @openuji/speculator-emit typecheck'",
+      "bash -c 'pnpm --filter @openuji/speculator-emit test'"
+    ]
+  }
+}

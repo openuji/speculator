@@ -1,0 +1,648 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rendered HTML region selection + normalization > captures selected regions (main, abstract, status) > selected-abstract 1`] = `
+"<section id="abstract">
+        <h2 id="abstract-heading">
+          Abstract<a class="self-link" href="#abstract-heading"></a>
+        </h2>
+        <p>
+          The WebMCP API enables web applications to provide tools to AI agents.
+        </p>
+      </section>"
+`;
+
+exports[`rendered HTML region selection + normalization > captures selected regions (main, abstract, status) > selected-main 1`] = `
+"<main id="main">
+      <section id="abstract">
+        <h2 id="abstract-heading">
+          Abstract<a class="self-link" href="#abstract-heading"></a>
+        </h2>
+        <p>
+          The WebMCP API enables web applications to provide tools to AI agents.
+        </p>
+      </section>
+
+      <section id="status-of-this-document">
+        <h2 id="sotd-heading">
+          Status of This Document<a class="self-link" href="#sotd-heading"></a>
+        </h2>
+        <p>This document is a draft specification.</p>
+      </section>
+
+      <section id="intro">
+        <h2 id="intro-heading">
+          Introduction<a class="self-link" href="#intro-heading"></a>
+        </h2>
+        <p>
+          An
+          <dfn id="dfn-agent" data-dfn-type="dfn">agent</dfn>
+          can invoke
+          <a href="#dfn-tool-definition" data-link-type="dfn">tool definitions</a>.
+        </p>
+
+        <div class="note">
+          <p>This is an informative note for WebMCP implementers.</p>
+        </div>
+      </section>
+
+      <section id="api">
+        <h2 id="api-heading">
+          API<a class="self-link" href="#api-heading"></a>
+        </h2>
+
+        <pre class="highlight idl"><code class="idl">
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute ModelContext modelContext;
+};
+      </code></pre>
+
+        <div class="algorithm" data-algorithm="provideContext(options)">
+          <p>
+            The
+            <dfn id="dfn-provide-context" data-dfn-type="method" data-dfn-for="ModelContext">
+              provideContext(options)
+            </dfn>
+            method steps are:
+          </p>
+          <ol>
+            <li>Initialize the context map.</li>
+            <li>Register each tool entry.</li>
+          </ol>
+        </div>
+
+        <dl class="domintro">
+          <dt>
+            <code><var>navigator</var>.modelContext.provideContext()</code>
+          </dt>
+          <dd>
+            <p>Registers all tools with the browser.</p>
+          </dd>
+        </dl>
+      </section>
+
+      <section id="idl-index">
+        <h2>IDL Index</h2>
+        <pre class="idl">interface IgnoredByDefault {};</pre>
+      </section>
+
+      <section id="references">
+        <h2>References</h2>
+        <ol>
+          <li>[MCP] Model Context Protocol</li>
+        </ol>
+      </section>
+    </main>"
+`;
+
+exports[`rendered HTML region selection + normalization > captures selected regions (main, abstract, status) > selected-status 1`] = `
+"<section id="status-of-this-document">
+        <h2 id="sotd-heading">
+          Status of This Document<a class="self-link" href="#sotd-heading"></a>
+        </h2>
+        <p>This document is a draft specification.</p>
+      </section>"
+`;
+
+exports[`rendered HTML region selection + normalization > normalizes selected regions and strips generated chrome > normalized-abstract 1`] = `
+"<section id="abstract">
+        <h2 id="abstract-heading">
+          Abstract
+        </h2>
+        <p>
+          The WebMCP API enables web applications to provide tools to AI agents.
+        </p>
+      </section>"
+`;
+
+exports[`rendered HTML region selection + normalization > normalizes selected regions and strips generated chrome > normalized-main 1`] = `
+"<main id="main">
+      <section id="abstract">
+        <h2 id="abstract-heading">
+          Abstract
+        </h2>
+        <p>
+          The WebMCP API enables web applications to provide tools to AI agents.
+        </p>
+      </section>
+
+      <section id="status-of-this-document">
+        <h2 id="sotd-heading">
+          Status of This Document
+        </h2>
+        <p>This document is a draft specification.</p>
+      </section>
+
+      <section id="intro">
+        <h2 id="intro-heading">
+          Introduction
+        </h2>
+        <p>
+          An
+          <dfn id="dfn-agent" data-dfn-type="dfn">agent</dfn>
+          can invoke
+          <a href="#dfn-tool-definition" data-link-type="dfn">tool definitions</a>.
+        </p>
+
+        <div class="note">
+          <p>This is an informative note for WebMCP implementers.</p>
+        </div>
+      </section>
+
+      <section id="api">
+        <h2 id="api-heading">
+          API
+        </h2>
+
+        <pre class="idl">partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute ModelContext modelContext;
+};</pre>
+
+        <div class="algorithm" data-algorithm="provideContext(options)">
+          <p>
+            The
+            <dfn id="dfn-provide-context" data-dfn-type="method" data-dfn-for="ModelContext">
+              provideContext(options)
+            </dfn>
+            method steps are:
+          </p>
+          <ol>
+            <li>Initialize the context map.</li>
+            <li>Register each tool entry.</li>
+          </ol>
+        </div>
+
+        <dl class="domintro">
+          <dt>
+            <code><var>navigator</var>.modelContext.provideContext()</code>
+          </dt>
+          <dd>
+            <p>Registers all tools with the browser.</p>
+          </dd>
+        </dl>
+      </section>
+
+      
+
+      
+    </main>"
+`;
+
+exports[`rendered HTML region selection + normalization > normalizes selected regions and strips generated chrome > normalized-status 1`] = `
+"<section id="status-of-this-document">
+        <h2 id="sotd-heading">
+          Status of This Document
+        </h2>
+        <p>This document is a draft specification.</p>
+      </section>"
+`;
+
+exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks > abstract-blocks-ir 1`] = `
+"[
+  {
+    "type": "Section",
+    "level": 2,
+    "id": "abstract-heading",
+    "heading": [
+      {
+        "type": "Text",
+        "value": "Abstract"
+      }
+    ],
+    "children": [
+      {
+        "type": "Paragraph",
+        "children": [
+          {
+            "type": "Text",
+            "value": "The WebMCP API enables web applications to provide tools to AI agents."
+          }
+        ]
+      }
+    ]
+  }
+]"
+`;
+
+exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks > conformance-blocks-ir 1`] = `
+"[
+  {
+    "type": "Section",
+    "level": 2,
+    "heading": [
+      {
+        "type": "Text",
+        "value": "Conformance"
+      }
+    ],
+    "children": [
+      {
+        "type": "Section",
+        "level": 2,
+        "id": "conformance",
+        "heading": [
+          {
+            "type": "Text",
+            "value": "Conformance"
+          }
+        ],
+        "children": [
+          {
+            "type": "Paragraph",
+            "children": [
+              {
+                "type": "Text",
+                "value": "Conformance requirements stay around their context. "
+              },
+              {
+                "type": "LinkRef",
+                "kind": "biblio",
+                "href": "#biblio-mcp",
+                "citationKey": "MCP",
+                "citationNormative": true,
+                "biblioRef": {
+                  "title": "Model Context Protocol (MCP) Specification",
+                  "url": "https://modelcontextprotocol.io/specification/latest",
+                  "publisher": "The Linux Foundation"
+                },
+                "children": [
+                  {
+                    "type": "Text",
+                    "value": "[MCP]"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " and "
+              },
+              {
+                "type": "LinkRef",
+                "kind": "biblio",
+                "citationKey": "RFC2119",
+                "citationNormative": true,
+                "children": [
+                  {
+                    "type": "Text",
+                    "value": "[RFC2119]"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]"
+`;
+
+exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks > status-blocks-ir 1`] = `
+"[
+  {
+    "type": "Section",
+    "level": 2,
+    "id": "sotd-heading",
+    "heading": [
+      {
+        "type": "Text",
+        "value": "Status of This Document"
+      }
+    ],
+    "children": [
+      {
+        "type": "Paragraph",
+        "children": [
+          {
+            "type": "Text",
+            "value": "This document is a draft specification."
+          }
+        ]
+      }
+    ]
+  }
+]"
+`;
+
+exports[`semantic importer (HTML -> IR) > imports main region into a semantic document IR snapshot > document-ir 1`] = `
+"{
+  "type": "Document",
+  "children": [
+    {
+      "type": "Section",
+      "level": 2,
+      "id": "abstract",
+      "heading": [
+        {
+          "type": "Text",
+          "value": "Abstract"
+        }
+      ],
+      "children": [
+        {
+          "type": "Paragraph",
+          "children": [
+            {
+              "type": "Text",
+              "value": "The WebMCP API enables web applications to provide JavaScript-based tools to AI agents."
+            }
+          ]
+        }
+      ],
+      "boilerplate": "abstract",
+      "noToc": true
+    },
+    {
+      "type": "Section",
+      "level": 2,
+      "id": "sotd-heading",
+      "heading": [
+        {
+          "type": "Text",
+          "value": "Status of This Document"
+        }
+      ],
+      "children": [
+        {
+          "type": "Paragraph",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Status boilerplate slot"
+            }
+          ]
+        }
+      ],
+      "boilerplate": "sotd",
+      "noToc": true
+    },
+    {
+      "type": "Section",
+      "level": 2,
+      "id": "intro-heading",
+      "heading": [
+        {
+          "type": "Text",
+          "value": "Introduction"
+        }
+      ],
+      "children": [
+        {
+          "type": "Paragraph",
+          "children": [
+            {
+              "type": "Text",
+              "value": "An "
+            },
+            {
+              "type": "Definition",
+              "id": "dfn-agent",
+              "dfnType": "dfn",
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "agent"
+                }
+              ]
+            },
+            {
+              "type": "Text",
+              "value": " can invoke "
+            },
+            {
+              "type": "LinkRef",
+              "kind": "dfn",
+              "href": "#dfn-tool-definition",
+              "attrs": {
+                "dataLinkType": "dfn"
+              },
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "tool definitions"
+                }
+              ]
+            },
+            {
+              "type": "Text",
+              "value": "."
+            }
+          ]
+        },
+        {
+          "type": "NoteBlock",
+          "noteType": "note",
+          "children": [
+            {
+              "type": "Paragraph",
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "This is an informative note for WebMCP implementers."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Section",
+      "level": 2,
+      "id": "api-heading",
+      "heading": [
+        {
+          "type": "Text",
+          "value": "API"
+        }
+      ],
+      "children": [
+        {
+          "type": "IdlBlock",
+          "value": "partial interface Navigator {\\n  [SecureContext, SameObject] readonly attribute ModelContext modelContext;\\n};",
+          "children": [
+            {
+              "type": "Text",
+              "value": "partial interface Navigator {\\n  [SecureContext, SameObject] readonly attribute ModelContext modelContext;\\n};"
+            }
+          ]
+        },
+        {
+          "type": "AlgorithmBlock",
+          "name": "provideContext(options)",
+          "children": [
+            {
+              "type": "Paragraph",
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "The "
+                },
+                {
+                  "type": "Definition",
+                  "id": "dfn-provide-context",
+                  "dfnType": "method",
+                  "dfnFor": "ModelContext",
+                  "children": [
+                    {
+                      "type": "Text",
+                      "value": "provideContext(options)"
+                    }
+                  ]
+                },
+                {
+                  "type": "Text",
+                  "value": " method steps are:"
+                }
+              ]
+            },
+            {
+              "type": "List",
+              "ordered": true,
+              "items": [
+                {
+                  "type": "ListItem",
+                  "children": [
+                    {
+                      "type": "Paragraph",
+                      "children": [
+                        {
+                          "type": "Text",
+                          "value": "Initialize the context map."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ListItem",
+                  "children": [
+                    {
+                      "type": "Paragraph",
+                      "children": [
+                        {
+                          "type": "Text",
+                          "value": "Register each tool entry."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "DomIntroBlock",
+          "children": [
+            {
+              "type": "DefinitionList",
+              "items": [
+                {
+                  "term": [
+                    {
+                      "type": "CodeSpan",
+                      "value": "navigator.modelContext.provideContext()",
+                      "children": [
+                        {
+                          "type": "Variable",
+                          "value": "navigator"
+                        },
+                        {
+                          "type": "Text",
+                          "value": ".modelContext.provideContext()"
+                        }
+                      ]
+                    }
+                  ],
+                  "description": [
+                    {
+                      "type": "Paragraph",
+                      "children": [
+                        {
+                          "type": "Text",
+                          "value": "Registers all tools with the browser."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Section",
+      "level": 2,
+      "heading": [
+        {
+          "type": "Text",
+          "value": "Conformance"
+        }
+      ],
+      "children": [
+        {
+          "type": "Section",
+          "level": 2,
+          "id": "conformance",
+          "heading": [
+            {
+              "type": "Text",
+              "value": "Conformance"
+            }
+          ],
+          "children": [
+            {
+              "type": "Paragraph",
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "Conformance requirements stay around their context. "
+                },
+                {
+                  "type": "LinkRef",
+                  "kind": "biblio",
+                  "href": "#biblio-mcp",
+                  "citationKey": "MCP",
+                  "citationNormative": true,
+                  "biblioRef": {
+                    "title": "Model Context Protocol (MCP) Specification",
+                    "url": "https://modelcontextprotocol.io/specification/latest",
+                    "publisher": "The Linux Foundation"
+                  },
+                  "children": [
+                    {
+                      "type": "Text",
+                      "value": "[MCP]"
+                    }
+                  ]
+                },
+                {
+                  "type": "Text",
+                  "value": " and "
+                },
+                {
+                  "type": "LinkRef",
+                  "kind": "biblio",
+                  "citationKey": "RFC2119",
+                  "citationNormative": true,
+                  "children": [
+                    {
+                      "type": "Text",
+                      "value": "[RFC2119]"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "boilerplate": "conformance",
+      "omitted": true,
+      "noTocCount": true
+    }
+  ]
+}"
+`;
