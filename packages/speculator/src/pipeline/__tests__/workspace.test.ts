@@ -68,4 +68,48 @@ describe('Workspace processing', () => {
         docB.children.forEach(findRef);
         expect(resolved).toBe(true);
     });
+
+    it('resolves [=id|alias=] references against <dfn id="..."> definitions', async () => {
+        const fileProvider = new MemoryFileProvider();
+
+        fileProvider.setFile('/spec.md', `
+            ## Intro
+
+            <dfn id="browsers-agent">browser's agent</dfn>
+
+            Plural form [=browsers-agent|browser's agents=].
+        `);
+
+        const pipeline = new SpeculatorPipeline(corePlugins);
+
+        const result = await pipeline.runWorkspace({
+            entries: [{ entry: '/spec.md' }],
+            fileProvider,
+        });
+
+        expect(result.workspace).toBeDefined();
+        expect(result.workspace?.documents.length).toBe(1);
+        const doc = result.workspace!.documents[0];
+
+        let resolved = false;
+        const findRef = (node: unknown): void => {
+            if (typeof node === 'object' && node !== null && 'type' in node) {
+                if (
+                    node.type === 'workspaceDfnReference' &&
+                    'targetTerm' in node &&
+                    node.targetTerm === 'browsers-agent'
+                ) {
+                    expect('targetId' in node ? node.targetId : undefined).toBe('browsers-agent');
+                    expect('targetDocumentId' in node ? node.targetDocumentId : undefined).toBe(doc.id);
+                    resolved = true;
+                }
+                if ('children' in node && Array.isArray(node.children)) {
+                    node.children.forEach(findRef);
+                }
+            }
+        };
+
+        doc.children.forEach(findRef);
+        expect(resolved).toBe(true);
+    });
 });

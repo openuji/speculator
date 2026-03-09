@@ -53,23 +53,31 @@ function buildLookupMap(document: Document): Map<string, IndexDefinitionEntry[]>
     const map = new Map<string, IndexDefinitionEntry[]>();
     const definitions = document.indexes?.definitions || [];
 
+    const addIndexEntry = (key: string, entry: IndexDefinitionEntry) => {
+        const normalized = normalizeTerm(key);
+        const existing = map.get(normalized) || [];
+        existing.push(entry);
+        map.set(normalized, existing);
+    };
+
     for (const entry of definitions) {
         const linkTexts = entry.linkTexts || [entry.term];
 
         // Index by all link texts
         for (const text of linkTexts) {
-            const key = normalizeTerm(text);
-            const existing = map.get(key) || [];
-            existing.push(entry);
-            map.set(key, existing);
+            addIndexEntry(text, entry);
         }
 
         // Also index by the primary term if different
         const termKey = normalizeTerm(entry.term);
         if (!linkTexts.some(lt => normalizeTerm(lt) === termKey)) {
-            const existing = map.get(termKey) || [];
-            existing.push(entry);
-            map.set(termKey, existing);
+            addIndexEntry(entry.term, entry);
+        }
+
+        // Allow resolving shorthands by explicit definition id, e.g.
+        // <dfn id="browsers-agent">...</dfn> and [=browsers-agent|...=].
+        if (entry.id) {
+            addIndexEntry(entry.id, entry);
         }
     }
 

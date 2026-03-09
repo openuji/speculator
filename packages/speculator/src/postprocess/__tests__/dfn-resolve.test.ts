@@ -197,4 +197,39 @@ describe('ReferenceResolvePlugin', () => {
         const ref = (doc.children[0] as BlockParagraph).children[0] as InlineWorkspaceDfnReference;
         expect(ref.targetId).toBe('dfn-term-a-2');
     });
+
+    it('resolves a dfn reference by explicit definition id shorthand', async () => {
+        const doc: Document = {
+            id: 'doc-1',
+            type: 'document',
+            children: [
+                {
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'workspaceDfnReference',
+                            targetTerm: 'browsers-agent',
+                            children: [{ type: 'text', value: "browser's agents" }],
+                        } as InlineWorkspaceDfnReference,
+                    ],
+                } as BlockParagraph,
+            ],
+            indexes: {
+                definitions: [
+                    {
+                        id: 'browsers-agent',
+                        term: "browser's agent",
+                        documentId: 'doc-1',
+                        sourcePos: { file: 'test.md', line: 10, column: 1 },
+                    },
+                ],
+            },
+        };
+
+        await referenceResolvePlugin.resolve!(createCtx(doc));
+
+        const ref = (doc.children[0] as BlockParagraph).children[0] as InlineWorkspaceDfnReference;
+        expect(ref.targetId).toBe('browsers-agent');
+        expect(ref.targetDocumentId).toBe('doc-1');
+    });
 });

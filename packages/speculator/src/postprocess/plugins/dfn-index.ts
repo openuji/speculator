@@ -100,7 +100,7 @@ export const dfnIndexPlugin: Plugin = {
                 const linkTexts = entry.linkTexts || [entry.term];
 
                 // Add primary term and all aliases to definitions lookup
-                const termsToProcess = new Set([entry.term, ...linkTexts]);
+                const termsToProcess = new Set([entry.term, ...linkTexts, entry.id]);
                 for (const term of termsToProcess) {
                     const key = normalizeTerm(term);
                     const existing = globalDefinitions.get(key) || [];
@@ -113,4 +113,3 @@ export const dfnIndexPlugin: Plugin = {
         }
     },
 };
-
