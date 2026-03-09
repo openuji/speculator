@@ -224,7 +224,6 @@ exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks 
               {
                 "type": "LinkRef",
                 "kind": "biblio",
-                "linkTypeRaw": "biblio",
                 "href": "#biblio-mcp",
                 "citationKey": "MCP",
                 "citationNormative": true,
@@ -247,7 +246,6 @@ exports[`semantic importer (HTML -> IR) > imports abstract/status region blocks 
               {
                 "type": "LinkRef",
                 "kind": "biblio",
-                "linkTypeRaw": "biblio",
                 "citationKey": "RFC2119",
                 "citationNormative": true,
                 "children": [
@@ -380,7 +378,9 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
               "type": "LinkRef",
               "kind": "dfn",
               "href": "#dfn-tool-definition",
-              "linkTypeRaw": "dfn",
+              "attrs": {
+                "dataLinkType": "dfn"
+              },
               "children": [
                 {
                   "type": "Text",
@@ -424,7 +424,13 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
       "children": [
         {
           "type": "IdlBlock",
-          "value": "partial interface Navigator {\\n  [SecureContext, SameObject] readonly attribute ModelContext modelContext;\\n};"
+          "value": "partial interface Navigator {\\n  [SecureContext, SameObject] readonly attribute ModelContext modelContext;\\n};",
+          "children": [
+            {
+              "type": "Text",
+              "value": "partial interface Navigator {\\n  [SecureContext, SameObject] readonly attribute ModelContext modelContext;\\n};"
+            }
+          ]
         },
         {
           "type": "AlgorithmBlock",
@@ -501,7 +507,17 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
                   "term": [
                     {
                       "type": "CodeSpan",
-                      "value": "navigator.modelContext.provideContext()"
+                      "value": "navigator.modelContext.provideContext()",
+                      "children": [
+                        {
+                          "type": "Variable",
+                          "value": "navigator"
+                        },
+                        {
+                          "type": "Text",
+                          "value": ".modelContext.provideContext()"
+                        }
+                      ]
                     }
                   ],
                   "description": [
@@ -553,7 +569,6 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
                 {
                   "type": "LinkRef",
                   "kind": "biblio",
-                  "linkTypeRaw": "biblio",
                   "href": "#biblio-mcp",
                   "citationKey": "MCP",
                   "citationNormative": true,
@@ -576,7 +591,6 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
                 {
                   "type": "LinkRef",
                   "kind": "biblio",
-                  "linkTypeRaw": "biblio",
                   "citationKey": "RFC2119",
                   "citationNormative": true,
                   "children": [
@@ -592,7 +606,7 @@ exports[`semantic importer (HTML -> IR) > imports main region into a semantic do
         }
       ],
       "boilerplate": "conformance",
-      "omited": true
+      "omitted": true
     }
   ]
 }"

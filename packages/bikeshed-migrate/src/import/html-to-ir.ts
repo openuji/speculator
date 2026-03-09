@@ -16,6 +16,7 @@ import type {
     IdlBlockNode,
     LinkRefKind,
     LinkRefNode,
+    LinkRefAttrs,
     ListItemNode,
     ListNode,
     NoteBlockNode,
@@ -258,12 +259,9 @@ function parseBlockElement(
     }
 
     if (tag === 'p') {
-        return [
-            {
-                type: 'Paragraph',
-                children: normalizeInlineWhitespace(parseInlineChildren(element.children, options)),
-            },
-        ];
+        const children = normalizeInlineWhitespace(parseInlineChildren(element.children, options));
+        if (children.length === 0) return [];
+        return [{ type: 'Paragraph', children }];
     }
 
     if (tag === 'ul' || tag === 'ol') {
@@ -283,7 +281,7 @@ function parseBlockElement(
     }
 
     if (tag === 'pre') {
-        return [parsePre(element)];
+        return [parsePre(element, options)];
     }
 
     return parseFlow(element.children, options);
@@ -389,13 +387,14 @@ function parseDefinitionList(element: Element, options: HtmlToIrOptions): Defini
     };
 }
 
-function parsePre(element: Element): CodeBlockNode | IdlBlockNode {
+function parsePre(element: Element, options: HtmlToIrOptions): CodeBlockNode | IdlBlockNode {
     const value = normalizeCodeText(textContent(element));
 
     if (isIdlPre(element)) {
         return {
             type: 'IdlBlock',
             value,
+            children: parseInlineChildrenPreserveWhitespace(element.children, options),
         };
     }
 
@@ -471,9 +470,12 @@ function parseInlineNode(node: RootContent, options: HtmlToIrOptions): SemanticI
     const tag = node.tagName.toLowerCase();
 
     if (tag === 'code') {
+        const rawChildren = parseInlineChildrenPreserveWhitespace(node.children, options);
+        const hasRichSemantics = rawChildren.some((child) => child.type !== 'Text');
         const code: CodeSpanNode = {
             type: 'CodeSpan',
             value: textContent(node).trim(),
+            ...(hasRichSemantics ? { children: rawChildren } : {}),
         };
         return [code];
     }
@@ -522,7 +524,7 @@ function parseInlineNode(node: RootContent, options: HtmlToIrOptions): SemanticI
             type: 'LinkRef',
             kind,
             href,
-            linkTypeRaw: dataLinkType,
+            attrs: buildLinkRefAttrs(node),
             dataLinkFor: getAttr(node, 'data-link-for'),
             citationKey: citation?.key,
             citationNormative: citation?.normative,
@@ -533,6 +535,89 @@ function parseInlineNode(node: RootContent, options: HtmlToIrOptions): SemanticI
     }
 
     return parseInlineChildren(node.children, options);
+}
+
+function parseInlineChildrenPreserveWhitespace(
+    children: RootContent[],
+    options: HtmlToIrOptions,
+): SemanticInlineNode[] {
+    const output: SemanticInlineNode[] = [];
+    for (const child of children) {
+        output.push(...parseInlineNodePreserveWhitespace(child, options));
+    }
+    return output;
+}
+
+function parseInlineNodePreserveWhitespace(
+    node: RootContent,
+    options: HtmlToIrOptions,
+): SemanticInlineNode[] {
+    if (node.type === 'text') {
+        const value = (node as Text).value;
+        return value.length > 0 ? [{ type: 'Text', value }] : [];
+    }
+
+    if (!isElement(node)) return [];
+
+    const tag = node.tagName.toLowerCase();
+
+    if (tag === 'a') {
+        const rawChildren = parseInlineChildrenPreserveWhitespace(node.children, options);
+        const href = getAttr(node, 'href');
+        const dataLinkType = getAttr(node, 'data-link-type');
+        const normalizedChildren =
+            rawChildren.length > 0 ? normalizeInlineWhitespace(rawChildren) : rawChildren;
+        const citation = parseBiblioCitationFromChildren(normalizedChildren, dataLinkType ?? undefined);
+        const biblioRef = citation ? findBiblioEntry(options.biblio, citation.key) : undefined;
+
+        const link: LinkRefNode = {
+            type: 'LinkRef',
+            kind: classifyLinkRef({
+                href,
+                dataLinkType,
+                hasCitation: !!citation,
+            }),
+            href,
+            attrs: buildLinkRefAttrs(node),
+            dataLinkFor: getAttr(node, 'data-link-for'),
+            citationKey: citation?.key,
+            citationNormative: citation?.normative,
+            biblioRef,
+            children: rawChildren,
+        };
+        return [link];
+    }
+
+    if (tag === 'dfn') {
+        const definition: DefinitionNode = {
+            type: 'Definition',
+            id: getAttr(node, 'id'),
+            dfnType: getAttr(node, 'data-dfn-type'),
+            dfnFor: getAttr(node, 'data-dfn-for'),
+            children: parseInlineChildrenPreserveWhitespace(node.children, options),
+        };
+        return [definition];
+    }
+
+    if (tag === 'code') {
+        const children = parseInlineChildrenPreserveWhitespace(node.children, options);
+        const code: CodeSpanNode = {
+            type: 'CodeSpan',
+            value: textContent(node),
+            ...(children.some((child) => child.type !== 'Text') ? { children } : {}),
+        };
+        return [code];
+    }
+
+    if (tag === 'var') {
+        return [{ type: 'Variable', value: textContent(node) }];
+    }
+
+    if (tag === 'img') {
+        return [{ type: 'ImageInline', asset: parseImageAsset(node) }];
+    }
+
+    return parseInlineChildrenPreserveWhitespace(node.children, options);
 }
 
 function parseInlineText(value: string, options: HtmlToIrOptions): SemanticInlineNode[] {
@@ -560,7 +645,6 @@ function parseInlineText(value: string, options: HtmlToIrOptions): SemanticInlin
         const link: LinkRefNode = {
             type: 'LinkRef',
             kind: 'biblio',
-            linkTypeRaw: 'biblio',
             href: biblioRef ? `#biblio-${citation.key.toLowerCase()}` : undefined,
             citationKey: citation.key,
             citationNormative: citation.normative,
@@ -576,6 +660,23 @@ function parseInlineText(value: string, options: HtmlToIrOptions): SemanticInlin
     }
 
     return output;
+}
+
+function buildLinkRefAttrs(element: Element): LinkRefAttrs | undefined {
+    const dataLinkType = getAttr(element, 'data-link-type');
+    const id = getAttr(element, 'id');
+    const className = asClassList(element.properties?.className);
+
+    const attrs: LinkRefAttrs = {};
+    if (dataLinkType) attrs.dataLinkType = dataLinkType;
+    if (id) attrs.id = id;
+    if (className.length > 0) attrs.className = className;
+
+    if (!attrs.dataLinkType && !attrs.id && !attrs.className) {
+        return undefined;
+    }
+
+    return attrs;
 }
 
 function parseCitationInner(rawInner: string): { key: string; normative: boolean } | undefined {

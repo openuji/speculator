@@ -30,7 +30,7 @@ export interface SectionNode {
     level: number;
     id?: string;
     number?: string;
-    omited?: boolean;
+    omitted?: boolean;
     boilerplate?: 'abstract' | 'sotd' | 'conformance';
     heading: SemanticInlineNode[];
     children: SemanticBlockNode[];
@@ -50,7 +50,7 @@ export interface LinkRefNode {
     type: 'LinkRef';
     kind: LinkRefKind;
     href?: string;
-    linkTypeRaw?: string;
+    attrs?: LinkRefAttrs;
     dataLinkFor?: string;
     citationKey?: string;
     citationNormative?: boolean;
@@ -59,6 +59,12 @@ export interface LinkRefNode {
 }
 
 export type LinkRefKind = 'dfn' | 'biblio' | 'idl' | 'external' | 'unknown';
+
+export interface LinkRefAttrs {
+    dataLinkType?: string;
+    id?: string;
+    className?: string[];
+}
 
 export interface BiblioRefNode {
     title?: string;
@@ -81,6 +87,7 @@ export interface DefinitionNode {
 export interface CodeSpanNode {
     type: 'CodeSpan';
     value: string;
+    children?: SemanticInlineNode[];
 }
 
 export interface VariableNode {
@@ -120,6 +127,7 @@ export interface CodeBlockNode {
 export interface IdlBlockNode {
     type: 'IdlBlock';
     value: string;
+    children: SemanticInlineNode[];
 }
 
 export interface AlgorithmBlockNode {

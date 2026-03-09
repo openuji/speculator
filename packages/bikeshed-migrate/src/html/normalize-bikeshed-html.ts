@@ -108,7 +108,7 @@ function normalizeElement(
     };
 
     if (normalizedTag === 'pre') {
-        normalizePreElement(normalized, element);
+        normalizePreElement(normalized, element, options);
     }
 
     return normalized;
@@ -165,21 +165,142 @@ function normalizeProperties(element: Element, normalizedTag: string): Propertie
     return props as Properties;
 }
 
-function normalizePreElement(target: Element, source: Element): void {
-    const raw = normalizeCodeText(textContent(source));
-
-    target.children = [{ type: 'text', value: raw }];
-
+function normalizePreElement(
+    target: Element,
+    source: Element,
+    options: NormalizeBikeshedHtmlOptions,
+): void {
     const props = (target.properties ?? {}) as Record<string, unknown>;
     if (isIdlLikeElement(source)) {
         props.className = ['idl'];
+        target.children = normalizeIdlPreChildren(source, options);
     } else {
+        const raw = normalizeCodeText(textContent(source));
+        target.children = [{ type: 'text', value: raw }];
         const language = inferLanguageFromPre(source);
         if (language) {
             props.dataLanguage = language;
         }
     }
     target.properties = props as Properties;
+}
+
+function normalizeIdlPreChildren(
+    source: Element,
+    options: NormalizeBikeshedHtmlOptions,
+): ElementContent[] {
+    const children: ElementContent[] = [];
+    let hasAnchor = false;
+
+    for (const child of source.children) {
+        hasAnchor = appendNormalizedIdlNode(children, child, options) || hasAnchor;
+    }
+
+    if (!hasAnchor) {
+        return [{ type: 'text', value: normalizeCodeText(textContent(source)) }];
+    }
+
+    if (children.length > 0) {
+        trimBoundaryWhitespace(children);
+        return children;
+    }
+
+    return [{ type: 'text', value: normalizeCodeText(textContent(source)) }];
+}
+
+function appendNormalizedIdlNode(
+    out: ElementContent[],
+    node: ElementContent,
+    options: NormalizeBikeshedHtmlOptions,
+): boolean {
+    if (node.type === 'text') {
+        out.push({ type: 'text', value: (node as Text).value });
+        return false;
+    }
+
+    if (node.type !== 'element') return false;
+
+    if (shouldDropElement(node, options)) return false;
+
+    const tag = normalizeTagName(node);
+    if (tag === 'a') {
+        const anchorChildren: ElementContent[] = [];
+        for (const child of node.children) {
+            appendNormalizedIdlNode(anchorChildren, child, options);
+        }
+
+        out.push({
+            type: 'element',
+            tagName: 'a',
+            properties: normalizeIdlAnchorProperties(node),
+            children: anchorChildren,
+        });
+        return true;
+    }
+
+    let hasAnchor = false;
+    for (const child of node.children) {
+        hasAnchor = appendNormalizedIdlNode(out, child, options) || hasAnchor;
+    }
+    return hasAnchor;
+}
+
+function normalizeIdlAnchorProperties(anchor: Element): Properties {
+    const props: Record<string, unknown> = {};
+
+    const href = getAttr(anchor, 'href');
+    if (href) props.href = href;
+
+    const dataLinkType = getAttr(anchor, 'data-link-type');
+    if (dataLinkType) props.dataLinkType = dataLinkType;
+
+    const dataLinkFor = getAttr(anchor, 'data-link-for');
+    if (dataLinkFor) props.dataLinkFor = dataLinkFor;
+
+    const id = getAttr(anchor, 'id');
+    if (id) props.id = id;
+
+    const classList = asClassList(anchor.properties?.className).filter(
+        (name) => !DROP_CLASSES.has(name),
+    );
+    if (classList.length > 0) {
+        props.className = classList;
+    }
+
+    return props as Properties;
+}
+
+function trimBoundaryWhitespace(children: ElementContent[]): void {
+    while (children.length > 0 && isEmptyTextNode(children[0])) {
+        children.shift();
+    }
+
+    while (children.length > 0 && isEmptyTextNode(children[children.length - 1])) {
+        children.pop();
+    }
+
+    if (children.length === 0) return;
+
+    const first = children[0];
+    if (first.type === 'text') {
+        (first as Text).value = (first as Text).value.replace(/^\s+/, '');
+    }
+
+    const last = children[children.length - 1];
+    if (last.type === 'text') {
+        (last as Text).value = (last as Text).value.replace(/\s+$/, '');
+    }
+
+    while (children.length > 0 && isEmptyTextNode(children[0])) {
+        children.shift();
+    }
+    while (children.length > 0 && isEmptyTextNode(children[children.length - 1])) {
+        children.pop();
+    }
+}
+
+function isEmptyTextNode(node: ElementContent): boolean {
+    return node.type === 'text' && (node as Text).value.trim().length === 0;
 }
 
 function normalizeCodeText(text: string): string {

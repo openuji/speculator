@@ -7,6 +7,7 @@ import type { BoilerplateResult } from '../src/boilerplate.js';
 import type { BikeshedRenderer } from '../src/renderer/types.js';
 import type {
     DocumentNode,
+    IdlBlockNode,
     SectionNode,
     SemanticBlockNode,
     SemanticInlineNode,
@@ -147,6 +148,13 @@ describe('semantic importer (HTML -> IR)', () => {
         expect(
             linkRefs.some((node) => node.type === 'LinkRef' && node.kind === 'dfn'),
         ).toBe(true);
+        expect(
+            linkRefs.some((node) => node.type === 'LinkRef' && node.attrs?.dataLinkType === 'dfn'),
+        ).toBe(true);
+
+        const idlBlock = blocks.find((node): node is IdlBlockNode => node.type === 'IdlBlock');
+        expect(idlBlock).toBeDefined();
+        expect((idlBlock?.children ?? []).length).toBeGreaterThan(0);
     });
 
     it('imports abstract/status region blocks', () => {
@@ -159,6 +167,13 @@ describe('semantic importer (HTML -> IR)', () => {
         expect(JSON.stringify(result.regions.conformance?.blocks ?? [], null, 2)).toMatchSnapshot(
             'conformance-blocks-ir',
         );
+    });
+
+    it('does not emit empty paragraph nodes', () => {
+        expect(hasEmptyParagraphNodes(result.document.children as SemanticBlockNode[])).toBe(false);
+        expect(hasEmptyParagraphNodes(result.regions.abstract?.blocks ?? [])).toBe(false);
+        expect(hasEmptyParagraphNodes(result.regions.status?.blocks ?? [])).toBe(false);
+        expect(hasEmptyParagraphNodes(result.regions.conformance?.blocks ?? [])).toBe(false);
     });
 
     it('converts boilerplate citation shorthand into semantic biblio references', () => {
@@ -195,7 +210,7 @@ describe('semantic importer (HTML -> IR)', () => {
         const conformanceSection = topSections.find(
             (section) => section.boilerplate === 'conformance',
         );
-        expect(conformanceSection?.omited).toBe(true);
+        expect(conformanceSection?.omitted).toBe(true);
     });
 });
 
@@ -252,6 +267,10 @@ function flattenInlines(document: DocumentNode): SemanticInlineNode[] {
         out.push(node);
         if (node.type === 'Definition' || node.type === 'LinkRef') {
             node.children.forEach(visitInline);
+            return;
+        }
+        if (node.type === 'CodeSpan' && node.children) {
+            node.children.forEach(visitInline);
         }
     };
 
@@ -296,4 +315,41 @@ function valueAsString(value: string | string[] | undefined): string | undefined
     if (!value) return undefined;
     if (Array.isArray(value)) return value[0];
     return value;
+}
+
+function hasEmptyParagraphNodes(blocks: SemanticBlockNode[]): boolean {
+    const visit = (node: SemanticBlockNode): boolean => {
+        if (node.type === 'Paragraph') {
+            return node.children.length === 0;
+        }
+
+        if (
+            node.type === 'Section' ||
+            node.type === 'AlgorithmBlock' ||
+            node.type === 'DomIntroBlock' ||
+            node.type === 'NoteBlock'
+        ) {
+            return node.children.some(visit);
+        }
+
+        if (node.type === 'FigureBlock') {
+            return node.children.some(visit);
+        }
+
+        if (node.type === 'List') {
+            return node.items.some((item) => item.children.some(visit));
+        }
+
+        if (node.type === 'ListItem') {
+            return node.children.some(visit);
+        }
+
+        if (node.type === 'DefinitionList') {
+            return node.items.some((item) => item.description.some(visit));
+        }
+
+        return false;
+    };
+
+    return blocks.some(visit);
 }

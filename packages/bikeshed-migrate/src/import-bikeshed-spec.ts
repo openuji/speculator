@@ -497,18 +497,18 @@ function applyBoilerplateSection(
     boilerplate: 'abstract' | 'sotd' | 'conformance',
     fallbackHeading: string,
     placement: 'prepend' | 'append',
-    omited: boolean,
+    omitted: boolean,
 ): void {
-    const section = toBoilerplateSection(blocks, boilerplate, fallbackHeading, omited);
+    const section = toBoilerplateSection(blocks, boilerplate, fallbackHeading, omitted);
     if (!section) return;
 
     const existing = findMatchingSection(document.children, section);
     if (existing) {
         existing.boilerplate = boilerplate;
-        if (omited) {
-            existing.omited = true;
+        if (omitted) {
+            existing.omitted = true;
         } else {
-            delete existing.omited;
+            delete existing.omitted;
         }
         existing.id = section.id ?? existing.id;
         existing.level = section.level;
@@ -529,7 +529,7 @@ function toBoilerplateSection(
     blocks: SemanticBlockNode[] | undefined,
     boilerplate: 'abstract' | 'sotd' | 'conformance',
     fallbackHeading: string,
-    omited: boolean,
+    omitted: boolean,
 ): SectionNode | undefined {
     if (!blocks || blocks.length === 0) return undefined;
 
@@ -540,7 +540,7 @@ function toBoilerplateSection(
         const cloned: SectionNode = {
             ...section,
             boilerplate,
-            ...(omited ? { omited: true } : {}),
+            ...(omitted ? { omitted: true } : {}),
             children: [...section.children, ...rest],
         };
         return cloned;
@@ -551,7 +551,7 @@ function toBoilerplateSection(
         type: 'Section',
         level: 2,
         boilerplate,
-        ...(omited ? { omited: true } : {}),
+        ...(omitted ? { omitted: true } : {}),
         heading: [heading],
         children: blocks,
     };

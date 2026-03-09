@@ -186,6 +186,13 @@
                         },
                         "value": {
                             "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            },
+                            "description": "Optional rich inline code semantics in source order."
                         }
                     },
                     "required": [
@@ -220,6 +227,9 @@
                             "items": {
                                 "$ref": "#/definitions/Inline"
                             }
+                        },
+                        "source": {
+                            "$ref": "#/definitions/ReferenceSource"
                         }
                     },
                     "required": [
@@ -255,6 +265,9 @@
                                 "string",
                                 "null"
                             ]
+                        },
+                        "asset": {
+                            "$ref": "#/definitions/ImageAsset"
                         }
                     },
                     "required": [
@@ -327,69 +340,215 @@
         "WorkspaceReferenceBase": {
             "type": "object",
             "properties": {
-                "targetTerm": { "type": "string" },
-                "candidateTerms": { "type": "array", "items": { "type": "string" } },
-                "forContexts": { "type": "array", "items": { "type": ["string", "null"] } },
-                "targetId": { "type": "string" },
-                "targetDocumentId": { "type": "string" },
-                "children": { "type": "array", "items": { "$ref": "#/definitions/Inline" } }
+                "targetTerm": {
+                    "type": "string"
+                },
+                "candidateTerms": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "forContexts": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "targetId": {
+                    "type": "string"
+                },
+                "targetDocumentId": {
+                    "type": "string"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Inline"
+                    }
+                },
+                "source": {
+                    "$ref": "#/definitions/ReferenceSource"
+                }
             },
-            "required": ["targetTerm", "children"]
+            "required": [
+                "targetTerm",
+                "children"
+            ]
         },
         "ExternalReferenceBase": {
             "type": "object",
             "properties": {
-                "targetTerm": { "type": "string" },
-                "candidateTerms": { "type": "array", "items": { "type": "string" } },
-                "forContexts": { "type": "array", "items": { "type": ["string", "null"] } },
-                "xrefSpec": { "type": "string" },
-                "targetId": { "type": "string" },
-                "url": { "type": "string" },
-                "children": { "type": "array", "items": { "$ref": "#/definitions/Inline" } }
+                "targetTerm": {
+                    "type": "string"
+                },
+                "candidateTerms": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "forContexts": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "xrefSpec": {
+                    "type": "string"
+                },
+                "targetId": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Inline"
+                    }
+                },
+                "source": {
+                    "$ref": "#/definitions/ReferenceSource"
+                }
             },
-            "required": ["targetTerm", "xrefSpec", "children"]
+            "required": [
+                "targetTerm",
+                "xrefSpec",
+                "children"
+            ]
         },
-
         "InlineWorkspaceDfnReference": {
             "allOf": [
-                { "$ref": "#/definitions/BaseNode" },
-                { "$ref": "#/definitions/WorkspaceReferenceBase" },
-                { "type": "object", "properties": { "type": { "const": "workspaceDfnReference" } }, "required": ["type"] }
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "$ref": "#/definitions/WorkspaceReferenceBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "workspaceDfnReference"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
             ]
         },
         "InlineWorkspaceIdlReference": {
             "allOf": [
-                { "$ref": "#/definitions/BaseNode" },
-                { "$ref": "#/definitions/WorkspaceReferenceBase" },
-                { "type": "object", "properties": { "type": { "const": "workspaceIdlReference" } }, "required": ["type"] }
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "$ref": "#/definitions/WorkspaceReferenceBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "workspaceIdlReference"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
             ]
         },
         "InlineWorkspaceElementReference": {
             "allOf": [
-                { "$ref": "#/definitions/BaseNode" },
-                { "$ref": "#/definitions/WorkspaceReferenceBase" },
-                { "type": "object", "properties": { "type": { "const": "workspaceElementReference" } }, "required": ["type"] }
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "$ref": "#/definitions/WorkspaceReferenceBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "workspaceElementReference"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
             ]
         },
         "InlineExternalDfnReference": {
             "allOf": [
-                { "$ref": "#/definitions/BaseNode" },
-                { "$ref": "#/definitions/ExternalReferenceBase" },
-                { "type": "object", "properties": { "type": { "const": "externalDfnReference" } }, "required": ["type"] }
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "$ref": "#/definitions/ExternalReferenceBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "externalDfnReference"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
             ]
         },
         "InlineExternalIdlReference": {
             "allOf": [
-                { "$ref": "#/definitions/BaseNode" },
-                { "$ref": "#/definitions/ExternalReferenceBase" },
-                { "type": "object", "properties": { "type": { "const": "externalIdlReference" } }, "required": ["type"] }
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "$ref": "#/definitions/ExternalReferenceBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "externalIdlReference"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
             ]
         },
         "InlineExternalElementReference": {
             "allOf": [
-                { "$ref": "#/definitions/BaseNode" },
-                { "$ref": "#/definitions/ExternalReferenceBase" },
-                { "type": "object", "properties": { "type": { "const": "externalElementReference" } }, "required": ["type"] }
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "$ref": "#/definitions/ExternalReferenceBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "externalElementReference"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
             ]
         },
         "InlineSectionReference": {
@@ -567,6 +726,9 @@
                                 "$ref": "#/definitions/Inline"
                             },
                             "description": "Optional inline content that represents the cite text."
+                        },
+                        "source": {
+                            "$ref": "#/definitions/ReferenceSource"
                         }
                     },
                     "required": [
@@ -949,8 +1111,7 @@
                         "dataCopConcept": {
                             "type": "string"
                         }
-                    }
-,
+                    },
                     "required": [
                         "type",
                         "children"
@@ -1073,8 +1234,7 @@
                         "dataCopConcept": {
                             "type": "string"
                         }
-                    }
-,
+                    },
                     "required": [
                         "type",
                         "children"
@@ -1332,8 +1492,12 @@
                             "type": "array",
                             "items": {
                                 "oneOf": [
-                                    { "$ref": "#/definitions/Block" },
-                                    { "$ref": "#/definitions/Inline" }
+                                    {
+                                        "$ref": "#/definitions/Block"
+                                    },
+                                    {
+                                        "$ref": "#/definitions/Inline"
+                                    }
                                 ]
                             }
                         },
@@ -1441,6 +1605,21 @@
                 },
                 {
                     "$ref": "#/definitions/BlockSpecStatementGroup"
+                },
+                {
+                    "$ref": "#/definitions/BlockDefinitionList"
+                },
+                {
+                    "$ref": "#/definitions/BlockAlgorithm"
+                },
+                {
+                    "$ref": "#/definitions/BlockDomIntro"
+                },
+                {
+                    "$ref": "#/definitions/BlockFigure"
+                },
+                {
+                    "$ref": "#/definitions/BlockImageAsset"
                 }
             ]
         },
@@ -1490,6 +1669,23 @@
                         "dataCopConcept": {
                             "type": "string",
                             "description": "Optional Class of Products (COP) identifier for this section scope."
+                        },
+                        "number": {
+                            "type": "string",
+                            "description": "Optional hierarchical section number from source (for lossless import)."
+                        },
+                        "boilerplate": {
+                            "type": "string",
+                            "enum": [
+                                "abstract",
+                                "sotd",
+                                "conformance"
+                            ],
+                            "description": "Optional marker when section originates from Bikeshed boilerplate slots."
+                        },
+                        "omitted": {
+                            "type": "boolean",
+                            "description": "Optional marker for boilerplate sections explicitly omitted by source metadata."
                         }
                     },
                     "required": [
@@ -1919,14 +2115,20 @@
                 "respec": {
                     "type": "object",
                     "properties": {
-                        "thisVersion": { "type": "string" },
-                        "latestVersion": { "type": "string" }
+                        "thisVersion": {
+                            "type": "string"
+                        },
+                        "latestVersion": {
+                            "type": "string"
+                        }
                     },
                     "additionalProperties": true
                 },
                 "deps": {
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                        "type": "string"
+                    },
                     "description": "Dependencies from config.json"
                 },
                 "editors": {
@@ -2135,6 +2337,247 @@
                 "type",
                 "id",
                 "children"
+            ]
+        },
+        "ReferenceSource": {
+            "type": "object",
+            "description": "Optional source fidelity metadata from the original Bikeshed anchor/link.",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "dfn",
+                        "biblio",
+                        "idl",
+                        "external",
+                        "unknown"
+                    ]
+                },
+                "href": {
+                    "type": "string"
+                },
+                "dataLinkType": {
+                    "type": "string"
+                },
+                "dataLinkFor": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "className": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ImageAsset": {
+            "type": "object",
+            "properties": {
+                "srcOriginal": {
+                    "type": "string"
+                },
+                "srcResolved": {
+                    "type": "string"
+                },
+                "alt": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "exists": {
+                    "type": "boolean"
+                },
+                "generatedFrom": {
+                    "type": "string",
+                    "enum": [
+                        "mermaid-mmd"
+                    ]
+                }
+            },
+            "required": [
+                "srcOriginal"
+            ]
+        },
+        "DefinitionListItem": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "term": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        },
+                        "description": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "term",
+                        "description"
+                    ]
+                }
+            ]
+        },
+        "BlockDefinitionList": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "definitionList"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DefinitionListItem"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "items"
+                    ]
+                }
+            ]
+        },
+        "BlockAlgorithm": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "algorithm"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockDomIntro": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "domIntro"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockFigure": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "figure"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "image": {
+                            "$ref": "#/definitions/ImageAsset"
+                        },
+                        "caption": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Inline"
+                            }
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "caption",
+                        "children"
+                    ]
+                }
+            ]
+        },
+        "BlockImageAsset": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseNode"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "imageAsset"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "asset": {
+                            "$ref": "#/definitions/ImageAsset"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "asset"
+                    ]
+                }
             ]
         }
     },
